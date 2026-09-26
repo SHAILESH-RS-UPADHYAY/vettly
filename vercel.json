@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/status", "destination": "/api/index.py" },
+    { "source": "/upload/(.*)", "destination": "/api/index.py" },
+    { "source": "/github/(.*)", "destination": "/api/index.py" },
+    { "source": "/context", "destination": "/api/index.py" },
+    { "source": "/context/(.*)", "destination": "/api/index.py" },
+    { "source": "/prepare", "destination": "/api/index.py" },
+    { "source": "/prepare/(.*)", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/web/$1" },
+    { "source": "/", "destination": "/web/index.html" }
+  ]
+}

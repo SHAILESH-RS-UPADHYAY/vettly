@@ -1,0 +1,247 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 690" width="100%" height="690">
+  <defs>
+    <linearGradient id="bgPaper" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FAF8F5"/>
+    </linearGradient>
+    <pattern id="gridLight" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#E2E8F0" stroke-width="1"/>
+    </pattern>
+    <filter id="neoShadow" x="-4%" y="-4%" width="110%" height="112%">
+      <feDropShadow dx="3" dy="4" stdDeviation="0" flood-color="#0F172A" flood-opacity="0.92"/>
+    </filter>
+    <filter id="miniShadow" x="-4%" y="-4%" width="110%" height="114%">
+      <feDropShadow dx="2" dy="2" stdDeviation="0" flood-color="#0F172A" flood-opacity="0.8"/>
+    </filter>
+    <marker id="arrOrange" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#EA580C"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284C7"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#16A34A"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <style>
+    .banner-hdr { font: 900 16px 'JetBrains Mono', monospace; fill: #0F172A; letter-spacing: 1.2px; }
+    .banner-sub { font: 600 12px 'JetBrains Mono', monospace; fill: #EA580C; }
+    .stage-card { fill: #FFFFFF; stroke: #0F172A; stroke-width: 2.5; rx: 14; }
+    .stage-hdr-orange { fill: #FFF7ED; stroke: #0F172A; stroke-width: 2; rx: 10; }
+    .stage-hdr-blue { fill: #F0F9FF; stroke: #0F172A; stroke-width: 2; rx: 10; }
+    .stage-hdr-purple { fill: #FAF5FF; stroke: #0F172A; stroke-width: 2; rx: 10; }
+    .stage-hdr-green { fill: #F0FDF4; stroke: #0F172A; stroke-width: 2; rx: 10; }
+    .sub-box { fill: #F8FAFC; stroke: #0F172A; stroke-width: 1.6; rx: 8; }
+    .st-title { font: 800 13px 'JetBrains Mono', monospace; fill: #0F172A; }
+    .st-file { font: 700 10.5px 'JetBrains Mono', monospace; fill: #EA580C; }
+    .st-file-blue { font: 700 10.5px 'JetBrains Mono', monospace; fill: #0284C7; }
+    .st-file-purple { font: 700 10.5px 'JetBrains Mono', monospace; fill: #7C3AED; }
+    .st-file-green { font: 700 10.5px 'JetBrains Mono', monospace; fill: #16A34A; }
+    .box-title { font: 700 12px 'Segoe UI', sans-serif; fill: #0F172A; }
+    .box-desc { font: 500 10.5px 'Segoe UI', sans-serif; fill: #475569; }
+    .wire { fill: none; stroke-width: 2.8; stroke-dasharray: 8 6; animation: wireFlow 1s linear infinite; }
+    .pulse-dot { animation: pulse 1.6s infinite ease-in-out; }
+    @keyframes wireFlow { to { stroke-dashoffset: -28; } }
+    @keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+  </style>
+
+  <!-- Outer White Blueprint Frame -->
+  <rect width="1120" height="690" rx="18" fill="url(#bgPaper)"/>
+  <rect width="1120" height="690" rx="18" fill="url(#gridLight)"/>
+  <rect x="3" y="3" width="1114" height="684" rx="16" fill="none" stroke="#0F172A" stroke-width="3"/>
+
+  <!-- Top Blueprint Header Bar -->
+  <g transform="translate(26, 20)" filter="url(#miniShadow)">
+    <rect width="1068" height="46" rx="10" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
+    <circle cx="24" cy="23" r="6" fill="#EA580C" class="pulse-dot"/>
+    <text x="42" y="28" class="banner-hdr">FIG 1.0 // VETTLY COMPLETE END-TO-END BACKEND WORKFLOW (MASTER BLUEPRINT)</text>
+    <text x="835" y="28" class="banner-sub">LIVE ANIMATED TELEMETRY ➔</text>
+  </g>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- TOP ROW: STAGE 1 (INGESTION) -> STAGE 2 (80K RAG FUSION) -> STAGE 3 (FASTAPI) -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- STAGE 1: CONTEXT TOOLBELT INGESTION -->
+  <g transform="translate(26, 86)" filter="url(#neoShadow)">
+    <rect width="310" height="270" class="stage-card"/>
+    <rect x="12" y="12" width="286" height="44" class="stage-hdr-orange"/>
+    <text x="24" y="31" class="st-title">STAGE 1: CONTEXT INGESTION</text>
+    <text x="24" y="47" class="st-file">backend/context/*</text>
+
+    <g transform="translate(14, 68)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">📄 ResumeParser (resume_parser.py)</text>
+      <text x="12" y="34" class="box-desc">Extracts PDF/DOCX work history, skills &amp; metrics</text>
+    </g>
+    <g transform="translate(14, 118)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">🐙 GitHubScraper (github_scraper.py)</text>
+      <text x="12" y="34" class="box-desc">Async httpx fetch of public repos, trees &amp; READMEs</text>
+    </g>
+    <g transform="translate(14, 168)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">💼 Target JD &amp; Assignment Specs</text>
+      <text x="12" y="34" class="box-desc">Auto-detects stack chips &amp; role constraints</text>
+    </g>
+    <g transform="translate(14, 218)">
+      <rect width="282" height="40" class="sub-box"/>
+      <text x="12" y="17" class="box-title">📖 STAR Stories &amp; About Me Profile</text>
+      <text x="12" y="32" class="box-desc">Behavioral narratives &amp; identity constraints</text>
+    </g>
+  </g>
+
+  <!-- Animated Wire: Stage 1 -> Stage 2 -->
+  <path id="w12" d="M 336 220 L 402 220" class="wire" stroke="#EA580C" marker-end="url(#arrOrange)"/>
+  <circle r="5.5" fill="#EA580C">
+    <animateMotion dur="1.4s" repeatCount="indefinite" path="M 336 220 L 402 220"/>
+  </circle>
+
+  <!-- STAGE 2: 80K PRIORITY RAG FUSION & CACHE -->
+  <g transform="translate(408, 86)" filter="url(#neoShadow)">
+    <rect width="304" height="270" class="stage-card"/>
+    <rect x="12" y="12" width="280" height="44" class="stage-hdr-blue"/>
+    <text x="24" y="31" class="st-title">STAGE 2: 80K RAG FUSION</text>
+    <text x="24" y="47" class="st-file-blue">ai/context_engine.py + stores.py</text>
+
+    <g transform="translate(14, 68)">
+      <rect width="276" height="58" class="sub-box"/>
+      <text x="12" y="19" class="box-title">🧠 Priority-Weighted Context Window</text>
+      <text x="12" y="35" class="box-desc">1. Assignment Spec  2. Target JD</text>
+      <text x="12" y="49" class="box-desc">3. Resume + STAR    4. GitHub Codebases</text>
+    </g>
+    <g transform="translate(14, 136)">
+      <rect width="276" height="56" class="sub-box"/>
+      <text x="12" y="19" class="box-title">⚡ Semantic QuestionMatcher Cache</text>
+      <text x="12" y="35" class="box-desc">Checks qa_cache.json first (&lt;10ms hit)</text>
+      <text x="12" y="49" class="box-desc">Deduplicates last 15 synthesized questions</text>
+    </g>
+    <g transform="translate(14, 202)">
+      <rect width="276" height="54" class="sub-box"/>
+      <text x="12" y="19" class="box-title">🗑️ Zero-Data-Loss Recycle Vault</text>
+      <text x="12" y="35" class="box-desc">Soft-deletes cleared chats to recycle_bin.json</text>
+      <text x="12" y="49" class="box-desc">1-click instant restore to active Copilot</text>
+    </g>
+  </g>
+
+  <!-- Animated Wire: Stage 2 -> Stage 3 -->
+  <path id="w23" d="M 712 220 L 778 220" class="wire" stroke="#0284C7" marker-end="url(#arrBlue)"/>
+  <circle r="5.5" fill="#0284C7">
+    <animateMotion dur="1.4s" repeatCount="indefinite" path="M 712 220 L 778 220"/>
+  </circle>
+
+  <!-- STAGE 3: FASTAPI ORCHESTRATOR -->
+  <g transform="translate(784, 86)" filter="url(#neoShadow)">
+    <rect width="310" height="270" class="stage-card"/>
+    <rect x="12" y="12" width="286" height="44" class="stage-hdr-purple"/>
+    <text x="24" y="31" class="st-title">STAGE 3: FASTAPI ROUTER</text>
+    <text x="24" y="47" class="st-file-purple">backend/main.py (Port 8766)</text>
+
+    <g transform="translate(14, 68)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">🎯 POST /prepare/single &amp; /prepare</text>
+      <text x="12" y="34" class="box-desc">9-Category Prep Studio Question Synthesizer</text>
+    </g>
+    <g transform="translate(14, 118)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">💬 POST /api/chat &amp; /api/chat/expand</text>
+      <text x="12" y="34" class="box-desc">Live Copilot + 2-Part Technical Walkthrough</text>
+    </g>
+    <g transform="translate(14, 168)">
+      <rect width="282" height="42" class="sub-box"/>
+      <text x="12" y="18" class="box-title">✏️ POST /prepare/refine (RL Feedback)</text>
+      <text x="12" y="34" class="box-desc">Custom instruction re-synthesis &amp; QA Bank sync</text>
+    </g>
+    <g transform="translate(14, 218)">
+      <rect width="282" height="40" class="sub-box"/>
+      <text x="12" y="17" class="box-title">🎙️ WS /ws/audio (Deepgram Nova-2)</text>
+      <text x="12" y="32" class="box-desc">Real-time bilingual EN/Hinglish voice stream</text>
+    </g>
+  </g>
+
+  <!-- Animated Connector from Stage 3 Down to Stage 4 -->
+  <path id="w34" d="M 939 356 L 939 388 L 300 388 L 300 414" class="wire" stroke="#7C3AED" marker-end="url(#arrPurple)"/>
+  <circle r="6" fill="#7C3AED">
+    <animateMotion dur="2.6s" repeatCount="indefinite" path="M 939 356 L 939 388 L 300 388 L 300 414"/>
+  </circle>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- BOTTOM ROW: STAGE 4 (MULTI-LLM ROUTER) -> STAGE 5 (RL VALIDATOR & HUD) -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+
+  <!-- STAGE 4: 4-PROVIDER AUTO-FAILOVER LLM ROUTER -->
+  <g transform="translate(26, 420)" filter="url(#neoShadow)">
+    <rect width="520" height="242" class="stage-card"/>
+    <rect x="12" y="12" width="496" height="44" class="stage-hdr-orange"/>
+    <text x="24" y="31" class="st-title">STAGE 4: MULTI-PROVIDER LLM ROUTER (AUTO-FAILOVER)</text>
+    <text x="24" y="47" class="st-file">backend/ai/utils.py ➔ generate_multi_provider_completion()</text>
+
+    <!-- 2x2 Provider Grid -->
+    <g transform="translate(14, 68)">
+      <rect width="238" height="74" class="sub-box" stroke="#EA580C"/>
+      <circle cx="222" cy="18" r="5" fill="#16A34A" class="pulse-dot"/>
+      <text x="12" y="20" class="box-title">1️⃣ Anthropic Claude (Priority #1)</text>
+      <text x="12" y="38" class="box-desc">Model: claude-3-5-sonnet-latest</text>
+      <text x="12" y="54" class="box-desc">Async httpx /v1/messages + 429 retry</text>
+    </g>
+
+    <g transform="translate(266, 68)">
+      <rect width="238" height="74" class="sub-box" stroke="#0284C7"/>
+      <circle cx="222" cy="18" r="5" fill="#0284C7" class="pulse-dot"/>
+      <text x="12" y="20" class="box-title">2️⃣ Google Gemini (Priority #2)</text>
+      <text x="12" y="38" class="box-desc">Model: gemini-2.5-flash (Free Tier)</text>
+      <text x="12" y="54" class="box-desc">Full 80K RAG window + native JSON mode</text>
+    </g>
+
+    <g transform="translate(14, 152)">
+      <rect width="238" height="74" class="sub-box" stroke="#16A34A"/>
+      <text x="12" y="20" class="box-title">3️⃣ OpenAI Engine (Priority #3)</text>
+      <text x="12" y="38" class="box-desc">Model: gpt-4o-mini / gpt-4o</text>
+      <text x="12" y="54" class="box-desc">Exponential backoff wrapper</text>
+    </g>
+
+    <g transform="translate(266, 152)">
+      <rect width="238" height="74" class="sub-box" stroke="#7C3AED"/>
+      <text x="12" y="20" class="box-title">4️⃣ Groq LPU (Priority #4)</text>
+      <text x="12" y="38" class="box-desc">Model: llama-3.3-70b-versatile</text>
+      <text x="12" y="54" class="box-desc">Auto-slices prompt to 14K (Zero 413 error)</text>
+    </g>
+  </g>
+
+  <!-- Animated Wire: Stage 4 -> Stage 5 -->
+  <path id="w45" d="M 546 540 L 612 540" class="wire" stroke="#16A34A" marker-end="url(#arrGreen)"/>
+  <circle r="5.5" fill="#16A34A">
+    <animateMotion dur="1.3s" repeatCount="indefinite" path="M 546 540 L 612 540"/>
+  </circle>
+
+  <!-- STAGE 5: RL HUMANIZER, 7-DIM VALIDATOR & STUDIO HUD -->
+  <g transform="translate(618, 420)" filter="url(#neoShadow)">
+    <rect width="476" height="242" class="stage-card"/>
+    <rect x="12" y="12" width="452" height="44" class="stage-hdr-green"/>
+    <text x="24" y="31" class="st-title">STAGE 5: RL HUMANIZER &amp; STUDIO HUD</text>
+    <text x="24" y="47" class="st-file-green">ai/answer_validator.py + ai/humanizer.py ➔ web/dashboard.js</text>
+
+    <g transform="translate(14, 68)">
+      <rect width="448" height="48" class="sub-box"/>
+      <text x="12" y="19" class="box-title">🧹 Step A: De-Robotizer &amp; Spoken Cadence Filter (humanizer.py)</text>
+      <text x="12" y="36" class="box-desc">Strips "As an AI", "To expand on that", raw markdown asterisks (*), &amp; robotic buzzwords</text>
+    </g>
+
+    <g transform="translate(14, 124)">
+      <rect width="448" height="52" class="sub-box"/>
+      <text x="12" y="19" class="box-title">🔬 Step B: 7-Dimension Authenticity Scorer (answer_validator.py)</text>
+      <text x="12" y="36" class="box-desc">Scores Naturalness, Metrics Specificity, No-AI-Tells, Flow &amp; Hinglish/EN Consistency (≥8/10)</text>
+    </g>
+
+    <g transform="translate(14, 184)">
+      <rect width="448" height="44" class="sub-box" stroke="#16A34A"/>
+      <circle cx="428" cy="22" r="5.5" fill="#16A34A" class="pulse-dot"/>
+      <text x="12" y="19" class="box-title">🎯 Step C: Stream to Prep Studio (Newest First Q# ↓) &amp; Live Copilot</text>
+      <text x="12" y="35" class="box-desc">Persists to qa_cache.json &amp; renders instant highlight card at top of HUD</text>
+    </g>
+  </g>
+</svg>

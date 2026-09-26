@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vettly — AI Career Architect & Prep Studio</title>
+    <meta name="description" content="Vettly Poster Architect Edition: AI-powered technical readiness & career preparation studio with Canvas Particle Attractors, Blueprint Toolbelts, and Live Practice Copilot.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Caveat:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css?v=2.7">
+</head>
+<body>
+    <!-- WebGL Particle Physics Canvas & Blueprint Grid Background -->
+    <div id="bg-canvas">
+        <canvas id="particle-canvas"></canvas>
+        <div class="blueprint-grid-bg"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar">
+        <div class="sidebar-logo">
+            <span class="logo-icon">❖</span>
+            <span class="logo-text">Vettly</span>
+            <span class="logo-badge">POSTER V2</span>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-section="home" id="nav-home">
+                <span class="nav-icon">📐</span><span class="nav-label">Overview Poster</span>
+            </button>
+            <button class="nav-item" data-section="setup" id="nav-setup">
+                <span class="nav-icon">🧰</span><span class="nav-label">Agent Toolbelt</span>
+            </button>
+            <button class="nav-item" data-section="chat" id="nav-chat">
+                <span class="nav-icon">💬</span><span class="nav-label">Live Copilot</span>
+            </button>
+            <button class="nav-item" data-section="prep" id="nav-prep">
+                <span class="nav-icon">🎯</span><span class="nav-label">Prep Studio</span>
+            </button>
+            <button class="nav-item" data-section="aboutme" id="nav-aboutme">
+                <span class="nav-icon">👤</span><span class="nav-label">About Me Profile</span>
+            </button>
+            <button class="nav-item" data-section="settings" id="nav-settings">
+                <span class="nav-icon">⚙️</span><span class="nav-label">Settings Matrix</span>
+            </button>
+        </div>
+        <div class="sidebar-footer">
+            <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()">
+                <span>Theme: <strong id="theme-label">📜 Parchment</strong></span>
+                <span>☯</span>
+            </button>
+            <div class="server-indicator" id="sidebar-status">
+                <span class="status-dot offline"></span>
+                <span class="status-label">Offline</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Canvas -->
+    <main id="main-content">
+
+        <!-- ═══ OVERVIEW / POSTER PAGE ═══ -->
+        <section class="page active" id="page-home">
+            <div class="page-inner">
+                
+                <!-- Poster Header -->
+                <div class="poster-header">
+                    <div class="tape-corner"></div>
+                    <div class="tape-corner right"></div>
+                    <span class="handwritten-note" style="position:absolute; top:-20px; right:40px;">Build smarter. Ship safer!</span>
+                    <h1>CAREER PREP <span>ARCHITECT</span></h1>
+                    <p>Architect your technical depth, mock sessions & role-specific mastery with precision</p>
+                </div>
+
+                <!-- 4 Workflow Cards (Matching Poster Step 1..4) -->
+                <div class="poster-grid-4">
+                    <div class="step-card">
+                        <div class="step-number">1.</div>
+                        <h3>CONTEXT TOOLBELT</h3>
+                        <p>Upload resume, GitHub repos, job specs & STAR stories into vector index.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2.</div>
+                        <h3>MULTI-MODEL ENGINE</h3>
+                        <p>Claude, Gemini & Llama orchestration for grounded technical synthesis.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3.</div>
+                        <h3>LIVE MOCK COPILOT</h3>
+                        <p>Interactive technical & behavioral practice grounded in your real codebase.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">4.</div>
+                        <h3>PREP STUDIO HUD</h3>
+                        <p>Synthesize role-specific Q&A streams across 9 engineering categories.</p>
+                    </div>
+                </div>
+
+                <!-- Embedded Generated Poster Visual Media Cards -->
+                <div class="poster-media-grid">
+                    <div class="poster-media-card">
+                        <img src="./agent_toolbelt_case.jpg" alt="Agent Toolbelt Case">
+                        <div class="poster-media-card-body">
+                            <h4>AGENT TOOLKIT PACK</h4>
+                            <p>Modular background skills: Code Generation, Retrieval Guardrails & Evaluation.</p>
+                        </div>
+                    </div>
+                    <div class="poster-media-card">
+                        <img src="./blueprint_architect.jpg" alt="Blueprint Architect">
+                        <div class="poster-media-card-body">
+                            <h4>BLUEPRINT SPECIFICATION</h4>
+                            <p>Precision system design & database optimization stories ready for retrieval.</p>
+                        </div>
+                    </div>
+                    <div class="poster-media-card">
+                        <img src="./copilot_hud_panel.jpg" alt="Copilot HUD Panel">
+                        <div class="poster-media-card-body">
+                            <h4>HUD CONTROL CENTER</h4>
+                            <p>Real-time readiness telemetry and multi-engine practice studio.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:20px;">
+                    <button class="btn btn-primary" onclick="switchSection('setup')" style="padding:14px 28px; font-size:16px;">
+                        <span>Launch Context Toolbelt</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ SETUP / CONTEXT TOOLBELT ═══ -->
+        <section class="page" id="page-setup">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <div class="tape-corner"></div>
+                    <span class="handwritten-note" style="position:absolute; top:-15px; left:40px;">Tactile toolbelt ready!</span>
+                    <h1>AGENT <span>TOOLBELT</span> BUILDER</h1>
+                    <p>Design the modular tools your AI copilot uses during your live session</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Resume Card -->
+                    <div class="toolbelt-card" id="resume-card">
+                        <div class="toolbelt-card-header">
+                            <h3>📄 Resume Specs</h3>
+                            <span class="badge-pill badge-pill-blue"><span class="badge-dot"></span>INPUT SPEC</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Parse experience, core technologies, and quantifiable achievements into AI context.</p>
+                        <div class="upload-zone" id="upload-zone">
+                            <div class="upload-icon">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            </div>
+                            <p style="font-weight:700; font-size:14px; margin: 8px 0 4px 0; color:var(--ink-primary);">Drop resume PDF or DOCX here</p>
+                            <span style="font-size:12px; color:var(--ink-secondary); display:block; margin-bottom:10px;">Click or drag to index candidate telemetry</span>
+                            <span class="badge-pill badge-pill-slate">ACCEPTS .PDF, .DOCX, .TXT</span>
+                            <input type="file" id="resume-input" accept=".pdf,.docx,.doc,.txt" hidden>
+                        </div>
+                        <div class="upload-status hidden" id="resume-status">
+                            <div class="resume-loaded-box">
+                                <div class="resume-loaded-header">
+                                    <div class="resume-file-info">
+                                        <span style="font-size:18px;">📄</span>
+                                        <span id="resume-filename">resume.pdf</span>
+                                    </div>
+                                    <span class="badge-pill badge-pill-emerald pulse-dot"><span class="badge-dot"></span>ACTIVE & PARSED</span>
+                                </div>
+                                <div class="resume-meta-tags">
+                                    <span class="resume-meta-pill">⚡ 2+ Yrs Backend AI</span>
+                                    <span class="resume-meta-pill">🧠 PyTorch & FastAPI</span>
+                                    <span class="resume-meta-pill">🚀 6 Projects Linked</span>
+                                </div>
+                                <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+                                    <button class="btn btn-secondary btn-sm" id="reupload-btn">🔄 Re-upload Resume</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GitHub Card -->
+                    <div class="toolbelt-card" id="github-card">
+                        <div class="toolbelt-card-header">
+                            <h3>🐙 GitHub Ingestion</h3>
+                            <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>CODE BASE</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Sync your actual code repositories for authentic, deep architectural grounding.</p>
+                        <div class="form-group-clean">
+                            <div class="form-label-row">
+                                <label class="form-label-clean" for="github-username">GitHub Profile</label>
+                                <span class="badge-pill badge-pill-slate">PUBLIC REPOS</span>
+                            </div>
+                            <div class="input-addon-group">
+                                <span class="input-addon-prefix">github.com/</span>
+                                <input type="text" class="input-addon-field" id="github-username" placeholder="your-username" value="SHAILESH-RS-UPADHYAY">
+                                <button class="btn btn-secondary" id="github-fetch-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Fetch Repos</button>
+                            </div>
+                        </div>
+                        <div class="github-repo-list hidden" id="github-repo-list-container">
+                            <div class="form-label-row" style="margin-bottom:8px;">
+                                <label class="form-label-clean">Select Repositories to Index</label>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <button type="button" id="github-select-all-btn" class="btn btn-secondary" style="padding: 2px 8px; font-size: 11px; height: 24px; border-radius: 4px;">Select All</button>
+                                    <span class="badge-pill badge-pill-blue">CODE TELEMETRY</span>
+                                </div>
+                            </div>
+                            <div class="repo-checkboxes" id="github-repo-checkboxes"></div>
+                            <button class="btn btn-primary" id="github-import-btn" disabled style="width: 100%; justify-content: center; margin-top: 12px;"><span>Import Selected Repos</span></button>
+                        </div>
+                        <div class="import-status hidden" id="github-status"></div>
+                    </div>
+
+                    <!-- Job Description Card -->
+                    <div class="toolbelt-card full-width" id="jd-card">
+                        <div class="toolbelt-card-header">
+                            <h3>💼 Target Job Description</h3>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="badge-pill badge-pill-emerald" id="jd-sync-badge"><span class="badge-dot"></span>SPEC ACTIVE</span>
+                                <span class="badge-pill badge-pill-orange"><span class="badge-dot"></span>TARGET SPEC</span>
+                            </div>
+                        </div>
+                        <p class="toolbelt-card-desc">Ground every answer in the exact requirements and tech stack of your upcoming interview.</p>
+                        <div class="context-form">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                                <div class="form-group-clean" style="margin-bottom:0;">
+                                    <div class="form-label-row">
+                                        <label class="form-label-clean" for="jd-title">Target Role / Title</label>
+                                        <span class="badge-pill badge-pill-slate">POSITION</span>
+                                    </div>
+                                    <input type="text" id="jd-title" value="AI Product Engineer" placeholder="e.g. AI Product Engineer / Full-Stack AI Engineer">
+                                </div>
+                                <div class="form-group-clean" style="margin-bottom:0;">
+                                    <div class="form-label-row">
+                                        <label class="form-label-clean" for="jd-company">Company / Client</label>
+                                        <span class="badge-pill badge-pill-slate">HIRING ENTITY</span>
+                                    </div>
+                                    <input type="text" id="jd-company" value="Soft System Solution" placeholder="e.g. Soft System Solution">
+                                </div>
+                            </div>
+                            <div class="form-group-clean" style="margin-bottom:16px;">
+                                <div class="form-label-row" style="margin-bottom:8px;">
+                                    <label class="form-label-clean" for="jd-content">Job Description Requirements & Tech Stack</label>
+                                    <span class="badge-pill badge-pill-orange">RAG SPEC GROUNDING</span>
+                                </div>
+                                <div class="jd-editor-container">
+                                    <div class="jd-editor-bar">
+                                        <div class="jd-editor-tab">
+                                            <span class="jd-tab-icon">📄</span>
+                                            <span class="jd-tab-name">SPEC_REQUIREMENTS.md</span>
+                                            <span class="jd-tab-dot"></span>
+                                        </div>
+                                        <div class="jd-editor-meta">
+                                            <span id="jd-char-count">1974 characters</span>
+                                            <span class="jd-meta-divider">•</span>
+                                            <span>UTF-8</span>
+                                        </div>
+                                    </div>
+                                    <textarea id="jd-content" rows="12" placeholder="Paste the target job description requirements, responsibilities, and expected tech stack here...">About the Role:
+We're looking for a highly motivated AI Product Engineer who loves building innovative AI products from the ground up. This role is for someone who constantly explores the latest AI models, frameworks, and tools, rapidly prototypes new ideas, and turns them into production-ready applications. You should be comfortable working independently, making technical decisions, and delivering high-quality AI solutions that create measurable business impact.
+
+Responsibilities:
+• Design, build, and deploy AI-powered products from concept to production.
+• Research and evaluate the latest AI models, frameworks, and emerging technologies.
+• Develop AI applications using LLMs, AI agents, RAG pipelines, multimodal models, and modern automation tools.
+• Rapidly prototype new product ideas and validate them through experimentation.
+• Design scalable software architectures for AI applications.
+• Build backend services, APIs, and integrations to support AI products.
+• Work independently to solve complex technical challenges with minimal supervision.
+• Continuously improve products through testing, iteration, and performance optimization.
+• Share knowledge and recommend new technologies that can create competitive advantages for the company.
+
+Requirements:
+• Hands-on experience building applications using modern AI models and frameworks.
+• Deep understanding of LLMs, AI agents, Retrieval-Augmented Generation (RAG), automation, and multimodal AI.
+• Ability to independently design, build, test, and deploy products.
+• Strong software engineering skills using Python and JavaScript/TypeScript.
+• Experience building APIs and working with cloud services.
+• Strong understanding of software architecture and scalable system design.
+• Excellent problem-solving skills with a strong bias toward execution.
+• Self-driven mindset with outstanding research and continuous learning abilities.
+
+Nice to Have:
+• Experience with vector databases, embedding pipelines and AI orchestration frameworks such as LangChain, LangGraph, or similar.
+• Familiarity with Docker, Kubernetes, CI/CD, and cloud deployment.
+• Knowledge of frontend frameworks such as React or Next.js.
+• Familiarity with PHP programming.</textarea>
+                                    <div class="jd-chips-bar">
+                                        <span class="jd-chips-label">DETECTED STACK CHIPS:</span>
+                                        <div class="jd-chips-list" id="jd-chips-list">
+                                            <span class="badge-pill badge-pill-emerald">Python</span>
+                                            <span class="badge-pill badge-pill-blue">JavaScript / TypeScript</span>
+                                            <span class="badge-pill badge-pill-purple">LLMs &amp; AI Agents</span>
+                                            <span class="badge-pill badge-pill-orange">RAG Pipelines</span>
+                                            <span class="badge-pill badge-pill-blue">Multimodal AI</span>
+                                            <span class="badge-pill badge-pill-purple">LangChain &amp; LangGraph</span>
+                                            <span class="badge-pill badge-pill-blue">Vector DBs &amp; Embeddings</span>
+                                            <span class="badge-pill badge-pill-emerald">React &amp; Next.js</span>
+                                            <span class="badge-pill badge-pill-slate">APIs &amp; Cloud</span>
+                                            <span class="badge-pill badge-pill-blue">Docker &amp; Kubernetes</span>
+                                            <span class="badge-pill badge-pill-orange">CI/CD</span>
+                                            <span class="badge-pill badge-pill-slate">PHP</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                                <div style="display:flex; gap:10px;">
+                                    <button class="btn btn-primary" id="jd-save-btn"><span>💾 Save Job Description Spec</span></button>
+                                    <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear Buffer</span></button>
+                                </div>
+                                <span class="badge-pill badge-pill-emerald" id="jd-status-badge"><span class="badge-dot"></span>SPEC ACTIVE &amp; SYNCED</span>
+                            </div>
+                        </div>
+                        <div class="import-status hidden" id="jd-status"></div>
+                    </div>
+
+                    <!-- Custom Context Blueprint Tabs -->
+                    <div class="toolbelt-card full-width" id="context-card">
+                        <div class="toolbelt-card-header">
+                            <h3>🧠 Custom Background Modules</h3>
+                            <span class="badge-pill badge-pill-purple"><span class="badge-dot"></span>CONTEXT STORE</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Structured interview blueprints, STAR stories, project narratives, and technical metrics.</p>
+                        <div class="context-tabs" id="context-tabs">
+                            <button class="tab-btn active" data-tab="projects">🚀 Projects (<span id="count-projects">0</span>)</button>
+                            <button class="tab-btn" data-tab="experience">💼 Experience (<span id="count-experience">0</span>)</button>
+                            <button class="tab-btn" data-tab="skills">⚡ Skills (<span id="count-skills">0</span>)</button>
+                            <button class="tab-btn" data-tab="stories">📖 STAR Stories (<span id="count-stories">0</span>)</button>
+                            <button class="tab-btn" data-tab="assignment">🎯 Assignment (<span id="count-assignment">0</span>)</button>
+                            <button class="tab-btn" data-tab="qabank">❓ QA Bank (<span id="count-qabank">0</span>)</button>
+                        </div>
+
+                        <div class="autofill-bar" id="autofill-bar" style="margin-bottom:16px; padding:10px 14px; background:rgba(234,88,12,0.1); border:1px solid rgba(234,88,12,0.3); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:space-between;">
+                            <span class="autofill-text" style="font-size:13px; font-weight:600;">✨ Resume detected — auto-fill context toolbelt?</span>
+                            <button class="btn btn-secondary btn-sm" id="autofill-btn"><span>Auto-Fill from Resume</span></button>
+                        </div>
+
+                        <!-- Tab Panels -->
+                        <div class="tab-panel active" id="panel-projects">
+                            <div class="context-form">
+                                <input type="text" id="project-name" placeholder="Project name (e.g., RADAR, Digital Twin)">
+                                <div class="form-row"><input type="text" id="project-tech" placeholder="Tech stack (Python, PyTorch...)"><input type="text" id="project-role" placeholder="Your role"></div>
+                                <textarea id="project-desc" rows="3" placeholder="What did you build? Key metrics achieved..."></textarea>
+                                <textarea id="project-challenges" rows="2" placeholder="Key challenges and optimizations..."></textarea>
+                                <button class="btn btn-secondary" id="project-add-btn"><span>+ Add Project</span></button>
+                            </div>
+                            <div class="context-list" id="list-projects"></div>
+                        </div>
+
+                        <div class="tab-panel" id="panel-experience">
+                            <div class="context-form">
+                                <div class="form-row"><input type="text" id="exp-company" placeholder="Company Name"><input type="text" id="exp-role" placeholder="Role Title"></div>
+                                <div class="form-row"><input type="text" id="exp-duration" placeholder="Duration (e.g., Jun 2024 - Present)"><input type="text" id="exp-type" placeholder="Type (Full-time, Freelance)"></div>
+                                <textarea id="exp-desc" rows="3" placeholder="Key responsibilities and achievements..."></textarea>
+                                <button class="btn btn-secondary" id="exp-add-btn"><span>+ Add Experience</span></button>
+                            </div>
+                            <div class="context-list" id="list-experience"></div>
+                        </div>
+
+                        <div class="tab-panel" id="panel-skills">
+                            <div class="context-form">
+                                <div class="skill-tag-input"><input type="text" id="skill-input" placeholder="Type a skill and press Enter..."></div>
+                                <div class="skill-tags" id="skill-tags" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;"></div>
+                                <div class="form-row" style="margin-top:14px;">
+                                    <div style="flex:1;"><label style="font-size:12px;color:var(--ink-muted);margin-bottom:4px;display:block;font-family:var(--font-mono);">Strongest Domain</label><input type="text" id="skill-strongest" placeholder="e.g., AI/ML, Backend"></div>
+                                    <div style="flex:1;"><label style="font-size:12px;color:var(--ink-muted);margin-bottom:4px;display:block;font-family:var(--font-mono);">Currently Learning</label><input type="text" id="skill-learning" placeholder="e.g., System Design, Neo4j"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-panel" id="panel-stories">
+                            <div class="context-form">
+                                <select id="story-type">
+                                    <option value="">Select Story Type...</option>
+                                    <option value="technical">🔧 Technical Challenge</option>
+                                    <option value="leadership">🏆 Leadership</option>
+                                    <option value="conflict">🤝 Conflict Resolution</option>
+                                    <option value="failure">📉 Failure & Learning</option>
+                                    <option value="teamwork">👥 Teamwork</option>
+                                    <option value="custom">📝 Custom</option>
+                                </select>
+                                <input type="text" id="story-title" placeholder="Story Title">
+                                <textarea id="story-content" rows="4" placeholder="Situation, Task, Action, Result (STAR)..."></textarea>
+                                <button class="btn btn-secondary" id="story-add-btn"><span>+ Add Story</span></button>
+                            </div>
+                            <div class="context-list" id="list-stories"></div>
+                        </div>
+
+                        <div class="tab-panel" id="panel-assignment">
+                            <div class="context-form">
+                                <p style="font-size: 13px; color: var(--ink-secondary); margin-bottom: 12px;">Take-home assignment or company assessment details (Given **Highest Retrieval Priority**).</p>
+                                <div class="form-row">
+                                    <input type="text" id="assign-company" placeholder="Company Name">
+                                    <input type="text" id="assign-title" placeholder="Assignment Title">
+                                </div>
+                                <textarea id="assign-details" rows="3" placeholder="Full assignment description..."></textarea>
+                                <textarea id="assign-keypoints" rows="2" placeholder="Key constraints or technologies to highlight..."></textarea>
+                                <button class="btn btn-secondary" id="assign-save-btn"><span>+ Save Assignment Spec</span></button>
+                                <div class="save-status hidden" id="assign-save-status"></div>
+                            </div>
+                        </div>
+
+                        <div class="tab-panel" id="panel-qabank">
+                            <div class="context-form">
+                                <input type="text" id="qa-question" placeholder="Question (e.g., 'Tell me about yourself')">
+                                <textarea id="qa-answer" rows="3" placeholder="Ideal candidate answer..."></textarea>
+                                <button class="btn btn-secondary" id="qa-add-btn"><span>+ Add QA Pair</span></button>
+                            </div>
+                            <div class="context-list" id="list-qabank"></div>
+                            <div class="quick-notes-section" style="margin-top:16px;">
+                                <div class="quick-notes-header" id="quick-notes-toggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--poster-orange); font-weight:700;"><span>📝 Quick Notes</span><span class="toggle-arrow">▼</span></div>
+                                <div class="quick-notes-body" id="quick-notes-body" style="margin-top:8px;"><textarea id="quick-notes-content" rows="3" placeholder="Talking points, company research notes..."></textarea></div>
+                            </div>
+                        </div>
+
+                        <div class="context-actions" style="margin-top:20px;">
+                            <button class="btn btn-primary" id="save-all-context-btn" style="width:100%;justify-content:center;"><span>💾 Save Complete Toolbelt Context</span></button>
+                            <div class="save-status hidden" id="context-save-status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ LIVE COPILOT / CHAT ═══ -->
+        <section class="page" id="page-chat">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <h1>LIVE <span>AI COPILOT</span></h1>
+                    <p>Practice responses and test real-time candidate retrieval</p>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-welcome" style="text-align:center; margin:auto; max-width:480px;">
+                            <div style="font-size:40px; margin-bottom:10px;">💬</div>
+                            <h3 style="font-family:var(--font-poster); font-size:22px; color:var(--ink-primary);">Vettly Copilot Active</h3>
+                            <p style="font-size:14px; color:var(--ink-secondary); margin-bottom:16px;">Test questions or trigger stored answers in real-time.</p>
+                            <div class="chat-suggestions" style="display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('Tell me about yourself')">Tell me about yourself</button>
+                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('How did you optimize p95 latency at WebVory?')">p95 Latency Optimization at WebVory</button>
+                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('Tell me about your experience with Advanced RAG')">Advanced RAG Architecture</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <textarea id="chat-input" rows="1" placeholder="Type an interview question or command (e.g. 'intro', 'what is RAG?', 'WebVory p95')..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                        <button class="btn btn-primary" id="chat-send-btn" onclick="sendChatMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ PREP STUDIO ═══ -->
+        <section class="page" id="page-prep">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <h1>PREP <span>STUDIO</span> HUD</h1>
+                    <p>Synthesize questions, study streamed answers & fine-tune responses</p>
+                </div>
+                <div class="toolbelt-card" style="margin-bottom:28px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                        <p style="font-size: 13px; font-family:var(--font-mono); font-weight:700;">Select Category Target:</p>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:12px; font-weight:700;">English</span>
+                            <label class="switch">
+                                <input type="checkbox" id="prep-lang-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                            <span style="font-size:12px; color:var(--poster-orange); font-weight:700;">Hinglish</span>
+                        </div>
+                    </div>
+
+                    <div class="prep-category-buttons" id="prep-category-group" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button class="btn btn-primary btn-sm category-btn" onclick="selectCategory('GENERAL', this)">🌐 All-in-One</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('BEHAVIORAL', this)">🧠 Behavioral</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('TECHNICAL', this)">💻 Technical</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('DSA_CODING', this)">⌨️ DSA/Coding</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('PROJECT_DEEP_DIVE', this)">🚀 Projects</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('SYSTEM_DESIGN', this)">📐 System Design</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('SITUATIONAL', this)">🤔 Situational</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('HR_CULTURE_FIT', this)">🤝 HR/Culture</button>
+                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('ASSIGNMENT', this)">🎯 Assignment</button>
+                    </div>
+
+                    <div style="margin-top: 18px;">
+                        <button class="btn btn-primary" id="prep-generate-btn" onclick="generateSinglePrep()" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">🎯 Synthesize Question & Stream Answer</button>
+                    </div>
+
+                    <div class="prep-progress hidden" id="prep-progress" style="margin-top:14px; padding:12px; background:rgba(234,88,12,0.1); border:1px solid var(--poster-orange); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:13px;">
+                        <span id="prep-progress-text">Synthesizing candidate context...</span>
+                    </div>
+                </div>
+
+                <!-- Prep Studio Stream & Sort Filter Bar -->
+                <div class="prep-list-toolbar" id="prep-list-toolbar">
+                    <div class="prep-toolbar-left">
+                        <span class="badge-pill badge-pill-orange prep-hud-pill" id="prep-total-pill">
+                            <span class="badge-dot"></span>
+                            <span id="prep-total-count">0 QUESTIONS</span>
+                        </span>
+                        <span class="prep-toolbar-divider"></span>
+                        <span class="prep-toolbar-subtitle" id="prep-sort-status-text">Latest generated question stays at the top (Q# ↓)</span>
+                    </div>
+                    <div class="prep-toolbar-right" role="group" aria-label="Sort questions order">
+                        <div class="prep-sort-box">
+                            <span class="prep-sort-prefix">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="13" y2="6"></line><line x1="4" y1="12" x2="11" y2="12"></line><line x1="4" y1="18" x2="11" y2="18"></line><polyline points="15 15 18 18 21 15"></polyline><line x1="18" y1="6" x2="18" y2="18"></line></svg>
+                                <span>SORT ORDER</span>
+                            </span>
+                            <div class="prep-sort-segmented">
+                                <button type="button" class="prep-sort-btn active" id="prep-sort-desc" onclick="setPrepSortOrder('desc')" title="Show newest generated questions at the top (N to 1)">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+                                    <span>NEWEST FIRST</span>
+                                    <span class="prep-sort-chip">Q# ↓</span>
+                                </button>
+                                <button type="button" class="prep-sort-btn" id="prep-sort-asc" onclick="setPrepSortOrder('asc')" title="Show oldest questions first from Q1 downwards (1 to N)">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
+                                    <span>OLDEST FIRST</span>
+                                    <span class="prep-sort-chip">Q# ↑</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="prep-list" id="prep-list">
+                    <div style="text-align:center; padding:40px; border:2px dashed var(--border-main); border-radius:var(--radius);">
+                        <div style="font-size:36px; margin-bottom:10px;">🎯</div>
+                        <h3 style="font-family:var(--font-poster); font-size:20px; color:var(--ink-primary);">No Questions Generated Yet</h3>
+                        <p style="font-size:14px; color:var(--ink-secondary); margin-top:4px;">Click any category above to synthesize targeted practice questions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ ABOUT ME ═══ -->
+        <section class="page" id="page-aboutme">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <h1>CANDIDATE <span>PROFILE</span></h1>
+                    <p>Configure personal background rules and identity constraints</p>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="toolbelt-card full-width">
+                        <div class="toolbelt-card-header"><h3>🎤 "Tell Me About Yourself" Master Answer</h3></div>
+                        <textarea id="aboutme-intro" rows="5" placeholder="Hi, I'm Shailesh Upadhyay..."></textarea>
+                    </div>
+                    <div class="toolbelt-card">
+                        <div class="toolbelt-card-header"><h3>💪 Core Strengths</h3></div>
+                        <textarea id="aboutme-strengths" rows="3" placeholder="Fast learner, backend query optimization..."></textarea>
+                    </div>
+                    <div class="toolbelt-card">
+                        <div class="toolbelt-card-header"><h3>🎯 Weaknesses & Growth</h3></div>
+                        <textarea id="aboutme-weaknesses" rows="3" placeholder="Improving system design at massive scale..."></textarea>
+                    </div>
+                    <div class="toolbelt-card">
+                        <div class="toolbelt-card-header"><h3>🎨 Interests & Projects</h3></div>
+                        <textarea id="aboutme-hobbies" rows="3" placeholder="Building open-source developer tools..."></textarea>
+                    </div>
+                    <div class="toolbelt-card">
+                        <div class="toolbelt-card-header"><h3>📝 Custom Identity Constraints</h3></div>
+                        <textarea id="aboutme-facts" rows="3" placeholder="Current Role = AI Python Developer at Webvory..."></textarea>
+                    </div>
+                    <div class="toolbelt-card full-width">
+                        <button class="btn btn-primary" id="aboutme-save-btn" onclick="saveAboutMe()" style="width:100%;justify-content:center;">💾 Save About Me Profile</button>
+                        <div class="save-status hidden" id="aboutme-save-status"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ SETTINGS ═══ -->
+        <section class="page" id="page-settings">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <h1>SETTINGS <span>MATRIX</span></h1>
+                    <p>Backend API connection telemetry, studio readiness checklist, and workspace shortcuts</p>
+                </div>
+                <div class="dashboard-grid">
+                    <!-- Backend Telemetry Card -->
+                    <div class="toolbelt-card" id="settings-conn-card">
+                        <div class="toolbelt-card-header">
+                            <h3>🔌 Backend Telemetry</h3>
+                            <span class="badge-pill badge-pill-emerald pulse-dot" id="server-status-pill"><span class="badge-dot"></span>SERVER ONLINE</span>
+                        </div>
+                        <p class="toolbelt-card-desc">REST & WebSocket engine orchestrating real-time technical synthesis.</p>
+                        <div class="form-group-clean">
+                            <div class="form-label-row">
+                                <label class="form-label-clean" for="server-url-input">Engine API Endpoint</label>
+                                <span class="badge-pill badge-pill-slate">PORT 8766</span>
+                            </div>
+                            <div class="input-addon-group">
+                                <span class="input-addon-prefix">GET</span>
+                                <input type="text" class="input-addon-field" id="server-url-input" value="http://127.0.0.1:8766/api/health">
+                                <button class="btn btn-secondary" id="server-connect-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Test Ping</button>
+                            </div>
+                        </div>
+                        <div class="settings-telemetry-grid">
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Core Engine</span>
+                                <span class="telemetry-val" id="telemetry-engine">Vettly v1.0.0</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Latency Ping</span>
+                                <span class="telemetry-val" id="telemetry-ping" style="color:var(--poster-orange);">⚡ 6ms p95</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Context Store</span>
+                                <span class="telemetry-val" id="telemetry-context">Ready & Loaded</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Audio Stream</span>
+                                <span class="telemetry-val" id="telemetry-ws">Ready (Port 8766)</span>
+                            </div>
+                        </div>
+                        <div class="server-status" id="server-status" style="margin-top:14px; display:flex; align-items:center; gap:8px;">
+                            <span class="status-dot online"></span>
+                            <span id="server-status-text" style="font-family:var(--font-mono); font-size:13px; font-weight:600;">Connected — Vettly Core v1.0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Studio Readiness Checklist Card -->
+                    <div class="toolbelt-card" id="settings-checklist-card">
+                        <div class="toolbelt-card-header">
+                            <h3>🚀 Studio Readiness Checklist</h3>
+                            <span class="badge-pill badge-pill-orange" id="checklist-progress-pill"><span class="badge-dot"></span>4/4 READY</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Verify your knowledge base and AI engine pipelines for tailored preparation.</p>
+                        <div class="checklist-container">
+                            <div class="checklist-card" id="check-resume-card">
+                                <div class="checklist-card-info">
+                                    <div class="checklist-step-icon">📄</div>
+                                    <div class="checklist-step-text">
+                                        <span class="checklist-step-title">Resume Specifications</span>
+                                        <span class="checklist-step-desc">Parsed candidate telemetry & work history</span>
+                                    </div>
+                                </div>
+                                <span class="badge-pill badge-pill-emerald" id="check-resume"><span class="badge-dot"></span>PARSED</span>
+                            </div>
+                            <div class="checklist-card" id="check-github-card">
+                                <div class="checklist-card-info">
+                                    <div class="checklist-step-icon">🐙</div>
+                                    <div class="checklist-step-text">
+                                        <span class="checklist-step-title">GitHub Codebase Repos</span>
+                                        <span class="checklist-step-desc">3 public repositories indexed</span>
+                                    </div>
+                                </div>
+                                <span class="badge-pill badge-pill-emerald" id="check-github"><span class="badge-dot"></span>INDEXED</span>
+                            </div>
+                            <div class="checklist-card" id="check-server-card">
+                                <div class="checklist-card-info">
+                                    <div class="checklist-step-icon">🔌</div>
+                                    <div class="checklist-step-text">
+                                        <span class="checklist-step-title">Local Backend Engine</span>
+                                        <span class="checklist-step-desc">Port 8766 health & multi-model router</span>
+                                    </div>
+                                </div>
+                                <span class="badge-pill badge-pill-emerald" id="check-server"><span class="badge-dot"></span>CONNECTED</span>
+                            </div>
+                            <div class="checklist-card" id="check-overlay-card">
+                                <div class="checklist-card-info">
+                                    <div class="checklist-step-icon">🎯</div>
+                                    <div class="checklist-step-text">
+                                        <span class="checklist-step-title">Target Job Description Spec</span>
+                                        <span class="checklist-step-desc">Role requirements & tech stack grounded</span>
+                                    </div>
+                                </div>
+                                <span class="badge-pill badge-pill-emerald" id="check-overlay"><span class="badge-dot"></span>SYNCED</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep')" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span>🎯 Open Vettly Prep Studio</span></button>
+                    </div>
+
+                    <!-- Workspace Keyboard Shortcuts Card -->
+                    <div class="toolbelt-card full-width" id="settings-hotkeys-card">
+                        <div class="toolbelt-card-header">
+                            <h3>⌨️ Studio Keyboard Shortcuts</h3>
+                            <span class="badge-pill badge-pill-slate"><span class="badge-dot"></span>WORKSPACE NAVIGATION</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Fast keyboard controls across your Vettly Prep Studio and Live AI Copilot workspace.</p>
+                        <div class="hotkeys-grid">
+                            <div class="hotkey-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div class="hotkey-combo">
+                                        <kbd>Enter</kbd>
+                                    </div>
+                                    <span class="badge-pill badge-pill-orange">PRIMARY</span>
+                                </div>
+                                <span class="hotkey-card-title">Dispatch Copilot Prompt</span>
+                                <span class="hotkey-card-desc">Immediately sends your technical query or practice prompt in Live AI Copilot.</span>
+                            </div>
+                            <div class="hotkey-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div class="hotkey-combo">
+                                        <kbd>Shift</kbd> + <kbd>Enter</kbd>
+                                    </div>
+                                    <span class="badge-pill badge-pill-blue">EDITOR</span>
+                                </div>
+                                <span class="hotkey-card-title">Multi-Line Code Input</span>
+                                <span class="hotkey-card-desc">Inserts a clean line break inside the Copilot prompt for multi-line snippets.</span>
+                            </div>
+                            <div class="hotkey-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div class="hotkey-combo">
+                                        <kbd>Esc</kbd>
+                                    </div>
+                                    <span class="badge-pill badge-pill-emerald">SAFE GUARD</span>
+                                </div>
+                                <span class="hotkey-card-title">Dismiss Active Dialog</span>
+                                <span class="hotkey-card-desc">Safely closes any active confirmation or refinement modal without data loss.</span>
+                            </div>
+                            <div class="hotkey-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div class="hotkey-combo">
+                                        <kbd>Ctrl</kbd> + <kbd>C</kbd>
+                                    </div>
+                                    <span class="badge-pill badge-pill-emerald">CLIPBOARD</span>
+                                </div>
+                                <span class="hotkey-card-title">Copy Synthesized Answer</span>
+                                <span class="hotkey-card-desc">Copies synthesized Prep Studio or Copilot responses to the system clipboard.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Persistent Recycle Bin Card -->
+                    <div class="toolbelt-card full-width" id="settings-recycle-card">
+                        <div class="toolbelt-card-header">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <h3>🗑️ Persistent Recycle Bin</h3>
+                                <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>ZERO DATA LOSS</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span class="badge-pill badge-pill-orange" id="recycle-total-badge">0 ITEMS PRESERVED</span>
+                                <button class="btn btn-secondary btn-sm" id="btn-empty-recycle" onclick="emptyRecycleBin()" style="color:var(--poster-red); border-color:rgba(220,38,38,0.35);">🗑️ Empty Bin</button>
+                            </div>
+                        </div>
+                        <p class="toolbelt-card-desc">All soft-deleted copilot chat messages are safely preserved here. Items will never be wiped automatically — only you can restore or permanently purge them.</p>
+                        
+                        <div class="recycle-tabs-nav" style="display:flex; gap:10px; margin-bottom:16px; border-bottom:2px solid var(--border-main); padding-bottom:8px;">
+                            <button class="tab-btn active" id="tab-recycle-chats" onclick="switchRecycleTab('chats', this)">💬 Deleted Copilot Chats (<span id="recycle-chats-count">0</span>)</button>
+                        </div>
+
+                        <!-- Chats Trash List -->
+                        <div class="recycle-tab-panel active" id="recycle-panel-chats">
+                            <div class="recycle-list" id="recycle-chats-list">
+                                <div class="recycle-empty-state">
+                                    <div style="font-size:32px; margin-bottom:8px;">💬</div>
+                                    <h4 style="font-family:var(--font-poster); font-size:18px; color:var(--ink-primary);">No Deleted Chats</h4>
+                                    <p style="font-size:13px; color:var(--ink-secondary); margin-top:4px;">Cleared Live Copilot conversations will be archived here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Canvas Simulation & Theme Switcher Script -->
+    <script>
+        // Theme Switcher Logic
+        function toggleTheme() {
+            const body = document.body;
+            const isDark = body.classList.toggle('theme-dark');
+            document.getElementById('theme-label').textContent = isDark ? '🌌 Spatial Dark' : '📜 Parchment';
+            localStorage.setItem('acemate_poster_theme', isDark ? 'dark' : 'parchment');
+        }
+
+        // Load saved theme
+        if (localStorage.getItem('acemate_poster_theme') === 'dark') {
+            document.body.classList.add('theme-dark');
+            document.getElementById('theme-label').textContent = '🌌 Spatial Dark';
+        }
+
+        // HTML5 Canvas Particle Attractor Physics Engine
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        let mouse = { x: null, y: null, radius: 150 };
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            const numParticles = Math.floor((width * height) / 14000);
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.6,
+                    vy: (Math.random() - 0.5) * 0.6,
+                    size: Math.random() * 2 + 1,
+                    baseAlpha: Math.random() * 0.4 + 0.1
+                });
+            }
+        }
+
+        window.addEventListener('resize', initCanvas);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, width, height);
+            const isDark = document.body.classList.contains('theme-dark');
+            const particleColor = isDark ? '56, 189, 248' : '234, 88, 12';
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
+
+                // Mouse Attractor Physics
+                if (mouse.x !== null) {
+                    const dx = mouse.x - p.x;
+                    const dy = mouse.y - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < mouse.radius) {
+                        const force = (mouse.radius - dist) / mouse.radius;
+                        p.x -= (dx / dist) * force * 2;
+                        p.y -= (dy / dist) * force * 2;
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${particleColor}, ${p.baseAlpha})`;
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animateParticles);
+        }
+
+        initCanvas();
+        animateParticles();
+    </script>
+
+    <!-- Custom Blueprint Confirmation & Action Modal -->
+    <div id="acemate-modal-backdrop" class="acemate-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="acemate-modal-title">
+        <div class="acemate-modal-card" role="document">
+            <div class="acemate-modal-accent" id="acemate-modal-accent"></div>
+            <div class="acemate-modal-topbar">
+                <span class="badge-pill badge-pill-rose" id="acemate-modal-badge">
+                    <span class="badge-dot"></span>
+                    <span id="acemate-modal-badge-text">CONFIRM DELETION</span>
+                </span>
+                <button type="button" class="acemate-modal-close" id="acemate-modal-close" aria-label="Close modal">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="acemate-modal-body">
+                <div class="acemate-modal-header-row">
+                    <div class="acemate-modal-icon-wrap danger" id="acemate-modal-icon-wrap">
+                        <svg id="acemate-modal-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="acemate-modal-copy">
+                        <h3 class="acemate-modal-title" id="acemate-modal-title">Do you really want to delete this session?</h3>
+                        <p class="acemate-modal-desc" id="acemate-modal-desc">This interview session will be moved to your Persistent Recycle Bin and can be restored anytime.</p>
+                    </div>
+                </div>
+                <div class="acemate-modal-meta-box" id="acemate-modal-meta-box">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span id="acemate-modal-meta-text">Session • Soft Delete • Restorable</span>
+                </div>
+                <div class="acemate-modal-input-wrap hidden" id="acemate-modal-input-wrap">
+                    <label class="acemate-modal-input-label" for="acemate-modal-input" id="acemate-modal-input-label">REFINEMENT INSTRUCTION</label>
+                    <input type="text" id="acemate-modal-input" class="acemate-modal-input" placeholder="e.g., Make it more concise and highlight metrics..." autocomplete="off">
+                </div>
+            </div>
+            <div class="acemate-modal-footer">
+                <button type="button" class="acemate-modal-btn acemate-modal-btn-cancel" id="acemate-modal-cancel">
+                    <span id="acemate-modal-cancel-text">No, Keep It</span>
+                    <kbd class="acemate-modal-kbd">Esc</kbd>
+                </button>
+                <button type="button" class="acemate-modal-btn acemate-modal-btn-confirm danger" id="acemate-modal-confirm">
+                    <svg id="acemate-modal-confirm-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                    <span id="acemate-modal-confirm-text">Yes, Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./dashboard.js?v=2.7"></script>
+</body>
+</html>

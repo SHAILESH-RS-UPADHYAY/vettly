@@ -1,0 +1,55 @@
+{
+  "resume": {
+    "summary": "Your personal summary goes here...",
+    "skills": ["Skill 1", "Skill 2"],
+    "experience": "Your experience details...",
+    "projects": "Your projects summary...",
+    "education": "Your education details...",
+    "raw_text": "Your complete raw resume text..."
+  },
+  "github": {
+    "username": "your-github-username",
+    "name": "Your Name",
+    "bio": "Your GitHub bio...",
+    "location": "Your Location",
+    "public_repos": 0,
+    "followers": 0,
+    "repos": []
+  },
+  "custom": [
+    {
+      "title": "Example Technical Architecture",
+      "content": "Explanation of your project architecture..."
+    }
+  ],
+  "structured": {
+    "projects": [
+      {
+        "name": "Your Awesome Project",
+        "tech_stack": "React, Node.js, etc.",
+        "role": "Solo Developer",
+        "description": "What the project does...",
+        "challenges": "Challenges you faced..."
+      }
+    ],
+    "experience": [
+      {
+        "company": "Some Company",
+        "role": "Software Engineer",
+        "achievements": "What you accomplished..."
+      }
+    ],
+    "skills": {
+      "tags": "React, Python, AWS",
+      "strongest": "",
+      "learning": ""
+    },
+    "stories": [],
+    "qa_bank": [
+      {
+        "question": "Example Interview Question?",
+        "answer": "Example Interview Answer."
+      }
+    ]
+  }
+}
