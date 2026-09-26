@@ -1074,8 +1074,40 @@
       "validated_at": "2026-09-26T11:09:02.328108",
       "user_rating": "accept",
       "last_modified": "2026-09-26T11:09:20.597841"
+    },
+    {
+      "question": "What is the role of document chunking in a Retrieval-Augmented Generation (RAG) pipeline, and how do you determine the optimal chunk size?",
+      "answer": "Chunking breaks large texts into smaller pieces so the AI can quickly search for facts without running out of memory. I find the best size by testing different lengths, like when I tuned Sentence Transformers in RADAR to match job postings.",
+      "category": "GENERAL",
+      "keywords": [
+        "RAG",
+        "chunking",
+        "context window",
+        "vector database",
+        "LLM"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-09-27T00:30:51.099183"
+    },
+    {
+      "question": "What is the difference between synchronous and asynchronous programming, and why is asynchronous execution critical for modern AI backends?",
+      "answer": "Synchronous programming forces tasks to wait one by one, while asynchronous lets multiple tasks happen at once without blocking. This is critical because waiting on slow LLMs freezes the server; at WebVory, using async FastAPI cut our p95 latency by 45%.",
+      "category": "GENERAL",
+      "keywords": [
+        "Asynchronous Programming",
+        "FastAPI",
+        "Concurrency",
+        "Backend Architecture",
+        "Latency Optimization"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-09-27T00:34:53.333302"
     }
   ],
-  "last_updated": "2026-09-26T11:09:20.598312",
-  "total_entries": 53
+  "last_updated": "2026-09-27T00:34:53.333339",
+  "total_entries": 55
 }

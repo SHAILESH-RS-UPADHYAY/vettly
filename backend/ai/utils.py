@@ -162,35 +162,57 @@ async def generate_multi_provider_completion(
         except Exception as e:
             logger.warning(f"Claude API error ({e}); checking fallback providers...")
 
-    # 2. Try Google Gemini
+    # 2. Try Google Gemini (Flagship gemini-3.1-pro-preview -> fast fallback gemini-3.8-flash)
     if getattr(config, "GEMINI_API_KEY", "") and not config.GEMINI_API_KEY.startswith("your_"):
-        try:
-            import google.generativeai as genai
-            genai.configure(api_key=config.GEMINI_API_KEY)
-            gemini_model_name = getattr(config, "GEMINI_MODEL", "gemini-2.5-flash")
-            model = genai.GenerativeModel(gemini_model_name)
+        primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.1-pro-preview")
+        fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.8-flash")
+        candidate_models = []
+        for m in [primary_gemini, fast_gemini, "gemini-3.1-pro-preview", "gemini-3.8-flash", "gemini-flash-latest"]:
+            if m and m not in candidate_models:
+                candidate_models.append(m)
 
-            gen_kwargs = {
-                "temperature": temperature,
-                "max_output_tokens": max_tokens,
-            }
-            if json_mode:
-                gen_kwargs["response_mime_type"] = "application/json"
+        full_user_prompt = ""
+        if history:
+            for msg in history[-10:]:
+                r = "USER" if msg.get("role") == "user" else "ASSISTANT"
+                full_user_prompt += f"{r}: {msg.get('content', '')}\n"
+            full_user_prompt += "\n"
+        full_user_prompt += user_prompt
 
-            full_prompt = f"{system_prompt}\n\n"
-            if history:
-                for msg in history[-10:]:
-                    r = "USER" if msg.get("role") == "user" else "ASSISTANT"
-                    full_prompt += f"{r}: {msg.get('content', '')}\n"
-            full_prompt += f"\nUSER:\n{user_prompt}"
+        # Gemini 3.x thinking models share maxOutputTokens between reasoning and output tokens
+        gen_config = {
+            "temperature": temperature,
+            "maxOutputTokens": max(max_tokens * 4, 4096),
+        }
+        if json_mode:
+            gen_config["responseMimeType"] = "application/json"
 
-            response = await model.generate_content_async(
-                contents=[full_prompt],
-                generation_config=genai.types.GenerationConfig(**gen_kwargs),
-            )
-            return response.text.strip()
-        except Exception as e:
-            logger.warning(f"Gemini API error ({e}); checking fallback providers...")
+        payload = {
+            "systemInstruction": {"parts": [{"text": system_prompt}]},
+            "contents": [{"role": "user", "parts": [{"text": full_user_prompt}]}],
+            "generationConfig": gen_config,
+        }
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            for gm_name in candidate_models:
+                clean_model = gm_name.replace("models/", "")
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent?key={config.GEMINI_API_KEY}"
+                try:
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            text_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
+                            if not text_chunks and parts:
+                                text_chunks = [p.get("text", "") for p in parts if p.get("text")]
+                            out = "\n".join(text_chunks).strip()
+                            if out:
+                                return out
+                    logger.warning(f"Gemini model '{clean_model}' returned HTTP {resp.status_code}: {resp.text[:200]}; trying next model...")
+                except Exception as e:
+                    logger.warning(f"Gemini model '{clean_model}' error ({e}); trying next model...")
 
     # 3. Try OpenAI
     if getattr(config, "OPENAI_API_KEY", "") and not config.OPENAI_API_KEY.startswith("your_"):
