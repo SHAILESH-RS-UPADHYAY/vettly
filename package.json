@@ -1,0 +1,9 @@
+{
+  "name": "vettly",
+  "version": "1.0.0",
+  "description": "Vettly — AI Career Architect & Technical Prep Studio",
+  "scripts": {
+    "dev": "cd backend && ..\\..\\acemate\\backend\\venv\\Scripts\\python.exe main.py",
+    "start": "cd backend && ..\\..\\acemate\\backend\\venv\\Scripts\\python.exe main.py"
+  }
+}
