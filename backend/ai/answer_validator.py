@@ -48,14 +48,7 @@ class AnswerValidator:
     QUICK_PASSING_SCORE = 6.5  # Relaxed threshold for live mode
 
     def __init__(self):
-        self._use_gemini = False
-        if hasattr(config, "GEMINI_API_KEY") and config.GEMINI_API_KEY:
-            import google.generativeai as genai
-            genai.configure(api_key=config.GEMINI_API_KEY)
-            self._gemini_model = genai.GenerativeModel("gemini-2.0-flash")
-            self._use_gemini = True
-        else:
-            self._client = AsyncGroq(api_key=config.GROQ_API_KEY)
+        self._provider = config.get_active_llm_provider()
         self._humanizer = Humanizer()
 
     async def generate_validated_answer(

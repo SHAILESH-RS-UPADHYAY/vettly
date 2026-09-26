@@ -28,23 +28,7 @@ class QAGenerator:
     """
 
     def __init__(self):
-        self._use_gemini = False
-        self._client = None
-        self._model = None
-        
-        if hasattr(config, "OPENAI_API_KEY") and config.OPENAI_API_KEY:
-            from openai import AsyncOpenAI
-            self._client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
-            self._model = getattr(config, "OPENAI_MODEL", "gpt-4o-mini")
-        elif hasattr(config, "GEMINI_API_KEY") and config.GEMINI_API_KEY:
-            import google.generativeai as genai
-            genai.configure(api_key=config.GEMINI_API_KEY)
-            # Use 1.5 Flash as default for large context processing if 2.0 isn't available
-            self._model = genai.GenerativeModel("gemini-2.0-flash")
-            self._use_gemini = True
-        else:
-            self._client = AsyncGroq(api_key=config.GROQ_API_KEY)
-            self._model = config.GROQ_MODEL
+        self._provider = config.get_active_llm_provider()
 
     async def generate_questions(
         self,
