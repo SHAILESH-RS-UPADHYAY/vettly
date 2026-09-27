@@ -12,7 +12,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Form, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import config
@@ -1009,6 +1009,97 @@ Provide the clean spoken technical expansion with a real-life example."""
         logger.error(f"Chat expand error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+
+# ─── Mentor Bot (Gemini Pro, streamed; sees Prep Studio + Copilot chat) ───
+
+class MentorRequest(BaseModel):
+    message: str
+    history: list[dict] = []  # Mentor's own conversation [{role, content}]
+    focus: Optional[dict] = None  # Copilot answer pinned via "Ask Doubt": {question, answer, detail}
+    language: str = "english"  # "english" | "hinglish" — the language pill on the Mentor panel
+
+@app.post("/api/mentor")
+async def api_mentor(req: MentorRequest):
+    """Deep-dive tutor: '@N' points at Prep Studio question N; a pinned Copilot answer rides along as focus."""
+    import re
+    from ai.utils import stream_gemini_chat
+
+    message = req.message.strip()
+    if not message:
+        return JSONResponse(status_code=400, content={"error": "Message is required"})
+
+    entries = qa_cache.get_all()
+    background = context_engine.get_full_context()
+    about_me_ctx = about_me_store.get_intro_context()
+    if about_me_ctx:
+        background += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
+
+    bank = "\n\n".join(
+        f"Q{i}. [{e.get('category', 'GENERAL')}] {e['question']}\nModel answer: {e['answer']}"
+        for i, e in enumerate(entries, 1)
+    )
+    copilot_chat = "\n\n".join(
+        f"{'INTERVIEWER' if m.get('role') == 'user' else 'COPILOT'}: {m.get('content', '')}"
+        for m in chat_store.get_history()
+    )[-150000:]  # newest ~150K chars; Gemini's window takes far more, this just bounds latency
+
+    reply_language = (
+        "natural Hinglish (Hindi in Roman script mixed with English technical terms, the way Indian engineers talk)"
+        if req.language.lower() == "hinglish" else "clear, simple English"
+    )
+
+    # Long context first, instructions last: Gemini follows rules that sit after the material far more reliably
+    system_prompt = f"""You are Mentor — Shailesh Upadhyay's personal interview coach inside Vettly, his interview-prep studio.
+Your job: help him deeply understand the questions and answers he is preparing, so he can explain them confidently in his own words.
+
+Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@3" or "@Q3" means Q3), and the full Live Copilot chat, where he plays the interviewer and the copilot answers as him.
+
+═══ CANDIDATE BACKGROUND ═══
+{background}
+
+═══ PREP STUDIO QUESTION BANK ═══
+{bank or "(no questions generated yet)"}
+
+═══ LIVE COPILOT CHAT (he asked as the interviewer; COPILOT answered as him) ═══
+{copilot_chat or "(empty)"}
+
+═══ HOW TO REPLY ═══
+- LANGUAGE: reply ONLY in {reply_language}. He chose it with a toggle — follow it even when his message or earlier replies are in another language.
+- Open with the direct answer in one or two lines, then go only as deep as the question needs.
+- Teach, don't lecture: explain the "why", use one simple analogy or concrete example — ideally from his own projects in the background.
+- Clean Markdown: short paragraphs, **bold** key terms, bullet or numbered lists, `inline code`, fenced code blocks for code, a small table only when comparing options, ### headings only for long answers. No preamble, no filler.
+- Whatever he points at (a Prep question or a pinned Copilot answer) is attached right above his message — ground your reply in it. If he points at nothing, he is continuing the current topic.
+- When it helps in the interview, end with a short **Say it like this:** line he could speak, or 2-3 likely follow-up questions.
+- If a model answer has a weak spot or a factual error, say so plainly and give the fix.
+- Never invent experience, projects, or numbers that are not in his background."""
+
+    # Attach exactly what the user points at right next to their message
+    pointed = []
+    for n in dict.fromkeys(int(x) for x in re.findall(r"@[Qq]?(\d+)", message)):
+        if 1 <= n <= len(entries):
+            e = entries[n - 1]
+            pointed.append(f"[Q{n} · {e.get('category', 'GENERAL')}]\nQuestion: {e['question']}\nModel answer: {e['answer']}")
+        else:
+            pointed.append(f"[Q{n}] does not exist — Prep Studio has {len(entries)} questions.")
+    if req.focus:
+        f = req.focus
+        pinned = f"[Pinned Copilot answer]\nInterviewer asked: {f.get('question', '')}\nCopilot answered: {f.get('answer', '')}"
+        if f.get("detail"):
+            pinned += f"\nExpanded detail: {f['detail']}"
+        pointed.append(pinned)
+    user_turn = f"{message}\n\n(Reply in {reply_language}.)"
+    if pointed:
+        user_turn = "He is pointing at:\n\n" + "\n\n".join(pointed) + f"\n\n---\n{user_turn}"
+
+    async def stream():
+        try:
+            async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
+                yield chunk
+        except Exception as e:
+            logger.error(f"Mentor error: {e}")
+            yield f"\n\n⚠️ Mentor couldn't reach Gemini: {e}"
+
+    return StreamingResponse(stream(), media_type="text/plain; charset=utf-8")
 
 
 # ─── Chat Analyze (Extract Preferences from Full History) ─────

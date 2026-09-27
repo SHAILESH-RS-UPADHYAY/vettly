@@ -10,6 +10,8 @@ const API_BASE = (window.location.hostname === 'localhost' || window.location.ho
 // ─── Section Navigation ──────────────────────────────────────
 
 function switchSection(name) {
+    document.body.dataset.section = name;
+    mentorSyncMode();
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     const page = document.getElementById(`page-${name}`);
@@ -93,6 +95,7 @@ function formatChatMessage(text) {
 function createAssistantBubble(text, question) {
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble assistant';
+    bubble._question = question;  // read by the Mentor when this answer is pinned
 
     const contentDiv = document.createElement('div');
     contentDiv.className = 'chat-bubble-content';
@@ -113,7 +116,6 @@ function createAssistantBubble(text, question) {
         expandedPanel.className = 'chat-expanded-panel hidden';
 
         expandBtn.onclick = async () => {
-            const messagesDiv = document.getElementById('chat-messages');
             if (!expandedPanel.classList.contains('hidden')) {
                 expandedPanel.classList.add('hidden');
                 expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
@@ -123,7 +125,7 @@ function createAssistantBubble(text, question) {
             if (expandedPanel.dataset.loaded === 'true') {
                 expandedPanel.classList.remove('hidden');
                 expandBtn.innerHTML = '<span>🔼</span><span>Collapse Details</span>';
-                if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                expandedPanel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                 return;
             }
 
@@ -156,11 +158,19 @@ function createAssistantBubble(text, question) {
                 expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
             } finally {
                 expandBtn.disabled = false;
-                if (messagesDiv) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                // Keep the view on the answer being expanded instead of jumping to the chat bottom
+                expandedPanel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
         };
 
+        const doubtBtn = document.createElement('button');
+        doubtBtn.className = 'chat-expand-btn';
+        doubtBtn.innerHTML = '<span>💡</span><span>Ask Doubt</span>';
+        doubtBtn.title = 'Pin this answer to the Doubt Desk and ask about it — the chat stays put';
+        doubtBtn.onclick = () => mentorPin(bubble);
+
         actionsDiv.appendChild(expandBtn);
+        actionsDiv.appendChild(doubtBtn);
         bubble.appendChild(actionsDiv);
         bubble.appendChild(expandedPanel);
     }
@@ -284,7 +294,8 @@ async function sendChatMessage() {
         typingBubble.textContent = `Error: ${e.message}. Is the server running?`;
         typingBubble.classList.remove('typing');
     }
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // Anchor the question at the top so a long answer reads from its first line (short ones just land at the bottom)
+    messagesDiv.scrollBy({ top: userBubble.getBoundingClientRect().top - messagesDiv.getBoundingClientRect().top - 12, behavior: 'smooth' });
 }
 
 // ─── Setup State Recovery ────────────────────────────────────
@@ -452,6 +463,7 @@ async function loadPrepQuestions() {
         const res = await fetch(`${API_BASE}/prepare/questions`);
         const data = await res.json();
         const entries = data.entries || [];
+        mentor.prep = entries;  // keeps the Mentor's @ picker in sync with Prep Studio
         const listEl = document.getElementById('prep-list');
 
         syncPrepSortToolbarUI(entries.length);
@@ -510,6 +522,9 @@ async function loadPrepQuestions() {
                         </button>
                         <button class="prep-btn prep-btn-refine" onclick="event.stopPropagation();refinePrepAnswer(${origIdx})">
                             <span>✏️</span><span>Refine</span>
+                        </button>
+                        <button class="prep-btn prep-btn-mentor" onclick="event.stopPropagation();mentorAsk(${origIdx + 1})" title="Discuss Q${origIdx + 1} with Mentor">
+                            <span>✦</span><span>Ask Mentor</span>
                         </button>
                     </div>
                 </div>
@@ -2178,4 +2193,393 @@ function showConfirmModal(options = {}) {
 function showPromptModal(options = {}) {
     return openAcemateModal({ ...options, variant: options.variant || 'primary', isPrompt: true });
 }
+
+// ─── Mentor Bot (floating chat on every tab; doubles as the Copilot Doubt Desk) ───
+
+const mentor = {
+    history: [],     // Mentor conversation [{role, content}], kept per browser
+    prep: [],        // Prep Studio entries for the @ picker (filled by loadPrepQuestions)
+    pinned: null,    // Copilot answer bubble pinned via "Ask Doubt"
+    mention: null,   // { start, items, active } while the @ picker is open
+    busy: false,
+    rendered: false,
+    flowing: false,
+    pos: { x: 0, y: 0 },  // drag offset of the floating panel
+    lang: 'english',      // answer language pill: 'english' | 'hinglish'
+};
+try {
+    mentor.history = JSON.parse(localStorage.getItem('vettly_mentor_history') || '[]');
+    mentor.lang = localStorage.getItem('vettly_mentor_lang') || 'english';
+} catch (e) { /* storage blocked */ }
+
+function mentorMd(text) {
+    if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+        return escapeHtml(text).replace(/\n/g, '<br>');  // CDN unreachable: plain but readable
+    }
+    return DOMPurify.sanitize(marked.parse(text, { breaks: true, gfm: true }));
+}
+
+function mentorUserHtml(text) {
+    return escapeHtml(text).replace(/@[Qq]?(\d+)/g, (_, n) =>
+        `<button type="button" class="mentor-ref" onclick="mentorJump(${n})" title="Open Q${n} in Prep Studio">Q${n}</button>`);
+}
+
+function mentorEmptyHtml() {
+    const onCopilot = document.body.dataset.section === 'chat';
+    const n = mentor.prep.length;
+    const chips = onCopilot
+        ? ['Explain this answer in simple words', 'What follow-ups could they ask here?', 'Where does this answer sound weak?']
+        : n ? [`@${n} Explain this deeply, step by step`, `@${n} What follow-ups can they ask?`, `@${n} Give me a simple analogy`] : [];
+    return `
+        <div class="mentor-empty">
+            <div class="mentor-empty-orb">✦</div>
+            <h4>${onCopilot ? 'Doubt Desk' : 'Hi, I\'m your Mentor'}</h4>
+            <p>${onCopilot
+                ? 'Hit <b>💡 Ask Doubt</b> on any Copilot answer to pin it here — the chat stays put while we dig in.'
+                : 'Type <b>@</b> + a question number from Prep Studio and I\'ll know exactly what we\'re talking about.'}</p>
+            <div class="mentor-chips">${chips.map(c => `<button type="button" onclick="mentorSend(this.textContent)">${escapeHtml(c)}</button>`).join('')}</div>
+        </div>`;
+}
+
+function mentorAddTurn(userText, botText) {
+    const msgs = document.getElementById('mentor-msgs');
+    msgs.querySelector('.mentor-empty')?.remove();
+    const turn = document.createElement('div');
+    turn.className = 'mentor-turn';
+    turn.innerHTML = `
+        <div class="mentor-msg user">${mentorUserHtml(userText)}</div>
+        <div class="mentor-msg bot"><div class="mentor-md">${botText ? mentorMd(botText) : '<span class="mentor-typing"><i></i><i></i><i></i></span>'}</div></div>`;
+    msgs.appendChild(turn);
+    return turn;
+}
+
+function mentorRenderAll() {
+    mentor.rendered = true;
+    const msgs = document.getElementById('mentor-msgs');
+    msgs.innerHTML = mentor.history.length ? '' : mentorEmptyHtml();
+    for (let i = 0; i + 1 < mentor.history.length; i += 2) {
+        mentorAddTurn(mentor.history[i].content, mentor.history[i + 1].content);
+    }
+    msgs.scrollTop = (msgs.lastElementChild?.offsetTop || 8) - 8;  // open on the latest question, not the tail of its answer
+}
+
+function mentorToggle(open = document.getElementById('mentor').dataset.state !== 'open', focus = true) {
+    document.getElementById('mentor').dataset.state = open ? 'open' : 'closed';
+    document.getElementById('mentor-orb').setAttribute('aria-expanded', open);
+    document.body.classList.toggle('mentor-open', open);
+    try { localStorage.setItem('vettly_mentor_open', open ? '1' : '0'); } catch (e) { /* storage blocked */ }
+    if (open) {
+        if (!mentor.rendered) mentorRenderAll();
+        if (focus) setTimeout(() => document.getElementById('mentor-input').focus(), 200);
+    } else {
+        mentorCloseMention();
+    }
+    mentorFlowKick();
+}
+
+function mentorSyncMode() {
+    document.getElementById('mentor-sub').textContent = document.body.dataset.section === 'chat'
+        ? 'Doubt Desk · sees the whole chat'
+        : 'Gemini Pro · type @ + Q number';
+    if (mentor.rendered && !mentor.history.length) mentorRenderAll();  // empty-state hints follow the page
+    mentorFlowKick();
+}
+
+// Drag the floating panel by its header (e.g. off the answer you are reading)
+function mentorDragStart(e) {
+    if (e.button !== 0 || e.target.closest('button')) return;
+    e.preventDefault();
+    const panel = document.querySelector('.mentor-panel');
+    const r = panel.getBoundingClientRect();
+    const baseLeft = r.left - mentor.pos.x;
+    const baseTop = r.top - mentor.pos.y;
+    const grabX = e.clientX - r.left;
+    const grabY = e.clientY - r.top;
+    panel.classList.add('dragging');
+    const move = ev => {
+        const left = Math.min(Math.max(ev.clientX - grabX, 8), innerWidth - r.width - 8);
+        const top = Math.min(Math.max(ev.clientY - grabY, 8), innerHeight - r.height - 8);
+        mentor.pos = { x: left - baseLeft, y: top - baseTop };
+        panel.style.translate = `${mentor.pos.x}px ${mentor.pos.y}px`;
+    };
+    const up = () => {
+        panel.classList.remove('dragging');
+        removeEventListener('pointermove', move);
+        removeEventListener('pointerup', up);
+    };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+}
+
+function mentorReset() {
+    if (mentor.busy) return;
+    mentor.history = [];
+    try { localStorage.removeItem('vettly_mentor_history'); } catch (e) { /* storage blocked */ }
+    mentorRenderAll();
+}
+
+function mentorSetLang(lang) {
+    mentor.lang = lang;
+    document.querySelectorAll('.mentor-lang button').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+        b.setAttribute('aria-pressed', b.dataset.lang === lang);
+    });
+    try { localStorage.setItem('vettly_mentor_lang', lang); } catch (e) { /* storage blocked */ }
+}
+
+// ✨ Example pill: a real-life example of the question in focus —
+// whatever is typed (e.g. "@3"), else the pinned Copilot answer, else the last @Q discussed
+function mentorExample() {
+    if (mentor.busy) return;
+    const input = document.getElementById('mentor-input');
+    const draft = input.value.trim();
+    const lastRef = mentor.pinned ? null : [...mentor.history].reverse()
+        .map(m => m.role === 'user' && m.content.match(/@[Qq]?\d+/)).find(Boolean);
+    const about = draft || lastRef?.[0] || '';
+    if (!about && !mentor.pinned && !mentor.history.length) {
+        input.value = '@';  // nothing in focus yet: open the question picker instead
+        input.focus();
+        return mentorOnInput();
+    }
+    input.value = '';
+    mentorSend(`${about ? `${about} · ` : ''}Show me a real-life example of this`);
+}
+
+function mentorAsk(n) {
+    mentorToggle(true);
+    document.getElementById('mentor-input').value = `@${n} `;
+    mentorAutosize();
+}
+
+function mentorAutosize() {
+    const input = document.getElementById('mentor-input');
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 140)}px`;
+}
+
+async function mentorSend(preset) {
+    const input = document.getElementById('mentor-input');
+    const text = (typeof preset === 'string' ? preset : input.value).trim();
+    if (!text || mentor.busy) return;
+    if (typeof preset !== 'string') { input.value = ''; mentorAutosize(); }
+    mentorCloseMention();
+    mentor.busy = true;
+    document.getElementById('mentor-send').disabled = true;
+
+    const msgs = document.getElementById('mentor-msgs');
+    const turn = mentorAddTurn(text);
+    const bot = turn.querySelector('.mentor-msg.bot');
+    const out = turn.querySelector('.mentor-md');
+    bot.classList.add('streaming');
+    // Park the new question at the top: the answer grows downward and reads from its first line
+    msgs.querySelectorAll('.mentor-turn').forEach(t => { t.style.minHeight = ''; });
+    turn.style.minHeight = `${msgs.clientHeight - 24}px`;
+    msgs.scrollTo({ top: turn.offsetTop - 8, behavior: 'smooth' });
+
+    if (mentor.pinned && !mentor.pinned.isConnected) mentorUnpin();  // chat was re-rendered underneath
+    const pinned = mentor.pinned;
+    const focus = pinned && {
+        question: pinned._question || '',
+        answer: pinned.querySelector('.chat-bubble-content')?.innerText || '',
+        detail: pinned.querySelector('.chat-detailed-body')?.innerText || '',
+    };
+
+    let reply = '';
+    let failed = false;
+    try {
+        const res = await fetch(`${API_BASE}/api/mentor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history: mentor.history.slice(-40), focus, language: mentor.lang }),
+        });
+        if (!res.ok || !res.body) throw new Error(`Server returned ${res.status}`);
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let queued = false;
+        for (;;) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            reply += decoder.decode(value, { stream: true });
+            if (!queued) {
+                queued = true;
+                requestAnimationFrame(() => { queued = false; out.innerHTML = mentorMd(reply); });
+            }
+        }
+    } catch (e) {
+        failed = true;
+        reply += `\n\n⚠️ ${e.message} — is the Vettly backend running?`;
+    }
+
+    out.innerHTML = mentorMd(reply.trim() ? reply : '⚠️ Empty reply — try again.');
+    bot.classList.remove('streaming');
+    if (!failed && reply.trim()) {
+        mentor.history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
+        try { localStorage.setItem('vettly_mentor_history', JSON.stringify(mentor.history.slice(-60))); } catch (e) { /* storage blocked */ }
+    }
+    mentor.busy = false;
+    document.getElementById('mentor-send').disabled = false;
+}
+
+// @ picker: typing "@" lists Prep Studio questions (newest first), filtered by number, text or category
+function mentorOnInput() {
+    mentorAutosize();
+    const input = document.getElementById('mentor-input');
+    const before = input.value.slice(0, input.selectionStart);
+    const match = before.match(/@(\w*)$/);
+    if (!match) return mentorCloseMention();
+
+    const q = match[1].toLowerCase().replace(/^q(?=\d)/, '');
+    const items = mentor.prep
+        .map((e, i) => ({ n: i + 1, e }))
+        .reverse()
+        .filter(({ n, e }) => !q || String(n).startsWith(q)
+            || e.question.toLowerCase().includes(q) || (e.category || '').toLowerCase().includes(q))
+        .slice(0, 40);
+    const box = document.getElementById('mentor-mention');
+    box.classList.remove('hidden');
+    if (!items.length) {
+        mentor.mention = null;
+        box.innerHTML = `<div class="mentor-mention-empty">${mentor.prep.length ? 'No matching question' : 'No Prep Studio questions yet — synthesize one first'}</div>`;
+        return;
+    }
+    mentor.mention = { start: before.length - match[0].length, items, active: 0 };
+    box.innerHTML = '<div class="mentor-mention-head">Prep Studio · ↑↓ move · Enter pick</div>' + items.map(({ n, e }, i) => `
+        <button type="button" class="mentor-mention-item${i ? '' : ' active'}" onmousedown="event.preventDefault(); mentorPickMention(${i})">
+            <span class="mentor-mention-q">Q${n}</span>
+            <span class="mentor-mention-text">${escapeHtml(e.question)}</span>
+            <span class="mentor-mention-cat">${getCategoryLabel(e.category)}</span>
+        </button>`).join('');
+}
+
+function mentorOnKeydown(e) {
+    const m = mentor.mention;
+    if (m && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        m.active = (m.active + (e.key === 'ArrowDown' ? 1 : m.items.length - 1)) % m.items.length;
+        document.querySelectorAll('.mentor-mention-item').forEach((el, i) => {
+            el.classList.toggle('active', i === m.active);
+            if (i === m.active) el.scrollIntoView({ block: 'nearest' });
+        });
+    } else if (m && (e.key === 'Enter' || e.key === 'Tab')) {
+        e.preventDefault();
+        mentorPickMention(m.active);
+    } else if (e.key === 'Escape') {
+        mentorCloseMention();
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        mentorSend();
+    }
+}
+
+function mentorPickMention(i) {
+    const m = mentor.mention;
+    const input = document.getElementById('mentor-input');
+    const token = `@${m.items[i].n} `;
+    input.value = input.value.slice(0, m.start) + token + input.value.slice(input.selectionStart);
+    input.selectionStart = input.selectionEnd = m.start + token.length;
+    mentorCloseMention();
+    input.focus();
+}
+
+function mentorCloseMention() {
+    mentor.mention = null;
+    document.getElementById('mentor-mention').classList.add('hidden');
+}
+
+async function mentorJump(n) {
+    switchSection('prep');
+    await loadPrepQuestions();
+    const card = document.getElementById(`prep-card-${n - 1}`);
+    if (!card) return;
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.classList.remove('mentor-flash');
+    void card.offsetWidth;  // restart the flash animation
+    card.classList.add('mentor-flash');
+}
+
+// ─── Doubt Desk: pin a Copilot answer, ask about it while the chat stays put ───
+
+function mentorPin(bubble) {
+    mentor.pinned?.classList.remove('mentor-focused');
+    mentor.pinned = bubble;
+    bubble.classList.add('mentor-focused');
+    const pin = document.getElementById('mentor-pin');
+    pin.querySelector('.mentor-pin-q').textContent = bubble._question || 'Copilot answer';
+    pin.querySelector('.mentor-pin-a').textContent = bubble.querySelector('.chat-bubble-content')?.innerText || '';
+    pin.classList.remove('hidden', 'pop');
+    void pin.offsetWidth;  // restart the pop-in animation
+    pin.classList.add('pop');
+    mentorToggle(true);
+}
+
+function mentorUnpin() {
+    mentor.pinned?.classList.remove('mentor-focused');
+    mentor.pinned = null;
+    document.getElementById('mentor-pin').classList.add('hidden');
+    mentorFlowKick();
+}
+
+function mentorJumpToPinned() {
+    if (!mentor.pinned?.isConnected) return mentorUnpin();
+    const show = () => mentor.pinned?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (document.body.dataset.section === 'chat') return show();
+    switchSection('chat');
+    setTimeout(show, 250);  // after switchSection's own scroll-to-bottom
+}
+
+function mentorFlowKick() {
+    if (!mentor.flowing) {
+        mentor.flowing = true;
+        requestAnimationFrame(mentorFlow);
+    }
+}
+
+// The flowing beam from the pinned answer to the Doubt Desk; redraws every frame while visible, then stops
+function mentorFlow() {
+    if (mentor.pinned && !mentor.pinned.isConnected) mentorUnpin();
+    const svg = document.getElementById('mentor-flow');
+    const bubble = mentor.pinned;
+    const on = bubble && document.body.dataset.section === 'chat' && document.body.classList.contains('mentor-open');
+    svg.classList.toggle('on', Boolean(on));
+    if (!on) {
+        mentor.flowing = false;
+        return;
+    }
+    const box = document.getElementById('chat-messages').getBoundingClientRect();
+    const r = bubble.getBoundingClientRect();
+    const p = document.getElementById('mentor-pin').getBoundingClientRect();
+    // Visible slice of the bubble; scrolled out of view, it collapses onto the chat edge it went past
+    const top = Math.min(Math.max(r.top, box.top), box.bottom);
+    const bottom = Math.max(Math.min(r.bottom, box.bottom), box.top);
+    const right = p.left + p.width / 2 >= r.left + r.width / 2;  // which side the (draggable) panel is on
+    const edge = right ? p.left : p.right;
+    const s = right ? 1 : -1;
+    const x2 = edge - 4 * s;
+    const y2 = p.top + Math.min(p.height / 2, 30);
+    let d = '';
+    if ((edge - (right ? r.right : r.left)) * s >= 56) {
+        // Room beside the bubble: S-curve from its side to the pin card
+        const x1 = (right ? r.right : r.left) + 4 * s;
+        const y1 = (top + bottom) / 2;
+        const dx = (x2 - x1) / 2;
+        d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
+    } else if (y2 < top - 12 || y2 > bottom + 12) {
+        // The panel overlaps the bubble: rise (or drop) from its border next to the panel, then bend into the pin card
+        const x1 = right ? Math.max(r.left + 24, edge - 56) : Math.min(r.right - 24, edge + 56);
+        const y1 = y2 < top ? top - 2 : bottom + 2;
+        d = `M${x1},${y1} C${x1},${y1 + (y2 - y1) * 0.7} ${x1 + (x2 - x1) * 0.3},${y2} ${x2},${y2}`;
+    }  // else: the pin card sits level with the bubble it covers — no beam needed
+    svg.querySelectorAll('path').forEach(path => path.setAttribute('d', d));
+    svg.classList.toggle('dim', r.bottom <= box.top || r.top >= box.bottom);
+    requestAnimationFrame(mentorFlow);
+}
+
+// A resized window could strand a dragged panel off-screen: snap it back to its corner
+addEventListener('resize', () => {
+    mentor.pos = { x: 0, y: 0 };
+    document.querySelector('.mentor-panel').style.translate = '';
+});
+
+mentorSetLang(mentor.lang);
+try { if (localStorage.getItem('vettly_mentor_open') === '1') mentorToggle(true, false); } catch (e) { /* storage blocked */ }
 

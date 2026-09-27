@@ -1,6 +1,7 @@
 import asyncio
+import json
 import logging
-from typing import Optional
+from typing import AsyncIterator, Optional
 
 import httpx
 import config
@@ -268,3 +269,52 @@ async def generate_multi_provider_completion(
         "No valid LLM API key configured in backend/.env. "
         "Please add ANTHROPIC_API_KEY (Claude), GEMINI_API_KEY, or GROQ_API_KEY."
     )
+
+
+async def stream_gemini_chat(system_prompt: str, history: list[dict]) -> AsyncIterator[str]:
+    """
+    Stream a multi-turn Gemini chat as text chunks (SSE streamGenerateContent).
+    Uses GEMINI_BOT_MODEL (newest Pro) first; falls back to the other configured
+    Gemini models only when a model rejects the request before streaming starts.
+    """
+    api_key = getattr(config, "GEMINI_API_KEY", "")
+    if not api_key or api_key.startswith("your_"):
+        raise ValueError("GEMINI_API_KEY is not set in backend/.env.")
+
+    contents = []
+    for msg in history:
+        role = "user" if msg.get("role") == "user" else "model"
+        text = (msg.get("content") or "").strip()
+        if not text:
+            continue
+        # Gemini expects alternating user/model turns
+        if contents and contents[-1]["role"] == role:
+            contents[-1]["parts"][0]["text"] += f"\n\n{text}"
+        else:
+            contents.append({"role": role, "parts": [{"text": text}]})
+
+    payload = {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": contents,
+    }
+    models = dict.fromkeys([config.GEMINI_BOT_MODEL, config.GEMINI_MODEL, config.GEMINI_FAST_MODEL])
+
+    # Key goes in a header, not the URL: httpx logs request URLs at INFO level
+    async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=15.0), headers={"x-goog-api-key": api_key}) as client:
+        for model in models:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent"
+            async with client.stream("POST", url, params={"alt": "sse"}, json=payload) as resp:
+                if resp.status_code != 200:
+                    body = (await resp.aread()).decode(errors="ignore")[:200]
+                    logger.warning(f"Gemini model '{model}' returned HTTP {resp.status_code}: {body}; trying next model...")
+                    continue
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    for cand in json.loads(line[6:]).get("candidates", [])[:1]:
+                        for part in cand.get("content", {}).get("parts", []):
+                            if part.get("text") and not part.get("thought"):
+                                yield part["text"]
+                return
+
+    raise RuntimeError("Every configured Gemini model rejected the request.")
