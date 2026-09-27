@@ -1097,7 +1097,7 @@ Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@
                 yield chunk
         except Exception as e:
             logger.error(f"Mentor error: {e}")
-            yield f"\n\n⚠️ Mentor couldn't reach Gemini: {e}"
+            yield f"\n\n*Mentor couldn't reach Gemini ({e}). Send it again in a moment.*"
 
     return StreamingResponse(stream(), media_type="text/plain; charset=utf-8")
 
