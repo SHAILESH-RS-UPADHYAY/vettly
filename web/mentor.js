@@ -49,6 +49,11 @@ const mentorStore = {
 // ─── Markup ──────────────────────────────────────────────────────
 
 const MENTOR_STAR_48 = 'M24 14C24.7 19.8 28.2 23.3 34 24C28.2 24.7 24.7 28.2 24 34C23.3 28.2 19.8 24.7 14 24C19.8 23.3 23.3 19.8 24 14Z';
+const MENTOR_HALO_48 = 'M24 9.5C25.1 18 30 22.9 38.5 24C30 25.1 25.1 30 24 38.5C22.9 30 18 25.1 9.5 24C18 22.9 22.9 18 24 9.5Z';
+
+// One orbit: a faint ring plus a comet (fading tail, bright head) racing along it
+const mentorOrbit = (angle, extra = '') => ['m-ring', `m-run ${extra}`, `m-run m-run-head ${extra}`].map(cls =>
+    `<ellipse class="${cls.trim()}" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(${angle} 24 24)" pathLength="100"/>`).join('');
 
 // The Mentor emblem: a liquid orb with light running along its orbits and around the sparkle
 const MENTOR_EMBLEM = `
@@ -56,15 +61,11 @@ const MENTOR_EMBLEM = `
     <span class="m-orb-sphere"></span>
     <svg class="m-orb-art" viewBox="0 0 48 48" aria-hidden="true">
         <circle class="m-bezel" cx="24" cy="24" r="21"/>
-        <g class="m-orbits">
-            <ellipse class="m-ring" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)"/>
-            <ellipse class="m-ring" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)"/>
-            <ellipse class="m-run" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)" pathLength="100"/>
-            <ellipse class="m-run m-run-2" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)" pathLength="100"/>
-        </g>
+        <g class="m-orbits">${mentorOrbit(-35)}${mentorOrbit(35, 'm-run-2')}</g>
         <g class="m-star-group">
+            <path class="m-halo" d="${MENTOR_HALO_48}"/>
+            <path class="m-halo-trace" d="${MENTOR_HALO_48}" pathLength="100"/>
             <path class="m-star" d="${MENTOR_STAR_48}"/>
-            <path class="m-star-trace" d="${MENTOR_STAR_48}" pathLength="100"/>
         </g>
     </svg>`;
 
