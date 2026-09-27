@@ -1106,8 +1106,24 @@
       "score": 7.0,
       "iterations": 0,
       "validated_at": "2026-09-27T00:34:53.333302"
+    },
+    {
+      "question": "What is the difference between stateless and stateful AI backend architectures, and when would you choose one over the other?",
+      "answer": "Stateless backends treat every request as brand new, while stateful backends remember past interactions during a continuous session. I used a stateful design with LangChain memory for Simplify Money so the AI remembers the user's ongoing chat without relying on slow database writes.",
+      "category": "GENERAL",
+      "keywords": [
+        "stateless",
+        "stateful",
+        "backend architecture",
+        "scalability",
+        "conversational AI"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-09-27T15:00:02.866602"
     }
   ],
-  "last_updated": "2026-09-27T00:34:53.333339",
-  "total_entries": 55
+  "last_updated": "2026-09-27T15:00:02.866646",
+  "total_entries": 56
 }
