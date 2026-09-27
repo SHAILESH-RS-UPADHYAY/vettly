@@ -7,8 +7,9 @@
     <meta name="description" content="Vettly Poster Architect Edition: AI-powered technical readiness & career preparation studio with Canvas Particle Attractors, Blueprint Toolbelts, and Live Practice Copilot.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Caveat:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=2.8">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Caveat:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css?v=4.0">
+    <link rel="stylesheet" href="./mentor.css?v=4.0">
 </head>
 <body data-section="home">
     <!-- WebGL Particle Physics Canvas & Blueprint Grid Background -->
@@ -895,50 +896,76 @@ Nice to Have:
     </div>
 
     <!-- ═══ MENTOR BOT — floating chat on every tab; doubles as the Copilot Doubt Desk ═══ -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <symbol id="mentor-mark" viewBox="0 0 24 24">
+            <path d="M12 1.5C12.9 7.2 16.8 11.1 22.5 12C16.8 12.9 12.9 16.8 12 22.5C11.1 16.8 7.2 12.9 1.5 12C7.2 11.1 11.1 7.2 12 1.5Z"/>
+        </symbol>
+    </svg>
     <div id="mentor" class="mentor" data-state="closed">
-        <button type="button" class="mentor-orb" id="mentor-orb" onclick="mentorToggle()" aria-label="Mentor chat" aria-expanded="false" title="Ask Mentor · type @ to point at a question">
-            <span class="mentor-orb-ring"></span>
-            <span class="mentor-orb-core">✦</span>
-            <svg class="mentor-orb-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <button type="button" class="mentor-orb" id="mentor-orb" onclick="mentorToggle()" aria-label="Mentor chat" aria-expanded="false">
+            <span class="m-orb" data-emblem></span>
+            <span class="mentor-orb-tip">Ask Mentor <kbd>@</kbd></span>
         </button>
         <section class="mentor-panel" aria-label="Mentor chat">
-            <header class="mentor-head" onpointerdown="mentorDragStart(event)" title="Drag to move">
-                <span class="mentor-avatar">✦</span>
-                <div class="mentor-title">
-                    <strong>Mentor</strong>
-                    <span id="mentor-sub">Gemini Pro · type @ + Q number</span>
-                </div>
-                <button type="button" class="mentor-icon-btn" onclick="mentorReset()" title="New chat" aria-label="New chat">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
-                </button>
-                <button type="button" class="mentor-icon-btn" onclick="mentorToggle(false)" title="Collapse" aria-label="Collapse Mentor">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-            </header>
-            <div class="mentor-pin hidden" id="mentor-pin">
-                <div class="mentor-pin-top">
-                    <span class="mentor-pin-label">📌 Pinned Copilot answer</span>
-                    <button type="button" class="mentor-pin-btn" onclick="mentorJumpToPinned()" title="Show it in the chat">Show ↗</button>
-                    <button type="button" class="mentor-pin-btn" onclick="mentorUnpin()" title="Unpin" aria-label="Unpin">✕</button>
-                </div>
-                <div class="mentor-pin-q"></div>
-                <div class="mentor-pin-a"></div>
-            </div>
-            <div class="mentor-msgs" id="mentor-msgs"></div>
-            <form class="mentor-input" onsubmit="event.preventDefault(); mentorSend();">
-                <div class="mentor-mention hidden" id="mentor-mention" role="listbox" aria-label="Prep Studio questions"></div>
-                <div class="mentor-pills">
-                    <div class="mentor-lang" role="group" aria-label="Answer language">
-                        <button type="button" data-lang="english" onclick="mentorSetLang('english')">English</button>
-                        <button type="button" data-lang="hinglish" onclick="mentorSetLang('hinglish')">Hinglish</button>
+            <!-- The frosted frame doubles as the resize handle: pull any edge or corner -->
+            <span class="mentor-rz" data-dir="n" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="s" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="e" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="w" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="nw" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="ne" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="sw" onpointerdown="mentorResizeStart(event)"></span>
+            <span class="mentor-rz" data-dir="se" onpointerdown="mentorResizeStart(event)"></span>
+            <div class="mentor-core">
+                <div class="mentor-glow" aria-hidden="true"></div>
+                <header class="mentor-head" onpointerdown="mentorDragStart(event)" title="Drag to move. Pull the frame to resize.">
+                    <span class="m-orb mentor-avatar" data-emblem></span>
+                    <div class="mentor-title">
+                        <strong>Mentor</strong>
+                        <span class="mentor-meta"><i class="mentor-live" aria-hidden="true"></i><span id="mentor-sub">Gemini Pro, reading your prep bank</span></span>
                     </div>
-                    <button type="button" class="mentor-example" onclick="mentorExample()" title="Real-life example of the question in focus (@Q typed, pinned answer, or the last one discussed)">✨ Example</button>
+                    <button type="button" class="mentor-icon-btn mentor-fit-btn" onclick="mentorResetLayout()" title="Reset size and position" aria-label="Reset size and position">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg>
+                    </button>
+                    <button type="button" class="mentor-icon-btn mentor-new-btn" onclick="mentorReset()" title="New chat" aria-label="New chat">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                    </button>
+                    <button type="button" class="mentor-icon-btn" onclick="mentorToggle(false)" title="Collapse" aria-label="Collapse Mentor">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                </header>
+                <div class="mentor-pin hidden" id="mentor-pin">
+                    <div class="mentor-pin-top">
+                        <span class="mentor-pin-label">Pinned from Copilot</span>
+                        <button type="button" class="mentor-pin-btn" onclick="mentorJumpToPinned()" title="Scroll the chat to this answer">Show in chat</button>
+                        <button type="button" class="mentor-pin-btn mentor-pin-x" onclick="mentorUnpin()" title="Unpin" aria-label="Unpin">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <div class="mentor-pin-q"></div>
+                    <div class="mentor-pin-a"></div>
                 </div>
-                <textarea id="mentor-input" rows="1" placeholder="Ask anything… @3 points at Q3" oninput="mentorOnInput()" onkeydown="mentorOnKeydown(event)" onblur="setTimeout(mentorCloseMention, 150)"></textarea>
-                <button type="submit" class="mentor-send" id="mentor-send" aria-label="Send">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                </button>
-            </form>
+                <div class="mentor-msgs" id="mentor-msgs"></div>
+                <form class="mentor-input" onsubmit="event.preventDefault(); mentorSend();">
+                    <div class="mentor-mention hidden" id="mentor-mention" role="listbox" aria-label="Prep Studio questions"></div>
+                    <div class="mentor-pills">
+                        <div class="mentor-lang" role="group" aria-label="Answer language" data-lang="english">
+                            <span class="mentor-lang-thumb" aria-hidden="true"></span>
+                            <button type="button" data-lang="english" onclick="mentorSetLang('english')"><b>Aa</b>English</button>
+                            <button type="button" data-lang="hinglish" onclick="mentorSetLang('hinglish')"><b>अ</b>Hinglish</button>
+                        </div>
+                        <button type="button" class="mentor-example" onclick="mentorExample()" title="A real-life example of the question in focus: the @Q you typed, the pinned answer, or the last one discussed">
+                            <span class="mentor-example-ico"><svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg></span>Example
+                        </button>
+                    </div>
+                    <div class="mentor-field" id="mentor-field">
+                        <textarea id="mentor-input" rows="1" placeholder="Ask anything. Type @ to cite a question" oninput="mentorOnInput()" onkeydown="mentorOnKeydown(event)" onblur="setTimeout(mentorCloseMention, 150)"></textarea>
+                        <button type="submit" class="mentor-send" id="mentor-send" aria-label="Send">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </section>
     </div>
     <!-- The "flow" beam linking a pinned Copilot answer to the Doubt Desk -->
@@ -950,6 +977,7 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./dashboard.js?v=2.8"></script>
+    <script src="./dashboard.js?v=4.0"></script>
+    <script src="./mentor.js?v=4.0"></script>
 </body>
 </html>
