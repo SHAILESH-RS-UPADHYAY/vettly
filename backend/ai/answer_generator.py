@@ -52,7 +52,7 @@ class AnswerGenerator:
     """
 
     def __init__(self):
-        self._client = AsyncGroq(api_key=config.GROQ_API_KEY)
+        self._client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
 
     async def generate_stream(
         self,

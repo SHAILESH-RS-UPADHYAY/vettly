@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Caveat:wght@600;700&family=Space+Grotesk:wght@500;600;700&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./styles.css?v=4.0">
-    <link rel="stylesheet" href="./mentor.css?v=4.1">
+    <link rel="stylesheet" href="./styles.css?v=4.8">
+    <link rel="stylesheet" href="./mentor.css?v=4.2">
 </head>
 <body data-section="home">
     <!-- WebGL Particle Physics Canvas & Blueprint Grid Background -->
@@ -304,8 +304,8 @@ Nice to Have:
                                     </div>
                                 </div>
                             </div>
-                            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                                <div style="display:flex; gap:10px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                                <div style="display:flex; gap:10px; flex-wrap:wrap;">
                                     <button class="btn btn-primary" id="jd-save-btn"><span>💾 Save Job Description Spec</span></button>
                                     <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear Buffer</span></button>
                                 </div>
@@ -432,20 +432,20 @@ Nice to Have:
                 </div>
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages">
-                        <div class="chat-welcome" style="text-align:center; margin:auto; max-width:480px;">
-                            <div style="font-size:40px; margin-bottom:10px;">💬</div>
-                            <h3 style="font-family:var(--font-poster); font-size:22px; color:var(--ink-primary);">Vettly Copilot Active</h3>
-                            <p style="font-size:14px; color:var(--ink-secondary); margin-bottom:16px;">Test questions or trigger stored answers in real-time.</p>
-                            <div class="chat-suggestions" style="display:flex; flex-direction:column; gap:8px;">
-                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('Tell me about yourself')">Tell me about yourself</button>
-                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('How did you optimize p95 latency at WebVory?')">p95 Latency Optimization at WebVory</button>
-                                <button class="btn btn-secondary btn-sm" onclick="sendChatSuggestion('Tell me about your experience with Advanced RAG')">Advanced RAG Architecture</button>
+                        <div class="chat-welcome">
+                            <span class="chat-welcome-badge"><i></i>Copilot ready</span>
+                            <h3>Ask what an interviewer would ask</h3>
+                            <p>Answers stream from your resume, GitHub and prep bank in real time.</p>
+                            <div class="chat-suggestions">
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about yourself')">Tell me about yourself</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('How did you optimize p95 latency at WebVory?')">p95 latency at WebVory</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about your experience with Advanced RAG')">Advanced RAG architecture</button>
                             </div>
                         </div>
                     </div>
                     <div class="chat-input-area">
-                        <textarea id="chat-input" rows="1" placeholder="Type an interview question or command (e.g. 'intro', 'what is RAG?', 'WebVory p95')..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-                        <button class="btn btn-primary" id="chat-send-btn" onclick="sendChatMessage()">Send</button>
+                        <textarea id="chat-input" rows="1" placeholder="Ask an interview question…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                        <button class="btn btn-primary chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send">Send <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
                     </div>
                 </div>
             </div>
@@ -458,37 +458,32 @@ Nice to Have:
                     <h1>PREP <span>STUDIO</span> HUD</h1>
                     <p>Synthesize questions, study streamed answers & fine-tune responses</p>
                 </div>
-                <div class="toolbelt-card" style="margin-bottom:28px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                        <p style="font-size: 13px; font-family:var(--font-mono); font-weight:700;">Select Category Target:</p>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:12px; font-weight:700;">English</span>
-                            <label class="switch">
-                                <input type="checkbox" id="prep-lang-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                            <span style="font-size:12px; color:var(--poster-orange); font-weight:700;">Hinglish</span>
-                        </div>
+                <div class="toolbelt-card prep-console">
+                    <div class="prep-console-head">
+                        <span class="prep-console-label">Category</span>
+                        <label class="prep-lang" title="Answer language">
+                            <input type="checkbox" id="prep-lang-toggle">
+                            <span class="prep-lang-opt">English</span>
+                            <span class="prep-lang-opt">Hinglish</span>
+                        </label>
                     </div>
 
-                    <div class="prep-category-buttons" id="prep-category-group" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <button class="btn btn-primary btn-sm category-btn" onclick="selectCategory('GENERAL', this)">🌐 All-in-One</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('BEHAVIORAL', this)">🧠 Behavioral</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('TECHNICAL', this)">💻 Technical</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('DSA_CODING', this)">⌨️ DSA/Coding</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('PROJECT_DEEP_DIVE', this)">🚀 Projects</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('SYSTEM_DESIGN', this)">📐 System Design</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('SITUATIONAL', this)">🤔 Situational</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('HR_CULTURE_FIT', this)">🤝 HR/Culture</button>
-                        <button class="btn btn-secondary btn-sm category-btn" onclick="selectCategory('ASSIGNMENT', this)">🎯 Assignment</button>
+                    <div class="prep-category-buttons" id="prep-category-group" role="group" aria-label="Question category">
+                        <button type="button" class="prep-chip category-btn active" aria-pressed="true" onclick="selectCategory('GENERAL', this)">All-in-One</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('BEHAVIORAL', this)">Behavioral</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('TECHNICAL', this)">Technical</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('DSA_CODING', this)">DSA / Coding</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('PROJECT_DEEP_DIVE', this)">Projects</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('SYSTEM_DESIGN', this)">System Design</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('SITUATIONAL', this)">Situational</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('HR_CULTURE_FIT', this)">HR / Culture</button>
+                        <button type="button" class="prep-chip category-btn" aria-pressed="false" onclick="selectCategory('ASSIGNMENT', this)">Assignment</button>
                     </div>
 
-                    <div style="margin-top: 18px;">
-                        <button class="btn btn-primary" id="prep-generate-btn" onclick="generateSinglePrep()" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px;">🎯 Synthesize Question & Stream Answer</button>
-                    </div>
+                    <button class="btn btn-primary prep-generate" id="prep-generate-btn" onclick="generateSinglePrep()">Synthesize Question &amp; Stream Answer</button>
 
-                    <div class="prep-progress hidden" id="prep-progress" style="margin-top:14px; padding:12px; background:rgba(234,88,12,0.1); border:1px solid var(--poster-orange); border-radius:var(--radius-sm); font-family:var(--font-mono); font-size:13px;">
-                        <span id="prep-progress-text">Synthesizing candidate context...</span>
+                    <div class="prep-progress hidden" id="prep-progress" role="status">
+                        <span class="prep-progress-dot"></span><span id="prep-progress-text">Synthesizing candidate context...</span>
                     </div>
                 </div>
 
@@ -977,7 +972,7 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./dashboard.js?v=4.0"></script>
+    <script src="./dashboard.js?v=4.2"></script>
     <script src="./mentor.js?v=4.1"></script>
 </body>
 </html>
