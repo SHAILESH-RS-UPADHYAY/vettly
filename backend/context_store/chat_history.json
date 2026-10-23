@@ -698,5 +698,21 @@
   {
     "role": "assistant",
     "content": "I am an AI Product Engineer who specializes in shipping conversational AI pipelines and high-concurrency backend services into production. I recently reduced p95 latency by 45% at WebVory using asynchronous FastAPI and improved query performance by 60% with Redis caching. I combine strong Python and TypeScript skills with deep experience in LLMs, RAG, and scalable system design to build resilient, high-impact AI products."
+  },
+  {
+    "role": "user",
+    "content": "suppose your page loads in 80ms in australia but 600 ms in india same backend same code what would u use to fix this ?"
+  },
+  {
+    "role": "assistant",
+    "content": "This is a geographical latency issue. I would use a CDN like Cloudflare to cache static frontend assets at edge servers in India. For dynamic API calls, I would deploy edge functions and a regional database read replica to cut out the round-trip delay to Australia."
+  },
+  {
+    "role": "user",
+    "content": "what is cherry pick in git ?"
+  },
+  {
+    "role": "assistant",
+    "content": "In Git, cherry-picking lets you select a specific commit from one branch and apply it directly to another. It is incredibly useful when you need to pull a critical bug fix or a single feature without merging the entire branch."
   }
 ]

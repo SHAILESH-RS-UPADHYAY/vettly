@@ -78,6 +78,10 @@
     /* Depth */
     --m-shadow-rgb: 120, 72, 30;             /* warm umber, tinted to the parchment */
     --m-glow-a: 0.12;
+    --m-orb-core: #fb923c;                   /* the emblem: lit side → shaded side */
+    --m-orb-deep: #ea580c;
+    --m-orb-shade: rgba(154, 52, 18, 0.32);
+    --m-orb-aura: 0.3;
     --m-grain-opacity: 0.035;
     --m-grain-blend: multiply;
 
@@ -142,6 +146,10 @@ body.theme-dark {
 
     --m-shadow-rgb: 0, 0, 0;
     --m-glow-a: 0.22;
+    --m-orb-core: var(--m-accent);
+    --m-orb-deep: var(--m-accent-deep);
+    --m-orb-shade: rgba(10, 14, 26, 0.38);
+    --m-orb-aura: 0.5;
     --m-grain-opacity: 0.05;
     --m-grain-blend: overlay;
 }
@@ -159,17 +167,17 @@ body.theme-dark {
 }
 .m-orb-aura {
     position: absolute; inset: -32%; z-index: -1; border-radius: 50%;
-    background: radial-gradient(circle, rgba(var(--m-accent-rgb), 0.5), rgba(var(--m-accent-rgb), 0) 66%);
+    background: radial-gradient(circle, rgba(var(--m-accent-rgb), var(--m-orb-aura)), rgba(var(--m-accent-rgb), 0) 66%);
     animation: mBreathe 4.8s var(--m-ease) infinite;
 }
 .m-orb-sphere {
     position: absolute; inset: 0; border-radius: 50%;
     background:
         radial-gradient(circle at 31% 25%, rgba(255, 249, 238, 0.9), rgba(255, 249, 238, 0) 30%),
-        conic-gradient(from var(--m-angle), rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.26) 70deg, rgba(255, 255, 255, 0) 150deg, rgba(10, 14, 26, 0.18) 250deg, rgba(255, 255, 255, 0) 360deg),
-        radial-gradient(circle at 64% 76%, var(--m-accent-deep), var(--m-accent) 72%);
+        conic-gradient(from var(--m-angle), rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.26) 70deg, rgba(255, 255, 255, 0) 150deg, var(--m-orb-shade) 250deg, rgba(255, 255, 255, 0) 360deg),
+        radial-gradient(circle at 64% 76%, var(--m-orb-deep), var(--m-orb-core) 72%);
     box-shadow:
-        inset 0 -5px 12px rgba(10, 14, 26, 0.38),
+        inset 0 -5px 12px var(--m-orb-shade),
         inset 0 1px 1px rgba(255, 255, 255, 0.55),
         0 0 0 1px rgba(255, 255, 255, 0.14),
         0 10px 24px -8px rgba(var(--m-accent-rgb), 0.75);
@@ -197,7 +205,7 @@ body.theme-dark {
 .m-run-2.m-run-head { animation-delay: 0s; }                    /* running backwards, the lead is the dash start */
 .m-star-group {
     transform-box: fill-box; transform-origin: center;
-    filter: drop-shadow(0 1px 1.5px rgba(10, 14, 26, 0.45));
+    filter: drop-shadow(0 1px 1.5px var(--m-orb-shade));
     animation: mTwinkle 4.8s var(--m-ease) infinite;
 }
 .m-star { fill: #fff9ee; }

@@ -54,7 +54,8 @@ class ContextEngine:
         self._assignment: dict = {}  # Company assignment/assessment (HIGHEST PRIORITY)
         self._rolling_summary: str = ""  # Persistent memory of summarized old conversation turns
         self._context_file = config.CONTEXT_STORE_DIR / "context.json"
-        self._groq_client = AsyncGroq(api_key=config.GROQ_API_KEY)
+        self._groq_client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+        self.load_context()
 
     def set_resume(self, parsed_resume: dict) -> None:
         """Set the parsed resume data."""

@@ -1122,8 +1122,58 @@
       "score": 7.0,
       "iterations": 0,
       "validated_at": "2026-09-27T15:00:02.866602"
+    },
+    {
+      "question": "At WebVory, you resolved a major dashboard freezing issue caused by 1,600 simultaneous SQL queries. How did you specifically handle this N+1 query problem, and what was your strategy for implementing the Redis caching layer to prevent database connection saturation?",
+      "answer": "I implemented eager query batching to fetch all related dashboard data in a single round trip, eliminating the 1,600 individual lookups. I then layered a Redis hot cache for frequent parallel requests, preventing database saturation and cutting our query latency by 60%.",
+      "category": "TECHNICAL",
+      "keywords": [
+        "N+1 Query Problem",
+        "Redis",
+        "PostgreSQL",
+        "Caching",
+        "Eager Loading",
+        "Database Optimization"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-09-28T09:43:30.290656"
+    },
+    {
+      "question": "What is the core difference between a traditional Retrieval-Augmented Generation (RAG) pipeline and an Agentic AI workflow?",
+      "answer": "Traditional RAG searches a database once to answer a question, whereas an agentic workflow thinks in loops and uses external tools. In my Simplify Money backend, the AI dynamically decides whether to query live gold pricing APIs or read documents based on the user's request.",
+      "category": "GENERAL",
+      "keywords": [
+        "RAG",
+        "Agentic AI",
+        "LLM",
+        "Reasoning Engine",
+        "Autonomous"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-09-30T10:48:02.130073"
+    },
+    {
+      "question": "What is model quantization in the context of TensorRT, and how did you decide between INT8 and FP16 precision when optimizing the behavioral cloning models at FAR Labs?",
+      "answer": "Quantization compresses a model to run faster by reducing the precision of its weights. At FAR Labs, I used INT8 for movement models but kept the Aim LSTM at FP16 because aiming required higher precision to preserve the human player's exact style.",
+      "category": "TECHNICAL",
+      "keywords": [
+        "TensorRT",
+        "Quantization",
+        "INT8",
+        "FP16",
+        "Inference Optimization",
+        "PyTorch"
+      ],
+      "difficulty": "hard",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-10-20T23:26:56.621022"
     }
   ],
-  "last_updated": "2026-09-27T15:00:02.866646",
-  "total_entries": 56
+  "last_updated": "2026-10-20T23:26:56.621381",
+  "total_entries": 59
 }

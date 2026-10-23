@@ -238,7 +238,7 @@ async function clearChatHistory() {
     chatHistory = [];
     localStorage.removeItem('acemate_chat_history'); // clear local just in case
     const messagesDiv = document.getElementById('chat-messages');
-    messagesDiv.innerHTML = '<div class="chat-welcome"><h3>💬 Chat with Acemate</h3><p>Ask anything — prep questions, mock interviews, concept explanations.</p></div>';
+    messagesDiv.innerHTML = '<div class="chat-welcome"><span class="chat-welcome-badge"><i></i>Copilot ready</span><h3>Ask what an interviewer would ask</h3><p>Answers stream from your resume, GitHub and prep bank in real time.</p></div>';
 }
 
 function sendChatSuggestion(text) {
@@ -369,15 +369,11 @@ function syncPrepSortToolbarUI(totalCount) {
 function selectCategory(category, btnEl) {
     currentPrepCategory = category;
     
-    // Update button styles: make the clicked one primary, others secondary
-    const buttons = document.querySelectorAll('.category-btn');
-    buttons.forEach(btn => {
-        btn.classList.remove('btn-primary');
-        btn.classList.add('btn-secondary');
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        const on = btn === btnEl;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-pressed', on);
     });
-    
-    btnEl.classList.remove('btn-secondary');
-    btnEl.classList.add('btn-primary');
 }
 
 let recentlyGenerated = false;

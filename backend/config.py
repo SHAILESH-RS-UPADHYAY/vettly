@@ -55,9 +55,12 @@ UPLOADS_DIR = BACKEND_DIR / "uploads"
 CONTEXT_STORE_DIR = BACKEND_DIR / "context_store"
 RECORDINGS_DIR = BACKEND_DIR / "recordings"
 
-# Create directories if they don't exist
+# Create directories if they don't exist (safe on read-only serverless filesystems)
 for directory in [UPLOADS_DIR, CONTEXT_STORE_DIR, RECORDINGS_DIR]:
-    directory.mkdir(parents=True, exist_ok=True)
+    try:
+        directory.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
 
 
 def get_active_llm_provider() -> str:

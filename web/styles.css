@@ -798,9 +798,12 @@ body.theme-dark kbd {
 .tab-panel.active { display: block; animation: kineticSlide 0.35s ease; }
 
 /* ─── LIVE CHAT & HUD STYLING ───────────────────────────────────── */
+/* Chat is an app screen: it owns exactly the visible viewport and only the message list scrolls */
+body[data-section="chat"] { height: 100dvh; overflow: hidden; }
 #page-chat {
     height: 100vh;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
     box-sizing: border-box;
 }
@@ -843,7 +846,7 @@ body.theme-dark kbd {
 .chat-container {
     border-radius: var(--radius-lg); background: var(--bg-card);
     border: 2px solid var(--border-main); display: flex; flex-direction: column;
-    flex: 1; min-height: 0; height: 100%;
+    flex: 1; min-height: 0;
     box-shadow: var(--shadow-poster); overflow: hidden;
 }
 
@@ -1013,18 +1016,70 @@ body.theme-dark .chat-bubble.user code {
     color: var(--ink-primary);
 }
 
-.chat-input-area {
-    padding: 16px 20px; background: var(--bg-sidebar);
-    border-top: 2px solid var(--border-main); display: flex; gap: 12px; align-items: center;
+.chat-welcome {
+    margin: auto; max-width: 520px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 8px;
 }
+.chat-welcome h3 {
+    font: 700 clamp(20px, 3vw, 26px)/1.2 var(--font-poster); color: var(--ink-primary); letter-spacing: -0.5px;
+}
+.chat-welcome p { font-size: 14.5px; line-height: 1.55; color: var(--ink-secondary); max-width: 40ch; }
+.chat-welcome-badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+    font: 600 11px/1 var(--font-mono); letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--poster-orange); background: color-mix(in srgb, var(--poster-orange) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--poster-orange) 25%, transparent);
+}
+.chat-welcome-badge i {
+    width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 20%, transparent);
+}
+.chat-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
+.chat-suggestion {
+    padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    font: 500 13.5px/1.2 var(--font); color: var(--ink-primary);
+    background: var(--bg-input); border: 1px solid var(--border-main);
+    transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.chat-suggestion:hover { border-color: var(--poster-orange); transform: translateY(-1px); box-shadow: 0 6px 16px -8px var(--poster-orange-glow); }
+.chat-suggestion:focus-visible { outline: 2px solid var(--poster-orange); outline-offset: 2px; }
+
+/* Composer: one rounded field holding the textarea and send button */
+.chat-input-area {
+    margin: 0 16px 16px; padding: 6px 6px 6px 18px; border-radius: 16px;
+    background: var(--bg-input); border: 1px solid var(--border-main);
+    display: flex; gap: 10px; align-items: center;
+    box-shadow: 0 8px 24px -16px rgba(15, 23, 42, 0.35);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+.chat-input-area:focus-within { border-color: var(--poster-orange); box-shadow: 0 0 0 3px var(--poster-orange-glow); }
 
 .chat-input-area textarea {
-    flex: 1; background: var(--bg-input); border: 1px solid var(--border-main);
-    border-radius: var(--radius-sm); padding: 12px 16px; color: var(--ink-primary);
-    font-family: var(--font); font-size: 14px; resize: none; outline: none; transition: var(--transition);
+    flex: 1; min-width: 0; background: transparent; border: 0; padding: 10px 0;
+    color: var(--ink-primary); font: 15px/1.5 var(--font); resize: none; outline: none;
+    max-height: 160px;
 }
+.chat-send { flex-shrink: 0; border-radius: 12px; padding: 10px 16px; gap: 6px; }
 
-.chat-input-area textarea:focus { border-color: var(--poster-orange); }
+/* ─── RESPONSIVE: every page adapts from phone to ultrawide ───── */
+:where(.dashboard-grid, .poster-grid-4, .poster-media-grid, .settings-telemetry-grid, .hotkeys-grid) > * { min-width: 0; }
+textarea, input, select, img, pre { max-width: 100%; }
+.poster-header h1 { font-size: clamp(28px, 6vw, 46px); }
+#page-chat .poster-header h1 { font-size: clamp(22px, 4vw, 32px); }
+
+@media (max-width: 640px) {
+    .page-inner { padding: 20px 14px 96px; }
+    .toolbelt-card { padding: 18px; }
+    .chat-messages { padding: 16px 12px; }
+    .chat-bubble { max-width: 94%; padding: 12px 14px; }
+    .chat-input-area { margin: 0 8px 8px; padding-left: 14px; }
+    .chat-send { padding: 10px 12px; }
+    .dashboard-grid, .settings-telemetry-grid { grid-template-columns: 1fr; }
+    .toolbelt-card-header, .toolbelt-card-header > div { flex-wrap: wrap; gap: 8px; }
+    .toolbelt-card-header h3 { font-size: 17px; }
+    .context-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .context-tabs .tab-btn { flex-shrink: 0; }
+}
 
 /* ─── INTERVIEW ARCHIVE POSTER CARDS ────────────────────────────── */
 .history-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
@@ -1266,34 +1321,75 @@ input[type="text"]:focus, textarea:focus, select:focus {
 .hidden { display: none !important; }
 
 /* ─── PREP STUDIO PREMIUM CARDS & SPATIAL PILLS ─────────────────── */
+.prep-console { margin-bottom: 28px; display: grid; gap: 18px; }
+.prep-console-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.prep-console-label {
+    font: 700 11px/1 var(--font-mono); letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink-muted);
+}
+
+/* English / Hinglish: a native checkbox drives a two-option segmented switch */
+.prep-lang {
+    position: relative; display: inline-grid; grid-template-columns: 1fr 1fr;
+    padding: 3px; border-radius: 999px; cursor: pointer;
+    background: var(--bg-input); border: 1px solid var(--border-main);
+}
+.prep-lang input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.prep-lang::before {                                            /* sliding thumb */
+    content: ""; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px);
+    border-radius: 999px; background: var(--ink-primary);
+    transition: transform var(--transition);
+}
+.prep-lang:has(input:checked)::before { transform: translateX(100%); }
+.prep-lang-opt {
+    position: relative; z-index: 1; padding: 6px 14px; text-align: center;
+    font: 600 12px/1 var(--font-tech); color: var(--ink-secondary); transition: color var(--transition);
+}
+.prep-lang:not(:has(input:checked)) .prep-lang-opt:first-of-type,
+.prep-lang:has(input:checked) .prep-lang-opt:last-of-type { color: var(--bg-card); }
+.prep-lang:has(input:focus-visible) { outline: 2px solid var(--poster-orange); outline-offset: 2px; }
+body.theme-dark .prep-lang:not(:has(input:checked)) .prep-lang-opt:first-of-type,
+body.theme-dark .prep-lang:has(input:checked) .prep-lang-opt:last-of-type { color: #0b1020; }
+
+/* Category filter: one rail of chips; scrolls sideways instead of wrapping on narrow screens */
 .prep-category-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: flex; flex-wrap: wrap; gap: 6px;
 }
+.prep-chip {
+    height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    font: 600 13px/1 var(--font-tech); color: var(--ink-secondary);
+    background: transparent; border: 1px solid var(--border-main);
+    transition: color var(--transition), background var(--transition), border-color var(--transition);
+}
+.prep-chip:hover:not(:disabled) { color: var(--ink-primary); border-color: var(--poster-orange); }
+.prep-chip:focus-visible { outline: 2px solid var(--poster-orange); outline-offset: 2px; }
+.prep-chip.active {
+    color: #fff; background: var(--poster-orange); border-color: var(--poster-orange);
+    box-shadow: 0 6px 16px -6px var(--poster-orange-glow);
+}
+body.theme-dark .prep-chip.active { color: #04121c; }
+.prep-chip:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.prep-category-buttons .category-btn {
-    height: 36px;
-    padding: 0 14px;
-    border-radius: 5px !important;
-    font-family: var(--font-tech);
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    border: 1.5px solid var(--border-main);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+.prep-generate { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+.prep-progress {
+    display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+    border-radius: var(--radius-sm); border: 1px solid var(--poster-orange-glow);
+    background: color-mix(in srgb, var(--poster-orange) 8%, transparent);
+    font: 500 13px var(--font-mono); color: var(--ink-primary);
 }
+.prep-progress-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--poster-orange);
+    animation: prepPulse 1.2s ease-in-out infinite;
+}
+@keyframes prepPulse { 50% { opacity: 0.3; transform: scale(0.7); } }
 
-.prep-category-buttons .category-btn.btn-primary {
-    border-color: var(--poster-orange);
-    box-shadow:
-        0 4px 12px var(--poster-orange-glow),
-        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+@media (max-width: 640px) {
+    .prep-category-buttons { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; }
+    .prep-toolbar-right, .prep-sort-box { width: 100%; }
+    .prep-sort-prefix, .prep-sort-chip, .prep-toolbar-divider { display: none; }
+    .prep-sort-segmented { flex: 1; display: flex; }
+    .prep-sort-btn { flex: 1; justify-content: center; }
 }
+@media (prefers-reduced-motion: reduce) { .prep-progress-dot { animation: none; } }
 
 .prep-list-toolbar {
     display: flex;
@@ -1787,6 +1883,29 @@ body.theme-dark .prep-new-stream-badge {
     #main-content { margin-left: 70px; }
     .poster-grid-4, .poster-media-grid, .dashboard-grid { grid-template-columns: 1fr; }
 }
+
+/* Phones: the side rail becomes a bottom tab bar so content gets the full width */
+@media (max-width: 640px) {
+    #sidebar {
+        top: auto; width: 100%; height: calc(60px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+        flex-direction: row; border-right: 0; border-top: 2px solid var(--border-main);
+        box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.08);
+    }
+    .sidebar-logo { display: none; }
+    .sidebar-nav { flex-direction: row; justify-content: space-around; padding: 6px; gap: 2px; }
+    .nav-item { flex: 1; justify-content: center; padding: 10px 0; }
+    #main-content { margin-left: 0; }
+    #page-chat .page-inner { padding: 8px 8px calc(68px + env(safe-area-inset-bottom)); }
+    #page-chat .poster-header { margin-bottom: 8px; padding-bottom: 6px; }
+    #page-chat .poster-header p { display: none; }
+    #mentor .mentor-orb { bottom: calc(76px + env(safe-area-inset-bottom)); right: 14px; width: 52px; height: 52px; }
+    #mentor .mentor-orb .m-orb { --s: 52px; }
+    body[data-section="chat"] #main-content #page-chat { padding-right: 0; }
+    body[data-section="chat"] #mentor .mentor-orb { bottom: calc(150px + env(safe-area-inset-bottom)); }
+}
+.chat-input-area textarea { scrollbar-width: none; }
+.chat-messages { scrollbar-width: thin; scrollbar-color: var(--border-main) transparent; overscroll-behavior: contain; }
 
 /* ─── JD SPECIFICATION EDITOR HUD ─────────────────────────────── */
 .jd-editor-container {
