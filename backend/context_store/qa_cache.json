@@ -1172,8 +1172,25 @@
       "score": 7.0,
       "iterations": 0,
       "validated_at": "2026-10-20T23:26:56.621022"
+    },
+    {
+      "question": "When designing an AI application, how do you decide what data should be stored in a traditional relational database versus a vector database?",
+      "answer": "I use relational databases for exact data like user profiles, and vector databases for unstructured text to search by meaning. In my RADAR project, I store job IDs in PostgreSQL while keeping full job descriptions in Pinecone for semantic resume matching.",
+      "category": "GENERAL",
+      "keywords": [
+        "PostgreSQL",
+        "Vector Database",
+        "Pinecone",
+        "System Design",
+        "RAG",
+        "Embeddings"
+      ],
+      "difficulty": "medium",
+      "score": 7.0,
+      "iterations": 0,
+      "validated_at": "2026-10-26T21:28:40.836086"
     }
   ],
-  "last_updated": "2026-10-20T23:26:56.621381",
-  "total_entries": 59
+  "last_updated": "2026-10-26T21:28:40.836131",
+  "total_entries": 60
 }
