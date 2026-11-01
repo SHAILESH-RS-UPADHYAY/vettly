@@ -43,6 +43,7 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'aboutme') loadAboutMe();
     if (name === 'prep') loadPrepQuestions();
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
+    if (name === 'home') renderToday();
     if (name === 'settings') Appearance.renderSettings();
     
     // Auto-scroll chat to bottom when switching to chat section
@@ -82,6 +83,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchSection(document.getElementById(`page-${start}`) ? start : 'home');
     await restoreChatMessages();
     await restoreSetupState();
+});
+// a #section typed into the address, or a link to one, opens that tab too
+addEventListener('hashchange', () => {
+    const name = location.hash.slice(1).split('?')[0];
+    if (document.getElementById(`page-${name}`)) switchSection(name, { animate: true });
 });
 
 // ─── Hero Mock Typing ────────────────────────────────────────
@@ -307,7 +313,8 @@ async function sendChatMessage() {
     // Add typing indicator
     const typingBubble = document.createElement('div');
     typingBubble.className = 'chat-bubble assistant typing';
-    typingBubble.textContent = 'Thinking...';
+    typingBubble.setAttribute('role', 'status');
+    typingBubble.innerHTML = '<span class="typing-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="sr-only">Thinking</span>';
     messagesDiv.appendChild(typingBubble);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
 
@@ -657,6 +664,7 @@ async function loadPrepQuestions() {
         mentor.prep = entries;  // keeps the Mentor's @ picker in sync with Prep Studio
         if (grew) prepBuildDock();
         prepRender();
+        renderToday();
         const search = document.getElementById('prep-search');
         if (search && search.value !== prep.f.q) search.value = prep.f.q;
 
@@ -1890,7 +1898,7 @@ async function checkServerConnection() {
                 statusPill.className = 'badge-pill badge-pill-emerald pulse-dot';
                 statusPill.innerHTML = '<span class="badge-dot"></span>SERVER ONLINE';
             }
-            if (telemetryPing) telemetryPing.textContent = `<svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>${pingTime}ms ping`;
+            if (telemetryPing) telemetryPing.innerHTML = `<svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>${pingTime}ms ping`;
             if (telemetryEngine) telemetryEngine.textContent = `${data.name} v${data.version}`;
             if (sidebarDot) { sidebarDot.className = 'status-dot online'; }
             if (sidebarLabel) sidebarLabel.textContent = 'Online';
@@ -2482,3 +2490,26 @@ function showConfirmModal(options = {}) {
 function showPromptModal(options = {}) {
     return openAcemateModal({ ...options, variant: options.variant || 'primary', isPrompt: true });
 }
+
+// ─── Home: today at a glance (Brain Bento progress and the Prep answers waiting for review) ───
+function renderToday() {
+    const el = document.getElementById('today-card');
+    if (!el) return;
+    let bento = {};
+    try { bento = JSON.parse(localStorage.getItem('vettly_bento') || '{}'); } catch (e) { /* storage blocked */ }
+    const eaten = (bento.done?.[new Date().toLocaleDateString('en-CA')] || []).length;
+    const toReview = prep.entries.filter(e => prepStatus(e) === 'review').length;
+    const C = 2 * Math.PI * 20;
+    el.innerHTML = `
+        <div class="today-tile" style="--i:0">
+            <svg class="bento-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="ring-fill" cx="24" cy="24" r="20" style="stroke-dasharray:${C};stroke-dashoffset:${C * (1 - eaten / 5)}"/></svg>
+            <div><b>${eaten} of 5 concepts</b><span>${bento.streak ? `${bento.streak} day streak` : 'Start a streak today'}</span></div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('bento', { animate: true })">Open Brain Bento</button>
+        </div>
+        <div class="today-tile" style="--i:1">
+            <span class="today-ico" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
+            <div><b>${prep.loaded ? `${toReview} answers to review` : 'Your prep bank'}</b><span>${prep.loaded ? `${prep.entries.length} questions in Prep Studio` : 'Generate your first question'}</span></div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('prep', { animate: true })">Review in Prep Studio</button>
+        </div>`;
+}
+renderToday();

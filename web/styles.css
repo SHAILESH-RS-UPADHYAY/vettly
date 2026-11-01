@@ -622,8 +622,12 @@ body[data-section="chat"] { height: 100dvh; overflow: hidden; }
 .chat-bubble {
     max-width: 88%; padding: 14px 20px; border-radius: 14px;
     font-size: 14.5px; line-height: 1.65; word-wrap: break-word;
-    animation: kineticSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: bubbleBot 0.6s var(--spring) both;
 }
+.chat-bubble.user { animation-name: bubbleUser; transform-origin: 100% 100%; }
+.chat-bubble.assistant { transform-origin: 0 100%; }
+@keyframes bubbleUser { from { opacity: 0; transform: translate(24px, 10px) scale(0.92); } }
+@keyframes bubbleBot { from { opacity: 0; transform: translate(-18px, 10px) scale(0.96); } }
 
 .chat-bubble strong {
     font-weight: 700;
@@ -2100,3 +2104,29 @@ textarea, input, select, img, pre { max-width: 100%; }
 .em-i { width: 1.05em; height: 1.05em; vertical-align: -0.15em; margin-right: 0.3em; color: var(--accent-ink); }
 @media (prefers-reduced-motion: reduce) { .tb-chip, .ctx-item { animation: none !important; } }
 :root[data-motion="calm"] :is(.tb-chip, .ctx-item) { animation: none !important; }
+
+/* ── Phase 6 polish: typing dots, tap targets, fields that grow, Today on Home ── */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+.typing-dots { display: inline-flex; gap: 5px; padding: 4px 2px; }
+.typing-dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: typingHop 1.1s var(--ease-in-out) infinite; }
+.typing-dots i:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingHop { 0%, 60%, 100% { transform: translateY(0); opacity: 0.45; } 30% { transform: translateY(-7px); opacity: 1; } }
+@media (pointer: coarse) { .chat-bubble-actions button, .chat-expand-btn { min-height: 44px; } }
+#page-aboutme textarea, .ctx-field:is(textarea) { field-sizing: content; min-height: 5.5em; max-height: 60vh; }
+.today-card { display: grid; gap: 12px; margin: -6px 0 var(--gap-stack); }
+@media (min-width: 48rem) { .today-card { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.today-tile {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: var(--r-card); background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--card-shadow);
+    animation: chipIn 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 90ms);
+}
+.today-tile div { display: grid; gap: 2px; min-width: 0; }
+.today-tile b { font: 700 1rem/1.25 var(--font-body); color: var(--ink); }
+.today-tile span { font-size: 0.86rem; color: var(--muted); }
+.today-tile .bento-ring { width: 46px; height: 46px; }
+.today-ico { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); }
+.today-ico svg { width: 22px; height: 22px; }
+@media (max-width: 30rem) { .today-tile { grid-template-columns: auto minmax(0, 1fr); } .today-tile .btn { grid-column: 1 / -1; } }
+@media (prefers-reduced-motion: reduce) { .typing-dots i, .today-tile, .chat-bubble { animation: none !important; } }
+:root[data-motion="calm"] :is(.typing-dots i, .today-tile, .chat-bubble) { animation: none !important; }
