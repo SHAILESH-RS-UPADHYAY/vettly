@@ -143,7 +143,6 @@
 
 /* the Mentor keeps its original serif voice in the classic look */
 :root[data-look="classic"] .mentor-title strong { font-style: italic; font-weight: 400; font-size: 27px; line-height: 0.95; letter-spacing: -0.2px; }
-:root[data-look="classic"] .mentor-pin-q { font-style: italic; font-weight: 400; font-size: 17px; letter-spacing: 0; }
 :root[data-look="classic"] .mentor-by { font-style: italic; font-weight: 400; font-size: 16px; letter-spacing: 0; }
 :root[data-look="classic"] .mentor-thinking { font-style: italic; font-weight: 400; font-size: 18px; letter-spacing: 0; }
 :root[data-look="classic"] .mentor-empty h4 { font-weight: 400; font-size: 30px; line-height: 1.08; letter-spacing: -0.3px; }

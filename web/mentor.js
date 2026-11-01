@@ -29,7 +29,10 @@ const MENTOR_KEYS = {
     lang: 'vettly_mentor_lang',
     open: 'vettly_mentor_open',
     geom: 'vettly_mentor_geom',
+    split: 'vettly_mentor_split',
 };
+const MENTOR_SPLIT = { side: 0.42, stack: 0.4 };   // the pinned card's share of the desk, side by side and stacked
+const MENTOR_GUTTER = 18;
 
 const MENTOR_MIN = { w: 340, h: 440 };
 
@@ -489,7 +492,8 @@ function mentorPointerSession(cls, cursor, onMove, handle) {
         document.documentElement.style.cursor = '';
         removeEventListener('pointermove', onMove);
         removeEventListener('pointerup', up);
-        mentorStore.set(MENTOR_KEYS.geom, mentor.geom);
+        if (document.getElementById('mentor').classList.contains('split')) { if (mentor.preSplit) mentor.preSplit.moved = true; }
+        else mentorStore.set(MENTOR_KEYS.geom, mentor.geom);
     };
     addEventListener('pointermove', onMove);
     addEventListener('pointerup', up);
@@ -535,6 +539,7 @@ function mentorResizeStart(e) {
 // Back to the default size & corner. FLIP: jump to the final rect, then glide there from the old one (transform only)
 function mentorResetLayout() {
     if (!mentor.geom) return;
+    if (mentor.preSplit) mentor.preSplit.moved = true;
     const panel = document.querySelector('.mentor-panel');
     const first = panel.getBoundingClientRect();
     mentorSetGeom(null);
@@ -553,18 +558,12 @@ function mentorPin(el) {
     mentor.pinned?.classList.remove('mentor-focused');
     mentor.pinned = el;
     el.classList.add('mentor-focused');
-    const fromPrep = Boolean(el.closest('#page-prep'));
-    const pin = document.getElementById('mentor-pin');
-    pin.querySelector('.mentor-pin-label').textContent = fromPrep ? 'Pinned from Prep Studio' : 'Pinned from Copilot';
-    pin.querySelector('.mentor-pin-btn').textContent = fromPrep ? 'Show card' : 'Show in chat';
-    pin.querySelector('.mentor-pin-q').textContent = el._question || 'Copilot answer';
-    pin.querySelector('.mentor-pin-a').textContent = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
-    pin.classList.remove('hidden', 'pop');
-    void pin.offsetWidth;  // restart the pop-in animation
-    pin.classList.add('pop');
+    mentorFillSheet(el);
     const from = el.querySelector('.mentor-doubt-btn, .prep-btn-mentor, [data-mentor-pin]');
     if (from) mentorBurstFrom(from, 10);
+    const wasOpen = document.getElementById('mentor').dataset.state === 'open';
     mentorToggle(true);
+    mentorDesk(true, el, wasOpen);
 }
 
 // Prep Studio: pin question n's card, cite it in the composer, and draw the pipeline from it
@@ -596,7 +595,7 @@ function mentorRepin() {
 function mentorUnpin() {
     mentor.pinned?.classList.remove('mentor-focused');
     mentor.pinned = null;
-    document.getElementById('mentor-pin').classList.add('hidden');
+    mentorDesk(false);
     mentorFlowKick();
 }
 
@@ -623,7 +622,9 @@ function mentorFlow() {
     const svg = document.getElementById('mentor-flow');
     const el = mentor.pinned;
     const home = el?.closest('#page-prep') ? 'prep' : 'chat';
-    const on = Boolean(el) && document.body.dataset.section === home && document.body.classList.contains('mentor-open');
+    // side by side only: stacked, the gutter's own flow carries it
+    const on = Boolean(el) && document.getElementById('mentor').classList.contains('split')
+        && document.body.classList.contains('mentor-open') && !mentorDeskStacked();
     svg.classList.toggle('on', on);
     if (!on) {
         mentor.flowing = false;
@@ -633,39 +634,260 @@ function mentorFlow() {
         mentor.flowPaused = mentorCalm();
         if (mentor.flowPaused) svg.pauseAnimations(); else svg.unpauseAnimations();
     }
-    const clip = home === 'chat'
-        ? document.getElementById('chat-messages').getBoundingClientRect()
-        : { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
-    const r = el.getBoundingClientRect();
-    const d = mentorBeamPath(r, document.getElementById('mentor-pin').getBoundingClientRect(), clip);
+    const sheet = document.getElementById('mentor-sheet').getBoundingClientRect();
+    let d = mentorDeskPath(sheet);
+    if (document.body.dataset.section === home) {   // the card's own page is open: the beam starts at the card
+        const clip = home === 'chat'
+            ? document.getElementById('chat-messages').getBoundingClientRect()
+            : { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
+        d = `${mentorOuterPath(el.getBoundingClientRect(), sheet, clip)} ${d}`;
+    }
     svg.querySelectorAll('.flow-line').forEach(path => path.setAttribute('d', d));
-    svg.classList.toggle('dim', r.bottom <= clip.top || r.top >= clip.bottom);
     requestAnimationFrame(mentorFlow);
 }
 
-// Curve from the pinned bubble (r) to the pin card (p), leaving the bubble on the side facing the panel
-function mentorBeamPath(r, p, chat) {
-    const top = Math.min(Math.max(r.top, chat.top), chat.bottom);  // visible slice of the bubble
-    const bottom = Math.max(Math.min(r.bottom, chat.bottom), chat.top);
-    const right = p.left + p.width / 2 >= r.left + r.width / 2;
-    const edge = right ? p.left : p.right;
-    const s = right ? 1 : -1;
-    const x2 = edge - 4 * s;
-    const y2 = p.top + Math.min(p.height / 2, 30);
-    if ((edge - (right ? r.right : r.left)) * s >= 56) {
-        // Room beside the bubble: an S-curve from its side
-        const x1 = (right ? r.right : r.left) + 4 * s;
-        const y1 = (top + bottom) / 2;
-        const dx = (x2 - x1) / 2;
+// Outside the desk: from the card to the sheet's left edge, never across the desk
+function mentorOuterPath(r, sheet, clip) {
+    const top = Math.max(r.top, clip.top), bottom = Math.min(r.bottom, clip.bottom);
+    if (bottom - top < 8 || r.left > sheet.left - 30) return '';   // off screen, or tucked under the desk
+    const x2 = sheet.left - 2, y2 = sheet.top + 34, y1 = (top + bottom) / 2;
+    if (r.right < sheet.left - 40) {   // the card sits clear of the desk: an S-curve from its side
+        const x1 = r.right + 4, dx = (x2 - x1) / 2;
         return `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
     }
-    if (y2 < top - 12 || y2 > bottom + 12) {
-        // The panel overlaps the bubble: rise (or drop) from its border next to the panel, then bend in
-        const x1 = right ? Math.max(r.left + 24, edge - 56) : Math.min(r.right - 24, edge + 56);
-        const y1 = y2 < top ? top - 2 : bottom + 2;
-        return `M${x1},${y1} C${x1},${y1 + (y2 - y1) * 0.7} ${x1 + (x2 - x1) * 0.3},${y2} ${x2},${y2}`;
+    const x1 = Math.max(r.left + 24, sheet.left - 40);   // the card runs under the desk: rise from its visible part
+    return `M${x1},${y1} C${x1},${(y1 + y2) / 2} ${x2 - 24},${y2} ${x2},${y2}`;
+}
+
+// Inside the desk: from the pinned question, along the gutter, into the composer
+function mentorDeskPath(s) {
+    const q = document.getElementById('sheet-q').getBoundingClientRect();
+    const f = document.getElementById('mentor-field').getBoundingClientRect();
+    const xm = s.right + MENTOR_GUTTER / 2, x2 = f.left + 4, k = 10;
+    const y1 = Math.min(Math.max(q.top + 14, s.top + 48), s.bottom - 24);
+    const y2 = f.top + f.height / 2;
+    if (y2 - y1 < 2 * k + 4) return `M${s.right},${y1} C${xm},${y1} ${xm},${y2} ${x2},${y2}`;
+    return `M${s.right},${y1} H${xm - k} Q${xm},${y1} ${xm},${y1 + k} V${y2 - k} Q${xm},${y2} ${xm + k},${y2} H${x2}`;
+}
+
+// ─── Split Desk: the pinned card floats beside the chat (or above it), joined by the pipeline ───
+
+const mentorDeskStacked = () => getComputedStyle(document.getElementById('mentor-desk')).getPropertyValue('--stacked').trim() === '1';
+
+// The panel's layout box, ignoring the scale it opens and closes with
+function mentorPanelRect() {
+    const panel = document.querySelector('.mentor-panel');
+    const cs = getComputedStyle(panel);
+    const left = parseFloat(cs.left), top = parseFloat(cs.top);
+    return { left, top, width: panel.offsetWidth, height: panel.offsetHeight };
+}
+
+// The sheet: the pinned question and its whole answer
+function mentorFillSheet(el) {
+    const sheet = document.getElementById('mentor-sheet');
+    const fromPrep = Boolean(el.closest('#page-prep'));
+    if (fromPrep && el.dataset.tone) sheet.dataset.tone = el.dataset.tone; else delete sheet.dataset.tone;
+    const n = fromPrep ? Number(el.id.replace('prep-card-', '')) + 1 : 0;
+    document.getElementById('sheet-tag').innerHTML = fromPrep
+        ? `<b>Q${n}</b>${escapeHtml(el.querySelector('.tone-pill')?.textContent.trim() || '')}`
+        : '<b>Copilot</b>answer';
+    document.getElementById('sheet-from').textContent = fromPrep ? 'Pinned from Prep Studio' : 'Pinned from Live Copilot';
+    document.getElementById('sheet-q').textContent = el._question || 'Copilot answer';
+    const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
+    document.getElementById('sheet-a').innerHTML = answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    sheet.querySelector('.sheet-body').scrollTop = 0;
+}
+
+// Open or close the desk. Opening keeps the chat exactly where and as wide as it was: the desk grows to its left.
+function mentorDesk(on, from, wasOpen = true) {
+    const root = document.getElementById('mentor');
+    const panel = document.querySelector('.mentor-panel');
+    const sheet = document.getElementById('mentor-sheet');
+    const motion = !mentorCalm() && root.dataset.state === 'open';
+    const round = `round ${getComputedStyle(panel).borderRadius}`;
+    if (on) {
+        const already = root.classList.contains('split');
+        const before = mentorPanelRect();
+        if (!already) {
+            root.classList.add('split');
+            mentorDeskGeom(true, before);
+        }
+        mentorApplySplit();
+        sheet.classList.remove('fresh');
+        void sheet.offsetWidth;   // replay the sheet's entrance for every new card
+        sheet.classList.add('fresh');
+        if (motion && wasOpen && !already && !mentorDeskStacked()) {
+            const cut = before.left - mentorPanelRect().left;
+            if (cut > 4) panel.animate([{ clipPath: `inset(0 0 0 ${cut}px ${round})` }, { clipPath: `inset(0 0 0 0 ${round})` }],
+                { duration: 680, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' });
+        }
+        if (motion && from) mentorLiftOff(from);
+    } else if (root.classList.contains('split')) {
+        const done = () => { root.classList.remove('split'); mentorDeskGeom(false); mentorFlowKick(); };
+        if (!motion || mentorDeskStacked()) done();
+        else {
+            const cut = sheet.getBoundingClientRect().right - panel.getBoundingClientRect().left + MENTOR_GUTTER;
+            const fold = panel.animate([{ clipPath: `inset(0 0 0 0 ${round})` }, { clipPath: `inset(0 0 0 ${cut}px ${round})` }],
+                { duration: 380, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' });
+            fold.finished.then(() => { done(); fold.cancel(); }, done);
+        }
     }
-    return '';  // the pin card sits level with the bubble it covers
+    mentorFlowKick();
+}
+
+// Desk geometry on desktop (phones keep their fixed sheet and the desk stacks inside it)
+function mentorDeskGeom(on, before) {
+    if (mentorSheetMode.matches) return;
+    if (on) {
+        const r = before;
+        mentor.preSplit = { geom: mentor.geom, moved: false };
+        const chat = r.width - 12;   // the panel's padding, left and right
+        const ratio = mentor.split.side;
+        const want = Math.min(Math.max(Math.round(chat * ratio / (1 - ratio)), 260), 480);
+        const extra = Math.min(want, r.left - 8 - MENTOR_GUTTER);
+        if (extra < 260) {   // no room beside it: keep the panel and let the desk stack inside
+            mentor.preSplit.stackOnly = true;
+            mentorSetGeom({ left: r.left, top: r.top, width: r.width, height: r.height });
+            return;
+        }
+        mentorSetGeom({ left: r.left - extra - MENTOR_GUTTER, top: r.top, width: r.width + extra + MENTOR_GUTTER, height: r.height });
+        mentor.split.side = extra / (extra + chat);
+    } else {
+        const pre = mentor.preSplit;
+        mentor.preSplit = null;
+        if (!pre) return;
+        if (!pre.moved) { mentorSetGeom(pre.geom); return; }
+        const r = mentorPanelRect();
+        const cut = pre.stackOnly ? 0 : document.getElementById('mentor-sheet').offsetWidth + MENTOR_GUTTER;
+        mentorSetGeom({ left: r.left + cut, top: r.top, width: Math.max(MENTOR_MIN.w, r.width - cut), height: r.height });
+        mentorStore.set(MENTOR_KEYS.geom, mentor.geom);
+    }
+}
+
+function mentorApplySplit() {
+    const desk = document.getElementById('mentor-desk');
+    desk.style.setProperty('--r', mentor.split.side.toFixed(4));
+    desk.style.setProperty('--rv', mentor.split.stack.toFixed(4));
+    const stacked = mentorDeskStacked();
+    const sep = document.getElementById('mentor-split');
+    sep.setAttribute('aria-orientation', stacked ? 'horizontal' : 'vertical');
+    sep.setAttribute('aria-valuenow', String(Math.round((stacked ? mentor.split.stack : mentor.split.side) * 100)));
+}
+
+// The card flies from the page into the desk: lift, arc, land, fade into the sheet
+function mentorLiftOff(from) {
+    const a = from.getBoundingClientRect();
+    if (!a.width || a.bottom < 0 || a.top > innerHeight) return;
+    requestAnimationFrame(() => {
+        const b = document.getElementById('mentor-sheet').getBoundingClientRect();
+        const ghost = from.cloneNode(true);
+        ghost.removeAttribute('id');
+        ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+        ghost.classList.remove('mentor-focused', 'newly-generated');
+        ghost.classList.add('desk-ghost');
+        ghost.setAttribute('aria-hidden', 'true');
+        Object.assign(ghost.style, { left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px` });
+        document.body.appendChild(ghost);
+        const sx = b.width / a.width, sy = Math.min(b.height / a.height, 1.6);
+        const dx = b.left - a.left, dy = b.top - a.top;
+        ghost.animate([
+            { transform: 'none', opacity: 1 },
+            { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 70}px) rotate(-5deg) scale(${(1 + sx) / 2})`, opacity: 1, offset: 0.5 },
+            { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, opacity: 0 },
+        ], { duration: 840, easing: 'cubic-bezier(0.5, 0, 0.2, 1)' }).finished.finally(() => ghost.remove());
+    });
+}
+
+// Divider limits: the card keeps its header (stacked) or 240px (side by side); the chat keeps 220px or 300px
+function mentorSplitLimits(stacked) {
+    const box = document.getElementById('mentor-desk').getBoundingClientRect();
+    const span = (stacked ? box.height : box.width) - MENTOR_GUTTER;
+    const min = (stacked ? 56 : 240) / span, max = 1 - (stacked ? 220 : 300) / span;
+    return { box, span, min: Math.min(min, max), max: Math.max(min, max) };
+}
+
+function mentorSetSplit(stacked, ratio, save) {
+    const { min, max } = mentorSplitLimits(stacked);
+    mentor.split[stacked ? 'stack' : 'side'] = Math.min(Math.max(ratio, min), max);
+    mentorApplySplit();
+    if (save) mentorStore.set(MENTOR_KEYS.split, mentor.split);
+}
+
+// Drag the divider; it snaps to thirds and the middle, with a little bounce on the grip
+function mentorSplitStart(e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const sep = e.currentTarget;
+    const stacked = mentorDeskStacked();
+    const { box, span, min, max } = mentorSplitLimits(stacked);
+    const panel = document.querySelector('.mentor-panel');
+    sep.classList.add('active');
+    panel.classList.add('resizing');
+    document.documentElement.style.cursor = stacked ? 'row-resize' : 'col-resize';
+    let snapped = null;
+    const move = ev => {
+        let ratio = ((stacked ? ev.clientY - box.top : ev.clientX - box.left) - MENTOR_GUTTER / 2) / span;
+        ratio = Math.min(Math.max(ratio, min), max);
+        const snap = [1 / 3, 1 / 2, 2 / 3].find(p => Math.abs(p - ratio) < 0.025 && p >= min && p <= max);
+        if (snap !== undefined) ratio = snap;
+        if (snap !== undefined && snap !== snapped && !mentorCalm()) { sep.classList.remove('snap'); void sep.offsetWidth; sep.classList.add('snap'); }
+        snapped = snap ?? null;
+        mentorSetSplit(stacked, ratio, false);
+    };
+    const up = () => {
+        sep.classList.remove('active');
+        panel.classList.remove('resizing');
+        document.documentElement.style.cursor = '';
+        removeEventListener('pointermove', move);
+        removeEventListener('pointerup', up);
+        mentorStore.set(MENTOR_KEYS.split, mentor.split);
+    };
+    addEventListener('pointermove', move);
+    addEventListener('pointerup', up);
+}
+
+// Keyboard: arrows nudge (Shift for bigger steps), Home and End go to the limits, Enter resets
+function mentorSplitKey(e) {
+    const stacked = mentorDeskStacked();
+    const now = mentor.split[stacked ? 'stack' : 'side'];
+    const step = e.shiftKey ? 0.1 : 0.04;
+    const less = stacked ? 'ArrowUp' : 'ArrowLeft', more = stacked ? 'ArrowDown' : 'ArrowRight';
+    let ratio;
+    if (e.key === less) ratio = now - step;
+    else if (e.key === more) ratio = now + step;
+    else if (e.key === 'Home') ratio = 0;
+    else if (e.key === 'End') ratio = 1;
+    else if (e.key === 'Enter') ratio = stacked ? MENTOR_SPLIT.stack : MENTOR_SPLIT.side;
+    else return;
+    e.preventDefault();
+    mentorEaseSplit(() => mentorSetSplit(stacked, ratio, true));
+}
+
+function mentorSplitReset() {
+    const stacked = mentorDeskStacked();
+    mentorEaseSplit(() => mentorSetSplit(stacked, stacked ? MENTOR_SPLIT.stack : MENTOR_SPLIT.side, true));
+}
+
+// Keyboard steps and resets glide (grid tracks interpolate); dragging follows the pointer directly
+function mentorEaseSplit(change) {
+    const desk = document.getElementById('mentor-desk');
+    if (!mentorCalm()) desk.classList.add('easing');
+    change();
+    clearTimeout(mentor.easeTimer);
+    mentor.easeTimer = setTimeout(() => desk.classList.remove('easing'), 600);
+}
+
+async function mentorCopyPinned() {
+    const btn = document.getElementById('sheet-copy');
+    try {
+        await navigator.clipboard.writeText(document.getElementById('sheet-a').innerText);
+        btn.classList.add('done');
+        btn.querySelector('use').setAttribute('href', '#i-check-bold');
+        setTimeout(() => { btn.classList.remove('done'); btn.querySelector('use').setAttribute('href', '#i-copy'); }, 1800);
+    } catch (err) {
+        Motion.toast('Copying is blocked here. Select the text to copy it.', 'error');
+    }
 }
 
 // ─── Delight: spark bursts, magnetic orb, spotlight frame ────────
@@ -730,6 +952,8 @@ function mentorSpotlight(e) {
     document.querySelectorAll('.m-orb[data-emblem]').forEach(el => { el.innerHTML = MENTOR_EMBLEM; });
     mentor.history = mentorStore.get(MENTOR_KEYS.history, []);
     mentorSetLang(mentorStore.get(MENTOR_KEYS.lang, 'english'));
+    mentor.split = { ...MENTOR_SPLIT, ...mentorStore.get(MENTOR_KEYS.split, {}) };
+    mentorApplySplit();
     mentorSetGeom(mentorStore.get(MENTOR_KEYS.geom, null));
     mentorFitGeom();
     addEventListener('resize', mentorFitGeom);

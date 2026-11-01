@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./base.css?v=7.0">
     <link rel="stylesheet" href="./styles.css?v=7.0">
     <link rel="stylesheet" href="./prep.css?v=7.1">
-    <link rel="stylesheet" href="./mentor.css?v=7.2">
+    <link rel="stylesheet" href="./mentor.css?v=7.3">
     <link rel="stylesheet" href="./looks.css?v=7.0">
 </head>
 <body data-section="home">
@@ -1069,6 +1069,24 @@ Nice to Have:
             <span class="mentor-rz" data-dir="ne" onpointerdown="mentorResizeStart(event)"></span>
             <span class="mentor-rz" data-dir="sw" onpointerdown="mentorResizeStart(event)"></span>
             <span class="mentor-rz" data-dir="se" onpointerdown="mentorResizeStart(event)"></span>
+            <!-- Split Desk: a pinned card floats beside the chat (or above it on narrow screens), joined by the pipeline -->
+            <div class="mentor-desk" id="mentor-desk">
+            <aside class="mentor-sheet" id="mentor-sheet" aria-label="Pinned question">
+                <header class="sheet-head" onpointerdown="mentorDragStart(event)" title="Drag to move the desk">
+                    <span class="sheet-tag" id="sheet-tag"></span>
+                    <span class="sheet-from" id="sheet-from"></span>
+                    <button type="button" class="mentor-icon-btn" onclick="mentorJumpToPinned()" title="Show it where it came from" aria-label="Show it where it came from"><svg aria-hidden="true"><use href="#i-target"/></svg></button>
+                    <button type="button" class="mentor-icon-btn" id="sheet-copy" onclick="mentorCopyPinned()" title="Copy the answer" aria-label="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg></button>
+                    <button type="button" class="mentor-icon-btn" onclick="mentorUnpin()" title="Unpin" aria-label="Unpin the card"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
+                </header>
+                <div class="sheet-body">
+                    <h4 class="sheet-q" id="sheet-q"></h4>
+                    <div class="sheet-a" id="sheet-a"></div>
+                </div>
+            </aside>
+            <div class="mentor-split" id="mentor-split" role="separator" tabindex="0" aria-orientation="vertical" aria-valuemin="15" aria-valuemax="85" aria-valuenow="42" aria-label="Resize the pinned card and the chat" title="Drag to resize. Double-click to reset." onpointerdown="mentorSplitStart(event)" onkeydown="mentorSplitKey(event)" ondblclick="mentorSplitReset()">
+                <span class="split-grip" aria-hidden="true"></span>
+            </div>
             <div class="mentor-core">
                 <div class="mentor-glow" aria-hidden="true"></div>
                 <header class="mentor-head" onpointerdown="mentorDragStart(event)" title="Drag to move. Pull the frame to resize.">
@@ -1087,17 +1105,6 @@ Nice to Have:
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
                 </header>
-                <div class="mentor-pin hidden" id="mentor-pin">
-                    <div class="mentor-pin-top">
-                        <span class="mentor-pin-label">Pinned from Copilot</span>
-                        <button type="button" class="mentor-pin-btn" onclick="mentorJumpToPinned()" title="Scroll the chat to this answer">Show in chat</button>
-                        <button type="button" class="mentor-pin-btn mentor-pin-x" onclick="mentorUnpin()" title="Unpin" aria-label="Unpin">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                    <div class="mentor-pin-q"></div>
-                    <div class="mentor-pin-a"></div>
-                </div>
                 <div class="mentor-msgs" id="mentor-msgs"></div>
                 <form class="mentor-input" onsubmit="event.preventDefault(); mentorSend();">
                     <div class="mentor-mention hidden" id="mentor-mention" role="listbox" aria-label="Prep Studio questions"></div>
@@ -1119,6 +1126,7 @@ Nice to Have:
                     </div>
                 </form>
             </div>
+            </div>
         </section>
     </div>
     <!-- The "flow" beam linking a pinned Copilot answer to the Doubt Desk -->
@@ -1135,6 +1143,6 @@ Nice to Have:
     <script src="./motion.js?v=7.0"></script>
     <script src="./appearance.js?v=7.2"></script>
     <script src="./dashboard.js?v=7.1"></script>
-    <script src="./mentor.js?v=7.2"></script>
+    <script src="./mentor.js?v=7.3"></script>
 </body>
 </html>
