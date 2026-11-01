@@ -135,8 +135,16 @@ def auto_detect_context_mode(question: str, current_mode: str, is_locked: bool =
         return "projects"
     return current_mode
 
+def who() -> str:
+    """The candidate's own name and role for prompts, from their profile (set at onboarding)."""
+    prof = profile_store.get()
+    name = prof.get("name") or "the candidate in YOUR BACKGROUND"
+    return f"{name}, {prof['role']}" if prof.get("role") else name
+
+
 # New stores for dashboard features
-from stores import HistoryStore, AboutMeStore, ChatHistoryStore, RecycleBinStore
+from stores import HistoryStore, AboutMeStore, ChatHistoryStore, RecycleBinStore, ProfileStore
+profile_store = PerUser(ProfileStore)
 history_store = PerUser(HistoryStore)
 about_me_store = PerUser(AboutMeStore)
 chat_store = PerUser(ChatHistoryStore)
@@ -240,6 +248,112 @@ async def client_config():
         "clerk_publishable_key": config.CLERK_PUBLISHABLE_KEY,
         "clerk_frontend_api": users.frontend_api(),
     }
+
+
+@app.get("/api/profile")
+async def get_profile():
+    """The user's name, field, target role and level (empty until onboarding)."""
+    return profile_store.get()
+
+
+@app.post("/api/profile")
+async def save_profile(request: Request):
+    """Save onboarding answers; prompts, prep categories and daily concepts follow them."""
+    return profile_store.update(await request.json())
+
+
+TECH_FIELDS = ("", "technology", "software", "it", "engineering")
+
+
+@app.get("/prepare/categories")
+async def prep_categories():
+    """Prep Studio's category tiles for this user's field: None keeps the curated tech set, otherwise eight
+    AI-written categories for their field and role, cached in the profile until either changes."""
+    prof = profile_store.get()
+    field, role = (prof.get("field") or "").strip(), (prof.get("role") or "").strip()
+    if field.lower() in TECH_FIELDS:
+        return {"categories": None}
+    key = f"{field}|{role}".lower()
+    cached = prof.get("categories")
+    if cached and prof.get("categories_for") == key:
+        return {"categories": cached}
+    from ai.utils import generate_multi_provider_completion
+    import re
+    try:
+        raw = await generate_multi_provider_completion(
+            system_prompt=(
+                "You design interview practice categories. Return ONLY a JSON object: "
+                '{"categories": [{"id": "UPPER_SNAKE_ID", "label": "Two or three words"}]} with exactly 8 categories '
+                "that real interviewers use for this field and role. The first must be GENERAL (label: All-in-One) "
+                "and include BEHAVIORAL and HR_CULTURE_FIT. Use the field's own words."
+            ),
+            user_prompt=f"Field: {field}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}",
+            max_tokens=600, temperature=0.4, json_mode=True,
+        )
+    except Exception as e:   # no AI key yet, or the provider is down: keep the standard tiles
+        logger.warning(f"Field categories unavailable: {e}")
+        return {"categories": None}
+    try:
+        items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["categories"]
+        cats = []
+        for c in items:
+            cid = re.sub(r"[^A-Z0-9_]", "_", str(c.get("id", "")).upper())[:40].strip("_")
+            if re.fullmatch(r"[A-Z][A-Z0-9_]{1,39}", cid) and cid not in [x["id"] for x in cats]:
+                cats.append({"id": cid, "label": str(c.get("label", cid.title()))[:32]})
+        cats = cats[:9]
+    except Exception:
+        return {"categories": None}
+    profile_store.get().update({"categories": cats, "categories_for": key})
+    docstore.save(users.user_id(), "profile", profile_store.get())
+    return {"categories": cats}
+
+
+@app.get("/api/bento/field")
+async def bento_for_field():
+    """Brain Bento's concepts for a non-tech field: six a day, written for the user's field and role and cached for
+    the day. Tech fields (and any failure) get None, so the curated pack is used."""
+    prof = profile_store.get()
+    field, role = (prof.get("field") or "").strip(), (prof.get("role") or "").strip()
+    if field.lower() in TECH_FIELDS:
+        return {"lessons": None}
+    today = datetime.now().strftime("%Y-%m-%d")
+    uid = users.user_id()
+    cached = docstore.load(uid, "bento_field", {})
+    if cached.get("day") == today and cached.get("for") == f"{field}|{role}" and cached.get("lessons"):
+        return {"lessons": cached["lessons"], "field": field}
+    from ai.utils import generate_multi_provider_completion
+    try:
+        raw = await generate_multi_provider_completion(
+            system_prompt=(
+                "You write bite-sized daily lessons that help a job candidate sound sharp in interviews. Return ONLY JSON: "
+                '{"lessons": [{"id": "kebab-id", "title": "...", "hook": "one short line", "body": "2-3 plain sentences", '
+                '"analogy": "one everyday comparison", "q": "an interview question on it", "a": "a strong 2-3 sentence answer", '
+                '"follow": ["follow-up question", "follow-up question"], "keys": ["keyword", "keyword"], '
+                '"diagram": {"type": "flow", "nodes": ["3 to 5 short steps"]}}]} with exactly 6 lessons. '
+                "Use the field's real concepts, standards and situations, at the given level. Simple words."
+            ),
+            user_prompt=f"Field: {field}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
+            max_tokens=3500, temperature=0.7, json_mode=True,
+        )
+        items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
+    except Exception as e:
+        logger.warning(f"Field concepts unavailable: {e}")
+        return {"lessons": None}
+    lessons = []
+    for i, l in enumerate(items[:6]):
+        if not isinstance(l, dict) or not l.get("title") or not l.get("body"):
+            continue
+        nodes = [str(n)[:40] for n in (l.get("diagram") or {}).get("nodes", [])][:5]
+        lessons.append({
+            "id": f"f{i}-" + "".join(ch for ch in str(l.get("id", "")).lower() if ch.isalnum() or ch == "-")[:40],
+            "track": "field", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
+            "diagram": {"type": "flow", "nodes": nodes} if len(nodes) >= 3 else None,
+            "en": {k: (l.get(k) if k == "follow" else str(l.get(k, ""))[:900]) for k in ("title", "hook", "body", "analogy", "q", "a", "follow")},
+        })
+    if not lessons:
+        return {"lessons": None}
+    docstore.save(uid, "bento_field", {"day": today, "for": f"{field}|{role}", "lessons": lessons})
+    return {"lessons": lessons, "field": field}
 
 
 @app.delete("/api/me")
@@ -504,7 +618,7 @@ async def add_job_description(
     existing_assignment = context_engine.get_assignment() or {}
     updated_assignment = {
         **existing_assignment,
-        "title": title or existing_assignment.get("title", "AI Product Engineer"),
+        "title": title or existing_assignment.get("title", "the target role"),
         "company": company or existing_assignment.get("company", "Soft System Solution"),
         "description": description,
     }
@@ -775,15 +889,10 @@ async def prepare_single_question(request: Request):
         company = data.get("company", "")
         language = data.get("language", "ENGLISH").upper()
 
-        valid_categories = [
-            "BEHAVIORAL", "TECHNICAL", "PROJECT_DEEP_DIVE", "DSA_CODING",
-            "SYSTEM_DESIGN", "SITUATIONAL", "HR_CULTURE_FIT", "ASSIGNMENT", "GENERAL"
-        ]
-        if category not in valid_categories:
-            return JSONResponse(
-                status_code=400,
-                content={"error": f"Invalid category. Must be one of: {', '.join(valid_categories)}"},
-            )
+        import re
+        # the curated tech categories, or a field's own (see /prepare/categories): short upper-case names
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,39}", category):
+            return JSONResponse(status_code=400, content={"error": "Invalid category name."})
 
         if not context_engine.has_context():
             return JSONResponse(
@@ -939,18 +1048,18 @@ async def api_chat(req: ChatRequest):
             )
             logger.info(f"💾 Saved chat preference [{timestamp_key}]: '{user_msg[:60]}...'")
 
-        system_prompt = f"""You are Vettly — operating as Shailesh Upadhyay, an AI Product Engineer, in a technical interview readiness and mock practice session.
+        system_prompt = f"""You are Vettly — operating as {who()}, in an interview readiness and mock practice session.
 
 CANDIDATE BACKGROUND:
 {full_context[:80000]}
 
 ═══ CANDIDATE PERSONA & ANSWER RULES ═══
-1. PERSONA: You are Shailesh Upadhyay (first person: "I", "my"). Speak directly as the candidate in an interview. You are NOT a third-party coach or tutor.
+1. PERSONA: You are {who()} (first person: "I", "my"). Speak directly as the candidate in an interview. You are NOT a third-party coach or tutor.
 2. CONCISENESS (1-3 SENTENCES / 20-50 WORDS MAX): Deliver the direct spoken interview answer immediately in the first 3 words. Ultra-concise, spoken, and to-the-point.
 3. FOR CONCEPT QUESTIONS (e.g., "what is RAG?", "what is Sigmoid?", "how does async work in FastAPI?"):
    - Give an immediate, simple, plain English explanation (Google-snippet clarity, so simple anyone grasps it in 2 seconds).
    - Do NOT deflect or force project links into the answer unless specifically asked.
-4. FOR EXPERIENCE / RESUME QUESTIONS (e.g., "tell me about your WebVory work", "what did you build?"):
+4. FOR EXPERIENCE / RESUME QUESTIONS (e.g., "tell me about your last job", "what did you achieve?"):
    - Speak with concrete architecture, real numbers, and technologies from your background (e.g., FastAPI, 45% p95 latency reduction from 1.2s to 660ms, Redis telemetry).
 5. FORMATTING CRITICAL: Do NOT output raw asterisks (*) or (**) for bullets or bolding. Use clean plain text, bullet dots (•), or numbered lists (1., 2., 3.) without asterisks.
 6. CRITICAL: The candidate's GitHub repositories and entire codebases HAVE ALREADY BEEN EXTRACTED and provided to you in the CANDIDATE BACKGROUND section above. If the user asks about their GitHub repos or codebase, DO NOT claim you cannot access external links. Instead, confidently read the provided context and list the repos/code you see.
@@ -1026,7 +1135,7 @@ async def api_chat_expand(req: ChatExpandRequest):
         if about_me_ctx:
             full_context += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
 
-        system_prompt = f"""You are Shailesh Upadhyay, an AI Product Engineer in a technical interview practice session.
+        system_prompt = f"""You are {who()}, in an interview practice session.
 You delivered a concise spoken answer, and now you are providing a deeper technical walkthrough with a practical real-life example.
 
 ═══ 5TH-GRADE SIMPLICITY & BELIEVABLE LOGIC RULE (MOST IMPORTANT RULE) ═══
@@ -1106,7 +1215,7 @@ async def api_mentor(req: MentorRequest):
     )
 
     # Long context first, instructions last: Gemini follows rules that sit after the material far more reliably
-    system_prompt = f"""You are Mentor — Shailesh Upadhyay's personal interview coach inside Vettly, his interview-prep studio.
+    system_prompt = f"""You are Mentor — {who()}'s personal interview coach inside Vettly, their interview-prep studio.
 Your job: help him deeply understand the questions and answers he is preparing, so he can explain them confidently in his own words.
 
 Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@3" or "@Q3" means Q3), and the full Live Copilot chat, where he plays the interviewer and the copilot answers as him.

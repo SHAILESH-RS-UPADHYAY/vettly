@@ -235,11 +235,15 @@ class QAGenerator:
             "GENERAL": "Generate a realistic GENERAL interview question relevant to the candidate's domain, fundamental concepts, or general problem solving.",
         }
 
-        focus = category_focus.get(category, category_focus["TECHNICAL"])
+        # any field's own category (e.g. CLINICAL_SCENARIOS for a nurse) gets a focus written from its name
+        focus = category_focus.get(category) or (
+            f'Generate a question in the "{category.replace("_", " ").title()}" area, written for the candidate\'s '
+            "own field, target role and level as shown in the context. Use that field's real language, not software terms."
+        )
 
         if language == "HINGLISH":
             lang_rules = """- LANGUAGE: Generate both the QUESTION and the ANSWER in authentic, casual Hinglish (Hindi written in English alphabet mixed with English technical terms).
-- Make it sound like a smart developer from Delhi talking to a peer."""
+- Make it sound like a smart professional from Delhi talking to a peer."""
         else:
             lang_rules = """- LANGUAGE: Generate the QUESTION in professional English. The ANSWER MUST be in pure, simple, and confident English ONLY. DO NOT use any Hinglish or Hindi words."""
 

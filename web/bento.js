@@ -137,7 +137,7 @@ const Bento = (() => {
                 <p class="lesson-hook">${esc(t.hook)}</p>
                 <button type="button" class="btn btn-ghost btn-icon lesson-close" data-close aria-label="Close the lesson"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
             </header>
-            <figure class="lesson-diagram" data-tone="${tr.tone}">${diagram(l.diagram)}</figure>
+            ${l.diagram ? `<figure class="lesson-diagram" data-tone="${tr.tone}">${diagram(l.diagram)}</figure>` : ''}
             <div class="lesson-grid">
                 <section class="lesson-block"><h3><svg aria-hidden="true"><use href="#i-books"/></svg>In plain words</h3><p>${esc(t.body)}</p></section>
                 <section class="lesson-block lesson-analogy"><h3><svg aria-hidden="true"><use href="#i-bulb"/></svg>Picture it</h3><p>${esc(t.analogy)}</p></section>
@@ -220,5 +220,22 @@ const Bento = (() => {
         page.querySelector('#bento-lang')?.addEventListener('change', e => { state.lang = e.target.checked ? 'hi' : 'en'; save(); render(); });
     })();
 
-    return { render };
+    // A non-tech field swaps the curated tech pack for today's concepts written for that field (from the server)
+    async function useField() {
+        await window.Auth?.ready;
+        try {
+            const res = await fetch(`${API_BASE}/api/bento/field`);
+            const { lessons, field } = await res.json();
+            if (!lessons?.length) return;
+            BENTO_LESSONS.splice(0, BENTO_LESSONS.length, ...lessons);
+            Object.keys(BENTO_TRACKS).forEach(k => delete BENTO_TRACKS[k]);
+            BENTO_TRACKS.field = { name: field, tone: 'sit', icon: 'star' };
+            state.track = 'all';
+            document.querySelector('#page-bento [data-bento-track]')?.setAttribute('hidden', '');
+            if (document.body.dataset.section === 'bento') render();
+        } catch (e) { /* keep the curated pack */ }
+    }
+    useField();
+
+    return { render, useField };
 })();

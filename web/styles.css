@@ -2184,3 +2184,21 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 @media (min-width: 48rem) and (max-width: 63.99rem) { #sidebar .cl-userButtonOuterIdentifier { display: none; } }
 @media (prefers-reduced-motion: reduce) { .auth-gate, .auth-gate.leaving, .auth-copy, .auth-points li, .auth-panel { animation: none !important; } }
 :root[data-motion="calm"] :is(.auth-gate, .auth-copy, .auth-points li, .auth-panel) { animation: none !important; }
+
+/* ── Onboarding dialog and profile button ── */
+.onboard { width: min(92vw, 480px); padding: 0; border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--paper-2); color: var(--ink); box-shadow: var(--card-shadow); }
+.onboard::backdrop { background: color-mix(in srgb, var(--ink) 40%, transparent); backdrop-filter: blur(3px); }
+.onboard[open] { animation: authDrop 640ms var(--spring) both; }
+.onboard-form { display: grid; gap: 14px; padding: 26px 22px 22px; }
+.onboard-form h2 { font: 800 1.5rem/1.15 var(--font-display); text-wrap: balance; }
+.onboard-lede { color: var(--muted); line-height: 1.5; }
+.ob-field { display: grid; gap: 6px; font-weight: 600; font-size: 0.92rem; }
+.ob-field[hidden] { display: none; }
+.ob-field :is(input, select) { min-height: 44px; padding: 0 12px; border-radius: var(--r-ctl); border: 1px solid var(--rule-2); background: var(--field, var(--paper)); color: var(--ink); font: inherit; font-weight: 500; }
+.ob-field :is(input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.onboard-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.profile-btn { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: 0; border-radius: var(--r-ctl); background: transparent; color: var(--ink-2); font: 600 0.88rem/1 var(--font-body); }
+.profile-btn svg { width: 18px; height: 18px; color: var(--accent-ink); }
+@media (hover: hover) { .profile-btn:hover { background: var(--paper-3); } }
+@media (min-width: 48rem) and (max-width: 63.99rem) { .profile-btn span { display: none; } }
+@media (prefers-reduced-motion: reduce) { .onboard[open] { animation: none; } }

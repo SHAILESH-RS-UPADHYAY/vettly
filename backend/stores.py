@@ -287,3 +287,24 @@ class RecycleBinStore:
         self.save()
 
 
+
+
+class ProfileStore:
+    """Who the user is: name, field, target role and level, set at onboarding and used in every prompt."""
+
+    FIELDS = ("name", "field", "role", "level")
+
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
+        self._data: dict = docstore.load(self._user, "profile", {})
+
+    def get(self) -> dict:
+        return self._data
+
+    def update(self, data: dict) -> dict:
+        for key in self.FIELDS:
+            if isinstance(data.get(key), str):
+                self._data[key] = data[key].strip()[:120]
+        self._data["onboarded"] = True
+        docstore.save(self._user, "profile", self._data)
+        return self._data
