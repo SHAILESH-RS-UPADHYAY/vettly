@@ -221,23 +221,6 @@
 .grid-thumb[data-grid="graph"] { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px), linear-gradient(var(--grid-line-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px); background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px; }
 .grid-thumb[data-grid="dots"] { background-image: radial-gradient(circle, var(--grid-line) 0 1.2px, transparent 1.7px); background-size: 10px 10px; }
 .grid-thumb[data-grid="iso"] { background-image: repeating-linear-gradient(30deg, var(--grid-line) 0 1px, transparent 1px 12px), repeating-linear-gradient(150deg, var(--grid-line) 0 1px, transparent 1px 12px); }
-/* the Blueprint Workshop: slides open under the looks when Blueprint is on */
-.bp-options { display: grid; grid-template-rows: 1fr; margin-top: 18px; border-radius: var(--r-card); border: 1.5px dashed var(--rule-2); background: color-mix(in srgb, var(--paper-3) 55%, transparent); animation: bpOpen 620ms var(--spring) both; }
-.bp-options[hidden] { display: none; }
-.bp-inner { display: grid; gap: 10px; min-height: 0; padding: 16px; }
-.bp-inner > * { animation: bpRise 560ms var(--ease-out) both; }
-.bp-inner > :nth-child(2), .bp-inner > :nth-child(3) { animation-delay: 60ms; }
-.bp-inner > :nth-child(4), .bp-inner > :nth-child(5) { animation-delay: 120ms; }
-.bp-inner > :nth-child(6), .bp-inner > :nth-child(7) { animation-delay: 180ms; }
-.bp-inner > :nth-child(n+8) { animation-delay: 240ms; }
-.bp-head { display: flex; align-items: center; gap: 12px; }
-.bp-head > svg { width: 30px; height: 30px; color: var(--accent-ink); animation: bpWand 2.4s var(--ease-in-out) infinite; }
-.bp-head h4 { margin: 0; font: 700 1.1rem/1.2 var(--font-body); }
-.bp-options .swatch-name { font-size: 0.82rem; }
-@keyframes bpOpen { from { grid-template-rows: 0fr; opacity: 0; } }
-@keyframes bpRise { from { opacity: 0; transform: translateY(10px); } }
-@keyframes bpWand { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg) scale(1.08); } }
-
 /* sheet marks on Blueprint cards (ticks are the original, in looks.css) */
 :root[data-look="blueprint"][data-bp-marks="cross"] :is(.toolbelt-card, .step-card, .poster-media-card) {
     background-image:
@@ -299,12 +282,10 @@
 .title-thumb[data-title="script"] { font: 700 1.6rem/1 var(--font-hand-bp); }
 
 @media (prefers-reduced-motion: reduce) {
-    .bp-options, .bp-inner > *, .bp-head > svg { animation: none !important; }
     :root :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
     :root :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
     :root[data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
 }
-:root[data-motion="calm"] :is(.bp-options, .bp-inner > *, .bp-head > svg) { animation: none !important; }
 :root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
 :root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
 :root[data-motion="calm"][data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
@@ -409,7 +390,6 @@
 .doodle-thumb[data-doodle="stars"] i { background-image: radial-gradient(circle at 25% 30%, #e0607e 0 3px, transparent 3.5px), radial-gradient(circle at 75% 65%, #f0a020 0 3px, transparent 3.5px); }
 .doodle-thumb[data-doodle="stamps"] i { background-image: radial-gradient(circle at 70% 60%, transparent 8px, var(--stamp, rgba(190, 30, 50, 0.7)) 8.5px 10px, transparent 10.5px); }
 .doodle-thumb[data-doodle="stickers"] i { background-image: radial-gradient(circle at 85% 15%, #ffd23f 0 8px, #fff 8.5px 10px, transparent 10.5px); }
-.reg-options[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) {
     :root[data-look="register"] .blueprint-grid-bg::after, :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card)::before { animation: none !important; }
     :root[data-look="register"] .poster-header h1 em { animation: none !important; background-size: 100% 40%; }

@@ -2,7 +2,7 @@
  * Vettly appearance: the Theme Studio in Settings and everything it drives.
  * Theme (Parchment, Spatial Dark, match device) · a look for the whole app · an accent and a Mentor logo
  * per theme · side panel · Mentor panel skin · pipeline beam · layout format with quick presets ·
- * the particle background. Every choice lands as an attribute on <html>; tokens.css, looks.css and
+ * each look's workshop, the particle floaties. Every choice lands as an attribute on <html>; tokens.css, looks.css and
  * mentor.css do the rest. The first paint is set by the bootstrap in index.html, so nothing flashes.
  */
 const Appearance = (() => {
@@ -16,108 +16,91 @@ const Appearance = (() => {
         look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss',
         sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream',
         density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full',
-        tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting', bpMarks: 'ticks', bpTitle: 'mono',
-        regPaper: 'ledger', regInk: 'blue', regHand: 'caveat', regDesk: 'ruled', regDoodles: 'none', regMarker: 'yellow',
+        tape: 'mix', pages: 'clean',
     };
-    // a look also brings its own colours and side panel; each stays adjustable afterwards
+    // a look also brings its own colours, side panel, tape and pages; each stays adjustable afterwards
     const LOOKS = [
         ['classic', 'Poster Classic', 'Your original parchment poster: bright orange, tape and handwriting', { accent: 'poster', accentDark: 'spatial', sidebar: 'poster', tape: 'mix', pages: 'clean' }],
-        ['register', 'Register', 'An old school register: ruled pages, red margins, torn edges and tape. A chalkboard at night', { accent: 'coral', accentDark: 'butter', sidebar: 'spiral', tape: 'mix', pages: 'register' }],
+        ['register', 'Register', 'An old school register: ruled pages, red margins and tape. A chalkboard at night', { accent: 'coral', accentDark: 'butter', sidebar: 'spiral', tape: 'mix', pages: 'register' }],
         ['studio', 'Studio Soft', 'Calm type, soft cards and frosted glass', { accent: 'tangerine', accentDark: 'sky', sidebar: 'frosted', tape: 'none', pages: 'clean' }],
-        ['blueprint', 'Blueprint', 'Drafting lines, mono headings, crisp corners. Pick an ink and a grid below', { accent: 'periwinkle', accentDark: 'sky', sidebar: 'bare', tape: 'drafting', pages: 'clean' }],
+        ['blueprint', 'Blueprint', 'Drafting lines, mono headings, crisp corners', { accent: 'periwinkle', accentDark: 'sky', sidebar: 'bare', tape: 'drafting', pages: 'clean' }],
         ['bubblegum', 'Bubblegum', 'Cute sticker cards with bold outlines', { accent: 'rose', accentDark: 'rose', sidebar: 'island', tape: 'candy', pages: 'clean' }],
+        ['sakura', 'Sakura', 'Cherry blossoms drifting over blush paper', { accent: 'rose', accentDark: 'rose', sidebar: 'frosted', tape: 'mix', pages: 'clean' }],
+        ['lavender', 'Lavender Dream', 'Lilac skies, glassy cards and sparkles', { accent: 'lilac', accentDark: 'lilac', sidebar: 'frosted', tape: 'none', pages: 'clean' }],
+        ['strawberry', 'Strawberry Milk', 'Pink milk, cream cards, scalloped edges and hearts', { accent: 'rose', accentDark: 'rose', sidebar: 'island', tape: 'candy', pages: 'clean' }],
+        ['mermaid', 'Mermaid Pearl', 'Sea glass colours, pearly cards and rising bubbles', { accent: 'teal', accentDark: 'teal', sidebar: 'frosted', tape: 'none', pages: 'clean' }],
     ];
-    // Blueprint's own options: an ink (with the accent that suits it) and a grid template
-    const BP_INKS = [
-        ['cyan', 'Cyanotype', '#1d4ed8', '#7db4ff', { accent: 'periwinkle', accentDark: 'sky' }],
-        ['green', 'Greenline', '#16803d', '#78e6a0', { accent: 'mint', accentDark: 'mint' }],
-        ['red', 'Redline', '#c81e32', '#ff8296', { accent: 'coral', accentDark: 'coral' }],
-        ['violet', 'Violet ink', '#6e46dc', '#b496ff', { accent: 'lilac', accentDark: 'lilac' }],
-        ['amber', 'Sepia', '#b0700a', '#fabe5a', { accent: 'butter', accentDark: 'butter' }],
-        ['teal', 'Teal draft', '#0e827a', '#6ee6d7', { accent: 'teal', accentDark: 'teal' }],
-        ['graphite', 'Graphite', '#282e3a', '#dce1eb', { accent: 'graphite', accentDark: 'graphite' }],
+    // Every look's workshop. Tiles: [id, name, description, also?]; swatches: [id, name, day colour, night colour, also?].
+    // The first option is always the look's original, so picking nothing changes nothing.
+    const SHARED_GROUPS = [
+        { key: 'tape', label: 'Tape', thumb: 'tape', options: [['mix', 'Washi mix', 'Stripes, dots, grid and pinstripe'], ['kraft', 'Kraft masking', 'Brown paper tape'], ['candy', 'Candy stripes', 'Bold, sweet and bright'], ['drafting', 'Drafting tape', 'Translucent, like on a blueprint'], ['none', 'No tape', 'Clean edges']] },
+        { key: 'pages', label: 'Pages', thumb: 'pages', options: [['clean', 'Clean cards', "The look's own cards"], ['register', 'Register ruled', 'Blue rules and a red margin'], ['torn', 'Torn edges', 'Ripped out, with punch holes'], ['spiral', 'Spiral bound', 'A coil along the top']] },
     ];
-    const BP_GRIDS = [
-        ['drafting', 'Drafting sheet', 'Bold and fine lines, the original'],
-        ['graph', 'Graph paper', 'A tight engineering grid'],
-        ['dots', 'Dot grid', 'Quiet dots for sketching'],
-        ['iso', 'Isometric', 'Thirty-degree lines for 3D sketches'],
-        ['plain', 'Vellum', 'No grid, just the sheet'],
-    ];
-    const BP_MARKS = [
-        ['ticks', 'Corner ticks', 'The original drafting corners'],
-        ['cross', 'Crosshairs', 'Registration marks at each corner'],
-        ['title', 'Title block', 'A drawing title strip on every card'],
-        ['dims', 'Dimension lines', 'Measured edges with end stops'],
-        ['rivets', 'Rivets', 'An engineering plate'],
-    ];
-    // the Register look's own options
-    const REG_PAPERS = [
-        ['ledger', 'Ledger', 'Blue rules and a red margin, the classic'],
-        ['maths', 'Maths squares', 'A squared maths copy'],
-        ['dots', 'Bullet dots', 'Dotted, like a bullet journal'],
-        ['pastel', 'Pastel pages', 'Soft pink, mint and lilac sheets'],
-        ['vintage', 'Vintage', 'Aged paper with a tea stain'],
-        ['kraft', 'Kraft', 'Brown recycled paper'],
-    ];
-    // ink: heading colour by day, chalk by night, and the accent that suits it
-    const REG_INKS = [
-        ['blue', 'Royal blue', '#1f2c4a', '#f6e7a1', { accent: 'coral', accentDark: 'butter' }],
-        ['black', 'Gel black', '#16181d', '#f4f4f0', { accent: 'graphite', accentDark: 'graphite' }],
-        ['red', 'Teacher red', '#b3263a', '#ffa3a3', { accent: 'coral', accentDark: 'coral' }],
-        ['green', 'Green ink', '#1f7a4d', '#a6f0c0', { accent: 'mint', accentDark: 'mint' }],
-        ['purple', 'Purple gel', '#6b3fd1', '#cdb8ff', { accent: 'lilac', accentDark: 'lilac' }],
-        ['sepia', 'Sepia', '#7a4a1e', '#f2c98d', { accent: 'tangerine', accentDark: 'butter' }],
-    ];
-    const REG_HANDS = [
-        ['caveat', 'Caveat', 'Quick and loopy, the original'],
-        ['kalam', 'Kalam', 'Neat Indian school handwriting'],
-        ['patrick', 'Patrick Hand', 'Tidy print, easy to read'],
-        ['gaegu', 'Gaegu', 'Round and bubbly'],
-        ['shadows', 'Shadows', 'Light and airy'],
-    ];
-    const REG_FONTS = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' };
-    const REG_DESKS = [
-        ['ruled', 'Ruled', 'The desk is ruled paper too'],
-        ['wood', 'Wooden desk', 'A warm oak table'],
-        ['cork', 'Cork board', 'Pages pinned to cork'],
-        ['gingham', 'Gingham', 'A cute picnic check'],
-        ['plain', 'Plain', 'Just a quiet colour'],
-    ];
-    const REG_DOODLES = [
-        ['none', 'None', 'Clean pages'],
-        ['stars', 'Stars & hearts', 'Doodles across the desk'],
-        ['stamps', 'Teacher stamps', 'Shabash, Excellent, Very good'],
-        ['stickers', 'Stickers', 'Little stickers on the corners'],
-    ];
-    const REG_MARKERS = [['yellow', 'Yellow', '#ffe14d'], ['pink', 'Pink', '#ff9ccb'], ['mint', 'Mint', '#8ff0c0'], ['sky', 'Sky', '#9ad8ff'], ['orange', 'Orange', '#ffb36b']];
-    // a handwriting font loads only once someone picks it
-    function loadHand(id) {
-        if (!REG_FONTS[id] || document.getElementById(`font-${id}`)) return;
+    const WORKSHOPS = {
+        classic: { title: 'Poster Workshop', icon: 'scroll', note: 'Your original poster stays as it is. Try another paper, background or headline.', groups: [
+            { key: 'clPaper', label: 'Poster paper', options: [['cream', 'Cream', 'The original warm poster'], ['white', 'Gallery white', 'Crisp and bright'], ['newsprint', 'Newsprint', 'Grey paper, a printed feel'], ['kraft', 'Kraft', 'Brown packing paper']] },
+            { key: 'clGrid', label: 'Background', options: [['grid', 'Blueprint grid', 'The original lines'], ['dots', 'Halftone dots', 'Print dots'], ['stripes', 'Pin stripes', 'Soft vertical stripes'], ['none', 'Plain', 'Just the paper']] },
+            { key: 'clHead', label: 'Headline', options: [['syne', 'Poster wide', 'The original'], ['grotesk', 'Grotesk', 'Tighter and technical'], ['serif', 'Editorial serif', 'A magazine cover']] },
+            { key: 'clNotes', label: 'Handwritten notes', options: [['on', 'Scribbles on', 'The notes stay'], ['off', 'Scribbles off', 'A cleaner poster']] },
+        ] },
+        register: { title: 'Notebook Studio', icon: 'pencil', note: 'Your Register stays as it is. Pick the paper, the pen and the desk it sits on.', groups: [
+            { key: 'regPaper', label: 'Paper', thumb: 'paper', options: [['ledger', 'Ledger', 'Blue rules and a red margin'], ['maths', 'Maths squares', 'A squared maths copy'], ['dots', 'Bullet dots', 'Dotted, like a bullet journal'], ['pastel', 'Pastel pages', 'Soft pink, mint and lilac'], ['vintage', 'Vintage', 'Aged, tea-stained paper'], ['kraft', 'Kraft', 'Brown recycled paper']] },
+            { key: 'regInk', label: 'Ink', swatch: true, options: [['blue', 'Royal blue', '#1f2c4a', '#f6e7a1', { accent: 'coral', accentDark: 'butter' }], ['black', 'Gel black', '#16181d', '#f4f4f0', { accent: 'graphite', accentDark: 'graphite' }], ['red', 'Teacher red', '#b3263a', '#ffa3a3', { accent: 'coral', accentDark: 'coral' }], ['green', 'Green ink', '#1f7a4d', '#a6f0c0', { accent: 'mint', accentDark: 'mint' }], ['purple', 'Purple gel', '#6b3fd1', '#cdb8ff', { accent: 'lilac', accentDark: 'lilac' }], ['sepia', 'Sepia', '#7a4a1e', '#f2c98d', { accent: 'tangerine', accentDark: 'butter' }]] },
+            { key: 'regHand', label: 'Handwriting', thumb: 'hand', fonts: true, options: [['caveat', 'Caveat', 'Quick and loopy'], ['kalam', 'Kalam', 'Neat school handwriting'], ['patrick', 'Patrick Hand', 'Tidy print, easy to read'], ['gaegu', 'Gaegu', 'Round and bubbly'], ['shadows', 'Shadows', 'Light and airy']] },
+            { key: 'regDesk', label: 'Desk', thumb: 'desk', options: [['ruled', 'Ruled', 'The desk is ruled paper too'], ['wood', 'Wooden desk', 'A warm oak table'], ['cork', 'Cork board', 'Pages pinned to cork'], ['gingham', 'Gingham', 'A cute picnic check'], ['plain', 'Plain', 'Just a quiet colour']] },
+            { key: 'regDoodles', label: 'Doodles', thumb: 'doodle', options: [['none', 'None', 'Clean pages'], ['stars', 'Stars & hearts', 'Doodles across the desk'], ['stamps', 'Teacher stamps', 'Shabash! and Excellent'], ['stickers', 'Stickers', 'Little stickers on the corners']] },
+            { key: 'regMarker', label: 'Highlighter', swatch: true, options: [['yellow', 'Yellow', '#ffe14d', '#ffe14d'], ['pink', 'Pink', '#ff9ccb', '#ff9ccb'], ['mint', 'Mint', '#8ff0c0', '#8ff0c0'], ['sky', 'Sky', '#9ad8ff', '#9ad8ff'], ['orange', 'Orange', '#ffb36b', '#ffb36b']] },
+        ] },
+        studio: { title: 'Studio Lab', icon: 'sparkle', note: 'Studio Soft stays as it is. Tune the glass, the backdrop and the depth.', groups: [
+            { key: 'stGlass', label: 'Glass', options: [['frosted', 'Frosted', 'Soft blur, the original'], ['clear', 'Clear', 'See right through'], ['solid', 'Solid', 'No blur at all']] },
+            { key: 'stMesh', label: 'Backdrop', options: [['none', 'Paper', 'The original'], ['aurora', 'Aurora', 'Soft moving colour'], ['sunset', 'Sunset', 'Peach into lilac'], ['ocean', 'Ocean', 'Teal into blue']] },
+            { key: 'stDepth', label: 'Depth', options: [['soft', 'Soft', 'The original'], ['float', 'Floating', 'Bigger, softer shadows'], ['flat', 'Flat', 'No shadows at all']] },
+        ] },
+        blueprint: { title: 'Blueprint Workshop', icon: 'wand', note: 'Your Blueprint stays as it is. Re-ink it, swap the sheet, mark it up.', groups: [
+            { key: 'bpInk', label: 'Ink', swatch: true, options: [['cyan', 'Cyanotype', '#1d4ed8', '#7db4ff', { accent: 'periwinkle', accentDark: 'sky' }], ['green', 'Greenline', '#16803d', '#78e6a0', { accent: 'mint', accentDark: 'mint' }], ['red', 'Redline', '#c81e32', '#ff8296', { accent: 'coral', accentDark: 'coral' }], ['violet', 'Violet ink', '#6e46dc', '#b496ff', { accent: 'lilac', accentDark: 'lilac' }], ['amber', 'Sepia', '#b0700a', '#fabe5a', { accent: 'butter', accentDark: 'butter' }], ['teal', 'Teal draft', '#0e827a', '#6ee6d7', { accent: 'teal', accentDark: 'teal' }], ['graphite', 'Graphite', '#282e3a', '#dce1eb', { accent: 'graphite', accentDark: 'graphite' }]] },
+            { key: 'bpGrid', label: 'Grid template', thumb: 'grid', options: [['drafting', 'Drafting sheet', 'Bold and fine lines'], ['graph', 'Graph paper', 'A tight engineering grid'], ['dots', 'Dot grid', 'Quiet dots for sketching'], ['iso', 'Isometric', 'Lines for 3D sketches'], ['plain', 'Vellum', 'No grid, just the sheet']] },
+            { key: 'bpMarks', label: 'Sheet marks', thumb: 'marks', options: [['ticks', 'Corner ticks', 'The original drafting corners'], ['cross', 'Crosshairs', 'Registration marks'], ['title', 'Title block', 'A drawing title strip'], ['dims', 'Dimension lines', 'Measured edges'], ['rivets', 'Rivets', 'An engineering plate']] },
+            { key: 'bpTitle', label: 'Title style', thumb: 'title', options: [['mono', 'Mono caps', 'The original'], ['stencil', 'Stencil', 'Heavy wide letters'], ['script', "Engineer's script", 'Handwritten notes']] },
+        ] },
+        bubblegum: { title: 'Candy Shop', icon: 'star', note: 'Your Bubblegum stays as it is. Pick a flavour, a sticker style and some floaties.', groups: [
+            { key: 'bgFlavour', label: 'Flavour', swatch: true, options: [['bubblegum', 'Bubblegum', '#c42d60', '#ff8fb3', { accent: 'rose', accentDark: 'rose' }], ['cotton', 'Cotton candy', '#1f72b6', '#9ad8f5', { accent: 'sky', accentDark: 'sky' }], ['grape', 'Grape soda', '#6a4ddc', '#b6a2ff', { accent: 'lilac', accentDark: 'lilac' }], ['lemon', 'Lemon fizz', '#f0c33c', '#f5d36b', { accent: 'butter', accentDark: 'butter' }], ['mint', 'Mint chip', '#157a55', '#5fd6a0', { accent: 'mint', accentDark: 'mint' }], ['peach', 'Peach ring', '#c7402f', '#ff8a7a', { accent: 'coral', accentDark: 'coral' }]] },
+            { key: 'bgShadow', label: 'Sticker shadow', options: [['hard', 'Hard offset', 'The original'], ['soft', 'Soft glow', 'Blurred and dreamy'], ['double', 'Double', 'Two stacked layers'], ['none', 'Flat', 'No shadow at all']] },
+            { key: 'bgOutline', label: 'Outline', options: [['bold', 'Bold', 'The original'], ['thin', 'Thin', 'A delicate line'], ['chunky', 'Chunky', 'An extra thick line']] },
+            { key: 'bgFloat', label: 'Floaties', options: [['none', 'None', 'Just the page'], ['bubbles', 'Bubbles', 'Drifting up'], ['hearts', 'Hearts', 'Floating hearts'], ['sparkles', 'Sparkles', 'Twinkling stars']] },
+        ] },
+        sakura: { title: 'Sakura Garden', icon: 'sparkle', note: 'Cherry blossoms drifting across soft blush paper.', groups: [
+            { key: 'skPetals', label: 'Petals', options: [['gentle', 'Gentle', 'A few petals drifting'], ['flurry', 'Flurry', 'A spring breeze'], ['none', 'Still', 'No petals']] },
+            { key: 'skPaper', label: 'Paper', options: [['washi', 'Washi', 'Soft fibre paper'], ['silk', 'Silk', 'Smooth with a sheen'], ['wash', 'Watercolour', 'A pink wash']] },
+            { key: 'skTitle', label: 'Headings', options: [['serif', 'Serif italic', 'Elegant'], ['brush', 'Brush script', 'Handwritten'], ['clean', 'Clean', 'Simple and bold']] },
+        ] },
+        lavender: { title: 'Dream Lab', icon: 'planet', note: 'Lilac skies, glassy cards and a little sparkle.', groups: [
+            { key: 'lvSky', label: 'Sky', options: [['clouds', 'Cloud mesh', 'Drifting pastel clouds'], ['stars', 'Starlight', 'A dotted night sky'], ['aurora', 'Aurora', 'Ribbons of colour']] },
+            { key: 'lvGlass', label: 'Glass', options: [['frosted', 'Frosted', 'Soft see-through blur'], ['pearl', 'Pearl', 'Milky and bright']] },
+            { key: 'lvFloat', label: 'Sparkles', options: [['sparkles', 'Sparkles', 'Twinkling stars'], ['none', 'None', 'A quiet sky']] },
+        ] },
+        strawberry: { title: 'Milk Bar', icon: 'star', note: 'Strawberry milk pink, cream cards and a sweet trim.', groups: [
+            { key: 'smPattern', label: 'Pattern', options: [['gingham', 'Gingham', 'A picnic check'], ['dots', 'Polka dots', 'Sweet dots'], ['stripes', 'Candy stripes', 'Soft stripes'], ['plain', 'Plain', 'Just milk']] },
+            { key: 'smEdge', label: 'Card trim', options: [['scallop', 'Scallop', 'A wavy cake edge'], ['round', 'Round', 'Simply rounded'], ['lace', 'Lace', 'A dotted lace trim']] },
+            { key: 'smFloat', label: 'Floaties', options: [['hearts', 'Hearts', 'Floating hearts'], ['none', 'None', 'No floaties']] },
+        ] },
+        mermaid: { title: 'Pearl Lagoon', icon: 'sparkle', note: 'Sea glass colours, pearly cards and shimmering edges.', groups: [
+            { key: 'mpSea', label: 'Sea', swatch: true, options: [['aqua', 'Aqua', '#0e7a74', '#4fd1c7', { accent: 'teal', accentDark: 'teal' }], ['lilac', 'Lilac lagoon', '#6a4ddc', '#b6a2ff', { accent: 'lilac', accentDark: 'lilac' }], ['coral', 'Coral reef', '#c7402f', '#ff8a7a', { accent: 'coral', accentDark: 'coral' }]] },
+            { key: 'mpShimmer', label: 'Shimmer', options: [['iridescent', 'Iridescent', 'A rainbow edge that turns'], ['pearl', 'Pearl', 'A soft pearly glow'], ['none', 'None', 'Plain edges']] },
+            { key: 'mpFloat', label: 'Bubbles', options: [['bubbles', 'Bubbles', 'Rising from below'], ['none', 'None', 'Still water']] },
+        ] },
+    };
+    const GROUPS = Object.fromEntries([...SHARED_GROUPS, ...Object.values(WORKSHOPS).flatMap(w => w.groups)].map(g => [g.key, g]));
+    Object.values(WORKSHOPS).forEach(w => w.groups.forEach(g => { DEFAULTS[g.key] = g.options[0][0]; }));
+    const FLOAT_KEYS = ['look', 'bgFloat', 'skPetals', 'lvFloat', 'smFloat', 'mpFloat'];
+    // handwriting fonts load only once someone needs them
+    const FONTS = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' };
+    function loadFont(id) {
+        if (!FONTS[id] || document.getElementById(`font-${id}`)) return;
         const l = document.createElement('link');
         l.id = `font-${id}`; l.rel = 'stylesheet';
-        l.href = `https://fonts.googleapis.com/css2?family=${REG_FONTS[id]}&display=swap`;
+        l.href = `https://fonts.googleapis.com/css2?family=${FONTS[id]}&display=swap`;
         document.head.appendChild(l);
     }
-    const BP_TITLES = [
-        ['mono', 'Mono caps', 'The original monospace headings'],
-        ['stencil', 'Stencil', 'Heavy wide letters, like a crate'],
-        ['script', "Engineer's script", 'Handwritten notes on the plan'],
-    ];
-    // Paper & tape: for every look
-    const TAPES = [
-        ['mix', 'Washi mix', 'Stripes, dots, grid and pinstripe'],
-        ['kraft', 'Kraft masking', 'Brown paper tape'],
-        ['candy', 'Candy stripes', 'Bold, sweet and bright'],
-        ['drafting', 'Drafting tape', 'Translucent, like on a blueprint'],
-        ['none', 'No tape', 'Clean edges'],
-    ];
-    const PAGES = [
-        ['clean', 'Clean cards', "The look's own cards"],
-        ['register', 'Register ruled', 'Blue rules and a red margin'],
-        ['torn', 'Torn edges', 'Ripped out, with punch holes'],
-        ['spiral', 'Spiral bound', 'A coil along the top'],
-    ];
     // fill, bright tone and text-on-fill of each accent, per theme (the same values as tokens.css)
     const ACCENTS = [
         ['poster', 'Poster orange', ['#ea580c', '#fb923c', '#ffffff'], ['#fb923c', '#fdba74', '#1a0b03']],
@@ -228,7 +211,8 @@ const Appearance = (() => {
             save();
             syncThemeChrome();
             syncSvgMotion();
-            if ('bg' in changes || 'motion' in changes) Ambient.restart();
+            if (FLOAT_KEYS.some(k => k in changes)) Ambient.reset();
+            else if ('bg' in changes || 'motion' in changes) Ambient.restart();
             renderSettings();
             Motion.pill(document.querySelector('.sidebar-nav'));
             if (typeof mentorFlowKick === 'function') mentorFlowKick();
@@ -259,13 +243,35 @@ const Appearance = (() => {
     const pressed = (on) => `aria-pressed="${on}"`;
     const tile = (kind, id, name, desc, thumb) => `
         <button type="button" class="pick" data-ap-${kind}="${id}" ${pressed(false)}>
-            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid', bpmark: 'bpMarks', bptitle: 'bpTitle', regpaper: 'regPaper', reghand: 'regHand', regdesk: 'regDesk', regdoodle: 'regDoodles' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
+            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
             <span class="pick-desc">${desc}</span>
         </button>`;
     const pipeSvg = (id) => `<svg class="pipe-demo" data-pipe="${id}" viewBox="0 0 160 84" preserveAspectRatio="none" aria-hidden="true">
             <path class="rail" d="M30 64 C 78 64, 82 20, 130 20"/><path class="beam" d="M30 64 C 78 64, 82 20, 130 20"/>
             <path class="pulse pulse-2" pathLength="100" d="M30 64 C 78 64, 82 20, 130 20"/><path class="pulse" pathLength="100" d="M30 64 C 78 64, 82 20, 130 20"/>
             <circle class="dot" cx="30" cy="64" r="3.5"/><circle class="dot" cx="130" cy="20" r="3.5"/></svg>`;
+    const THUMBS = {
+        tape: v => `<span class="pick-thumb tape-thumb" data-tape="${v}" aria-hidden="true"><i></i></span>`,
+        pages: v => `<span class="pick-thumb page-thumb" data-pages="${v}" aria-hidden="true"></span>`,
+        grid: v => `<span class="pick-thumb grid-thumb" data-grid="${v}" aria-hidden="true"></span>`,
+        marks: v => `<span class="pick-thumb marks-thumb" data-marks="${v}" aria-hidden="true"><i></i></span>`,
+        title: v => `<span class="pick-thumb title-thumb" data-title="${v}" aria-hidden="true">Plan A</span>`,
+        paper: v => `<span class="pick-thumb regpaper-thumb" data-paper="${v}" aria-hidden="true"><i></i></span>`,
+        hand: v => `<span class="pick-thumb hand-thumb" data-hand="${v}" aria-hidden="true">Shabash!</span>`,
+        desk: v => `<span class="pick-thumb desk-thumb" data-desk="${v}" aria-hidden="true"><i></i></span>`,
+        doodle: v => `<span class="pick-thumb doodle-thumb" data-doodle="${v}" aria-hidden="true"><i></i></span>`,
+    };
+    // one row of a workshop: swatches or picture tiles, marked from prefs by renderSettings
+    function groupHtml(g) {
+        const night = isDark();
+        const body = g.swatch
+            ? g.options.map(([id, name, day, dark]) => `<button type="button" class="swatch" data-wk="${g.key}" data-v="${id}" aria-pressed="false" style="--sw:${night ? dark : day};--sw2:${night ? dark : day};--sw-on:${night ? '#10131a' : '#ffffff'}">
+                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`).join('')
+            : g.options.map(([id, name, desc]) => `<button type="button" class="pick" data-wk="${g.key}" data-v="${id}" aria-pressed="false">
+                ${THUMBS[g.thumb] ? THUMBS[g.thumb](id) : `<span class="pick-thumb wk-thumb" data-wk-thumb="${g.key}" data-v="${id}" aria-hidden="true"><i></i><b></b></span>`}
+                <span class="pick-name">${name}${id === DEFAULTS[g.key] ? ' <span class="tag-default">Default</span>' : ''}</span><span class="pick-desc">${desc}</span></button>`).join('');
+        return `<h4>${g.label}</h4><div class="${g.swatch ? 'swatches' : 'pick-grid'} wk-row" style="--cols:${g.options.length}" role="group" aria-label="${g.label}">${body}</div>`;
+    }
 
     function renderStatic(card) {   // option tiles that never change shape: built once
         card.querySelector('[data-ap-looks]').innerHTML = LOOKS.map(([id, name, desc]) => `
@@ -280,29 +286,7 @@ const Appearance = (() => {
             `<span class="pick-thumb skin-thumb" data-skin="${id}" aria-hidden="true"><span class="p"><b></b></span></span>`)).join('');
         card.querySelector('[data-ap-pipes]').innerHTML = PIPES.map(([id, name, desc]) => tile('pipe', id, name, desc,
             `<span class="pick-thumb pipe-thumb" aria-hidden="true">${pipeSvg(id)}</span>`)).join('');
-        card.querySelector('[data-ap-tapes]').innerHTML = TAPES.map(([id, name, desc]) => tile('tape', id, name, desc,
-            `<span class="pick-thumb tape-thumb" data-tape="${id}" aria-hidden="true"><i></i></span>`)).join('');
-        card.querySelector('[data-ap-pages]').innerHTML = PAGES.map(([id, name, desc]) => tile('page', id, name, desc,
-            `<span class="pick-thumb page-thumb" data-pages="${id}" aria-hidden="true"></span>`)).join('');
-        card.querySelector('[data-ap-bpgrids]').innerHTML = BP_GRIDS.map(([id, name, desc]) => tile('bpgrid', id, name, desc,
-            `<span class="pick-thumb grid-thumb" data-grid="${id}" aria-hidden="true"></span>`)).join('');
-        card.querySelector('[data-ap-bpmarks]').innerHTML = BP_MARKS.map(([id, name, desc]) => tile('bpmark', id, name, desc,
-            `<span class="pick-thumb marks-thumb" data-marks="${id}" aria-hidden="true"><i></i></span>`)).join('');
-        card.querySelector('[data-ap-bptitles]').innerHTML = BP_TITLES.map(([id, name, desc]) => tile('bptitle', id, name, desc,
-            `<span class="pick-thumb title-thumb" data-title="${id}" aria-hidden="true">Plan A</span>`)).join('');
-        card.querySelector('[data-ap-regpapers]').innerHTML = REG_PAPERS.map(([id, name, desc]) => tile('regpaper', id, name, desc,
-            `<span class="pick-thumb regpaper-thumb" data-paper="${id}" aria-hidden="true"><i></i></span>`)).join('');
-        card.querySelector('[data-ap-reghands]').innerHTML = REG_HANDS.map(([id, name, desc]) => tile('reghand', id, name, desc,
-            `<span class="pick-thumb hand-thumb" data-hand="${id}" aria-hidden="true">Shabash!</span>`)).join('');
-        card.querySelector('[data-ap-regdesks]').innerHTML = REG_DESKS.map(([id, name, desc]) => tile('regdesk', id, name, desc,
-            `<span class="pick-thumb desk-thumb" data-desk="${id}" aria-hidden="true"><i></i></span>`)).join('');
-        card.querySelector('[data-ap-regdoodles]').innerHTML = REG_DOODLES.map(([id, name, desc]) => tile('regdoodle', id, name, desc,
-            `<span class="pick-thumb doodle-thumb" data-doodle="${id}" aria-hidden="true"><i></i></span>`)).join('');
-        // the same tape and page choices as the Paper & tape tab, right here for Blueprint and Register
-        ['bp', 'reg'].forEach(k => {
-            card.querySelector(`[data-ap-${k}tapes]`).innerHTML = card.querySelector('[data-ap-tapes]').innerHTML;
-            card.querySelector(`[data-ap-${k}pages]`).innerHTML = card.querySelector('[data-ap-pages]').innerHTML;
-        });
+        card.querySelector('[data-ap-paper-groups]').innerHTML = SHARED_GROUPS.map(groupHtml).join('');
     }
 
     function renderSettings() {
@@ -322,31 +306,16 @@ const Appearance = (() => {
         mark('[data-ap-side]', 'apSide', prefs.sidebar);
         mark('[data-ap-skin]', 'apSkin', prefs.mentorSkin);
         mark('[data-ap-pipe]', 'apPipe', prefs.pipeline);
-        mark('[data-ap-tape]', 'apTape', prefs.tape);
-        mark('[data-ap-page]', 'apPage', prefs.pages);
-        mark('[data-ap-bpgrid]', 'apBpgrid', prefs.bpGrid);
-        mark('[data-ap-bpmark]', 'apBpmark', prefs.bpMarks);
-        mark('[data-ap-bptitle]', 'apBptitle', prefs.bpTitle);
-        card.querySelector('[data-bp-options]').hidden = prefs.look !== 'blueprint';
-        card.querySelector('[data-reg-options]').hidden = prefs.look !== 'register';
-        if (prefs.look === 'register') Object.keys(REG_FONTS).forEach(loadHand);   // so the handwriting tiles preview in their own font
-        mark('[data-ap-regpaper]', 'apRegpaper', prefs.regPaper);
-        mark('[data-ap-reghand]', 'apReghand', prefs.regHand);
-        mark('[data-ap-regdesk]', 'apRegdesk', prefs.regDesk);
-        mark('[data-ap-regdoodle]', 'apRegdoodle', prefs.regDoodles);
-        card.querySelector('[data-ap-reginks]').innerHTML = REG_INKS.map(([id, name, day, night]) => {
-            const ink = isDark() ? night : day;
-            return `<button type="button" class="swatch" data-ap-regink="${id}" aria-pressed="${prefs.regInk === id}" style="--sw:${ink};--sw2:${ink};--sw-on:${isDark() ? '#1b2620' : '#ffffff'}">
-                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`;
-        }).join('');
-        card.querySelector('[data-ap-regmarkers]').innerHTML = REG_MARKERS.map(([id, name, hex]) =>
-            `<button type="button" class="swatch" data-ap-regmarker="${id}" aria-pressed="${prefs.regMarker === id}" style="--sw:${hex};--sw2:${hex};--sw-on:#1f2c4a">
-                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`).join('');
-        card.querySelector('[data-ap-bpinks]').innerHTML = BP_INKS.map(([id, name, light, dark]) => {
-            const ink = isDark() ? dark : light;
-            return `<button type="button" class="swatch" data-ap-bpink="${id}" aria-pressed="${prefs.bpInk === id}" style="--sw:${ink};--sw2:${ink};--sw-on:${isDark() ? '#0b0f17' : '#ffffff'}">
-                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`;
-        }).join('');
+        const w = WORKSHOPS[prefs.look];
+        const panel = card.querySelector('[data-look-workshop]');
+        const key = `${prefs.look}:${isDark()}`;
+        if (panel.dataset.for !== key) {   // rebuilt when the look changes, or the theme (swatches show its colours)
+            panel.dataset.for = key;
+            panel.hidden = !w;
+            panel.innerHTML = w ? `<div class="lw-inner"><div class="lw-head"><svg aria-hidden="true"><use href="#i-${w.icon}"/></svg><div><h4>${w.title}</h4><p class="ap-note">${w.note}</p></div></div>${[...w.groups, ...SHARED_GROUPS].map(groupHtml).join('')}</div>` : '';
+            if (w?.groups.some(g => g.fonts)) Object.keys(FONTS).forEach(loadFont);   // so handwriting tiles preview in their own font
+        }
+        card.querySelectorAll('[data-wk]').forEach(b => b.setAttribute('aria-pressed', String(prefs[b.dataset.wk] === b.dataset.v)));
         mark('[data-ap-orb]', 'apOrb', prefs[editMode === 'dark' ? 'orbDark' : 'orb']);
         const accentKey = editMode === 'dark' ? 'accentDark' : 'accent';
         card.querySelector('[data-ap-swatches]').innerHTML = ACCENTS.map(([id, name, l, d]) => {
@@ -383,8 +352,7 @@ const Appearance = (() => {
             else if (b.dataset.apLook) {
                 applyLook(b.dataset.apLook);
                 burstFrom(card, `[data-ap-look="${b.dataset.apLook}"] .look-thumb`);
-                const panel = { blueprint: '[data-bp-options]', register: '[data-reg-options]' }[b.dataset.apLook];
-                if (panel) setTimeout(() => card.querySelector(panel)?.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' }), 450);
+                if (WORKSHOPS[b.dataset.apLook]) setTimeout(() => card.querySelector('[data-look-workshop]')?.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' }), 450);
             }
             else if (b.dataset.apAccent) {
                 const entry = ACCENTS.find(a => a[0] === b.dataset.apAccent);
@@ -395,29 +363,13 @@ const Appearance = (() => {
             else if (b.dataset.apSide) set('sidebar', b.dataset.apSide);
             else if (b.dataset.apSkin) { set('mentorSkin', b.dataset.apSkin); burstFrom(card, `[data-ap-skin="${b.dataset.apSkin}"] .pick-thumb`); }
             else if (b.dataset.apPipe) set('pipeline', b.dataset.apPipe);
-            else if (b.dataset.apTape) { set('tape', b.dataset.apTape); burstFrom(card, `[data-ap-tape="${b.dataset.apTape}"] .pick-thumb`); }
-            else if (b.dataset.apPage) apply({ pages: b.dataset.apPage }, { transition: true });
-            else if (b.dataset.apBpgrid) apply({ bpGrid: b.dataset.apBpgrid }, { transition: true });
-            else if (b.dataset.apBpmark) apply({ bpMarks: b.dataset.apBpmark }, { transition: true });
-            else if (b.dataset.apBptitle) apply({ bpTitle: b.dataset.apBptitle }, { transition: true });
-            else if (b.dataset.apRegpaper) apply({ regPaper: b.dataset.apRegpaper }, { transition: true });
-            else if (b.dataset.apReghand) { loadHand(b.dataset.apReghand); apply({ regHand: b.dataset.apReghand }, { transition: true }); }
-            else if (b.dataset.apRegdesk) apply({ regDesk: b.dataset.apRegdesk }, { transition: true });
-            else if (b.dataset.apRegdoodle) apply({ regDoodles: b.dataset.apRegdoodle }, { transition: true });
-            else if (b.dataset.apRegink) {
-                const ink = REG_INKS.find(i => i[0] === b.dataset.apRegink);
-                apply({ regInk: ink[0], ...ink[4] }, { transition: true });
-                Motion.burst(card.querySelector(`[data-ap-regink="${ink[0]}"] .swatch-dot`), 10, [ink[2], ink[3]]);
-            }
-            else if (b.dataset.apRegmarker) {
-                const m = REG_MARKERS.find(x => x[0] === b.dataset.apRegmarker);
-                set('regMarker', m[0]);
-                Motion.burst(card.querySelector(`[data-ap-regmarker="${m[0]}"] .swatch-dot`), 10, [m[2], m[2]]);
-            }
-            else if (b.dataset.apBpink) {
-                const ink = BP_INKS.find(i => i[0] === b.dataset.apBpink);
-                apply({ bpInk: ink[0], ...ink[4] }, { transition: true });
-                Motion.burst(card.querySelector(`[data-ap-bpink="${ink[0]}"] .swatch-dot`), 10, [ink[2], ink[3]]);
+            else if (b.dataset.wk) {
+                const g = GROUPS[b.dataset.wk];
+                const opt = g.options.find(o => o[0] === b.dataset.v);
+                if (g.fonts) loadFont(opt[0]);
+                apply({ [g.key]: opt[0], ...((g.swatch ? opt[4] : opt[3]) || {}) });   // no page cross-fade: rapid picks must never be swallowed
+                if (g.swatch) Motion.burst(b.querySelector('.swatch-dot'), 10, [opt[2], opt[3]]);
+                else Motion.burst(b.querySelector('.pick-thumb'), 10);
             }
             else if (b.dataset.apPreset) applyPreset(b.dataset.apPreset);
             else if (seg.matches('[data-ap-opt]')) set(seg.dataset.apOpt, b.dataset.v);
@@ -431,52 +383,102 @@ const Appearance = (() => {
     const Ambient = (() => {
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas?.getContext('2d');
-        let w = 0, h = 0, dpr = 1, dots = [], raf = 0, rgb = '234, 88, 12';
+        let w = 0, h = 0, dpr = 1, dots = [], raf = 0, rgb = '234, 88, 12', petal = '245, 160, 185', kind = 'dots';
         const mouse = { x: null, y: null, r: 140 };
         const lowEnd = (navigator.hardwareConcurrency || 8) <= 4;
         const enabled = () => canvas && prefs.bg === 'particles';
+        // which floaties the look asks for: dots everywhere else
+        const floaties = () => ({
+            bubblegum: prefs.bgFloat === 'none' ? 'dots' : prefs.bgFloat,
+            sakura: prefs.skPetals === 'none' ? 'none' : prefs.skPetals === 'flurry' ? 'flurry' : 'petals',
+            lavender: prefs.lvFloat === 'none' ? 'none' : 'sparkles',
+            strawberry: prefs.smFloat === 'none' ? 'none' : 'hearts',
+            mermaid: prefs.mpFloat === 'none' ? 'none' : 'bubbles',
+        }[prefs.look] || 'dots');
+        const rand = (a, b) => a + Math.random() * (b - a);
+        function make(k) {
+            const p = { x: rand(0, w), y: rand(0, h), vx: rand(-0.25, 0.25), vy: rand(-0.25, 0.25), r: rand(0.8, 2.6), a: rand(0.12, 0.47), rot: rand(0, 6.28), vr: rand(-0.02, 0.02), ph: rand(0, 6.28) };
+            if (k === 'petals' || k === 'flurry') Object.assign(p, { r: rand(5, 9), vy: rand(0.35, 0.9) * (k === 'flurry' ? 1.7 : 1), vx: rand(0.15, 0.55), a: rand(0.45, 0.85) });
+            else if (k === 'hearts') Object.assign(p, { r: rand(6, 11), vy: rand(-0.6, -0.25), vx: rand(-0.12, 0.12), a: rand(0.25, 0.55) });
+            else if (k === 'bubbles') Object.assign(p, { r: rand(3, 12), vy: rand(-0.9, -0.3), vx: rand(-0.1, 0.1), a: rand(0.3, 0.6) });
+            else if (k === 'sparkles') Object.assign(p, { r: rand(2, 5), vx: rand(-0.06, 0.06), vy: rand(-0.06, 0.06), a: rand(0.4, 0.9) });
+            return p;
+        }
         function size() {
             if (!canvas) return;
             dpr = Math.min(devicePixelRatio || 1, 2);
             w = innerWidth; h = innerHeight;
             canvas.width = w * dpr; canvas.height = h * dpr;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            kind = floaties();
+            const share = { dots: 1, petals: 0.45, flurry: 0.9, hearts: 0.35, bubbles: 0.45, sparkles: 0.6, none: 0 }[kind];
             const density = (w < 768 ? 26000 : 15000) * (lowEnd ? 1.8 : 1);
-            const n = Math.round(Math.min(110, (w * h) / density));
-            dots = Array.from({ length: n }, () => ({
-                x: Math.random() * w, y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5,
-                r: Math.random() * 1.8 + 0.8, a: Math.random() * 0.35 + 0.12,
-            }));
+            const n = Math.round(Math.min(110, (w * h) / density) * share);
+            dots = Array.from({ length: n }, () => make(kind));
         }
-        function draw(move) {
+        function shape(p, t) {
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            if (kind === 'petals' || kind === 'flurry') {
+                ctx.rotate(p.rot);
+                ctx.beginPath(); ctx.ellipse(0, 0, p.r, p.r * 0.55, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${petal}, ${p.a})`; ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-p.r * 0.3, 0, p.r * 0.35, p.r * 0.16, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.a * 0.45})`; ctx.fill();
+            } else if (kind === 'hearts') {
+                const s = p.r / 10;
+                ctx.rotate(Math.sin(t * 0.0012 + p.ph) * 0.25); ctx.scale(s, s); ctx.translate(0, -6);
+                ctx.beginPath(); ctx.moveTo(0, 2.5);
+                ctx.bezierCurveTo(-1, -2, -8, -2, -8, 3); ctx.bezierCurveTo(-8, 7, -3, 9.5, 0, 12);
+                ctx.bezierCurveTo(3, 9.5, 8, 7, 8, 3); ctx.bezierCurveTo(8, -2, 1, -2, 0, 2.5);
+                ctx.fillStyle = `rgba(${rgb}, ${p.a})`; ctx.fill();
+            } else if (kind === 'bubbles') {
+                ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+                ctx.lineWidth = 1.2; ctx.strokeStyle = `rgba(${rgb}, ${p.a})`; ctx.stroke();
+                ctx.beginPath(); ctx.arc(-p.r * 0.35, -p.r * 0.35, p.r * 0.22, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.a})`; ctx.fill();
+            } else if (kind === 'sparkles') {
+                const r = p.r, k = r * 0.28;
+                ctx.globalAlpha = p.a * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * 0.002 + p.ph)));
+                ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(k, -k); ctx.lineTo(r, 0); ctx.lineTo(k, k); ctx.lineTo(0, r); ctx.lineTo(-k, k); ctx.lineTo(-r, 0); ctx.lineTo(-k, -k); ctx.closePath();
+                ctx.fillStyle = `rgb(${rgb})`; ctx.fill();
+            } else {
+                ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(${rgb}, ${p.a})`; ctx.fill();
+            }
+            ctx.restore();
+        }
+        function draw(move, t = 0) {
             ctx.clearRect(0, 0, w, h);
             for (const p of dots) {
                 if (move) {
-                    p.x = (p.x + p.vx + w) % w;
-                    p.y = (p.y + p.vy + h) % h;
+                    p.x += p.vx + (kind === 'petals' || kind === 'flurry' || kind === 'hearts' ? Math.sin(t * 0.001 + p.ph) * 0.3 : 0);
+                    p.y += p.vy; p.rot += p.vr;
+                    if (p.y > h + 20) { p.y = -20; p.x = rand(0, w); }
+                    if (p.y < -20) { p.y = h + 20; p.x = rand(0, w); }
+                    p.x = (p.x + w) % w;
                     if (mouse.x !== null) {
                         const dx = mouse.x - p.x, dy = mouse.y - p.y, dist = Math.hypot(dx, dy);
                         if (dist < mouse.r && dist > 0) { const f = (mouse.r - dist) / mouse.r; p.x -= (dx / dist) * f * 1.6; p.y -= (dy / dist) * f * 1.6; }
                     }
                 }
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${rgb}, ${p.a})`;
-                ctx.fill();
+                shape(p, t);
             }
         }
-        function loop() { draw(true); raf = requestAnimationFrame(loop); }
+        function loop(t) { draw(true, t); raf = requestAnimationFrame(loop); }
         function stop() { cancelAnimationFrame(raf); raf = 0; }
         function restart() {
             stop();
             if (!enabled()) { ctx?.clearRect(0, 0, w, h); return; }
-            if (!dots.length) size();
+            if (!dots.length && kind !== 'none') size();
             if (calm() || document.hidden) { draw(false); return; }
-            loop();
+            raf = requestAnimationFrame(loop);
         }
+        function reset() { size(); recolor(); restart(); }
         function recolor() {
-            rgb = getComputedStyle(root).getPropertyValue('--glow-rgb').trim() || rgb;
+            const cs = getComputedStyle(root);
+            rgb = cs.getPropertyValue('--glow-rgb').trim() || rgb;
+            petal = cs.getPropertyValue('--petal-rgb').trim() || petal;
             if (enabled() && !raf) draw(false);
         }
         if (canvas) {
@@ -485,7 +487,7 @@ const Appearance = (() => {
             document.addEventListener('visibilitychange', restart);
             matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => { restart(); syncSvgMotion(); });
         }
-        return { size, restart, recolor };
+        return { size, restart, reset, recolor };
     })();
 
     function boot() {
