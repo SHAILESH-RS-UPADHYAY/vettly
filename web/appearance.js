@@ -16,13 +16,46 @@ const Appearance = (() => {
         look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss',
         sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream',
         density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full',
+        tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting',
     };
     // a look also brings its own colours and side panel; each stays adjustable afterwards
     const LOOKS = [
-        ['classic', 'Poster Classic', 'Your original parchment poster: bright orange, tape and handwriting', { accent: 'poster', accentDark: 'spatial', sidebar: 'poster' }],
-        ['studio', 'Studio Soft', 'Calm type, soft cards and frosted glass', { accent: 'tangerine', accentDark: 'sky', sidebar: 'frosted' }],
-        ['blueprint', 'Blueprint', 'Drafting lines, mono headings, crisp corners', { accent: 'periwinkle', accentDark: 'sky', sidebar: 'bare' }],
-        ['bubblegum', 'Bubblegum', 'Cute sticker cards with bold outlines', { accent: 'rose', accentDark: 'rose', sidebar: 'island' }],
+        ['classic', 'Poster Classic', 'Your original parchment poster: bright orange, tape and handwriting', { accent: 'poster', accentDark: 'spatial', sidebar: 'poster', tape: 'mix', pages: 'clean' }],
+        ['register', 'Register', 'An old school register: ruled pages, red margins, torn edges and tape. A chalkboard at night', { accent: 'coral', accentDark: 'butter', sidebar: 'spiral', tape: 'mix', pages: 'register' }],
+        ['studio', 'Studio Soft', 'Calm type, soft cards and frosted glass', { accent: 'tangerine', accentDark: 'sky', sidebar: 'frosted', tape: 'none', pages: 'clean' }],
+        ['blueprint', 'Blueprint', 'Drafting lines, mono headings, crisp corners. Pick an ink and a grid below', { accent: 'periwinkle', accentDark: 'sky', sidebar: 'bare', tape: 'drafting', pages: 'clean' }],
+        ['bubblegum', 'Bubblegum', 'Cute sticker cards with bold outlines', { accent: 'rose', accentDark: 'rose', sidebar: 'island', tape: 'candy', pages: 'clean' }],
+    ];
+    // Blueprint's own options: an ink (with the accent that suits it) and a grid template
+    const BP_INKS = [
+        ['cyan', 'Cyanotype', '#1d4ed8', '#7db4ff', { accent: 'periwinkle', accentDark: 'sky' }],
+        ['green', 'Greenline', '#16803d', '#78e6a0', { accent: 'mint', accentDark: 'mint' }],
+        ['red', 'Redline', '#c81e32', '#ff8296', { accent: 'coral', accentDark: 'coral' }],
+        ['violet', 'Violet ink', '#6e46dc', '#b496ff', { accent: 'lilac', accentDark: 'lilac' }],
+        ['amber', 'Sepia', '#b0700a', '#fabe5a', { accent: 'butter', accentDark: 'butter' }],
+        ['teal', 'Teal draft', '#0e827a', '#6ee6d7', { accent: 'teal', accentDark: 'teal' }],
+        ['graphite', 'Graphite', '#282e3a', '#dce1eb', { accent: 'graphite', accentDark: 'graphite' }],
+    ];
+    const BP_GRIDS = [
+        ['drafting', 'Drafting sheet', 'Bold and fine lines, the original'],
+        ['graph', 'Graph paper', 'A tight engineering grid'],
+        ['dots', 'Dot grid', 'Quiet dots for sketching'],
+        ['iso', 'Isometric', 'Thirty-degree lines for 3D sketches'],
+        ['plain', 'Vellum', 'No grid, just the sheet'],
+    ];
+    // Paper & tape: for every look
+    const TAPES = [
+        ['mix', 'Washi mix', 'Stripes, dots, grid and pinstripe'],
+        ['kraft', 'Kraft masking', 'Brown paper tape'],
+        ['candy', 'Candy stripes', 'Bold, sweet and bright'],
+        ['drafting', 'Drafting tape', 'Translucent, like on a blueprint'],
+        ['none', 'No tape', 'Clean edges'],
+    ];
+    const PAGES = [
+        ['clean', 'Clean cards', "The look's own cards"],
+        ['register', 'Register ruled', 'Blue rules and a red margin'],
+        ['torn', 'Torn edges', 'Ripped out, with punch holes'],
+        ['spiral', 'Spiral bound', 'A coil along the top'],
     ];
     // fill, bright tone and text-on-fill of each accent, per theme (the same values as tokens.css)
     const ACCENTS = [
@@ -45,6 +78,7 @@ const Appearance = (() => {
         ['slab', 'Midnight slab', 'A dark panel in any theme'],
         ['island', 'Floating island', 'Lifts off the edge'],
         ['bare', 'Bare', 'No panel, the grid shows through'],
+        ['spiral', 'Spiral notebook', 'A kraft cover with a coil'],
     ];
     const SKINS = [
         ['frosted', 'Frosted', 'Soft glass frame, warm paper inside'],
@@ -164,7 +198,7 @@ const Appearance = (() => {
     const pressed = (on) => `aria-pressed="${on}"`;
     const tile = (kind, id, name, desc, thumb) => `
         <button type="button" class="pick" data-ap-${kind}="${id}" ${pressed(false)}>
-            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[kind === 'side' ? 'sidebar' : kind === 'skin' ? 'mentorSkin' : 'pipeline'] ? ' <span class="tag-default">Default</span>' : ''}</span>
+            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
             <span class="pick-desc">${desc}</span>
         </button>`;
     const pipeSvg = (id) => `<svg class="pipe-demo" data-pipe="${id}" viewBox="0 0 160 84" preserveAspectRatio="none" aria-hidden="true">
@@ -185,6 +219,12 @@ const Appearance = (() => {
             `<span class="pick-thumb skin-thumb" data-skin="${id}" aria-hidden="true"><span class="p"><b></b></span></span>`)).join('');
         card.querySelector('[data-ap-pipes]').innerHTML = PIPES.map(([id, name, desc]) => tile('pipe', id, name, desc,
             `<span class="pick-thumb pipe-thumb" aria-hidden="true">${pipeSvg(id)}</span>`)).join('');
+        card.querySelector('[data-ap-tapes]').innerHTML = TAPES.map(([id, name, desc]) => tile('tape', id, name, desc,
+            `<span class="pick-thumb tape-thumb" data-tape="${id}" aria-hidden="true"><i></i></span>`)).join('');
+        card.querySelector('[data-ap-pages]').innerHTML = PAGES.map(([id, name, desc]) => tile('page', id, name, desc,
+            `<span class="pick-thumb page-thumb" data-pages="${id}" aria-hidden="true"></span>`)).join('');
+        card.querySelector('[data-ap-bpgrids]').innerHTML = BP_GRIDS.map(([id, name, desc]) => tile('bpgrid', id, name, desc,
+            `<span class="pick-thumb grid-thumb" data-grid="${id}" aria-hidden="true"></span>`)).join('');
     }
 
     function renderSettings() {
@@ -204,6 +244,15 @@ const Appearance = (() => {
         mark('[data-ap-side]', 'apSide', prefs.sidebar);
         mark('[data-ap-skin]', 'apSkin', prefs.mentorSkin);
         mark('[data-ap-pipe]', 'apPipe', prefs.pipeline);
+        mark('[data-ap-tape]', 'apTape', prefs.tape);
+        mark('[data-ap-page]', 'apPage', prefs.pages);
+        mark('[data-ap-bpgrid]', 'apBpgrid', prefs.bpGrid);
+        card.querySelector('[data-bp-options]').hidden = prefs.look !== 'blueprint';
+        card.querySelector('[data-ap-bpinks]').innerHTML = BP_INKS.map(([id, name, light, dark]) => {
+            const ink = isDark() ? dark : light;
+            return `<button type="button" class="swatch" data-ap-bpink="${id}" aria-pressed="${prefs.bpInk === id}" style="--sw:${ink};--sw2:${ink};--sw-on:${isDark() ? '#0b0f17' : '#ffffff'}">
+                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`;
+        }).join('');
         mark('[data-ap-orb]', 'apOrb', prefs[editMode === 'dark' ? 'orbDark' : 'orb']);
         const accentKey = editMode === 'dark' ? 'accentDark' : 'accent';
         card.querySelector('[data-ap-swatches]').innerHTML = ACCENTS.map(([id, name, l, d]) => {
@@ -247,6 +296,14 @@ const Appearance = (() => {
             else if (b.dataset.apSide) set('sidebar', b.dataset.apSide);
             else if (b.dataset.apSkin) { set('mentorSkin', b.dataset.apSkin); burstFrom(card, `[data-ap-skin="${b.dataset.apSkin}"] .pick-thumb`); }
             else if (b.dataset.apPipe) set('pipeline', b.dataset.apPipe);
+            else if (b.dataset.apTape) { set('tape', b.dataset.apTape); burstFrom(card, `[data-ap-tape="${b.dataset.apTape}"] .pick-thumb`); }
+            else if (b.dataset.apPage) apply({ pages: b.dataset.apPage }, { transition: true });
+            else if (b.dataset.apBpgrid) apply({ bpGrid: b.dataset.apBpgrid }, { transition: true });
+            else if (b.dataset.apBpink) {
+                const ink = BP_INKS.find(i => i[0] === b.dataset.apBpink);
+                apply({ bpInk: ink[0], ...ink[4] }, { transition: true });
+                Motion.burst(card.querySelector(`[data-ap-bpink="${ink[0]}"] .swatch-dot`), 10, [ink[2], ink[3]]);
+            }
             else if (b.dataset.apPreset) applyPreset(b.dataset.apPreset);
             else if (seg.matches('[data-ap-opt]')) set(seg.dataset.apOpt, b.dataset.v);
             else if (b.id === 'appearance-reset') { editMode = null; reset(b); }
