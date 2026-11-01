@@ -118,6 +118,7 @@ function mentorAddTurn(userText, botText) {
             <div class="mentor-md">${botText ? mentorMd(botText) : '<span class="mentor-thinking">Thinking it through</span>'}</div>
         </div>`;
     msgs.appendChild(turn);
+    mentorSnap();
     return turn;
 }
 
@@ -129,6 +130,36 @@ function mentorRenderAll() {
         mentorAddTurn(mentor.history[i].content, mentor.history[i + 1].content);
     }
     msgs.scrollTop = (msgs.lastElementChild?.offsetTop || 8) - 8;  // open on the latest question, not the tail of its answer
+    mentorStampPage();
+    mentorSnap();
+}
+
+// Notebook skin: the register's header strip shows today's date and the page (one per question asked)
+function mentorStampPage() {
+    const head = document.querySelector('.mentor-head');
+    head.dataset.date = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+    head.dataset.page = String(Math.max(1, Math.ceil(mentor.history.length / 2)));
+}
+
+// Notebook skin: keep the answers on the ruled lines by rounding every block that is not plain text
+// (sticky notes, code cards, tables, the empty page's pieces) up to whole lines. Once per frame at most.
+const MENTOR_SNAP = '.mentor-msg.user, .mentor-md > :is(pre, table, blockquote, hr, img), .mentor-empty > *';
+let mentorSnapQueued = false;
+function mentorSnap() {
+    if (mentorSnapQueued) return;
+    mentorSnapQueued = true;
+    requestAnimationFrame(() => {
+        mentorSnapQueued = false;
+        const root = document.documentElement;
+        const on = root.dataset.mentorSkin === 'paper';
+        const lh = parseFloat(getComputedStyle(root).getPropertyValue('--nb-lh')) || 28;
+        document.querySelectorAll(`#mentor-msgs :is(${MENTOR_SNAP})`).forEach(el => {
+            el.style.marginBottom = '';
+            if (!on || !el.offsetHeight) return;
+            const extra = Math.ceil(el.offsetHeight / lh) * lh - el.offsetHeight;
+            if (extra) el.style.marginBottom = `${(parseFloat(getComputedStyle(el).marginBottom) || 0) + extra}px`;
+        });
+    });
 }
 
 // ─── Open, close, follow the page ────────────────────────────────
@@ -203,9 +234,11 @@ async function mentorSend(preset) {
 
     bot.classList.remove('streaming');
     out.innerHTML = mentorMd(reply.trim() ? reply : '*No answer came back. Send it again.*');
+    mentorSnap();
     if (!failed && reply.trim()) {
         bot.classList.add('done');
         mentorRemember(text, reply);
+        mentorStampPage();
     }
     mentorSetBusy(false);
 }
@@ -241,6 +274,7 @@ function mentorStreamRenderer(bot, out) {
             if (!bot.classList.contains('streaming')) return;  // the final render already landed
             const insideCodeFence = latest.split('```').length % 2 === 0;
             out.innerHTML = mentorMd(latest + (insideCodeFence ? '' : '<span class="mentor-caret"></span>'));
+            mentorSnap();
         });
     };
 }
@@ -701,5 +735,9 @@ function mentorSpotlight(e) {
     addEventListener('resize', mentorFitGeom);
     addEventListener('pointermove', mentorMagnet, { passive: true });
     document.querySelector('.mentor-panel').addEventListener('pointermove', mentorSpotlight, { passive: true });
+    // the notebook's lines follow the panel's size and the chosen skin
+    if ('ResizeObserver' in window) new ResizeObserver(mentorSnap).observe(document.getElementById('mentor-msgs'));
+    new MutationObserver(mentorSnap).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mentor-skin'] });
+    mentorStampPage();
     if (mentorStore.get(MENTOR_KEYS.open, false)) mentorToggle(true, false);
 })();
