@@ -175,5 +175,5 @@ GROQ_API_KEY=gsk_...
 
 ### 3. Deploy to Vercel
 1. Push this repository to GitHub.
-2. Import the repository on **[Vercel](https://vercel.com/new)** (`vercel.json` and `api/index.py` are pre-configured).
+2. Import the repository on **[Vercel](https://vercel.com/new)**: it detects the FastAPI app in `api/index.py`, and `.vercelignore` keeps your profile data and resume out of the upload, so the hosted copy starts empty.
 3. Add `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `GROQ_API_KEY` in **Vercel Environment Variables** and click **Deploy**.
