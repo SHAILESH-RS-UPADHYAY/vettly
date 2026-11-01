@@ -173,7 +173,25 @@ GROQ_API_KEY=gsk_...
   npm run dev
   ```
 
-### 3. Deploy to Vercel
-1. Push this repository to GitHub.
-2. Import the repository on **[Vercel](https://vercel.com/new)**: it detects the FastAPI app in `api/index.py`, and `.vercelignore` keeps your profile data and resume out of the upload, so the hosted copy starts empty.
-3. Add `GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, or `GROQ_API_KEY` in **Vercel Environment Variables** and click **Deploy**.
+### 3. Launch on Vercel for everyone (sign-in, private data per user)
+
+Locally, Vettly is single-user: no sign-in, data in `backend/context_store/`. On Vercel it becomes multi-user: every visitor signs in and gets a private data space.
+
+1. **Connect the repo** in Vercel (New Project → import this GitHub repo). Vercel detects the FastAPI app in `api/index.py`; `.vercelignore` keeps your local data, resumes and `.env` files out of the upload. Every push to `main` deploys production.
+2. **Sign-in: Clerk.** Vercel → your project → Integrations → Marketplace → **Clerk**. It sets `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. In the Clerk dashboard → User & authentication, switch on the methods you want: **Email**, **Google**, **LinkedIn**, **Phone** (SMS needs a paid Clerk plan). For a production Clerk instance, add your own Google and LinkedIn OAuth credentials and your domain.
+3. **Database: Neon.** Vercel → Storage → Create → **Neon Postgres**, connect it to the project. It sets `DATABASE_URL`; Vettly creates its one table (`user_docs`) on first use.
+4. **Environment variables** (Vercel → Settings → Environment Variables):
+   - one or more AI keys: `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`
+   - `KEY_ENCRYPTION_SECRET`: a long random string (encrypts users' own saved AI keys; without it that option is off)
+   - optional: `FREE_DAILY_AI` (default 25 answers per user per day), `GLOBAL_DAILY_AI` (default 2000 for everyone), `CLERK_AUTHORIZED_PARTIES` (e.g. `https://yourdomain.com`)
+   - Also set a monthly spend limit in each AI provider's own dashboard.
+5. **Redeploy**, then sign up on the site yourself.
+6. **Bring your local data to your account** (once):
+   ```bash
+   vercel env pull backend/.env.hosted
+   cd backend && python import_local_data.py --email you@example.com
+   ```
+   It only reads your local files, and never overwrites what the account has unless you pass `--force`.
+7. **Domain:** Vercel → Settings → Domains → add your domain, then add the same domain in Clerk.
+
+Checks: `npm test` runs `backend/test_accounts.py` (two users never see each other's data, bad tokens are refused, the AI allowance holds).

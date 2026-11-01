@@ -97,6 +97,19 @@ const Onboard = (() => {
             return data;
         };
         try { show(await call('GET')); } catch (e) { return; }
+        const del = document.getElementById('delete-data-btn');
+        del?.addEventListener('click', async () => {
+            if (!del.dataset.armed) {   // two taps instead of a browser dialog
+                del.dataset.armed = '1';
+                del.textContent = 'Tap again to delete everything';
+                setTimeout(() => { delete del.dataset.armed; del.textContent = 'Delete my data'; }, 5000);
+                return;
+            }
+            del.disabled = true;
+            const res = await fetch(`${API_BASE}/api/me`, { method: 'DELETE' });
+            if (res.ok) { Motion.toast('Everything you saved in Vettly is deleted.', 'ok'); setTimeout(() => location.reload(), 1200); }
+            else { del.disabled = false; Motion.toast('Could not delete your data. Try again.', 'error'); }
+        });
         form.addEventListener('submit', async e => {
             e.preventDefault();
             try { show(await call('POST', { provider: form.provider.value, key: form.key.value })); form.key.value = ''; Motion.toast('Saved. Vettly now uses your own key.', 'ok'); }

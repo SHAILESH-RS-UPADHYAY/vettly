@@ -1,0 +1,11 @@
+/* Privacy and Terms: one readable column on the poster paper */
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); overflow-x: clip; }
+.legal { max-width: 68ch; margin: 0 auto; padding: max(40px, env(safe-area-inset-top)) 16px 72px; line-height: 1.65; }
+.legal-brand { display: inline-flex; align-items: center; gap: 8px; font: 800 1.2rem/1 var(--font-display); color: var(--ink); text-decoration: none; }
+.legal-brand span { color: var(--accent); }
+.legal h1 { margin: 28px 0 4px; font: 800 clamp(2rem, 6vw, 3rem)/1.05 var(--font-display); }
+.legal-date { color: var(--muted); font-size: 0.9rem; }
+.legal h2 { margin: 32px 0 8px; font: 700 1.2rem/1.3 var(--font-body); }
+.legal ul { padding-left: 1.2em; display: grid; gap: 6px; }
+.legal a { color: var(--accent-ink); }
+.legal a:focus-visible, .legal-brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
