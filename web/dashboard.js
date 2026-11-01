@@ -148,7 +148,7 @@ function createAssistantBubble(text, question) {
 
         const expandBtn = document.createElement('button');
         expandBtn.className = 'chat-expand-btn';
-        expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
+        expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg><span>Expand Detailed Answer</span>';
         
         const expandedPanel = document.createElement('div');
         expandedPanel.className = 'chat-expanded-panel hidden';
@@ -156,13 +156,13 @@ function createAssistantBubble(text, question) {
         expandBtn.onclick = async () => {
             if (!expandedPanel.classList.contains('hidden')) {
                 expandedPanel.classList.add('hidden');
-                expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
+                expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg><span>Expand Detailed Answer</span>';
                 return;
             }
 
             if (expandedPanel.dataset.loaded === 'true') {
                 expandedPanel.classList.remove('hidden');
-                expandBtn.innerHTML = '<span>🔼</span><span>Collapse Details</span>';
+                expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-x"/></svg><span>Collapse Details</span>';
                 expandedPanel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                 return;
             }
@@ -180,20 +180,20 @@ function createAssistantBubble(text, question) {
                 if (data.detailed_answer) {
                     expandedPanel.innerHTML = `
                         <div class="chat-detailed-header">
-                            <span class="chat-detailed-badge">📖 IN-DEPTH TECHNICAL BREAKDOWN</span>
+                            <span class="chat-detailed-badge"><svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg>IN-DEPTH TECHNICAL BREAKDOWN</span>
                         </div>
                         <div class="chat-detailed-body">${formatChatMessage(data.detailed_answer)}</div>
                     `;
                     expandedPanel.dataset.loaded = 'true';
                     expandedPanel.classList.remove('hidden');
-                    expandBtn.innerHTML = '<span>🔼</span><span>Collapse Details</span>';
+                    expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-x"/></svg><span>Collapse Details</span>';
                 } else {
                     alert('Could not expand answer: ' + (data.error || 'Unknown error'));
-                    expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
+                    expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg><span>Expand Detailed Answer</span>';
                 }
             } catch (err) {
                 alert('Expand request failed: ' + err.message);
-                expandBtn.innerHTML = '<span>🔍</span><span>Expand Detailed Answer</span>';
+                expandBtn.innerHTML = '<svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg><span>Expand Detailed Answer</span>';
             } finally {
                 expandBtn.disabled = false;
                 // Keep the view on the answer being expanded instead of jumping to the chat bottom
@@ -960,7 +960,7 @@ function formatAnswerText(text) {
 
     // 3. Clean humanizer markers
     t = t.replace(/\[pause\]/g, '⏸');
-    t = t.replace(/\[hmm\]/g, '💭');
+    t = t.replace(/\[hmm\]/g, '…');
     t = t.replace(/\[pause (\d+)s?\]/g, '⏸ $1s');
 
     // 4. Extract code blocks so they don't get messed up by paragraph parsing
@@ -1018,7 +1018,7 @@ function toggleHistorySession(headerEl, event) {
     if (toggleAllBtn) {
         const renderedSessions = document.querySelectorAll('.history-session');
         const allExpanded = renderedSessions.length > 0 && Array.from(renderedSessions).every(s => s.classList.contains('expanded'));
-        toggleAllBtn.textContent = allExpanded ? '📁 Collapse All' : '📂 Expand All';
+        toggleAllBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
     }
 }
 
@@ -1076,7 +1076,7 @@ async function loadHistory(force = false) {
         if (rawSessions.length === 0) {
             listEl.innerHTML = `
                 <div style="text-align:center; padding:40px; border:2px dashed var(--border-main); border-radius:var(--radius);">
-                    <div style="font-size:36px; margin-bottom:10px;">📚</div>
+                    <div style="font-size:36px; margin-bottom:10px;"><svg class="i" aria-hidden="true"><use href="#i-books"/></svg></div>
                     <h3 style="font-family:var(--font-poster); font-size:20px; color:var(--ink-primary);">No Archived Sessions</h3>
                     <p style="font-size:14px; color:var(--ink-secondary); margin-top:4px;">Sessions automatically save in real-time during your interview or practice.</p>
                 </div>
@@ -1150,7 +1150,7 @@ async function loadHistory(force = false) {
         if (toggleAllBtn) {
             const renderedSessions = document.querySelectorAll('.history-session');
             const allExpanded = renderedSessions.length > 0 && Array.from(renderedSessions).every(s => s.classList.contains('expanded'));
-            toggleAllBtn.textContent = allExpanded ? '📁 Collapse All' : '📂 Expand All';
+            toggleAllBtn.textContent = allExpanded ? 'Collapse all' : 'Expand all';
         }
     } catch (e) {
         listEl.innerHTML = '<div class="history-empty" style="text-align:center; padding:30px;"><p style="color:var(--poster-red);">Could not load history. Is the backend server running?</p></div>';
@@ -1172,7 +1172,7 @@ function toggleAllHistorySessions() {
     });
 
     if (btn) {
-        btn.textContent = allExpanded ? '📂 Expand All' : '📁 Collapse All';
+        btn.textContent = allExpanded ? 'Expand all' : 'Collapse all';
     }
 }
 
@@ -1304,13 +1304,13 @@ async function saveAboutMe() {
         });
         const result = await res.json();
         statusEl.classList.remove('hidden');
-        statusEl.textContent = '✅ Saved!';
+        statusEl.textContent = 'Saved!';
         statusEl.style.background = 'rgba(80,208,128,0.1)';
         statusEl.style.color = '#50d080';
         setTimeout(() => statusEl.classList.add('hidden'), 3000);
     } catch (e) {
         statusEl.classList.remove('hidden');
-        statusEl.textContent = `❌ Error: ${e.message}`;
+        statusEl.textContent = `Error: ${e.message}`;
         statusEl.style.background = 'rgba(239,68,68,0.1)';
         statusEl.style.color = '#ef4444';
     }
@@ -1393,7 +1393,7 @@ document.getElementById('github-fetch-btn')?.addEventListener('click', async () 
             <label class="repo-item">
                 <input type="checkbox" class="github-repo-check" value="${escapeHtml(repo.name)}">
                 <div class="repo-item-content">
-                    <span class="repo-item-name">📦 ${escapeHtml(repo.name)}</span>
+                    <span class="repo-item-name"><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>${escapeHtml(repo.name)}</span>
                     <span class="repo-item-desc">${escapeHtml(repo.description || 'No description provided')}</span>
                 </div>
             </label>
@@ -1472,11 +1472,11 @@ document.getElementById('github-import-btn')?.addEventListener('click', async ()
         const res = await fetch(`${API_BASE}/github/import`, { method: 'POST', body: formData });
         const data = await res.json();
         if (data.status === 'success') {
-            statusEl.textContent = `✅ Imported ${data.repos_imported} repos from @${username}`;
+            statusEl.textContent = `Imported ${data.repos_imported} repos from @${username}`;
             statusEl.style.background = 'rgba(80,208,128,0.1)'; statusEl.style.color = '#50d080';
             updateChecklist('check-github', true);
-        } else { statusEl.textContent = '❌ ' + (data.error || 'Failed'); statusEl.style.color = '#ef4444'; }
-    } catch (e) { statusEl.textContent = '❌ ' + e.message; statusEl.style.color = '#ef4444'; }
+        } else { statusEl.textContent = '' + (data.error || 'Failed'); statusEl.style.color = '#ef4444'; }
+    } catch (e) { statusEl.textContent = '' + e.message; statusEl.style.color = '#ef4444'; }
     finally { importBtn.disabled = false; }
 });
 
@@ -1643,17 +1643,17 @@ document.getElementById('assign-save-btn')?.addEventListener('click', async () =
         
         statusEl.classList.remove('hidden');
         if (data.status === 'success') {
-            statusEl.textContent = '✅ Assignment saved successfully!';
+            statusEl.textContent = 'Assignment saved successfully!';
             statusEl.style.background = 'rgba(80,208,128,0.1)';
             statusEl.style.color = '#50d080';
         } else {
-            statusEl.textContent = '❌ ' + (data.error || 'Failed to save');
+            statusEl.textContent = '' + (data.error || 'Failed to save');
             statusEl.style.background = 'rgba(239,68,68,0.1)';
             statusEl.style.color = '#ef4444';
         }
     } catch (e) {
         statusEl.classList.remove('hidden');
-        statusEl.textContent = '❌ ' + e.message;
+        statusEl.textContent = '' + e.message;
         statusEl.style.background = 'rgba(239,68,68,0.1)';
         statusEl.style.color = '#ef4444';
     } finally {
@@ -1675,13 +1675,14 @@ document.getElementById('skill-input')?.addEventListener('keydown', (e) => {
 });
 
 function renderSkillTags() {
+    renderToolbeltSummary();
     const container = document.getElementById('skill-tags');
     if (!container) return;
     if (!contextData.skills.tags || contextData.skills.tags.length === 0) {
         container.innerHTML = '<span style="font-size:12px; color:var(--ink-muted); font-family:var(--font-mono);">No skills added yet. Type a skill above and press Enter.</span>';
     } else {
         container.innerHTML = contextData.skills.tags.map((s, i) =>
-            `<span class="skill-tag-pill"><span class="skill-tag-icon">⚡</span><span>${escapeHtml(s)}</span><span class="skill-tag-del" onclick="removeSkill(${i})" title="Remove skill">×</span></span>`
+            `<span class="skill-tag-pill"><span class="skill-tag-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg></span><span>${escapeHtml(s)}</span><span class="skill-tag-del" onclick="removeSkill(${i})" title="Remove skill">×</span></span>`
         ).join('');
     }
     const countEl = document.getElementById('count-skills');
@@ -1705,62 +1706,75 @@ async function removeSkill(i) {
     renderSkillTags();
 }
 
+// Context lists in the Toolbelt: every item is an editable card; each change saves through updateContextItem
+const CTX_FIELDS = {
+    qabank: [['question', 'input', 'Question'], ['answer', 'textarea', 'Answer', 3]],
+    stories: [['title', 'input', 'Story title'], ['content', 'textarea', 'Situation, task, action, result', 3, 'situation']],
+    projects: [['name', 'input', 'Project name'], ['tech_stack', 'textarea', 'Tech stack', 2], ['role', 'input', 'Your role (Lead, Solo dev...)'], ['description', 'textarea', 'What did you build? What problem did it solve?', 3, 'details'], ['challenges', 'textarea', 'Key challenges and how you solved them', 3]],
+    experience: [['company', 'input', 'Company name'], ['role', 'input', 'Role or job title'], ['duration', 'input', 'Duration (e.g. Jan 2023 to present)'], ['details', 'textarea', 'Key achievements', 3, 'achievements']],
+};
 function renderContextList(type) {
     const map = { projects: contextData.projects, experience: contextData.experience, stories: contextData.stories, qabank: contextData.qa_bank };
     const items = map[type] || [];
     const listEl = document.getElementById(`list-${type}`);
     const countEl = document.getElementById(`count-${type}`);
     if (countEl) countEl.textContent = items.length;
+    renderToolbeltSummary();
     if (!listEl) return;
-    
-    listEl.innerHTML = items.map((item, i) => {
-        if (type === 'qabank') {
-            return `<div class="glass" style="padding:10px; margin-bottom: 8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-                    <strong style="font-size:12px; color:var(--text-dim);">Q&A Pair #${i+1}</strong>
-                    <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;padding:0;" onclick="removeContextItem('${type}',${i})">×</button>
-                </div>
-                <input type="text" placeholder="Question" value="${escapeHtml(item.question || '')}" onchange="updateContextItem('${type}', ${i}, 'question', this.value)" style="width:100%; margin-bottom: 8px; font-weight: 600;">
-                <textarea rows="3" placeholder="Answer" onchange="updateContextItem('${type}', ${i}, 'answer', this.value)" style="width:100%;">${escapeHtml(item.answer || '')}</textarea>
-            </div>`;
-        } else if (type === 'stories') {
-            return `<div class="glass" style="padding:10px; margin-bottom: 8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-                    <input type="text" value="${escapeHtml(item.title || '')}" onchange="updateContextItem('${type}', ${i}, 'title', this.value)" style="flex:1; margin-right: 8px; font-weight: bold; font-size: 13px;">
-                    <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;padding:0;" onclick="removeContextItem('${type}',${i})">×</button>
-                </div>
-                <textarea rows="3" onchange="updateContextItem('${type}', ${i}, 'content', this.value)" style="width:100%; font-size: 13px;">${escapeHtml(item.content || item.situation || '')}</textarea>
-            </div>`;
-        } else if (type === 'projects') {
-             return `<div class="glass" style="padding:10px; margin-bottom: 8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-                    <input type="text" placeholder="Project Name" value="${escapeHtml(item.name || '')}" onchange="updateContextItem('${type}', ${i}, 'name', this.value)" style="flex:1; margin-right: 8px; font-weight: bold; font-size: 13px;">
-                    <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;padding:0;" onclick="removeContextItem('${type}',${i})">×</button>
-                </div>
-                <textarea rows="2" placeholder="Tech Stack" onchange="updateContextItem('${type}', ${i}, 'tech_stack', this.value)" style="width:100%; font-size: 12px; margin-bottom: 4px;">${escapeHtml(item.tech_stack || '')}</textarea>
-                <input type="text" placeholder="Your Role (Lead, Solo Dev...)" value="${escapeHtml(item.role || '')}" onchange="updateContextItem('${type}', ${i}, 'role', this.value)" style="width:100%; font-size: 12px; margin-bottom: 4px;">
-                <textarea rows="3" placeholder="What did you build? What problems did it solve?" onchange="updateContextItem('${type}', ${i}, 'description', this.value)" style="width:100%; font-size: 12px; margin-bottom: 4px;">${escapeHtml(item.description || item.details || '')}</textarea>
-                <textarea rows="3" placeholder="Key challenges faced and how you solved them..." onchange="updateContextItem('${type}', ${i}, 'challenges', this.value)" style="width:100%; font-size: 12px;">${escapeHtml(item.challenges || '')}</textarea>
-            </div>`;
-        } else if (type === 'experience') {
-            return `<div class="glass" style="padding:10px; margin-bottom: 8px;">
-                <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-                    <input type="text" placeholder="Company Name" value="${escapeHtml(item.company || '')}" onchange="updateContextItem('${type}', ${i}, 'company', this.value)" style="flex:1; margin-right: 8px; font-weight: bold; font-size: 13px;">
-                    <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;padding:0;" onclick="removeContextItem('${type}',${i})">×</button>
-                </div>
-                <input type="text" placeholder="Role / Job Title" value="${escapeHtml(item.role || '')}" onchange="updateContextItem('${type}', ${i}, 'role', this.value)" style="width:100%; margin-bottom: 4px; font-size: 12px;">
-                <input type="text" placeholder="Duration (e.g. Jan 2023 - Present)" value="${escapeHtml(item.duration || '')}" onchange="updateContextItem('${type}', ${i}, 'duration', this.value)" style="width:100%; margin-bottom: 4px; font-size: 12px;">
-                <textarea rows="3" placeholder="Key Achievements / Description" onchange="updateContextItem('${type}', ${i}, 'details', this.value)" style="width:100%; font-size: 12px;">${escapeHtml(item.details || item.achievements || '')}</textarea>
-            </div>`;
-        } else {
-            const title = item.name || item.company || item.title || item.question || 'Item';
-            return `<div class="glass" style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:13px;">${escapeHtml(title)}</span>
-                <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;" onclick="removeContextItem('${type}',${i})">×</button>
-            </div>`;
-        }
-    }).join('');
+    const fields = CTX_FIELDS[type] || [];
+    listEl.innerHTML = items.map((item, i) => `
+        <div class="ctx-item" data-i="${i}">
+            <div class="ctx-item-head">
+                <span class="ctx-item-no">${type === 'qabank' ? `Q&amp;A ${i + 1}` : `#${i + 1}`}</span>
+                <button type="button" class="ctx-remove" onclick="removeContextItem('${type}',${i})" aria-label="Remove this item"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
+            </div>
+            ${fields.map(([key, tag, label, rows, alt]) => {
+                const value = escapeHtml(item[key] || (alt && item[alt]) || '');
+                return tag === 'input'
+                    ? `<input type="text" class="ctx-field${key === fields[0][0] ? ' ctx-title' : ''}" placeholder="${label}" aria-label="${label}" value="${value}" onchange="updateContextItem('${type}', ${i}, '${key}', this.value)">`
+                    : `<textarea class="ctx-field" rows="${rows}" placeholder="${label}" aria-label="${label}" onchange="updateContextItem('${type}', ${i}, '${key}', this.value)">${value}</textarea>`;
+            }).join('')}
+        </div>`).join('');
+    if (type === 'qabank') filterQaBank();
 }
+
+// Q&A bank search: hides the pairs that do not match, as you type
+function filterQaBank() {
+    const q = (document.getElementById('qa-search')?.value || '').trim().toLowerCase();
+    document.querySelectorAll('#list-qabank .ctx-item').forEach(el => {
+        const item = contextData.qa_bank[Number(el.dataset.i)] || {};
+        el.hidden = Boolean(q) && !`${item.question || ''} ${item.answer || ''}`.toLowerCase().includes(q);
+    });
+}
+document.getElementById('qa-search')?.addEventListener('input', filterQaBank);
+
+// The summary strip: what the copilot knows about you, each chip jumps to its section
+function renderToolbeltSummary() {
+    const strip = document.getElementById('tb-summary');
+    if (!strip) return;
+    const role = contextData.assignment?.title;
+    const parts = [
+        ['skills', 'lightning', 'Skills', contextData.skills.tags.length],
+        ['projects', 'wand', 'Projects', contextData.projects.length],
+        ['experience', 'briefcase', 'Experience', contextData.experience.length],
+        ['stories', 'books', 'STAR stories', contextData.stories.length],
+        ['qabank', 'list-checks', 'Q&amp;A bank', contextData.qa_bank.length],
+        ['assignment', 'target', role ? escapeHtml(role) : 'Target role', role ? 1 : 0],
+    ];
+    strip.innerHTML = parts.map(([tab, icon, label, n], i) => `
+        <button type="button" class="tb-chip${n ? ' is-filled' : ''}" data-tab-jump="${tab}" style="--i:${i}">
+            <svg aria-hidden="true"><use href="#i-${icon}"/></svg><span class="tb-label">${label}</span>
+            ${tab === 'assignment' ? '' : `<b class="num">${n}</b>`}
+            <span class="tb-state" aria-hidden="true">${n ? '<svg><use href="#i-check-bold"/></svg>' : '<svg><use href="#i-plus"/></svg>'}</span>
+        </button>`).join('');
+}
+renderToolbeltSummary();
+document.getElementById('tb-summary')?.addEventListener('click', e => {
+    const b = e.target.closest('[data-tab-jump]');
+    if (!b) return;
+    document.querySelector(`.tab-btn[data-tab="${b.dataset.tabJump}"]`)?.click();
+    document.getElementById('context-card')?.scrollIntoView({ behavior: Motion.calm() ? 'auto' : 'smooth', block: 'start' });
+});
 
 function updateContextItem(type, i, field, value) {
     const map = { projects: 'projects', experience: 'experience', stories: 'stories', qabank: 'qa_bank' };
@@ -1815,12 +1829,12 @@ document.getElementById('save-all-context-btn')?.addEventListener('click', async
         });
         const data = await res.json();
         statusEl.classList.remove('hidden');
-        statusEl.textContent = data.status === 'success' ? '✅ All context saved!' : '❌ ' + (data.error || 'Failed');
+        statusEl.textContent = data.status === 'success' ? 'All context saved!' : '' + (data.error || 'Failed');
         statusEl.style.background = data.status === 'success' ? 'rgba(80,208,128,0.1)' : 'rgba(239,68,68,0.1)';
         statusEl.style.color = data.status === 'success' ? '#50d080' : '#ef4444';
         setTimeout(() => statusEl.classList.add('hidden'), 4000);
     } catch (e) {
-        statusEl.classList.remove('hidden'); statusEl.textContent = '❌ ' + e.message;
+        statusEl.classList.remove('hidden'); statusEl.textContent = '' + e.message;
         statusEl.style.background = 'rgba(239,68,68,0.1)'; statusEl.style.color = '#ef4444';
     }
 });
@@ -1876,7 +1890,7 @@ async function checkServerConnection() {
                 statusPill.className = 'badge-pill badge-pill-emerald pulse-dot';
                 statusPill.innerHTML = '<span class="badge-dot"></span>SERVER ONLINE';
             }
-            if (telemetryPing) telemetryPing.textContent = `⚡ ${pingTime}ms ping`;
+            if (telemetryPing) telemetryPing.textContent = `<svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>${pingTime}ms ping`;
             if (telemetryEngine) telemetryEngine.textContent = `${data.name} v${data.version}`;
             if (sidebarDot) { sidebarDot.className = 'status-dot online'; }
             if (sidebarLabel) sidebarLabel.textContent = 'Online';
@@ -2003,7 +2017,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             // Show context length
             if (data.full_context_length > 100) {
-                console.log(`📊 Context loaded: ${data.full_context_length} chars`);
+                console.log(`Context loaded: ${data.full_context_length} chars`);
             }
         } catch (e) {
             console.log('Server not reachable for context check');
@@ -2134,7 +2148,7 @@ function renderRecycleBin() {
         if (chats.length === 0) {
             chatList.innerHTML = `
                 <div class="recycle-empty-state">
-                    <div style="font-size:32px; margin-bottom:8px;">💬</div>
+                    <div style="font-size:32px; margin-bottom:8px;"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg></div>
                     <h4 style="font-family:var(--font-poster); font-size:18px; color:var(--ink-primary);">No Deleted Chats</h4>
                     <p style="font-size:13px; color:var(--ink-secondary); margin-top:4px;">Cleared Live Copilot conversations will be archived here.</p>
                 </div>
@@ -2149,7 +2163,7 @@ function renderRecycleBin() {
                     <div class="recycle-item">
                         <div class="recycle-item-header">
                             <div class="recycle-item-title">
-                                <span>💬 Chat Batch #${batch.id}</span>
+                                <span><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Chat Batch #${batch.id}</span>
                                 <span class="badge-pill badge-pill-blue">${batch.count || messages.length} Messages</span>
                             </div>
                             <span class="recycle-item-meta">Cleared: ${deletedDate}</span>
@@ -2159,7 +2173,7 @@ function renderRecycleBin() {
                         </div>
                         <div class="recycle-item-actions">
                             <button class="recycle-btn-restore" onclick="restoreRecycleItem('chat', '${batch.id}')">↩️ Restore to Copilot</button>
-                            <button class="recycle-btn-purge" onclick="deleteRecycleItem('chat', '${batch.id}')">❌ Delete Permanently</button>
+                            <button class="recycle-btn-purge" onclick="deleteRecycleItem('chat', '${batch.id}')"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Delete permanently</button>
                         </div>
                     </div>
                 `;

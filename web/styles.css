@@ -2065,3 +2065,38 @@ textarea, input, select, img, pre { max-width: 100%; }
     background-image: linear-gradient(90deg, rgba(229, 72, 107, 0.12) 50%, transparent 50%), linear-gradient(rgba(229, 72, 107, 0.12) 50%, transparent 50%); background-size: 12px 12px; }
 .look-thumb[data-thumb="mermaid"] { --t-paper: #eefafa; --t-side: #e0f4f4; --t-card: #ffffff; --t-ink: #173b47; --t-accent: #2fb0a7; --t-line: rgba(40, 170, 170, 0.3); --t-r: 12px; --t-border: 2px solid transparent; --t-shadow: 0 6px 14px -8px rgba(30, 130, 150, 0.5); }
 .look-thumb[data-thumb="mermaid"] .c { background: linear-gradient(#fff, #fff) padding-box, conic-gradient(#8fe3e0, #c7b8ff, #ffc2e0, #b8f0d0, #8fe3e0) border-box; }
+
+/* ── Agent Toolbelt: summary strip, editable context cards, Q&A search ── */
+.tb-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 var(--gap-stack); }
+.tb-chip {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px 0 12px;
+    border: 1.5px dashed var(--rule-2); border-radius: 999px; background: var(--card-bg); color: var(--ink-2);
+    font: 600 0.86rem/1 var(--font-body);
+    transition: transform var(--dur-long) var(--spring), border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+    animation: chipIn 520ms var(--spring) both; animation-delay: calc(var(--i, 0) * 50ms);
+}
+.tb-chip > svg { width: 17px; height: 17px; color: var(--accent-ink); }
+.tb-chip b { font-size: 0.95rem; color: var(--ink); }
+.tb-label { max-width: 18ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-state { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--paper-3); color: var(--muted); }
+.tb-state svg { width: 11px; height: 11px; }
+.tb-chip.is-filled { border-style: solid; border-color: color-mix(in srgb, var(--ok) 40%, var(--rule-2)); }
+.tb-chip.is-filled .tb-state { background: var(--ok); color: var(--paper); }
+.tb-chip:active { transform: scale(0.96); }
+@media (hover: hover) { .tb-chip:hover { transform: translateY(-2px); border-color: var(--accent); } }
+@keyframes chipIn { from { opacity: 0; transform: translateY(8px) scale(0.95); } }
+@media (max-width: 47.99rem) { .tb-summary { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; } .tb-chip { flex-shrink: 0; } }
+.tb-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tb-search { margin: 12px 0; }
+.ctx-item { display: grid; gap: 8px; margin-bottom: 10px; padding: 12px; border-radius: var(--r-ctl); border: 1px solid var(--rule); background: color-mix(in srgb, var(--paper-3) 45%, var(--card-bg)); animation: chipIn 420ms var(--ease-out) both; }
+.ctx-item[hidden] { display: none; }
+.ctx-item-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ctx-item-no { font: 600 0.78rem/1.2 var(--font-body); color: var(--muted); }
+.ctx-remove { display: grid; place-items: center; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--bad); transition: background-color var(--dur-short) var(--ease-out); }
+.ctx-remove svg { width: 13px; height: 13px; }
+@media (hover: hover) { .ctx-remove:hover { background: var(--bad-bg); } }
+.ctx-field { width: 100%; font-size: 0.92rem; }
+.ctx-title { font-weight: 600; }
+.em-i { width: 1.05em; height: 1.05em; vertical-align: -0.15em; margin-right: 0.3em; color: var(--accent-ink); }
+@media (prefers-reduced-motion: reduce) { .tb-chip, .ctx-item { animation: none !important; } }
+:root[data-motion="calm"] :is(.tb-chip, .ctx-item) { animation: none !important; }

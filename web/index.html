@@ -26,7 +26,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.0">
+    <link rel="stylesheet" href="./styles.css?v=8.2">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
@@ -265,12 +265,13 @@
                     <h1><span class="v-classic">Agent <em>Toolbelt</em> Builder</span><span class="v-alt">Agent <em>Toolbelt</em></span></h1>
                     <p>Design the modular tools your AI copilot uses during your live session</p>
                 </div>
+                <nav class="tb-summary" id="tb-summary" aria-label="What your copilot knows"></nav>
 
                 <div class="dashboard-grid">
                     <!-- Resume Card -->
                     <div class="toolbelt-card" id="resume-card">
                         <div class="toolbelt-card-header">
-                            <h3>📄 Resume Specs</h3>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg>Resume Specs</h3>
                             <span class="badge-pill badge-pill-blue"><span class="badge-dot"></span>INPUT SPEC</span>
                         </div>
                         <p class="toolbelt-card-desc">Parse experience, core technologies, and quantifiable achievements into AI context.</p>
@@ -287,18 +288,18 @@
                             <div class="resume-loaded-box">
                                 <div class="resume-loaded-header">
                                     <div class="resume-file-info">
-                                        <span style="font-size:18px;">📄</span>
+                                        <span style="font-size:18px;"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></span>
                                         <span id="resume-filename">resume.pdf</span>
                                     </div>
                                     <span class="badge-pill badge-pill-emerald pulse-dot"><span class="badge-dot"></span>ACTIVE & PARSED</span>
                                 </div>
                                 <div class="resume-meta-tags">
-                                    <span class="resume-meta-pill">⚡ 2+ Yrs Backend AI</span>
-                                    <span class="resume-meta-pill">🧠 PyTorch & FastAPI</span>
-                                    <span class="resume-meta-pill">🚀 6 Projects Linked</span>
+                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>2+ Yrs Backend AI</span>
+                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-brain"/></svg>PyTorch & FastAPI</span>
+                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>6 Projects Linked</span>
                                 </div>
                                 <div style="display:flex; justify-content:flex-end; margin-top:6px;">
-                                    <button class="btn btn-secondary btn-sm" id="reupload-btn">🔄 Re-upload Resume</button>
+                                    <button class="btn btn-secondary btn-sm" id="reupload-btn"><svg class="i em-i" aria-hidden="true"><use href="#i-refresh"/></svg>Re-upload Resume</button>
                                 </div>
                             </div>
                         </div>
@@ -307,7 +308,7 @@
                     <!-- GitHub Card -->
                     <div class="toolbelt-card" id="github-card">
                         <div class="toolbelt-card-header">
-                            <h3>🐙 GitHub Ingestion</h3>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>GitHub Ingestion</h3>
                             <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>CODE BASE</span>
                         </div>
                         <p class="toolbelt-card-desc">Sync your actual code repositories for authentic, deep architectural grounding.</p>
@@ -339,8 +340,8 @@
                     <!-- Job Description Card -->
                     <div class="toolbelt-card full-width" id="jd-card">
                         <div class="toolbelt-card-header">
-                            <h3>💼 Target Job Description</h3>
-                            <div style="display:flex; align-items:center; gap:8px;">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-briefcase"/></svg>Target Job Description</h3>
+                            <div class="tb-badges">
                                 <span class="badge-pill badge-pill-emerald" id="jd-sync-badge"><span class="badge-dot"></span>SPEC ACTIVE</span>
                                 <span class="badge-pill badge-pill-orange"><span class="badge-dot"></span>TARGET SPEC</span>
                             </div>
@@ -371,7 +372,7 @@
                                 <div class="jd-editor-container">
                                     <div class="jd-editor-bar">
                                         <div class="jd-editor-tab">
-                                            <span class="jd-tab-icon">📄</span>
+                                            <span class="jd-tab-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></span>
                                             <span class="jd-tab-name">SPEC_REQUIREMENTS.md</span>
                                             <span class="jd-tab-dot"></span>
                                         </div>
@@ -431,7 +432,7 @@ Nice to Have:
                             </div>
                             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                    <button class="btn btn-primary" id="jd-save-btn"><span>💾 Save Job Description Spec</span></button>
+                                    <button class="btn btn-primary" id="jd-save-btn"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save Job Description Spec</span></button>
                                     <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear Buffer</span></button>
                                 </div>
                                 <span class="badge-pill badge-pill-emerald" id="jd-status-badge"><span class="badge-dot"></span>SPEC ACTIVE &amp; SYNCED</span>
@@ -443,21 +444,21 @@ Nice to Have:
                     <!-- Custom Context Blueprint Tabs -->
                     <div class="toolbelt-card full-width" id="context-card">
                         <div class="toolbelt-card-header">
-                            <h3>🧠 Custom Background Modules</h3>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-brain"/></svg>Custom Background Modules</h3>
                             <span class="badge-pill badge-pill-purple"><span class="badge-dot"></span>CONTEXT STORE</span>
                         </div>
                         <p class="toolbelt-card-desc">Structured interview blueprints, STAR stories, project narratives, and technical metrics.</p>
                         <div class="context-tabs" id="context-tabs">
-                            <button class="tab-btn active" data-tab="projects">🚀 Projects (<span id="count-projects">0</span>)</button>
-                            <button class="tab-btn" data-tab="experience">💼 Experience (<span id="count-experience">0</span>)</button>
-                            <button class="tab-btn" data-tab="skills">⚡ Skills (<span id="count-skills">0</span>)</button>
-                            <button class="tab-btn" data-tab="stories">📖 STAR Stories (<span id="count-stories">0</span>)</button>
-                            <button class="tab-btn" data-tab="assignment">🎯 Assignment (<span id="count-assignment">0</span>)</button>
-                            <button class="tab-btn" data-tab="qabank">❓ QA Bank (<span id="count-qabank">0</span>)</button>
+                            <button class="tab-btn active" data-tab="projects"><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>Projects (<span id="count-projects">0</span>)</button>
+                            <button class="tab-btn" data-tab="experience"><svg class="i em-i" aria-hidden="true"><use href="#i-briefcase"/></svg>Experience (<span id="count-experience">0</span>)</button>
+                            <button class="tab-btn" data-tab="skills"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>Skills (<span id="count-skills">0</span>)</button>
+                            <button class="tab-btn" data-tab="stories"><svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg>STAR Stories (<span id="count-stories">0</span>)</button>
+                            <button class="tab-btn" data-tab="assignment"><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Assignment (<span id="count-assignment">0</span>)</button>
+                            <button class="tab-btn" data-tab="qabank"><svg class="i em-i" aria-hidden="true"><use href="#i-list-checks"/></svg>QA Bank (<span id="count-qabank">0</span>)</button>
                         </div>
 
                         <div class="autofill-bar" id="autofill-bar" style="margin-bottom:16px; padding:10px 14px; background:rgba(234,88,12,0.1); border:1px solid rgba(234,88,12,0.3); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:space-between;">
-                            <span class="autofill-text" style="font-size:13px; font-weight:600;">✨ Resume detected — auto-fill context toolbelt?</span>
+                            <span class="autofill-text" style="font-size:13px; font-weight:600;"><svg class="i em-i" aria-hidden="true"><use href="#i-sparkle"/></svg>Resume detected — auto-fill context toolbelt?</span>
                             <button class="btn btn-secondary btn-sm" id="autofill-btn"><span>Auto-Fill from Resume</span></button>
                         </div>
 
@@ -498,12 +499,12 @@ Nice to Have:
                             <div class="context-form">
                                 <select id="story-type">
                                     <option value="">Select Story Type...</option>
-                                    <option value="technical">🔧 Technical Challenge</option>
-                                    <option value="leadership">🏆 Leadership</option>
-                                    <option value="conflict">🤝 Conflict Resolution</option>
-                                    <option value="failure">📉 Failure & Learning</option>
-                                    <option value="teamwork">👥 Teamwork</option>
-                                    <option value="custom">📝 Custom</option>
+                                    <option value="technical"><svg class="i em-i" aria-hidden="true"><use href="#i-toolbox"/></svg>Technical Challenge</option>
+                                    <option value="leadership"><svg class="i em-i" aria-hidden="true"><use href="#i-star"/></svg>Leadership</option>
+                                    <option value="conflict"><svg class="i em-i" aria-hidden="true"><use href="#i-user"/></svg>Conflict Resolution</option>
+                                    <option value="failure"><svg class="i em-i" aria-hidden="true"><use href="#i-sort"/></svg>Failure & Learning</option>
+                                    <option value="teamwork"><svg class="i em-i" aria-hidden="true"><use href="#i-user"/></svg>Teamwork</option>
+                                    <option value="custom"><svg class="i em-i" aria-hidden="true"><use href="#i-pencil"/></svg>Custom</option>
                                 </select>
                                 <input type="text" id="story-title" placeholder="Story Title">
                                 <textarea id="story-content" rows="4" placeholder="Situation, Task, Action, Result (STAR)..."></textarea>
@@ -532,15 +533,16 @@ Nice to Have:
                                 <textarea id="qa-answer" rows="3" placeholder="Ideal candidate answer..."></textarea>
                                 <button class="btn btn-secondary" id="qa-add-btn"><span>+ Add QA Pair</span></button>
                             </div>
+                            <label class="stream-search tb-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="qa-search" placeholder="Search your Q&amp;A bank" aria-label="Search your Q&amp;A bank" autocomplete="off"></label>
                             <div class="context-list" id="list-qabank"></div>
                             <div class="quick-notes-section" style="margin-top:16px;">
-                                <div class="quick-notes-header" id="quick-notes-toggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--poster-orange); font-weight:700;"><span>📝 Quick Notes</span><span class="toggle-arrow">▼</span></div>
+                                <div class="quick-notes-header" id="quick-notes-toggle" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--poster-orange); font-weight:700;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-pencil"/></svg>Quick Notes</span><span class="toggle-arrow">▼</span></div>
                                 <div class="quick-notes-body" id="quick-notes-body" style="margin-top:8px;"><textarea id="quick-notes-content" rows="3" placeholder="Talking points, company research notes..."></textarea></div>
                             </div>
                         </div>
 
                         <div class="context-actions" style="margin-top:20px;">
-                            <button class="btn btn-primary" id="save-all-context-btn" style="width:100%;justify-content:center;"><span>💾 Save Complete Toolbelt Context</span></button>
+                            <button class="btn btn-primary" id="save-all-context-btn" style="width:100%;justify-content:center;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save Complete Toolbelt Context</span></button>
                             <div class="save-status hidden" id="context-save-status"></div>
                         </div>
                     </div>
@@ -729,27 +731,27 @@ Nice to Have:
                 </div>
                 <div class="dashboard-grid">
                     <div class="toolbelt-card full-width">
-                        <div class="toolbelt-card-header"><h3>🎤 "Tell Me About Yourself" Master Answer</h3></div>
+                        <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>"Tell Me About Yourself" Master Answer</h3></div>
                         <textarea id="aboutme-intro" rows="5" placeholder="Hi, I'm Shailesh Upadhyay..."></textarea>
                     </div>
                     <div class="toolbelt-card">
-                        <div class="toolbelt-card-header"><h3>💪 Core Strengths</h3></div>
+                        <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-fire"/></svg>Core Strengths</h3></div>
                         <textarea id="aboutme-strengths" rows="3" placeholder="Fast learner, backend query optimization..."></textarea>
                     </div>
                     <div class="toolbelt-card">
-                        <div class="toolbelt-card-header"><h3>🎯 Weaknesses & Growth</h3></div>
+                        <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Weaknesses & Growth</h3></div>
                         <textarea id="aboutme-weaknesses" rows="3" placeholder="Improving system design at massive scale..."></textarea>
                     </div>
                     <div class="toolbelt-card">
-                        <div class="toolbelt-card-header"><h3>🎨 Interests & Projects</h3></div>
+                        <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-palette"/></svg>Interests & Projects</h3></div>
                         <textarea id="aboutme-hobbies" rows="3" placeholder="Building open-source developer tools..."></textarea>
                     </div>
                     <div class="toolbelt-card">
-                        <div class="toolbelt-card-header"><h3>📝 Custom Identity Constraints</h3></div>
+                        <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-pencil"/></svg>Custom Identity Constraints</h3></div>
                         <textarea id="aboutme-facts" rows="3" placeholder="Current Role = AI Python Developer at Webvory..."></textarea>
                     </div>
                     <div class="toolbelt-card full-width">
-                        <button class="btn btn-primary" id="aboutme-save-btn" onclick="saveAboutMe()" style="width:100%;justify-content:center;">💾 Save About Me Profile</button>
+                        <button class="btn btn-primary" id="aboutme-save-btn" onclick="saveAboutMe()" style="width:100%;justify-content:center;"><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save About Me Profile</button>
                         <div class="save-status hidden" id="aboutme-save-status"></div>
                     </div>
                 </div>
@@ -869,7 +871,7 @@ Nice to Have:
                     <!-- Backend Telemetry Card -->
                     <div class="toolbelt-card" id="settings-conn-card">
                         <div class="toolbelt-card-header">
-                            <h3>🔌 Backend Telemetry</h3>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg>Backend Telemetry</h3>
                             <span class="badge-pill badge-pill-emerald pulse-dot" id="server-status-pill"><span class="badge-dot"></span>SERVER ONLINE</span>
                         </div>
                         <p class="toolbelt-card-desc">REST & WebSocket engine orchestrating real-time technical synthesis.</p>
@@ -891,7 +893,7 @@ Nice to Have:
                             </div>
                             <div class="telemetry-tile">
                                 <span class="telemetry-lbl">Latency Ping</span>
-                                <span class="telemetry-val" id="telemetry-ping" style="color:var(--poster-orange);">⚡ 6ms p95</span>
+                                <span class="telemetry-val" id="telemetry-ping" style="color:var(--poster-orange);"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>6ms p95</span>
                             </div>
                             <div class="telemetry-tile">
                                 <span class="telemetry-lbl">Context Store</span>
@@ -911,14 +913,14 @@ Nice to Have:
                     <!-- Studio Readiness Checklist Card -->
                     <div class="toolbelt-card" id="settings-checklist-card">
                         <div class="toolbelt-card-header">
-                            <h3>🚀 Studio Readiness Checklist</h3>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>Studio Readiness Checklist</h3>
                             <span class="badge-pill badge-pill-orange" id="checklist-progress-pill"><span class="badge-dot"></span>4/4 READY</span>
                         </div>
                         <p class="toolbelt-card-desc">Verify your knowledge base and AI engine pipelines for tailored preparation.</p>
                         <div class="checklist-container">
                             <div class="checklist-card" id="check-resume-card">
                                 <div class="checklist-card-info">
-                                    <div class="checklist-step-icon">📄</div>
+                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></div>
                                     <div class="checklist-step-text">
                                         <span class="checklist-step-title">Resume Specifications</span>
                                         <span class="checklist-step-desc">Parsed candidate telemetry & work history</span>
@@ -928,7 +930,7 @@ Nice to Have:
                             </div>
                             <div class="checklist-card" id="check-github-card">
                                 <div class="checklist-card-info">
-                                    <div class="checklist-step-icon">🐙</div>
+                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg></div>
                                     <div class="checklist-step-text">
                                         <span class="checklist-step-title">GitHub Codebase Repos</span>
                                         <span class="checklist-step-desc">3 public repositories indexed</span>
@@ -938,7 +940,7 @@ Nice to Have:
                             </div>
                             <div class="checklist-card" id="check-server-card">
                                 <div class="checklist-card-info">
-                                    <div class="checklist-step-icon">🔌</div>
+                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg></div>
                                     <div class="checklist-step-text">
                                         <span class="checklist-step-title">Local Backend Engine</span>
                                         <span class="checklist-step-desc">Port 8766 health & multi-model router</span>
@@ -948,7 +950,7 @@ Nice to Have:
                             </div>
                             <div class="checklist-card" id="check-overlay-card">
                                 <div class="checklist-card-info">
-                                    <div class="checklist-step-icon">🎯</div>
+                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg></div>
                                     <div class="checklist-step-text">
                                         <span class="checklist-step-title">Target Job Description Spec</span>
                                         <span class="checklist-step-desc">Role requirements & tech stack grounded</span>
@@ -957,7 +959,7 @@ Nice to Have:
                                 <span class="badge-pill badge-pill-emerald" id="check-overlay"><span class="badge-dot"></span>SYNCED</span>
                             </div>
                         </div>
-                        <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep', { animate: true })" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span>🎯 Open Vettly Prep Studio</span></button>
+                        <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep', { animate: true })" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Open Vettly Prep Studio</span></button>
                     </div>
 
                     <!-- Workspace Keyboard Shortcuts Card -->
@@ -1015,25 +1017,25 @@ Nice to Have:
                     <div class="toolbelt-card full-width" id="settings-recycle-card">
                         <div class="toolbelt-card-header">
                             <div style="display:flex; align-items:center; gap:10px;">
-                                <h3>🗑️ Persistent Recycle Bin</h3>
+                                <h3><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Persistent Recycle Bin</h3>
                                 <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>ZERO DATA LOSS</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:10px;">
                                 <span class="badge-pill badge-pill-orange" id="recycle-total-badge">0 ITEMS PRESERVED</span>
-                                <button class="btn btn-secondary btn-sm" id="btn-empty-recycle" onclick="emptyRecycleBin()" style="color:var(--poster-red); border-color:rgba(220,38,38,0.35);">🗑️ Empty Bin</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-empty-recycle" onclick="emptyRecycleBin()" style="color:var(--poster-red); border-color:rgba(220,38,38,0.35);"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Empty Bin</button>
                             </div>
                         </div>
                         <p class="toolbelt-card-desc">All soft-deleted copilot chat messages are safely preserved here. Items will never be wiped automatically — only you can restore or permanently purge them.</p>
                         
                         <div class="recycle-tabs-nav" style="display:flex; gap:10px; margin-bottom:16px; border-bottom:2px solid var(--border-main); padding-bottom:8px;">
-                            <button class="tab-btn active" id="tab-recycle-chats" onclick="switchRecycleTab('chats', this)">💬 Deleted Copilot Chats (<span id="recycle-chats-count">0</span>)</button>
+                            <button class="tab-btn active" id="tab-recycle-chats" onclick="switchRecycleTab('chats', this)"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Deleted Copilot Chats (<span id="recycle-chats-count">0</span>)</button>
                         </div>
 
                         <!-- Chats Trash List -->
                         <div class="recycle-tab-panel active" id="recycle-panel-chats">
                             <div class="recycle-list" id="recycle-chats-list">
                                 <div class="recycle-empty-state">
-                                    <div style="font-size:32px; margin-bottom:8px;">💬</div>
+                                    <div style="font-size:32px; margin-bottom:8px;"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg></div>
                                     <h4 style="font-family:var(--font-poster); font-size:18px; color:var(--ink-primary);">No Deleted Chats</h4>
                                     <p style="font-size:13px; color:var(--ink-secondary); margin-top:4px;">Cleared Live Copilot conversations will be archived here.</p>
                                 </div>
@@ -1199,7 +1201,7 @@ Nice to Have:
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
     <script src="./motion.js?v=7.0"></script>
     <script src="./appearance.js?v=8.0"></script>
-    <script src="./dashboard.js?v=8.1"></script>
+    <script src="./dashboard.js?v=8.2"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.1"></script>
