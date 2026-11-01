@@ -3,9 +3,8 @@
  * Handles all sections: Setup, Chat, Prep Studio, About Me, Settings
  */
 
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
-    ? 'http://127.0.0.1:8766'
-    : (localStorage.getItem('vettly_api_base') || window.location.origin);
+// The backend serves this page, so the API is the same origin; a page opened as a file talks to the local server
+const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:8766' : (localStorage.getItem('vettly_api_base') || window.location.origin);
 
 // ─── Section Navigation ──────────────────────────────────────
 
@@ -613,8 +612,8 @@ function selectCategory(category, btnEl) {
 
 async function generateSinglePrep(categoryOverride) {
     const category = categoryOverride || currentPrepCategory;
-    const role = contextData.assignment?.title || 'Software Engineer';
-    const company = contextData.assignment?.company || 'Tech Company';
+    const role = contextData.assignment?.title || (typeof Onboard !== 'undefined' && Onboard.role()) || '';
+    const company = contextData.assignment?.company || '';
     const generateBtn = document.getElementById('prep-generate-btn');
     const langToggle = document.getElementById('prep-lang-toggle');
     const language = langToggle && langToggle.checked ? 'HINGLISH' : 'ENGLISH';

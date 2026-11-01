@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-KINDS = ["context", "about_me", "chat_history", "qa_cache", "history", "recycle_bin", "assignment_code"]
+KINDS = ["context", "about_me", "chat_history", "qa_cache", "history", "recycle_bin", "assignment_code", "profile"]
 
 
 def main() -> None:

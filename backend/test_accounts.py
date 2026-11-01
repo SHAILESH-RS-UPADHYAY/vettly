@@ -71,3 +71,11 @@ with TestClient(main.app) as client:
     assert client.get("/api/about-me", headers=b).json()["data"]["intro"] == "B's intro"
 
 print("accounts check passed")
+
+# profiles: each user's own, and a tech field keeps the curated categories
+with TestClient(main.app) as client:
+    a, b = as_user("user_a"), as_user("user_b")
+    assert client.post("/api/profile", json={"name": "Asha", "field": "Technology", "role": "Nurse"}, headers=a).json()["onboarded"] is True
+    assert client.get("/api/profile", headers=b).json() == {}
+    assert client.get("/prepare/categories", headers=a).json()["categories"] is None
+print("profile check passed")
