@@ -29,9 +29,9 @@ const MENTOR_KEYS = {
     lang: 'vettly_mentor_lang',
     open: 'vettly_mentor_open',
     geom: 'vettly_mentor_geom',
-    split: 'vettly_mentor_split',
+    split: 'vettly_mentor_split_v2',   // v2: the card got wider by default; older saved splits are ignored
 };
-const MENTOR_SPLIT = { side: 0.42, stack: 0.4 };   // the pinned card's share of the desk, side by side and stacked
+const MENTOR_SPLIT = { side: 0.5, stack: 0.42 };   // the pinned card's share of the desk, side by side and stacked
 const MENTOR_GUTTER = 18;
 
 const MENTOR_MIN = { w: 340, h: 440 };
@@ -695,6 +695,7 @@ function mentorFillSheet(el) {
     document.getElementById('sheet-q').textContent = el._question || 'Copilot answer';
     const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
     document.getElementById('sheet-a').innerHTML = answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    document.getElementById('sheet-label').textContent = fromPrep ? 'Model answer' : 'Copilot said'; 
     sheet.querySelector('.sheet-body').scrollTop = 0;
 }
 
@@ -743,14 +744,17 @@ function mentorDeskGeom(on, before) {
         mentor.preSplit = { geom: mentor.geom, moved: false };
         const chat = r.width - 12;   // the panel's padding, left and right
         const ratio = mentor.split.side;
-        const want = Math.min(Math.max(Math.round(chat * ratio / (1 - ratio)), 260), 480);
+        const want = Math.min(Math.max(Math.round(chat * ratio / (1 - ratio)), 340), 560);
         const extra = Math.min(want, r.left - 8 - MENTOR_GUTTER);
-        if (extra < 260) {   // no room beside it: keep the panel and let the desk stack inside
+        // a taller desk too, growing upward so the composer stays where it was
+        const height = Math.min(Math.max(r.height, 680), innerHeight - 16);
+        const top = Math.max(8, r.top + r.height - height);
+        if (extra < 280) {   // no room beside it: keep the panel and let the desk stack inside
             mentor.preSplit.stackOnly = true;
-            mentorSetGeom({ left: r.left, top: r.top, width: r.width, height: r.height });
+            mentorSetGeom({ left: r.left, top, width: r.width, height });
             return;
         }
-        mentorSetGeom({ left: r.left - extra - MENTOR_GUTTER, top: r.top, width: r.width + extra + MENTOR_GUTTER, height: r.height });
+        mentorSetGeom({ left: r.left - extra - MENTOR_GUTTER, top, width: r.width + extra + MENTOR_GUTTER, height });
         mentor.split.side = extra / (extra + chat);
     } else {
         const pre = mentor.preSplit;
@@ -759,6 +763,7 @@ function mentorDeskGeom(on, before) {
         if (!pre.moved) { mentorSetGeom(pre.geom); return; }
         const r = mentorPanelRect();
         const cut = pre.stackOnly ? 0 : document.getElementById('mentor-sheet').offsetWidth + MENTOR_GUTTER;
+        // (a moved or resized desk keeps its new height when it closes)
         mentorSetGeom({ left: r.left + cut, top: r.top, width: Math.max(MENTOR_MIN.w, r.width - cut), height: r.height });
         mentorStore.set(MENTOR_KEYS.geom, mentor.geom);
     }
@@ -802,7 +807,7 @@ function mentorLiftOff(from) {
 function mentorSplitLimits(stacked) {
     const box = document.getElementById('mentor-desk').getBoundingClientRect();
     const span = (stacked ? box.height : box.width) - MENTOR_GUTTER;
-    const min = (stacked ? 56 : 240) / span, max = 1 - (stacked ? 220 : 300) / span;
+    const min = (stacked ? 56 : 280) / span, max = 1 - (stacked ? 220 : 300) / span;
     return { box, span, min: Math.min(min, max), max: Math.max(min, max) };
 }
 

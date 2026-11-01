@@ -221,15 +221,90 @@
 .grid-thumb[data-grid="graph"] { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px), linear-gradient(var(--grid-line-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px); background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px; }
 .grid-thumb[data-grid="dots"] { background-image: radial-gradient(circle, var(--grid-line) 0 1.2px, transparent 1.7px); background-size: 10px 10px; }
 .grid-thumb[data-grid="iso"] { background-image: repeating-linear-gradient(30deg, var(--grid-line) 0 1px, transparent 1px 12px), repeating-linear-gradient(150deg, var(--grid-line) 0 1px, transparent 1px 12px); }
-.bp-options { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--rule-2); }
+/* the Blueprint Workshop: slides open under the looks when Blueprint is on */
+.bp-options { display: grid; grid-template-rows: 1fr; margin-top: 18px; border-radius: var(--r-card); border: 1.5px dashed var(--rule-2); background: color-mix(in srgb, var(--paper-3) 55%, transparent); animation: bpOpen 620ms var(--spring) both; }
 .bp-options[hidden] { display: none; }
+.bp-inner { display: grid; gap: 10px; min-height: 0; padding: 16px; }
+.bp-inner > * { animation: bpRise 560ms var(--ease-out) both; }
+.bp-inner > :nth-child(2), .bp-inner > :nth-child(3) { animation-delay: 60ms; }
+.bp-inner > :nth-child(4), .bp-inner > :nth-child(5) { animation-delay: 120ms; }
+.bp-inner > :nth-child(6), .bp-inner > :nth-child(7) { animation-delay: 180ms; }
+.bp-inner > :nth-child(n+8) { animation-delay: 240ms; }
+.bp-head { display: flex; align-items: center; gap: 12px; }
+.bp-head > svg { width: 30px; height: 30px; color: var(--accent-ink); animation: bpWand 2.4s var(--ease-in-out) infinite; }
+.bp-head h4 { margin: 0; font: 700 1.1rem/1.2 var(--font-body); }
 .bp-options .swatch-name { font-size: 0.82rem; }
+@keyframes bpOpen { from { grid-template-rows: 0fr; opacity: 0; } }
+@keyframes bpRise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes bpWand { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-14deg) scale(1.08); } }
+
+/* sheet marks on Blueprint cards (ticks are the original, in looks.css) */
+:root[data-look="blueprint"][data-bp-marks="cross"] :is(.toolbelt-card, .step-card, .poster-media-card) {
+    background-image:
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent));
+    background-size: 14px 1.5px, 1.5px 14px, 14px 1.5px, 1.5px 14px, 14px 1.5px, 1.5px 14px, 14px 1.5px, 1.5px 14px;
+    background-position: 6px 12px, 12px 6px, calc(100% - 6px) 12px, calc(100% - 12px) 6px, 6px calc(100% - 12px), 12px calc(100% - 6px), calc(100% - 6px) calc(100% - 12px), calc(100% - 12px) calc(100% - 6px);
+    background-repeat: no-repeat; background-color: var(--card-bg);
+}
+:root[data-look="blueprint"][data-bp-marks="title"] :is(.toolbelt-card, .step-card, .poster-media-card) {
+    background-image:
+        linear-gradient(var(--rule-2), var(--rule-2)), linear-gradient(var(--rule-2), var(--rule-2)),
+        linear-gradient(var(--rule-2), var(--rule-2)), linear-gradient(var(--accent), var(--accent));
+    background-size: 100% 1px, 1px 20px, 1px 20px, 34% 3px;
+    background-position: 0 calc(100% - 20px), 66% 100%, 82% 100%, 100% calc(100% - 21px);
+    background-repeat: no-repeat; background-color: var(--card-bg);
+    padding-bottom: calc(var(--pad-card) + 18px);
+}
+:root[data-look="blueprint"][data-bp-marks="dims"] :is(.toolbelt-card, .step-card, .poster-media-card) {
+    background-image:
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent));
+    background-size: calc(100% - 28px) 1px, 1px 9px, 1px 9px, 1px calc(100% - 28px), 9px 1px, 9px 1px;
+    background-position: 14px 7px, 14px 3px, calc(100% - 14px) 3px, calc(100% - 7px) 14px, calc(100% - 3px) 14px, calc(100% - 3px) calc(100% - 14px);
+    background-repeat: no-repeat; background-color: var(--card-bg);
+}
+:root[data-look="blueprint"][data-bp-marks="rivets"] :is(.toolbelt-card, .step-card, .poster-media-card) {
+    background-image:
+        radial-gradient(circle at 35% 35%, var(--rivet-hi) 0 1.5px, var(--rivet) 2px 4px, transparent 4.5px),
+        radial-gradient(circle at 35% 35%, var(--rivet-hi) 0 1.5px, var(--rivet) 2px 4px, transparent 4.5px),
+        radial-gradient(circle at 35% 35%, var(--rivet-hi) 0 1.5px, var(--rivet) 2px 4px, transparent 4.5px),
+        radial-gradient(circle at 35% 35%, var(--rivet-hi) 0 1.5px, var(--rivet) 2px 4px, transparent 4.5px);
+    background-size: 12px 12px;
+    background-position: 8px 8px, calc(100% - 8px) 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px);
+    background-repeat: no-repeat; background-color: var(--card-bg);
+}
+:root { --rivet: color-mix(in srgb, var(--ink) 45%, transparent); --rivet-hi: color-mix(in srgb, var(--paper-2) 85%, transparent); }
+
+/* title styles */
+:root[data-look="blueprint"][data-bp-title="stencil"] .poster-header h1 { font: 800 clamp(1.8rem, 1.3rem + 2vw, 2.7rem)/1.05 var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
+:root[data-look="blueprint"][data-bp-title="stencil"] :is(.toolbelt-card-header h3, .step-card h3, .poster-media-card-body h4) { font: 800 1rem/1.25 var(--font-display); letter-spacing: 0.05em; }
+:root[data-look="blueprint"][data-bp-title="script"] .poster-header h1 { font: 700 clamp(2.2rem, 1.6rem + 2.4vw, 3.3rem)/1 var(--font-hand-bp); text-transform: none; letter-spacing: 0; }
+:root[data-look="blueprint"][data-bp-title="script"] :is(.toolbelt-card-header h3, .step-card h3, .poster-media-card-body h4) { font: 700 1.45rem/1.1 var(--font-hand-bp); text-transform: none; letter-spacing: 0; }
+:root { --font-hand-bp: 'Caveat', var(--font-body); }
+
+/* thumbnails for marks and titles */
+.marks-thumb, .title-thumb { position: relative; display: grid; place-items: center; height: 64px; border-radius: 10px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+.marks-thumb i { width: 62%; height: 38px; border: 1px solid var(--rule-2); border-radius: 3px; background-color: var(--card-bg); background-repeat: no-repeat; }
+.marks-thumb[data-marks="ticks"] i { background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)); background-size: 8px 2px, 2px 8px, 8px 2px, 2px 8px; background-position: left top, left top, right bottom, right bottom; }
+.marks-thumb[data-marks="cross"] i { background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)); background-size: 9px 1.5px, 1.5px 9px, 9px 1.5px, 1.5px 9px; background-position: 4px 8px, 8px 4px, calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 4px); }
+.marks-thumb[data-marks="title"] i { background-image: linear-gradient(var(--rule-2), var(--rule-2)), linear-gradient(var(--accent), var(--accent)); background-size: 100% 1px, 40% 3px; background-position: 0 calc(100% - 9px), 100% calc(100% - 10px); }
+.marks-thumb[data-marks="dims"] i { background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)); background-size: calc(100% - 12px) 1px, 1px 7px, 1px 7px; background-position: 6px 5px, 6px 2px, calc(100% - 6px) 2px; }
+.marks-thumb[data-marks="rivets"] i { background-image: radial-gradient(circle, var(--rivet) 0 2.5px, transparent 3px), radial-gradient(circle, var(--rivet) 0 2.5px, transparent 3px), radial-gradient(circle, var(--rivet) 0 2.5px, transparent 3px), radial-gradient(circle, var(--rivet) 0 2.5px, transparent 3px); background-size: 8px 8px; background-position: 3px 3px, calc(100% - 3px) 3px, 3px calc(100% - 3px), calc(100% - 3px) calc(100% - 3px); }
+.title-thumb { color: var(--ink); font-size: 1.15rem; }
+.title-thumb[data-title="mono"] { font: 700 1rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+.title-thumb[data-title="stencil"] { font: 800 1.05rem/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
+.title-thumb[data-title="script"] { font: 700 1.6rem/1 var(--font-hand-bp); }
 
 @media (prefers-reduced-motion: reduce) {
+    .bp-options, .bp-inner > *, .bp-head > svg { animation: none !important; }
     :root :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
     :root :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
     :root[data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
 }
+:root[data-motion="calm"] :is(.bp-options, .bp-inner > *, .bp-head > svg) { animation: none !important; }
 :root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
 :root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
 :root[data-motion="calm"][data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
