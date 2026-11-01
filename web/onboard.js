@@ -77,10 +77,42 @@ const Onboard = (() => {
         } catch (e) { /* keep the curated tiles */ }
     }
 
+    // Settings: today's free AI answers and the user's own key (only where sign-in is on)
+    async function keyCard() {
+        const card = document.getElementById('ai-key-card');
+        if (!card || !window.Auth?.enabled()) return;
+        const form = document.getElementById('ai-key-form'), remove = document.getElementById('ai-key-remove');
+        const show = s => {
+            card.hidden = false;
+            document.getElementById('ai-key-status').textContent = s.has_key
+                ? `Using your own ${s.provider} key, with no daily limit.`
+                : `${s.free_left} of ${s.free_limit} free AI answers left today.${s.own_keys_enabled ? ' Add your own key for unlimited answers.' : ''}`;
+            remove.hidden = !s.has_key;
+            form.querySelectorAll('select, input, button[type=submit]').forEach(el => { el.disabled = !s.own_keys_enabled; });
+        };
+        const call = async (method, body) => {
+            const res = await fetch(`${API_BASE}/api/ai-key`, { method, headers: { 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+            return data;
+        };
+        try { show(await call('GET')); } catch (e) { return; }
+        form.addEventListener('submit', async e => {
+            e.preventDefault();
+            try { show(await call('POST', { provider: form.provider.value, key: form.key.value })); form.key.value = ''; Motion.toast('Saved. Vettly now uses your own key.', 'ok'); }
+            catch (err) { Motion.toast(err.message, 'error'); }
+        });
+        remove.addEventListener('click', async () => {
+            try { show(await call('DELETE')); Motion.toast('Removed your key. You are back on the free allowance.', 'ok'); }
+            catch (err) { Motion.toast(err.message, 'error'); }
+        });
+    }
+
     async function start() {
         await window.Auth?.ready;
         try { profile = await (await fetch(`${API_BASE}/api/profile`)).json(); } catch (e) { return; }
         if (!profile.onboarded) open(); else loadCategories();
+        keyCard();
     }
     start();
 

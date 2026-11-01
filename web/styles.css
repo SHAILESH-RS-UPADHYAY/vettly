@@ -2202,3 +2202,9 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 @media (hover: hover) { .profile-btn:hover { background: var(--paper-3); } }
 @media (min-width: 48rem) and (max-width: 63.99rem) { .profile-btn span { display: none; } }
 @media (prefers-reduced-motion: reduce) { .onboard[open] { animation: none; } }
+
+/* ── AI answers card (allowance and own key) ── */
+.ai-key-card[hidden] { display: none; }
+.ai-key-form { display: grid; gap: 12px; margin-top: 12px; }
+.ai-key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ai-key-note { font-size: 0.84rem; color: var(--muted); }

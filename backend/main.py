@@ -23,6 +23,7 @@ from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import config
+import allowance
 import docstore
 import users
 from users import PerUser
@@ -213,11 +214,16 @@ app.add_middleware(
 async def who_is_asking(request: Request, call_next):
     """Each request starts with nobody signed in; anything that reads or writes data needs a verified session."""
     users.begin_request()
+    allowance.own_keys.set(None)
     if request.method != "OPTIONS" and users.is_protected(request.url.path):
         try:
             users.authenticate(request.headers.get("authorization", ""))
+            if allowance.is_ai(request.url.path, request.method):
+                allowance.begin_ai_call()
         except users.AuthError as e:
             return JSONResponse(status_code=e.status, content={"detail": str(e)})
+        except allowance.LimitReached as e:
+            return JSONResponse(status_code=429, content={"detail": str(e)})
     return await call_next(request)
 
 
@@ -280,6 +286,7 @@ async def prep_categories():
     from ai.utils import generate_multi_provider_completion
     import re
     try:
+        allowance.begin_ai_call()
         raw = await generate_multi_provider_completion(
             system_prompt=(
                 "You design interview practice categories. Return ONLY a JSON object: "
@@ -323,6 +330,7 @@ async def bento_for_field():
         return {"lessons": cached["lessons"], "field": field}
     from ai.utils import generate_multi_provider_completion
     try:
+        allowance.begin_ai_call()
         raw = await generate_multi_provider_completion(
             system_prompt=(
                 "You write bite-sized daily lessons that help a job candidate sound sharp in interviews. Return ONLY JSON: "
@@ -354,6 +362,26 @@ async def bento_for_field():
         return {"lessons": None}
     docstore.save(uid, "bento_field", {"day": today, "for": f"{field}|{role}", "lessons": lessons})
     return {"lessons": lessons, "field": field}
+
+
+@app.get("/api/ai-key")
+async def ai_key_status():
+    """Today's free AI answers left, and whether the user has saved their own provider key."""
+    return allowance.status()
+
+
+@app.post("/api/ai-key")
+async def ai_key_save(request: Request):
+    data = await request.json()
+    try:
+        return allowance.save_key(str(data.get("provider", "")), str(data.get("key", "")))
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
+@app.delete("/api/ai-key")
+async def ai_key_remove():
+    return allowance.remove_key()
 
 
 @app.delete("/api/me")
@@ -2458,7 +2486,7 @@ if __name__ == "__main__":
         "main:app",
         host=config.HOST,
         port=config.PORT,
-        reload=True,
+        reload=os.getenv("RELOAD") == "1",   # opt-in: the reloader can leave a stale worker on the port
         log_level="info",
         ws_max_size=1024 * 1024 * 50,  # 50 MB to allow large 4K screenshots
     )
