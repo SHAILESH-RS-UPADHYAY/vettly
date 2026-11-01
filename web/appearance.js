@@ -17,6 +17,7 @@ const Appearance = (() => {
         sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream',
         density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full',
         tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting', bpMarks: 'ticks', bpTitle: 'mono',
+        regPaper: 'ledger', regInk: 'blue', regHand: 'caveat', regDesk: 'ruled', regDoodles: 'none', regMarker: 'yellow',
     };
     // a look also brings its own colours and side panel; each stays adjustable afterwards
     const LOOKS = [
@@ -50,6 +51,54 @@ const Appearance = (() => {
         ['dims', 'Dimension lines', 'Measured edges with end stops'],
         ['rivets', 'Rivets', 'An engineering plate'],
     ];
+    // the Register look's own options
+    const REG_PAPERS = [
+        ['ledger', 'Ledger', 'Blue rules and a red margin, the classic'],
+        ['maths', 'Maths squares', 'A squared maths copy'],
+        ['dots', 'Bullet dots', 'Dotted, like a bullet journal'],
+        ['pastel', 'Pastel pages', 'Soft pink, mint and lilac sheets'],
+        ['vintage', 'Vintage', 'Aged paper with a tea stain'],
+        ['kraft', 'Kraft', 'Brown recycled paper'],
+    ];
+    // ink: heading colour by day, chalk by night, and the accent that suits it
+    const REG_INKS = [
+        ['blue', 'Royal blue', '#1f2c4a', '#f6e7a1', { accent: 'coral', accentDark: 'butter' }],
+        ['black', 'Gel black', '#16181d', '#f4f4f0', { accent: 'graphite', accentDark: 'graphite' }],
+        ['red', 'Teacher red', '#b3263a', '#ffa3a3', { accent: 'coral', accentDark: 'coral' }],
+        ['green', 'Green ink', '#1f7a4d', '#a6f0c0', { accent: 'mint', accentDark: 'mint' }],
+        ['purple', 'Purple gel', '#6b3fd1', '#cdb8ff', { accent: 'lilac', accentDark: 'lilac' }],
+        ['sepia', 'Sepia', '#7a4a1e', '#f2c98d', { accent: 'tangerine', accentDark: 'butter' }],
+    ];
+    const REG_HANDS = [
+        ['caveat', 'Caveat', 'Quick and loopy, the original'],
+        ['kalam', 'Kalam', 'Neat Indian school handwriting'],
+        ['patrick', 'Patrick Hand', 'Tidy print, easy to read'],
+        ['gaegu', 'Gaegu', 'Round and bubbly'],
+        ['shadows', 'Shadows', 'Light and airy'],
+    ];
+    const REG_FONTS = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' };
+    const REG_DESKS = [
+        ['ruled', 'Ruled', 'The desk is ruled paper too'],
+        ['wood', 'Wooden desk', 'A warm oak table'],
+        ['cork', 'Cork board', 'Pages pinned to cork'],
+        ['gingham', 'Gingham', 'A cute picnic check'],
+        ['plain', 'Plain', 'Just a quiet colour'],
+    ];
+    const REG_DOODLES = [
+        ['none', 'None', 'Clean pages'],
+        ['stars', 'Stars & hearts', 'Doodles across the desk'],
+        ['stamps', 'Teacher stamps', 'Shabash, Excellent, Very good'],
+        ['stickers', 'Stickers', 'Little stickers on the corners'],
+    ];
+    const REG_MARKERS = [['yellow', 'Yellow', '#ffe14d'], ['pink', 'Pink', '#ff9ccb'], ['mint', 'Mint', '#8ff0c0'], ['sky', 'Sky', '#9ad8ff'], ['orange', 'Orange', '#ffb36b']];
+    // a handwriting font loads only once someone picks it
+    function loadHand(id) {
+        if (!REG_FONTS[id] || document.getElementById(`font-${id}`)) return;
+        const l = document.createElement('link');
+        l.id = `font-${id}`; l.rel = 'stylesheet';
+        l.href = `https://fonts.googleapis.com/css2?family=${REG_FONTS[id]}&display=swap`;
+        document.head.appendChild(l);
+    }
     const BP_TITLES = [
         ['mono', 'Mono caps', 'The original monospace headings'],
         ['stencil', 'Stencil', 'Heavy wide letters, like a crate'],
@@ -210,7 +259,7 @@ const Appearance = (() => {
     const pressed = (on) => `aria-pressed="${on}"`;
     const tile = (kind, id, name, desc, thumb) => `
         <button type="button" class="pick" data-ap-${kind}="${id}" ${pressed(false)}>
-            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid', bpmark: 'bpMarks', bptitle: 'bpTitle' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
+            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid', bpmark: 'bpMarks', bptitle: 'bpTitle', regpaper: 'regPaper', reghand: 'regHand', regdesk: 'regDesk', regdoodle: 'regDoodles' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
             <span class="pick-desc">${desc}</span>
         </button>`;
     const pipeSvg = (id) => `<svg class="pipe-demo" data-pipe="${id}" viewBox="0 0 160 84" preserveAspectRatio="none" aria-hidden="true">
@@ -241,9 +290,19 @@ const Appearance = (() => {
             `<span class="pick-thumb marks-thumb" data-marks="${id}" aria-hidden="true"><i></i></span>`)).join('');
         card.querySelector('[data-ap-bptitles]').innerHTML = BP_TITLES.map(([id, name, desc]) => tile('bptitle', id, name, desc,
             `<span class="pick-thumb title-thumb" data-title="${id}" aria-hidden="true">Plan A</span>`)).join('');
-        // the same tape and page choices as the Paper & tape tab, right here for Blueprint
-        card.querySelector('[data-ap-bptapes]').innerHTML = card.querySelector('[data-ap-tapes]').innerHTML;
-        card.querySelector('[data-ap-bppages]').innerHTML = card.querySelector('[data-ap-pages]').innerHTML;
+        card.querySelector('[data-ap-regpapers]').innerHTML = REG_PAPERS.map(([id, name, desc]) => tile('regpaper', id, name, desc,
+            `<span class="pick-thumb regpaper-thumb" data-paper="${id}" aria-hidden="true"><i></i></span>`)).join('');
+        card.querySelector('[data-ap-reghands]').innerHTML = REG_HANDS.map(([id, name, desc]) => tile('reghand', id, name, desc,
+            `<span class="pick-thumb hand-thumb" data-hand="${id}" aria-hidden="true">Shabash!</span>`)).join('');
+        card.querySelector('[data-ap-regdesks]').innerHTML = REG_DESKS.map(([id, name, desc]) => tile('regdesk', id, name, desc,
+            `<span class="pick-thumb desk-thumb" data-desk="${id}" aria-hidden="true"><i></i></span>`)).join('');
+        card.querySelector('[data-ap-regdoodles]').innerHTML = REG_DOODLES.map(([id, name, desc]) => tile('regdoodle', id, name, desc,
+            `<span class="pick-thumb doodle-thumb" data-doodle="${id}" aria-hidden="true"><i></i></span>`)).join('');
+        // the same tape and page choices as the Paper & tape tab, right here for Blueprint and Register
+        ['bp', 'reg'].forEach(k => {
+            card.querySelector(`[data-ap-${k}tapes]`).innerHTML = card.querySelector('[data-ap-tapes]').innerHTML;
+            card.querySelector(`[data-ap-${k}pages]`).innerHTML = card.querySelector('[data-ap-pages]').innerHTML;
+        });
     }
 
     function renderSettings() {
@@ -269,6 +328,20 @@ const Appearance = (() => {
         mark('[data-ap-bpmark]', 'apBpmark', prefs.bpMarks);
         mark('[data-ap-bptitle]', 'apBptitle', prefs.bpTitle);
         card.querySelector('[data-bp-options]').hidden = prefs.look !== 'blueprint';
+        card.querySelector('[data-reg-options]').hidden = prefs.look !== 'register';
+        if (prefs.look === 'register') Object.keys(REG_FONTS).forEach(loadHand);   // so the handwriting tiles preview in their own font
+        mark('[data-ap-regpaper]', 'apRegpaper', prefs.regPaper);
+        mark('[data-ap-reghand]', 'apReghand', prefs.regHand);
+        mark('[data-ap-regdesk]', 'apRegdesk', prefs.regDesk);
+        mark('[data-ap-regdoodle]', 'apRegdoodle', prefs.regDoodles);
+        card.querySelector('[data-ap-reginks]').innerHTML = REG_INKS.map(([id, name, day, night]) => {
+            const ink = isDark() ? night : day;
+            return `<button type="button" class="swatch" data-ap-regink="${id}" aria-pressed="${prefs.regInk === id}" style="--sw:${ink};--sw2:${ink};--sw-on:${isDark() ? '#1b2620' : '#ffffff'}">
+                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`;
+        }).join('');
+        card.querySelector('[data-ap-regmarkers]').innerHTML = REG_MARKERS.map(([id, name, hex]) =>
+            `<button type="button" class="swatch" data-ap-regmarker="${id}" aria-pressed="${prefs.regMarker === id}" style="--sw:${hex};--sw2:${hex};--sw-on:#1f2c4a">
+                <span class="swatch-dot" aria-hidden="true"><svg class="swatch-check"><use href="#i-check-bold"/></svg></span><span class="swatch-name">${name}</span></button>`).join('');
         card.querySelector('[data-ap-bpinks]').innerHTML = BP_INKS.map(([id, name, light, dark]) => {
             const ink = isDark() ? dark : light;
             return `<button type="button" class="swatch" data-ap-bpink="${id}" aria-pressed="${prefs.bpInk === id}" style="--sw:${ink};--sw2:${ink};--sw-on:${isDark() ? '#0b0f17' : '#ffffff'}">
@@ -310,7 +383,8 @@ const Appearance = (() => {
             else if (b.dataset.apLook) {
                 applyLook(b.dataset.apLook);
                 burstFrom(card, `[data-ap-look="${b.dataset.apLook}"] .look-thumb`);
-                if (b.dataset.apLook === 'blueprint') setTimeout(() => card.querySelector('[data-bp-options]')?.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' }), 450);
+                const panel = { blueprint: '[data-bp-options]', register: '[data-reg-options]' }[b.dataset.apLook];
+                if (panel) setTimeout(() => card.querySelector(panel)?.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' }), 450);
             }
             else if (b.dataset.apAccent) {
                 const entry = ACCENTS.find(a => a[0] === b.dataset.apAccent);
@@ -326,6 +400,20 @@ const Appearance = (() => {
             else if (b.dataset.apBpgrid) apply({ bpGrid: b.dataset.apBpgrid }, { transition: true });
             else if (b.dataset.apBpmark) apply({ bpMarks: b.dataset.apBpmark }, { transition: true });
             else if (b.dataset.apBptitle) apply({ bpTitle: b.dataset.apBptitle }, { transition: true });
+            else if (b.dataset.apRegpaper) apply({ regPaper: b.dataset.apRegpaper }, { transition: true });
+            else if (b.dataset.apReghand) { loadHand(b.dataset.apReghand); apply({ regHand: b.dataset.apReghand }, { transition: true }); }
+            else if (b.dataset.apRegdesk) apply({ regDesk: b.dataset.apRegdesk }, { transition: true });
+            else if (b.dataset.apRegdoodle) apply({ regDoodles: b.dataset.apRegdoodle }, { transition: true });
+            else if (b.dataset.apRegink) {
+                const ink = REG_INKS.find(i => i[0] === b.dataset.apRegink);
+                apply({ regInk: ink[0], ...ink[4] }, { transition: true });
+                Motion.burst(card.querySelector(`[data-ap-regink="${ink[0]}"] .swatch-dot`), 10, [ink[2], ink[3]]);
+            }
+            else if (b.dataset.apRegmarker) {
+                const m = REG_MARKERS.find(x => x[0] === b.dataset.apRegmarker);
+                set('regMarker', m[0]);
+                Motion.burst(card.querySelector(`[data-ap-regmarker="${m[0]}"] .swatch-dot`), 10, [m[2], m[2]]);
+            }
             else if (b.dataset.apBpink) {
                 const ink = BP_INKS.find(i => i[0] === b.dataset.apBpink);
                 apply({ bpInk: ink[0], ...ink[4] }, { transition: true });
