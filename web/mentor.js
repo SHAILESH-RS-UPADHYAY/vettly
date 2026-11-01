@@ -461,8 +461,11 @@ function mentorPointerSession(cls, cursor, onMove, handle) {
     addEventListener('pointerup', up);
 }
 
+// Phones show the panel as a fixed sheet (mentor.css § 13), so it neither drags nor resizes there
+const mentorSheetMode = matchMedia('(max-width: 47.99rem)');
+
 function mentorDragStart(e) {
-    if (e.button !== 0 || e.target.closest('button')) return;
+    if (e.button !== 0 || e.target.closest('button') || mentorSheetMode.matches) return;
     e.preventDefault();
     const start = document.querySelector('.mentor-panel').getBoundingClientRect();
     mentorPointerSession('dragging', 'grabbing', ev => {
@@ -476,7 +479,7 @@ function mentorDragStart(e) {
 }
 
 function mentorResizeStart(e) {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || mentorSheetMode.matches) return;
     e.preventDefault();
     e.stopPropagation();
     const handle = e.currentTarget;

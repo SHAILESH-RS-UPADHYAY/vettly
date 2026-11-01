@@ -1,0 +1,343 @@
+/* Vettly tokens: every colour, face, size, radius, shadow and duration the app uses.
+   Light "Parchment" lives on :root; dark "Ink night" on .theme-dark (set on <html> before first paint).
+   Appearance settings are attributes on <html>, written by the bootstrap in index.html:
+   data-accent / data-accent-dark (10 accents per mode), data-density, data-cards, data-corners,
+   data-text, data-bg, data-motion. Every pair here is checked for WCAG AA (scratchpad/contrast.mjs). */
+
+:root {
+    color-scheme: light;
+
+    /* surfaces */
+    --paper: #f6f1e7;
+    --paper-2: #fdfaf4;
+    --paper-3: #efe7d8;
+    --sidebar: #efe8da;
+    --field: #fffdf8;
+    --scrim: rgba(13, 18, 32, 0.38);
+
+    /* ink */
+    --ink: #1c2333;
+    --ink-2: #485166;
+    --muted: #5f6679;
+    --rule: #e3d9c7;
+    --rule-2: #d2c5ae;
+
+    /* accent: tangerine by day (overridden per data-accent below) */
+    --accent: #c9480c;
+    --accent-rgb: 201, 72, 12;
+    --accent-2: #f06a20;
+    --accent-deep: #a83a08;
+    --accent-ink: #b4440b;
+    --on-accent: #fffaf3;
+    --accent-soft: #fde9dc;
+    --focus: #c9480c;
+    --glow-rgb: 240, 106, 32;
+
+    /* navigation pill */
+    --pill: #1e2638;
+    --on-pill: #f6f1e7;
+
+    /* state */
+    --ok: #1f7a4d;
+    --ok-bg: #e3f4ea;
+    --bad: #b4233c;
+    --bad-bg: #fbe7ea;
+    --warn: #7d5c00;
+    --warn-bg: #fbf2d3;
+
+    /* category pastels: one tint + ink pair per question category */
+    --c-beh-bg: #efe9fb; --c-beh: #5b3fa8;
+    --c-tech-bg: #e4f1fb; --c-tech: #1f5f8f;
+    --c-dsa-bg: #e2f5ec; --c-dsa: #1d6b4a;
+    --c-proj-bg: #fde9dc; --c-proj: #9a3f12;
+    --c-sys-bg: #fbf2d3; --c-sys: #7a5a07;
+    --c-sit-bg: #fbe6ea; --c-sit: #9b2c45;
+    --c-hr-bg: #dff3f1; --c-hr: #1b6a64;
+    --c-asg-bg: #fde4e1; --c-asg: #a33a2c;
+    --c-gen-bg: #f1ebe0; --c-gen: #5c5340;
+    --c-me-bg: #e9eefc; --c-me: #3b4fa0;
+
+    /* background */
+    --grid-line: rgba(30, 58, 138, 0.075);
+    --grid-line-2: rgba(30, 58, 138, 0.045);
+
+    /* Mentor emblem looks: the parts that differ between day and night (mentor.css builds each look from them) */
+    --orb-gloss-core: var(--accent-2);
+    --orb-gloss-aura: 0.22;
+    --orb-gloss-shade: rgba(120, 50, 10, 0.22);
+    --orb-porcelain-core: #fffdf8;
+    --orb-porcelain-deep: #ece1cd;
+    --orb-porcelain-inset: rgba(120, 72, 30, 0.1);
+    --orb-porcelain-edge: rgba(28, 35, 51, 0.15);
+    --orb-porcelain-drop: rgba(120, 72, 30, 0.5);
+    --orb-porcelain-star: var(--accent-ink);
+    --orb-ember-core: #1e293b;
+    --orb-ember-deep: #0b1222;
+    --orb-ember-edge: #0f172a;
+    --orb-ember-drop: rgba(15, 23, 42, 0.55);
+    --orb-ripple-ink: rgba(30, 41, 59, 0.22);
+
+    /* type */
+    --font-display: 'Syne', 'Outfit', system-ui, sans-serif;
+    --font-body: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+    /* space (4px scale) */
+    --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px;
+    --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px;
+
+    /* format: density, corners, cards (overridden per data-* below) */
+    --pad-card: 22px;
+    --gap-stack: 16px;
+    --ctl-h: 40px;
+    --r-input: 12px;
+    --r-ctl: 12px;
+    --r-chip: 999px;
+    --r-card: 20px;
+    --r-sheet: 24px;
+    --card-bg: var(--paper-2);
+    --card-border: transparent;
+    --card-shadow: 0 1px 2px rgba(60, 40, 10, 0.05), 0 10px 26px -16px rgba(60, 40, 10, 0.26);
+    --card-shadow-hover: 0 2px 6px rgba(60, 40, 10, 0.06), 0 22px 44px -22px rgba(60, 40, 10, 0.34);
+    --pop-shadow: 0 24px 60px -24px rgba(28, 35, 51, 0.38), 0 4px 14px -6px rgba(28, 35, 51, 0.12);
+
+    /* layout */
+    --sidebar-w: 252px;
+    --rail-w: 76px;
+    --tabbar-h: 64px;
+    --gutter: 16px;
+    --page-max: 1180px;
+
+    /* motion */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --dur-micro: 120ms;
+    --dur-short: 220ms;
+    --dur-long: 420ms;
+
+    /* layers */
+    --z-raised: 10;
+    --z-nav: 300;
+    --z-sheet: 400;
+    --z-toast: 500;
+    --z-tooltip: 600;
+
+    /* ── legacy names, kept so pages not yet rebuilt follow the new palette ── */
+    --bg-main: var(--paper);
+    --bg-card: var(--card-bg);
+    --bg-sidebar: var(--sidebar);
+    --bg-input: var(--field);
+    --ink-primary: var(--ink);
+    --ink-secondary: var(--ink-2);
+    --ink-muted: var(--muted);
+    --blueprint-blue: var(--ink-2);
+    --blueprint-line: var(--grid-line);
+    --poster-orange: var(--accent);
+    --poster-orange-glow: rgba(var(--accent-rgb), 0.28);
+    --poster-red: var(--bad);
+    --tape-color: transparent;
+    --border-main: var(--rule-2);
+    --border-hover: var(--accent);
+    --shadow-poster: var(--card-shadow);
+    --shadow-card: var(--card-shadow);
+    --radius-sm: var(--r-ctl);
+    --radius: var(--r-ctl);
+    --radius-lg: var(--r-card);
+    --font: var(--font-body);
+    --font-tech: var(--font-body);
+    --font-poster: var(--font-display);
+    --font-hand: var(--font-body);
+    --sidebar-width: var(--sidebar-w);
+    --red: var(--bad);
+    --text-dim: var(--muted);
+    --transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out),
+        border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out),
+        transform var(--dur-short) var(--ease-out), opacity var(--dur-short) var(--ease-out);
+}
+
+/* Ink night. `.preview-dark` lets Settings show a dark preview while the app is light. */
+.theme-dark,
+.preview-dark {
+    color-scheme: dark;
+
+    --paper: #0d1220;
+    --paper-2: #151c2e;
+    --paper-3: #1b2338;
+    --sidebar: #10162a;
+    --field: #111829;
+    --scrim: rgba(3, 6, 14, 0.62);
+
+    --ink: #eef0f6;
+    --ink-2: #b6bdcc;
+    --muted: #8c95a8;
+    --rule: #222b42;
+    --rule-2: #303b58;
+
+    --accent: #5cc0ec;
+    --accent-rgb: 92, 192, 236;
+    --accent-2: #9ad8f5;
+    --accent-deep: #0b7fb8;
+    --accent-ink: #86d2f4;
+    --on-accent: #06131c;
+    --accent-soft: #12324a;
+    --focus: #5cc0ec;
+    --glow-rgb: 92, 192, 236;
+
+    --pill: #eef0f6;
+    --on-pill: #0d1220;
+
+    --ok: #6fd3a0;
+    --ok-bg: #12352a;
+    --bad: #ff9aae;
+    --bad-bg: #3d1a24;
+    --warn: #f5d77a;
+    --warn-bg: #3a3115;
+
+    --c-beh-bg: #2a2346; --c-beh: #c9b8ff;
+    --c-tech-bg: #16304a; --c-tech: #9fd2f5;
+    --c-dsa-bg: #133a2c; --c-dsa: #93e0bb;
+    --c-proj-bg: #3f2418; --c-proj: #ffb98f;
+    --c-sys-bg: #3a3115; --c-sys: #f3d77a;
+    --c-sit-bg: #401d27; --c-sit: #ffa8bb;
+    --c-hr-bg: #12393a; --c-hr: #8fe0d8;
+    --c-asg-bg: #44201b; --c-asg: #ffab9f;
+    --c-gen-bg: #2b2a26; --c-gen: #d9cfbd;
+    --c-me-bg: #1d2547; --c-me: #b6c3ff;
+
+    --grid-line: rgba(120, 160, 230, 0.07);
+    --grid-line-2: rgba(120, 160, 230, 0.04);
+
+    --orb-gloss-core: var(--accent);
+    --orb-gloss-aura: 0.5;
+    --orb-gloss-shade: rgba(10, 14, 26, 0.38);
+    --orb-porcelain-core: #f7f3ea;
+    --orb-porcelain-deep: #d4ccbc;
+    --orb-porcelain-inset: rgba(0, 0, 0, 0.18);
+    --orb-porcelain-edge: rgba(255, 255, 255, 0.24);
+    --orb-porcelain-drop: rgba(0, 0, 0, 0.75);
+    --orb-porcelain-star: var(--accent-deep);
+    --orb-ember-core: #232d47;
+    --orb-ember-deep: #0e1424;
+    --orb-ember-edge: rgba(255, 255, 255, 0.16);
+    --orb-ember-drop: rgba(0, 0, 0, 0.7);
+    --orb-ripple-ink: rgba(255, 255, 255, 0.18);
+
+    --card-bg: var(--paper-2);
+
+    /* at night elevation is lightness and a hairline, never a glow */
+    --card-shadow: 0 0 0 1px rgba(150, 175, 220, 0.09), 0 18px 40px -26px rgba(0, 0, 0, 0.8);
+    --card-shadow-hover: 0 0 0 1px rgba(150, 175, 220, 0.16), 0 22px 48px -26px rgba(0, 0, 0, 0.85);
+    --pop-shadow: 0 0 0 1px rgba(150, 175, 220, 0.12), 0 30px 70px -26px rgba(0, 0, 0, 0.85);
+}
+
+/* Parchment again, for a light preview inside the dark app */
+.theme-dark .preview-light {
+    color-scheme: light;
+    --paper: #f6f1e7; --paper-2: #fdfaf4; --paper-3: #efe7d8; --sidebar: #efe8da; --field: #fffdf8;
+    --ink: #1c2333; --ink-2: #485166; --muted: #5f6679; --rule: #e3d9c7; --rule-2: #d2c5ae;
+    --accent: #c9480c; --accent-rgb: 201, 72, 12; --accent-2: #f06a20; --accent-deep: #a83a08;
+    --accent-ink: #b4440b; --on-accent: #fffaf3; --accent-soft: #fde9dc; --focus: #c9480c; --glow-rgb: 240, 106, 32;
+    --pill: #1e2638; --on-pill: #f6f1e7;
+    --card-bg: var(--paper-2);
+    --card-shadow: 0 1px 2px rgba(60, 40, 10, 0.05), 0 10px 26px -16px rgba(60, 40, 10, 0.26);
+    --orb-gloss-core: var(--accent-2); --orb-gloss-aura: 0.22; --orb-gloss-shade: rgba(120, 50, 10, 0.22);
+    --orb-porcelain-core: #fffdf8; --orb-porcelain-deep: #ece1cd; --orb-porcelain-inset: rgba(120, 72, 30, 0.1);
+    --orb-porcelain-edge: rgba(28, 35, 51, 0.15); --orb-porcelain-drop: rgba(120, 72, 30, 0.5); --orb-porcelain-star: var(--accent-ink);
+    --orb-ember-core: #1e293b; --orb-ember-deep: #0b1222; --orb-ember-edge: #0f172a; --orb-ember-drop: rgba(15, 23, 42, 0.55);
+    --orb-ripple-ink: rgba(30, 41, 59, 0.22);
+}
+
+/* ── Accent themes: light mode (data-accent) ─────────────────────────────────
+   fill, rgb, gloss, deep, text-on-paper, text-on-fill, soft tint, focus, glow */
+:root[data-accent="sky"]:not(.theme-dark), :root[data-accent="sky"] .preview-light {
+    --accent: #1f72b6; --accent-rgb: 31, 114, 182; --accent-2: #4aa8e8; --accent-deep: #155a8f;
+    --accent-ink: #19639c; --on-accent: #f5faff; --accent-soft: #e2f0fb; --focus: #1f72b6; --glow-rgb: 74, 168, 232;
+}
+:root[data-accent="lilac"]:not(.theme-dark), :root[data-accent="lilac"] .preview-light {
+    --accent: #6a4ddc; --accent-rgb: 106, 77, 220; --accent-2: #9b85f5; --accent-deep: #4b2fb3;
+    --accent-ink: #5639c0; --on-accent: #f8f5ff; --accent-soft: #ece7fd; --focus: #6a4ddc; --glow-rgb: 155, 133, 245;
+}
+:root[data-accent="mint"]:not(.theme-dark), :root[data-accent="mint"] .preview-light {
+    --accent: #157a55; --accent-rgb: 21, 122, 85; --accent-2: #34b383; --accent-deep: #0e5e40;
+    --accent-ink: #116b49; --on-accent: #f2fbf6; --accent-soft: #def3e9; --focus: #157a55; --glow-rgb: 52, 179, 131;
+}
+:root[data-accent="rose"]:not(.theme-dark), :root[data-accent="rose"] .preview-light {
+    --accent: #c42d60; --accent-rgb: 196, 45, 96; --accent-2: #ec5f8f; --accent-deep: #9a1f48;
+    --accent-ink: #a8244f; --on-accent: #fff5f8; --accent-soft: #fbe4ec; --focus: #c42d60; --glow-rgb: 236, 95, 143;
+}
+:root[data-accent="teal"]:not(.theme-dark), :root[data-accent="teal"] .preview-light {
+    --accent: #0e7a74; --accent-rgb: 14, 122, 116; --accent-2: #2fb0a7; --accent-deep: #0a5c57;
+    --accent-ink: #0d6b66; --on-accent: #effbfa; --accent-soft: #dcf2f0; --focus: #0e7a74; --glow-rgb: 47, 176, 167;
+}
+:root[data-accent="coral"]:not(.theme-dark), :root[data-accent="coral"] .preview-light {
+    --accent: #c7402f; --accent-rgb: 199, 64, 47; --accent-2: #f0705f; --accent-deep: #a32f22;
+    --accent-ink: #ab3427; --on-accent: #fff6f4; --accent-soft: #fce5e1; --focus: #c7402f; --glow-rgb: 240, 112, 95;
+}
+:root[data-accent="butter"]:not(.theme-dark), :root[data-accent="butter"] .preview-light {
+    --accent: #f0c33c; --accent-rgb: 240, 195, 60; --accent-2: #f8d76e; --accent-deep: #b88a00;
+    --accent-ink: #7d5c00; --on-accent: #2b2100; --accent-soft: #fbf1cf; --focus: #7d5c00; --glow-rgb: 240, 195, 60;
+}
+:root[data-accent="periwinkle"]:not(.theme-dark), :root[data-accent="periwinkle"] .preview-light {
+    --accent: #4a5ed4; --accent-rgb: 74, 94, 212; --accent-2: #7487ec; --accent-deep: #3343a8;
+    --accent-ink: #3b4fb5; --on-accent: #f6f7ff; --accent-soft: #e6eafc; --focus: #4a5ed4; --glow-rgb: 116, 135, 236;
+}
+:root[data-accent="graphite"]:not(.theme-dark), :root[data-accent="graphite"] .preview-light {
+    --accent: #2b3346; --accent-rgb: 43, 51, 70; --accent-2: #4a5470; --accent-deep: #161c2b;
+    --accent-ink: #2b3346; --on-accent: #f6f1e7; --accent-soft: #e8e9ee; --focus: #2b3346; --glow-rgb: 74, 84, 112;
+}
+
+/* ── Accent themes: dark mode (data-accent-dark) ── */
+:root.theme-dark[data-accent-dark="tangerine"], :root[data-accent-dark="tangerine"] .preview-dark {
+    --accent: #ff8f52; --accent-rgb: 255, 143, 82; --accent-2: #ffb385; --accent-deep: #e0661f;
+    --accent-ink: #ffad80; --on-accent: #1a0b03; --accent-soft: #3a2216; --focus: #ff8f52; --glow-rgb: 255, 143, 82;
+}
+:root.theme-dark[data-accent-dark="lilac"], :root[data-accent-dark="lilac"] .preview-dark {
+    --accent: #b6a2ff; --accent-rgb: 182, 162, 255; --accent-2: #d5c8ff; --accent-deep: #7c62e8;
+    --accent-ink: #c9b8ff; --on-accent: #160d33; --accent-soft: #2a2347; --focus: #b6a2ff; --glow-rgb: 182, 162, 255;
+}
+:root.theme-dark[data-accent-dark="mint"], :root[data-accent-dark="mint"] .preview-dark {
+    --accent: #5fd6a0; --accent-rgb: 95, 214, 160; --accent-2: #9cebc6; --accent-deep: #20a372;
+    --accent-ink: #93e0bb; --on-accent: #04170f; --accent-soft: #133a2c; --focus: #5fd6a0; --glow-rgb: 95, 214, 160;
+}
+:root.theme-dark[data-accent-dark="rose"], :root[data-accent-dark="rose"] .preview-dark {
+    --accent: #ff8fb3; --accent-rgb: 255, 143, 179; --accent-2: #ffc0d3; --accent-deep: #d94a7d;
+    --accent-ink: #ffa8c4; --on-accent: #2a0612; --accent-soft: #3f1c2a; --focus: #ff8fb3; --glow-rgb: 255, 143, 179;
+}
+:root.theme-dark[data-accent-dark="teal"], :root[data-accent-dark="teal"] .preview-dark {
+    --accent: #4fd1c7; --accent-rgb: 79, 209, 199; --accent-2: #8ee6de; --accent-deep: #1a9e95;
+    --accent-ink: #8fe0d8; --on-accent: #031615; --accent-soft: #12393a; --focus: #4fd1c7; --glow-rgb: 79, 209, 199;
+}
+:root.theme-dark[data-accent-dark="coral"], :root[data-accent-dark="coral"] .preview-dark {
+    --accent: #ff8a7a; --accent-rgb: 255, 138, 122; --accent-2: #ffc0b6; --accent-deep: #e0533f;
+    --accent-ink: #ffab9f; --on-accent: #2a0805; --accent-soft: #42201b; --focus: #ff8a7a; --glow-rgb: 255, 138, 122;
+}
+:root.theme-dark[data-accent-dark="butter"], :root[data-accent-dark="butter"] .preview-dark {
+    --accent: #f5d36b; --accent-rgb: 245, 211, 107; --accent-2: #fbe7a6; --accent-deep: #c99a10;
+    --accent-ink: #f5d77a; --on-accent: #231a00; --accent-soft: #3a3115; --focus: #f5d36b; --glow-rgb: 245, 211, 107;
+}
+:root.theme-dark[data-accent-dark="periwinkle"], :root[data-accent-dark="periwinkle"] .preview-dark {
+    --accent: #93a8ff; --accent-rgb: 147, 168, 255; --accent-2: #c6d1ff; --accent-deep: #5468e0;
+    --accent-ink: #b6c3ff; --on-accent: #0b1238; --accent-soft: #1e2650; --focus: #93a8ff; --glow-rgb: 147, 168, 255;
+}
+:root.theme-dark[data-accent-dark="graphite"], :root[data-accent-dark="graphite"] .preview-dark {
+    --accent: #e6e9f2; --accent-rgb: 230, 233, 242; --accent-2: #ffffff; --accent-deep: #9aa3b8;
+    --accent-ink: #eef0f6; --on-accent: #0d1220; --accent-soft: #262d40; --focus: #e6e9f2; --glow-rgb: 200, 208, 226;
+}
+
+/* ── Format options ───────────────────────────────────────────────── */
+:root[data-density="compact"] { --pad-card: 15px; --gap-stack: 10px; --ctl-h: 34px; }
+
+:root[data-corners="rounder"] { --r-input: 16px; --r-ctl: 16px; --r-card: 28px; --r-sheet: 32px; }
+:root[data-corners="crisp"] { --r-input: 7px; --r-ctl: 7px; --r-chip: 7px; --r-card: 10px; --r-sheet: 14px; }
+
+:root[data-cards="outline"] { --card-border: var(--rule-2); --card-shadow: none; --card-shadow-hover: none; }
+:root[data-cards="flat"] { --card-bg: var(--paper-3); --card-border: transparent; --card-shadow: none; --card-shadow-hover: none; }
+:root.theme-dark[data-cards="flat"] { --card-bg: #18203a; }
+
+:root[data-text="large"] { font-size: 106.25%; }
+
+@media (min-width: 48rem) { :root { --gutter: 24px; } }
+@media (min-width: 64rem) { :root { --gutter: 36px; } }
+@media (min-width: 100rem) { :root { --gutter: 48px; } }

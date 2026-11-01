@@ -9,19 +9,40 @@ const API_BASE = (window.location.hostname === 'localhost' || window.location.ho
 
 // ─── Section Navigation ──────────────────────────────────────
 
-function switchSection(name) {
-    document.body.dataset.section = name;
-    mentorSyncMode();
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+// Sections reached through the More sheet on phones
+const MORE_SECTIONS = ['setup', 'aboutme', 'settings'];
+const sideNav = document.querySelector('.sidebar-nav');
+
+// User-driven switches animate in a view transition; programmatic ones (Mentor jumps) apply at once
+function switchSection(name, { animate = false } = {}) {
     const page = document.getElementById(`page-${name}`);
-    const nav = document.querySelector(`.nav-item[data-section="${name}"]`);
-    if (page) page.classList.add('active');
-    if (nav) nav.classList.add('active');
+    if (!page) return;
+    const changing = document.body.dataset.section !== name;
+    const apply = () => {
+        document.body.dataset.section = name;
+        mentorSyncMode();
+        document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p === page));
+        document.querySelectorAll('.nav-item[data-section]').forEach(n => {
+            const on = n.dataset.section === name;
+            n.classList.toggle('active', on);
+            if (on) n.setAttribute('aria-current', 'page'); else n.removeAttribute('aria-current');
+        });
+        const inMore = MORE_SECTIONS.includes(name);
+        const more = document.getElementById('nav-more');
+        more?.classList.toggle('active', inMore);
+        more?.setAttribute('aria-current', String(inMore));
+        document.querySelectorAll('.more-item[data-section]').forEach(m => m.setAttribute('aria-current', m.dataset.section === name ? 'page' : 'false'));
+        if (changing) window.scrollTo(0, 0);
+        Motion.pill(sideNav);
+        Motion.thumbs(page);
+    };
+    if (animate && changing) Motion.page(apply); else apply();
+    if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
     // Load data for specific sections
     if (name === 'aboutme') loadAboutMe();
     if (name === 'prep') loadPrepQuestions();
+    if (name === 'settings') Appearance.renderSettings();
     
     // Auto-scroll chat to bottom when switching to chat section
     if (name === 'chat') {
@@ -36,12 +57,28 @@ function switchSection(name) {
     }
 }
 
-document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', () => switchSection(btn.dataset.section));
+document.querySelectorAll('.nav-item[data-section], .more-item[data-section]').forEach(btn => {
+    btn.addEventListener('click', () => { closeMoreSheet(); switchSection(btn.dataset.section, { animate: true }); });
 });
 
-// Load persistent state on boot
+// Phones: the More tab opens a sheet with the rest of the app
+const moreSheet = document.getElementById('more-sheet');
+function closeMoreSheet() { if (moreSheet?.open) moreSheet.close(); }
+document.getElementById('nav-more')?.addEventListener('click', () => moreSheet?.showModal());
+moreSheet?.addEventListener('click', e => {   // a tap on the dimmed backdrop closes it
+    const r = moreSheet.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeMoreSheet();
+});
+matchMedia('(max-width: 47.99rem)').addEventListener('change', e => { if (!e.matches) closeMoreSheet(); });
+
+// The nav pill follows the active item through resizes and late font loads
+addEventListener('resize', () => Motion.pill(sideNav), { passive: true });
+document.fonts?.ready.then(() => Motion.pill(sideNav));
+
+// Load persistent state on boot; a #section in the address opens that tab
 window.addEventListener('DOMContentLoaded', async () => {
+    const start = location.hash.slice(1).split('?')[0];
+    switchSection(document.getElementById(`page-${start}`) ? start : 'home');
     await restoreChatMessages();
     await restoreSetupState();
 });
@@ -1441,8 +1478,8 @@ function renderContextList(type) {
                     <strong style="font-size:12px; color:var(--text-dim);">Q&A Pair #${i+1}</strong>
                     <button class="btn btn-sm" style="color:var(--red);background:none;border:none;cursor:pointer;padding:0;" onclick="removeContextItem('${type}',${i})">×</button>
                 </div>
-                <input type="text" placeholder="Question" value="${escapeHtml(item.question || '')}" onchange="updateContextItem('${type}', ${i}, 'question', this.value)" style="width:100%; margin-bottom: 8px; font-size: 13px; font-weight: bold; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; color: white;">
-                <textarea rows="3" placeholder="Answer" onchange="updateContextItem('${type}', ${i}, 'answer', this.value)" style="width:100%; font-size: 13px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; color: white;">${escapeHtml(item.answer || '')}</textarea>
+                <input type="text" placeholder="Question" value="${escapeHtml(item.question || '')}" onchange="updateContextItem('${type}', ${i}, 'question', this.value)" style="width:100%; margin-bottom: 8px; font-weight: 600;">
+                <textarea rows="3" placeholder="Answer" onchange="updateContextItem('${type}', ${i}, 'answer', this.value)" style="width:100%;">${escapeHtml(item.answer || '')}</textarea>
             </div>`;
         } else if (type === 'stories') {
             return `<div class="glass" style="padding:10px; margin-bottom: 8px;">
