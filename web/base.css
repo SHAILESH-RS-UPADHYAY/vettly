@@ -281,3 +281,20 @@ kbd {
     animation-duration: 1ms !important; animation-iteration-count: 1 !important;
     transition-duration: 1ms !important; scroll-behavior: auto !important;
 }
+
+/* ── Toasts (Motion.toast): one corner, newest at the bottom ── */
+#toast-tray { position: fixed; z-index: var(--z-toast); right: max(16px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: grid; gap: 8px; width: min(380px, calc(100% - 32px)); pointer-events: none; }
+.toast {
+    display: flex; align-items: center; gap: 10px; padding: 12px 10px 12px 14px;
+    border-radius: var(--r-ctl); background: var(--pill); color: var(--on-pill);
+    box-shadow: var(--pop-shadow); font: 500 0.9rem/1.4 var(--font-body); pointer-events: auto;
+    animation: toastIn var(--dur-long) var(--ease-out) both;
+}
+.toast span { flex: 1; }
+.toast button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: inherit; opacity: 0.75; }
+.toast button svg { width: 12px; height: 12px; }
+.toast-error { background: var(--bad); color: var(--paper); }
+.toast.out { animation: toastOut 220ms var(--ease-in) both; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+@keyframes toastOut { to { opacity: 0; transform: translateY(8px); } }
+@media (max-width: 47.99rem) { #toast-tray { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px); } }

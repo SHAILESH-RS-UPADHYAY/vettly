@@ -103,5 +103,29 @@ const Motion = (() => {
     // Stagger index for a list that should rise in one by one
     function stagger(nodes) { [...nodes].forEach((el, i) => el.style.setProperty('--i', Math.min(i, 10))); }
 
-    return { calm, glide, page, thumb, thumbs, watchSeg, pill, count, burst, stagger };
+    // Toasts are for failures and effects the page cannot show; errors stay until dismissed
+    function toast(message, tone = 'info') {
+        let tray = document.getElementById('toast-tray');
+        if (!tray) {
+            tray = document.createElement('div');
+            tray.id = 'toast-tray';
+            tray.setAttribute('role', 'status');
+            tray.setAttribute('aria-live', 'polite');
+            document.body.appendChild(tray);
+        }
+        const t = document.createElement('div');
+        t.className = `toast toast-${tone}`;
+        t.innerHTML = `<span></span><button type="button" aria-label="Dismiss"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>`;
+        t.querySelector('span').textContent = message;
+        const close = () => { t.classList.add('out'); setTimeout(() => t.remove(), calm() ? 0 : 220); };
+        t.querySelector('button').addEventListener('click', close);
+        tray.appendChild(t);
+        if (tone !== 'error') {
+            let left = 5000, start = Date.now(), timer = setTimeout(close, left);
+            t.addEventListener('pointerenter', () => { clearTimeout(timer); left -= Date.now() - start; });
+            t.addEventListener('pointerleave', () => { start = Date.now(); timer = setTimeout(close, left); });
+        }
+    }
+
+    return { calm, glide, page, thumb, thumbs, watchSeg, pill, count, burst, stagger, toast };
 })();

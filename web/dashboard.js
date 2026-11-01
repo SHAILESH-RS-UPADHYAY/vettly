@@ -37,7 +37,7 @@ function switchSection(name, { animate = false } = {}) {
         Motion.thumbs(page);
     };
     if (animate && changing) Motion.page(apply); else apply();
-    if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
+    if (location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
     // Load data for specific sections
     if (name === 'aboutme') loadAboutMe();
@@ -375,45 +375,233 @@ async function restoreSetupState() {
 
 // ─── Prep Studio ─────────────────────────────────────────────
 
-let currentPrepCategory = 'GENERAL';
-// Always default to 'desc' (Newest First on top) so newly generated questions appear right below the Synthesize button
-let prepSortOrder = 'desc';
+// The bank (prep.entries) renders through one filter state (prep.f) that also lives in the address:
+// #prep?q=redis&st=review&cat=TECHNICAL,GENERAL&diff=HARD&sort=shuffle&view=cards
 
-function setPrepSortOrder(order) {
-    prepSortOrder = order === 'asc' ? 'asc' : 'desc';
-    syncPrepSortToolbarUI();
-    loadPrepQuestions();
+const PREP_CATS = {
+    GENERAL: ['General', 'gen', 'sparkle'],
+    BEHAVIORAL: ['Behavioral', 'beh', 'brain'],
+    TECHNICAL: ['Technical', 'tech', 'code'],
+    DSA_CODING: ['DSA / Coding', 'dsa', 'path'],
+    PROJECT_DEEP_DIVE: ['Projects', 'proj', 'toolbox'],
+    SYSTEM_DESIGN: ['System design', 'sys', 'layout'],
+    SITUATIONAL: ['Situational', 'sit', 'bulb'],
+    HR_CULTURE_FIT: ['HR / Culture', 'hr', 'chats'],
+    ASSIGNMENT: ['Assignment', 'asg', 'target'],
+    ABOUT_ME: ['About me', 'me', 'user'],
+};
+const PREP_DIFFS = { EASY: ['Easy', 1], MEDIUM: ['Medium', 2], HARD: ['Hard', 3], COMMON: ['Common', 1] };
+const PREP_STATUS = [['all', 'All'], ['review', 'To review'], ['accept', 'Accepted'], ['reject', 'Rejected']];
+const PREP_STATE_LABEL = { accept: 'Accepted', reject: 'Rejected', review: 'To review' };
+
+// [key, label, tone, icon] for any category the backend returns, known or not
+function prepCat(category) {
+    const key = String(category || 'GENERAL').toUpperCase();
+    const known = PREP_CATS[key];
+    return known ? [key, ...known] : [key, key.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), 'gen', 'sparkle'];
+}
+function prepDiff(difficulty) {
+    const key = String(difficulty || 'MEDIUM').toUpperCase();
+    return [key, ...(PREP_DIFFS[key] || [key.charAt(0) + key.slice(1).toLowerCase(), 2])];
+}
+const prepStatus = e => (e.user_rating === 'accept' ? 'accept' : e.user_rating === 'reject' ? 'reject' : 'review');
+
+// The Mentor's @ picker labels questions with this
+function getCategoryLabel(category) { return prepCat(category)[1]; }
+
+let currentPrepCategory = 'GENERAL';
+let recentlyGenerated = false;
+
+const prep = {
+    entries: [],
+    f: { q: '', st: 'all', cats: new Set(), diffs: new Set(), sort: 'new', view: 'answers' },
+    seed: 1,          // shuffle order, stable until Shuffle is pressed again
+    open: new Set(),  // flashcards turned over
+    loaded: false,
+};
+
+// Filters in the address are read once, before the boot switch rewrites the hash
+(function prepReadHash() {
+    if (!location.hash.startsWith('#prep?')) return;
+    const p = new URLSearchParams(location.hash.split('?')[1]);
+    prep.f.q = p.get('q') || '';
+    if (PREP_STATUS.some(s => s[0] === p.get('st'))) prep.f.st = p.get('st');
+    (p.get('cat') || '').split(',').filter(Boolean).forEach(c => prep.f.cats.add(c));
+    (p.get('diff') || '').split(',').filter(Boolean).forEach(d => prep.f.diffs.add(d));
+    if (['new', 'old', 'shuffle'].includes(p.get('sort'))) prep.f.sort = p.get('sort');
+    if (p.get('view') === 'cards') prep.f.view = 'cards';
+})();
+
+function prepWriteHash() {
+    if (document.body.dataset.section !== 'prep') return;
+    const f = prep.f, p = new URLSearchParams();
+    if (f.q) p.set('q', f.q);
+    if (f.st !== 'all') p.set('st', f.st);
+    if (f.cats.size) p.set('cat', [...f.cats].join(','));
+    if (f.diffs.size) p.set('diff', [...f.diffs].join(','));
+    if (f.sort !== 'new') p.set('sort', f.sort);
+    if (f.view !== 'answers') p.set('view', f.view);
+    const next = p.toString() ? `#prep?${p}` : '#prep';
+    if (location.hash !== next) history.replaceState(null, '', next);
 }
 
-function syncPrepSortToolbarUI(totalCount) {
-    const descBtn = document.getElementById('prep-sort-desc');
-    const ascBtn = document.getElementById('prep-sort-asc');
-    const statusText = document.getElementById('prep-sort-status-text');
-    const countBadge = document.getElementById('prep-total-count');
+const prepActiveCount = () => (prep.f.st !== 'all') + prep.f.cats.size + prep.f.diffs.size + (prep.f.q ? 1 : 0);
+const prepHay = e => `${e.question || ''} ${e.answer || ''} ${(e.keywords || []).join(' ')}`.toLowerCase();
 
-    if (descBtn) descBtn.classList.toggle('active', prepSortOrder === 'desc');
-    if (ascBtn) ascBtn.classList.toggle('active', prepSortOrder === 'asc');
-    if (statusText) {
-        statusText.textContent = prepSortOrder === 'desc'
-            ? 'Latest generated question stays at the top (Q# ↓)'
-            : 'Showing oldest to newest order (Q# ↑)';
+// Entries matching every filter except `skip`, so each facet's counts stay honest
+function prepPool(skip) {
+    const f = prep.f, q = f.q.trim().toLowerCase();
+    return prep.entries.map((e, i) => ({ e, i })).filter(({ e }) =>
+        (skip === 'st' || f.st === 'all' || prepStatus(e) === f.st)
+        && (skip === 'cat' || !f.cats.size || f.cats.has(prepCat(e.category)[0]))
+        && (skip === 'diff' || !f.diffs.size || f.diffs.has(prepDiff(e.difficulty)[0]))
+        && (!q || prepHay(e).includes(q)));
+}
+
+function prepVisible() {
+    let rows = prepPool(null);
+    if (prep.f.sort === 'new') rows.reverse();
+    if (prep.f.sort === 'shuffle') {   // seeded, so a re-render keeps the same order
+        const rank = i => { let x = (i + 1) * 2654435761 ^ prep.seed * 1013904223; x = Math.imul(x ^ (x >>> 15), 2246822507); return (x ^ (x >>> 13)) >>> 0; };
+        rows = rows.sort((a, b) => rank(a.i) - rank(b.i));
     }
-    if (typeof totalCount === 'number' && countBadge) {
-        countBadge.textContent = `${totalCount} ${totalCount === 1 ? 'QUESTION' : 'QUESTIONS'}`;
+    return rows;
+}
+
+function prepCardHtml(e, i, k) {
+    const n = i + 1;
+    const [, catLabel, tone, icon] = prepCat(e.category);
+    const [, diffLabel, dots] = prepDiff(e.difficulty);
+    const st = prepStatus(e);
+    const fresh = recentlyGenerated && i === prep.entries.length - 1;
+    const hidden = prep.f.view === 'cards' && !prep.open.has(i) && !fresh;
+    const score = Number(e.score) > 0 ? `<span class="q-score" title="Answer score"><svg aria-hidden="true"><use href="#i-star"/></svg>${e.score}/10</span>` : '';
+    const stateClass = { accept: 'badge-pill-emerald', reject: 'badge-pill-rose', review: 'badge-pill-slate' }[st];
+    return `
+    <article class="prep-card q-card${fresh ? ' newly-generated' : ''}${st === 'accept' ? ' is-accepted' : st === 'reject' ? ' is-rejected' : ''}" id="prep-card-${i}" data-key="${i}" data-tone="${tone}" style="--i:${Math.min(k, 10)}">
+        <header class="q-head">
+            <span class="badge-pill q-no">Q${n}</span>
+            <span class="tone-pill" data-tone="${tone}"><svg aria-hidden="true"><use href="#i-${icon}"/></svg>${escapeHtml(catLabel)}</span>
+            <span class="q-diff" title="Difficulty: ${diffLabel}">${[1, 2, 3].map(d => `<i class="${d <= dots ? 'on' : ''}"></i>`).join('')}<span>${diffLabel}</span></span>
+            ${fresh ? '<span class="badge-pill badge-pill-orange q-fresh">New</span>' : ''}
+            ${score}
+            <span class="badge-pill q-state ${stateClass}">${PREP_STATE_LABEL[st]}</span>
+        </header>
+        <p class="q-text" id="prep-q-${i}">${escapeHtml(e.question)}</p>
+        <div class="q-answer${hidden ? ' is-hidden' : ''}">
+            ${hidden ? `<button type="button" class="q-reveal" data-reveal="${i}"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Reveal the answer</button>` : ''}
+            <div class="q-ans-body">
+                <span class="q-ans-label"><span class="v-classic">Model spoken delivery</span><span class="v-alt">Model answer</span></span>
+                <p class="q-ans" id="prep-a-${i}">${escapeHtml(e.answer || '')}</p>
+            </div>
+        </div>
+        <footer class="q-actions">
+            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
+            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
+            <button type="button" class="q-btn q-refine" data-refine="${i}"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
+            <button type="button" class="q-btn prep-btn prep-btn-mentor" data-mentor="${n}" title="Pin Q${n} to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor</span></button>
+            <button type="button" class="q-btn q-copy" data-copy="${i}" aria-label="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg><span class="q-copy-text">Copy</span></button>
+        </footer>
+    </article>`;
+}
+
+function prepEmptyHtml() {
+    if (!prep.entries.length) {
+        return `<div class="prep-empty"><span class="m-orb">${typeof MENTOR_EMBLEM === 'string' ? MENTOR_EMBLEM : ''}</span>
+            <h3>No questions yet</h3><p>Pick a category in the Synthesis Lab and generate your first question, grounded in your resume, GitHub and job description.</p></div>`;
     }
+    return `<div class="prep-empty"><svg class="i" style="width:34px;height:34px;color:var(--accent-ink)" aria-hidden="true"><use href="#i-search"/></svg>
+        <h3>No questions match</h3><p>Try fewer filters or a different word.</p>
+        <button type="button" class="btn btn-secondary" data-f-clear><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Clear all filters</button></div>`;
+}
+
+// ── The dock: built once per load, then updated in place so counts can tick ──
+function prepBuildDock() {
+    const dock = document.getElementById('prep-dock');
+    if (!dock) return;
+    dock.querySelector('[data-f-status]').innerHTML = PREP_STATUS.map(([v, label]) =>
+        `<button type="button" class="st-tile" data-v="${v}" aria-pressed="false"><b data-count>0</b><span>${label}</span></button>`).join('');
+    const seen = [...new Set(prep.entries.map(e => prepCat(e.category)[0]))];
+    const order = [...Object.keys(PREP_CATS).filter(k => seen.includes(k)), ...seen.filter(k => !PREP_CATS[k])];
+    dock.querySelector('[data-f-cats]').innerHTML = order.map(key => {
+        const [, label, tone, icon] = prepCat(key);
+        return `<button type="button" class="f-pill" data-cat="${key}" data-tone="${tone}" aria-pressed="false"><svg aria-hidden="true"><use href="#i-${icon}"/></svg><span class="lbl">${escapeHtml(label)}</span><span class="n" data-count>0</span></button>`;
+    }).join('');
+    const diffs = [...new Set(prep.entries.map(e => prepDiff(e.difficulty)[0]))].sort((a, b) => (prepDiff(a)[2] - prepDiff(b)[2]) || a.localeCompare(b));
+    dock.querySelector('[data-f-diffs]').innerHTML = diffs.map(key => {
+        const [, label, dots] = prepDiff(key);
+        return `<button type="button" class="f-pill" data-diff="${key}" aria-pressed="false"><span class="diff-dots" aria-hidden="true">${[1, 2, 3].map(d => `<i class="${d <= dots ? 'on' : ''}"></i>`).join('')}</span><span class="lbl">${label}</span><span class="n" data-count>0</span></button>`;
+    }).join('');
+}
+
+function prepUpdateDock(shown) {
+    const dock = document.getElementById('prep-dock');
+    if (!dock) return;
+    const f = prep.f;
+    const stPool = prepPool('st'), catPool = prepPool('cat'), diffPool = prepPool('diff');
+    dock.querySelectorAll('[data-f-status] .st-tile').forEach(b => {
+        const v = b.dataset.v;
+        Motion.count(b.querySelector('[data-count]'), v === 'all' ? stPool.length : stPool.filter(({ e }) => prepStatus(e) === v).length);
+        b.setAttribute('aria-pressed', String(f.st === v));
+    });
+    // each pill shows its count and a bar for its share of what the other filters leave
+    const tally = (rows, keyOf) => rows.reduce((m, { e }) => { const k = keyOf(e); m[k] = (m[k] || 0) + 1; return m; }, {});
+    const facet = (pills, counts, picked, key) => {
+        const max = Math.max(1, ...Object.values(counts));
+        pills.forEach(b => {
+            const n = counts[b.dataset[key]] || 0, on = picked.has(b.dataset[key]);
+            b.style.setProperty('--share', (n / max).toFixed(3));
+            Motion.count(b.querySelector('[data-count]'), n);
+            b.setAttribute('aria-pressed', String(on));
+            b.disabled = !n && !on;
+        });
+    };
+    facet(dock.querySelectorAll('[data-f-cats] .f-pill'), tally(catPool, e => prepCat(e.category)[0]), f.cats, 'cat');
+    facet(dock.querySelectorAll('[data-f-diffs] .f-pill'), tally(diffPool, e => prepDiff(e.difficulty)[0]), f.diffs, 'diff');
+    dock.querySelectorAll('[data-f-sort] > button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === f.sort)));
+    dock.querySelectorAll('[data-f-view] > button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === f.view)));
+    const active = prepActiveCount();
+    dock.querySelector('[data-f-clear]').hidden = !active;
+    // the stream bar: meter, filters badge, ribbon
+    const page = document.getElementById('page-prep');
+    Motion.count(page.querySelector('[data-shown]'), shown);
+    page.querySelector('[data-of]').textContent = `of ${prep.entries.length} ${prep.entries.length === 1 ? 'question' : 'questions'}`;
+    page.querySelector('[data-fill]').style.setProperty('--fill', prep.entries.length ? (shown / prep.entries.length).toFixed(3) : 0);
+    const badge = page.querySelector('[data-f-badge]');
+    badge.hidden = !active;
+    badge.textContent = active;
+    const ribbon = page.querySelector('[data-f-ribbon]');
+    const tags = [];
+    if (f.q) tags.push(['q', '', `“${escapeHtml(f.q)}”`]);
+    if (f.st !== 'all') tags.push(['st', f.st, PREP_STATUS.find(s => s[0] === f.st)[1]]);
+    f.cats.forEach(c => tags.push(['cat', c, escapeHtml(prepCat(c)[1]), prepCat(c)[2]]));
+    f.diffs.forEach(d => tags.push(['diff', d, prepDiff(d)[1]]));
+    ribbon.hidden = !tags.length;
+    ribbon.innerHTML = tags.map(([kind, v, label, tone]) =>
+        `<span class="f-tag"${tone ? ` data-tone="${tone}"` : ''}>${label}<button type="button" data-f-remove="${kind}" data-v="${escapeHtml(v)}" aria-label="Remove filter ${label}"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button></span>`).join('')
+        + (tags.length > 1 ? '<button type="button" class="dock-clear" data-f-clear>Clear all</button>' : '');
+    dock.querySelectorAll('.seg').forEach(Motion.watchSeg);
+}
+
+function prepRender({ animate = true } = {}) {
+    const list = document.getElementById('prep-list');
+    if (!list) return;
+    const rows = prepVisible();
+    const html = rows.length ? rows.map(({ e, i }, k) => prepCardHtml(e, i, k)).join('') : prepEmptyHtml();
+    if (animate) Motion.glide(list, () => { list.innerHTML = html; }); else list.innerHTML = html;
+    mentorRepin();   // keep a Mentor pin on the fresh card
+    prepUpdateDock(rows.length);
+    prepWriteHash();
 }
 
 function selectCategory(category, btnEl) {
     currentPrepCategory = category;
-    
     document.querySelectorAll('.category-btn').forEach(btn => {
         const on = btn === btnEl;
         btn.classList.toggle('active', on);
         btn.setAttribute('aria-pressed', on);
     });
 }
-
-let recentlyGenerated = false;
 
 async function generateSinglePrep(categoryOverride) {
     const category = categoryOverride || currentPrepCategory;
@@ -422,16 +610,13 @@ async function generateSinglePrep(categoryOverride) {
     const generateBtn = document.getElementById('prep-generate-btn');
     const langToggle = document.getElementById('prep-lang-toggle');
     const language = langToggle && langToggle.checked ? 'HINGLISH' : 'ENGLISH';
-
     const progressEl = document.getElementById('prep-progress');
     const textEl = document.getElementById('prep-progress-text');
-    
-    // Disable inputs during generation
+
     document.querySelectorAll('.prep-category-buttons button').forEach(b => b.disabled = true);
     if (generateBtn) generateBtn.disabled = true;
-    
     progressEl.classList.remove('hidden');
-    textEl.textContent = `Synthesizing ${category} context...`;
+    textEl.textContent = `Synthesizing a ${prepCat(category)[1]} question…`;
 
     try {
         const res = await fetch(`${API_BASE}/prepare/single`, {
@@ -440,20 +625,15 @@ async function generateSinglePrep(categoryOverride) {
             body: JSON.stringify({ category, job_role: role, company: company, language: language }),
         });
         let data;
-        try {
-            data = await res.json();
-        } catch (e) {
+        try { data = await res.json(); } catch (e) {
             alert('Server error: The backend returned an invalid response. Please ensure Groq API key is valid and context is set.');
             return;
         }
-
-        if (!res.ok) {
-            alert(data.error || 'Failed to generate question');
-            return;
-        }
-
-        // Always keep Newest First active on generation so the new question streams right at the top below the button
-        prepSortOrder = 'desc';
+        if (!res.ok) { alert(data.error || 'Failed to generate question'); return; }
+        // the new question streams in at the top, so nothing may hide it
+        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set(), sort: 'new' };
+        const search = document.getElementById('prep-search');
+        if (search) search.value = '';
         recentlyGenerated = true;
         await loadPrepQuestions();
     } catch (e) {
@@ -465,157 +645,73 @@ async function generateSinglePrep(categoryOverride) {
     }
 }
 
-function getCategoryPillClass(category) {
-    const cat = (category || 'GENERAL').toUpperCase();
-    if (cat.includes('TECH')) return 'prep-pill-technical';
-    if (cat.includes('BEHAVIOR')) return 'prep-pill-behavioral';
-    if (cat.includes('SYSTEM')) return 'prep-pill-system-design';
-    if (cat.includes('PROJECT')) return 'prep-pill-project-deep-dive';
-    if (cat.includes('DSA') || cat.includes('COD')) return 'prep-pill-dsa-coding';
-    if (cat.includes('SITUAT')) return 'prep-pill-situational';
-    if (cat.includes('HR') || cat.includes('CULT')) return 'prep-pill-hr-culture-fit';
-    if (cat.includes('ASSIGN')) return 'prep-pill-assignment';
-    return 'prep-pill-general';
-}
-
-function getCategoryLabel(category) {
-    const cat = (category || 'GENERAL').toUpperCase();
-    if (cat === 'PROJECT_DEEP_DIVE') return '🚀 Projects';
-    if (cat === 'HR_CULTURE_FIT') return '🤝 HR / Culture';
-    if (cat === 'DSA_CODING') return '⌨️ DSA / Coding';
-    if (cat === 'SYSTEM_DESIGN') return '📐 System Design';
-    if (cat === 'TECHNICAL') return '💻 Technical';
-    if (cat === 'BEHAVIORAL') return '🧠 Behavioral';
-    if (cat === 'SITUATIONAL') return '🤔 Situational';
-    if (cat === 'ASSIGNMENT') return '🎯 Assignment';
-    return '🌐 General';
-}
-
 async function loadPrepQuestions() {
     try {
         const res = await fetch(`${API_BASE}/prepare/questions`);
         const data = await res.json();
         const entries = data.entries || [];
+        const grew = entries.length !== prep.entries.length || !prep.loaded;
+        prep.entries = entries;
+        prep.loaded = true;
         mentor.prep = entries;  // keeps the Mentor's @ picker in sync with Prep Studio
-        const listEl = document.getElementById('prep-list');
-
-        syncPrepSortToolbarUI(entries.length);
-
-        if (entries.length === 0) {
-            listEl.innerHTML = '<div class="prep-empty"><div class="empty-icon">🎯</div><h3>No Questions Yet</h3><p>Generate questions based on your resume, GitHub, and job description.</p></div>';
-            return;
-        }
-
-        const lastIndex = entries.length - 1;
-        const indexedEntries = entries.map((e, origIdx) => ({ e, origIdx }));
-        if (prepSortOrder === 'desc') {
-            indexedEntries.reverse();
-        }
-
-        listEl.innerHTML = indexedEntries.map(({ e, origIdx }) => {
-            const pillClass = getCategoryPillClass(e.category);
-            const pillLabel = getCategoryLabel(e.category);
-            const statusClass = e.user_rating === 'accept' ? 'status-accepted' : e.user_rating === 'reject' ? 'status-rejected' : '';
-            const statusLabel = e.user_rating === 'accept' ? '✅ Accepted' : e.user_rating === 'reject' ? '❌ Rejected' : `⭐ Score: ${e.score || '—'}/10`;
-            const isJustGenerated = recentlyGenerated && origIdx === lastIndex;
-
-            return `
-            <div class="prep-card glass ${isJustGenerated ? 'newly-generated' : ''}" id="prep-card-${origIdx}">
-                <div class="prep-card-header">
-                    <div class="prep-card-meta">
-                        <span class="prep-card-q-badge">Q${origIdx + 1}</span>
-                        <span class="prep-pill ${pillClass}">${pillLabel}</span>
-                        <span class="prep-card-difficulty">${(e.difficulty || 'MEDIUM').toUpperCase()}</span>
-                        ${isJustGenerated ? '<span class="prep-new-stream-badge">NEWLY SYNTHESIZED</span>' : ''}
-                    </div>
-                    <div class="prep-card-score-badge ${statusClass}">
-                        ${statusLabel}
-                    </div>
-                </div>
-
-                <div class="prep-card-question-box">
-                    <div class="prep-card-question" id="prep-q-${origIdx}">${escapeHtml(e.question)}</div>
-                </div>
-
-                <div class="prep-card-answer-box">
-                    <div class="prep-card-answer-label">
-                        <span class="prep-answer-icon">💬</span>
-                        <span>Model Spoken Delivery</span>
-                    </div>
-                    <div class="prep-card-answer" id="prep-a-${origIdx}">${escapeHtml(e.answer)}</div>
-                </div>
-
-                <div class="prep-card-actions">
-                    <div class="prep-card-btn-group">
-                        <button class="prep-btn prep-btn-accept ${e.user_rating === 'accept' ? 'active' : ''}" onclick="event.stopPropagation();ratePrepAnswer(${origIdx},'accept')">
-                            <span>✅</span><span>Accept</span>
-                        </button>
-                        <button class="prep-btn prep-btn-reject ${e.user_rating === 'reject' ? 'active' : ''}" onclick="event.stopPropagation();ratePrepAnswer(${origIdx},'reject')">
-                            <span>❌</span><span>Reject</span>
-                        </button>
-                        <button class="prep-btn prep-btn-refine" onclick="event.stopPropagation();refinePrepAnswer(${origIdx})">
-                            <span>✏️</span><span>Refine</span>
-                        </button>
-                        <button class="prep-btn prep-btn-mentor" onclick="event.stopPropagation();mentorPinPrep(${origIdx + 1})" title="Pin Q${origIdx + 1} to the Mentor and ask about it">
-                            <svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg><span>Ask Mentor</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            `;
-        }).join('');
-        mentorRepin();   // keep a Mentor pin on the fresh card
+        if (grew) prepBuildDock();
+        prepRender();
+        const search = document.getElementById('prep-search');
+        if (search && search.value !== prep.f.q) search.value = prep.f.q;
 
         if (recentlyGenerated && entries.length > 0) {
             recentlyGenerated = false;
+            const lastIndex = entries.length - 1;
             const cardEl = document.getElementById(`prep-card-${lastIndex}`);
             const qEl = document.getElementById(`prep-q-${lastIndex}`);
             const aEl = document.getElementById(`prep-a-${lastIndex}`);
-            
-            // Expand the newly generated card at the very top right under the Synthesize button without scrolling the button out of view
-            if (cardEl) {
-                cardEl.classList.add('expanded');
-                requestAnimationFrame(() => {
-                    cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                });
-            }
-            
-            // Apply typewriter effect to both Q and A
+            if (cardEl) requestAnimationFrame(() => cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
             if (qEl) typewriteText(qEl, entries[lastIndex].question);
             if (aEl) typewriteText(aEl, entries[lastIndex].answer);
+            Motion.burst(cardEl?.querySelector('.q-fresh'), 14);
         }
-    } catch (e) { /* silent */ }
+    } catch (e) { /* offline: the skeleton stays until the next load */ }
 }
 
 function typewriteText(element, text) {
-    element.innerHTML = ''; // Clear text
+    if (Motion.calm()) { element.textContent = text; return; }
+    element.innerHTML = '';
     let i = 0;
-    const speed = 10; // Very fast typewriter effect (10ms per char)
-    
-    function typeChar() {
+    const speed = 10; // 10ms per character
+    (function typeChar() {
         if (i < text.length) {
-            // Append char
-            const char = text.charAt(i);
             element.innerHTML = escapeHtml(text.substring(0, i + 1)) + '<span class="typewriter-cursor"></span>';
             i++;
             setTimeout(typeChar, speed);
         } else {
-            // Done typing, remove cursor
             element.innerHTML = escapeHtml(text);
         }
-    }
-    typeChar();
+    })();
 }
 
+// Optimistic: the card changes at once, the request runs behind it, a failure rolls it back
 async function ratePrepAnswer(index, rating) {
+    const e = prep.entries[index];
+    if (!e || e.user_rating === rating) return;
+    const before = e.user_rating;
+    const card = document.getElementById(`prep-card-${index}`);
+    if (rating === 'accept') Motion.burst(card?.querySelector('.q-accept'), 16, ['var(--ok)', 'var(--accent-2)', 'var(--c-sys)', 'var(--c-beh)']);
+    else if (card && !Motion.calm()) card.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-7px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(0)' }], { duration: 380, easing: 'ease-out' });
+    e.user_rating = rating;
+    const leaves = prep.f.st !== 'all' && prep.f.st !== rating;
+    setTimeout(() => prepRender(), leaves ? 420 : 0);   // let the change show before it leaves the filtered list
     try {
-        await fetch(`${API_BASE}/prepare/feedback`, {
+        const res = await fetch(`${API_BASE}/prepare/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ index, rating }),
         });
-        loadPrepQuestions();
-    } catch (e) { console.error(e); }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+        e.user_rating = before;
+        prepRender();
+        Motion.toast('Could not save that rating. Check the connection and try again.', 'error');
+    }
 }
 
 async function refinePrepAnswer(index) {
@@ -635,9 +731,153 @@ async function refinePrepAnswer(index) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ index, instruction }),
         });
-        loadPrepQuestions();
+        await loadPrepQuestions();
+        const a = document.getElementById(`prep-a-${index}`);
+        if (a && prep.entries[index]) typewriteText(a, prep.entries[index].answer);
     } catch (e) { alert('Refine failed: ' + e.message); }
 }
+
+async function prepCopy(index, btn) {
+    const text = prep.entries[index]?.answer || '';
+    try {
+        await navigator.clipboard.writeText(text);
+        btn.dataset.state = 'copied';
+        btn.querySelector('use').setAttribute('href', '#i-check-bold');
+        btn.querySelector('.q-copy-text').textContent = 'Copied';
+        setTimeout(() => {
+            delete btn.dataset.state;
+            btn.querySelector('use')?.setAttribute('href', '#i-copy');
+            const t = btn.querySelector('.q-copy-text');
+            if (t) t.textContent = 'Copy';
+        }, 2500);
+    } catch (e) {
+        Motion.toast('Copying is blocked here. Select the answer text to copy it.', 'error');
+    }
+}
+
+// ── Wiring: one listener per region ──
+(function prepWire() {
+    const page = document.getElementById('page-prep');
+    if (!page) return;
+    const list = document.getElementById('prep-list');
+    const dock = document.getElementById('prep-dock');
+    const slot = document.getElementById('prep-dock-slot');
+    const sheet = document.getElementById('prep-filter-sheet');
+    const search = document.getElementById('prep-search');
+
+    function clearFilters() {
+        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set() };
+        search.value = '';
+        prepRender();
+    }
+
+    list.addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        if (b.dataset.rate) ratePrepAnswer(Number(b.dataset.i), b.dataset.rate);
+        else if (b.dataset.refine) refinePrepAnswer(Number(b.dataset.refine));
+        else if (b.dataset.mentor) mentorPinPrep(Number(b.dataset.mentor));
+        else if (b.dataset.copy) prepCopy(Number(b.dataset.copy), b);
+        else if (b.dataset.reveal) {
+            const i = Number(b.dataset.reveal);
+            prep.open.add(i);
+            const answer = b.closest('.q-answer');
+            answer.classList.remove('is-hidden');
+            b.remove();
+            if (!Motion.calm()) answer.querySelector('.q-ans-body').animate([{ opacity: 0, transform: 'translateY(8px)', filter: 'blur(4px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }], { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+        }
+        else if ('fClear' in b.dataset) clearFilters();
+    });
+
+    dock.addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const f = prep.f;
+        if (b.classList.contains('st-tile')) { f.st = f.st === b.dataset.v && b.dataset.v !== 'all' ? 'all' : b.dataset.v; prepRender(); }
+        else if (b.dataset.cat) {
+            const on = !f.cats.has(b.dataset.cat);
+            if (on) f.cats.add(b.dataset.cat); else f.cats.delete(b.dataset.cat);
+            if (on && !Motion.calm()) {
+                b.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+                Motion.burst(b, 10, [getComputedStyle(b).getPropertyValue('--cfg').trim(), 'var(--accent-2)']);   // sparks live on <body>, so pass the resolved colour
+            }
+            prepRender();
+        }
+        else if (b.dataset.diff) { if (f.diffs.has(b.dataset.diff)) f.diffs.delete(b.dataset.diff); else f.diffs.add(b.dataset.diff); prepRender(); }
+        else if (b.parentElement.matches('[data-f-sort]')) {
+            if (b.dataset.v === 'shuffle') prep.seed = (prep.seed * 48271 + 7) % 2147483647 || 1;
+            f.sort = b.dataset.v;
+            prepRender();
+        }
+        else if (b.parentElement.matches('[data-f-view]')) { f.view = b.dataset.v; prep.open.clear(); prepRender({ animate: false }); }
+        else if ('fClear' in b.dataset) clearFilters();
+    });
+
+    page.querySelector('[data-f-ribbon]').addEventListener('click', e => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        const kind = b.dataset.fRemove;
+        if (kind === 'q') { prep.f.q = ''; search.value = ''; }
+        else if (kind === 'st') prep.f.st = 'all';
+        else if (kind === 'cat') prep.f.cats.delete(b.dataset.v);
+        else if (kind === 'diff') prep.f.diffs.delete(b.dataset.v);
+        else if ('fClear' in b.dataset) return clearFilters();
+        prepRender();
+    });
+
+    let timer;
+    search.addEventListener('input', () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => { prep.f.q = search.value.trim(); prepRender(); }, 220);
+    });
+
+    // "/" jumps to search while Prep Studio is open
+    document.addEventListener('keydown', e => {
+        if (e.key !== '/' || document.body.dataset.section !== 'prep' || e.target.closest('input, textarea, [contenteditable]')) return;
+        e.preventDefault();
+        search.focus();
+    });
+
+    // phones and tablets: the dock moves into the Filters sheet while it is open
+    const sheetSlot = sheet.querySelector('[data-sheet-slot]');
+    function openSheet() { sheetSlot.appendChild(dock); sheet.showModal(); dock.querySelectorAll('.seg').forEach(Motion.thumb); }
+    function closeSheet() { if (sheet.open) sheet.close(); }
+    sheet.addEventListener('close', () => { slot.appendChild(dock); });
+    page.querySelector('[data-f-open]').addEventListener('click', openSheet);
+    sheet.querySelector('[data-f-done]').addEventListener('click', closeSheet);
+    sheet.addEventListener('click', e => {
+        const r = sheet.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) closeSheet();
+    });
+    matchMedia('(min-width: 80rem)').addEventListener('change', ev => { if (ev.matches) closeSheet(); });
+    const sheetObserver = new MutationObserver(() => {
+        const n = document.querySelector('[data-shown]')?.dataset.count || 0;
+        sheet.querySelector('[data-f-done]').textContent = `Show ${n} ${Number(n) === 1 ? 'question' : 'questions'}`;
+    });
+    sheetObserver.observe(page.querySelector('[data-shown]'), { attributes: true, attributeFilter: ['data-count'] });
+
+    // the search hint types out real keywords from the bank
+    let hintIdx = 0, hintTimer = 0;
+    function cycleHint() {
+        clearTimeout(hintTimer);
+        if (document.body.dataset.section !== 'prep' || search.value || document.activeElement === search || Motion.calm() || !prep.entries.length) {
+            search.placeholder = 'Search questions and answers';
+            hintTimer = setTimeout(cycleHint, 4000);
+            return;
+        }
+        const words = [...new Set(prep.entries.flatMap(e => e.keywords || []))].filter(w => w.length > 2 && w.length < 22);
+        if (!words.length) return;
+        const word = words[hintIdx++ % words.length];
+        const full = `Try “${word}”`;
+        let n = 0;
+        (function type() {
+            search.placeholder = full.slice(0, ++n);
+            if (n < full.length) hintTimer = setTimeout(type, 45);
+            else hintTimer = setTimeout(cycleHint, 2600);
+        })();
+    }
+    hintTimer = setTimeout(cycleHint, 2500);
+})();
 
 // ─── Clean Text Formatting for History & Vision ──────────────
 

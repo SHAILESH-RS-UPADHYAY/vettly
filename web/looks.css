@@ -280,6 +280,11 @@
     font: 700 8px/1 var(--font-mono); letter-spacing: 1.5px; color: var(--accent);
 }
 :root[data-sidebar="poster"] .logo-icon { color: var(--accent); animation: posterPulse 3s var(--ease-in-out) infinite; }
+/* the icon rail is too narrow for the badge and tagline: just the mark, centred */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+    :root[data-sidebar="poster"] :is(.logo-badge, .logo-tagline) { display: none; }
+    :root[data-sidebar="poster"] .sidebar-logo { justify-content: center; padding: 18px 0 16px; margin: -16px -8px 6px; }
+}
 @keyframes posterPulse { 50% { transform: scale(1.15); } }
 :root[data-sidebar="poster"] .sidebar-footer { border-top: 2px dashed var(--rule-2); margin: auto -14px -14px; padding: 14px 18px 16px; }
 :root[data-sidebar="poster"] .theme-toggle-btn { font: 700 11px/1 var(--font-mono); min-height: 38px; }
