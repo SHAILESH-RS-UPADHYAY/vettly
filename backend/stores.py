@@ -3,43 +3,29 @@ History Store — Persistent interview session storage.
 Saves interview rounds to a JSON file for the dashboard history section.
 """
 
-import json
 import logging
 import time
-from pathlib import Path
 from typing import Optional
 
-import config
+import docstore
+import users
 
 logger = logging.getLogger("vettly.history")
 
 
 class HistoryStore:
-    """Simple JSON file-based interview history persistence."""
+    """Interview rounds, one document per user."""
 
-    def __init__(self):
-        self._file = config.CONTEXT_STORE_DIR / "history.json"
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._sessions: list[dict] = []
         self.load()
 
     def load(self) -> None:
-        """Load history from disk."""
-        if self._file.exists():
-            try:
-                with open(self._file, "r", encoding="utf-8") as f:
-                    self._sessions = json.load(f)
-                logger.info(f"📚 History loaded: {len(self._sessions)} sessions")
-            except Exception as e:
-                logger.warning(f"Failed to load history: {e}")
-                self._sessions = []
+        self._sessions = docstore.load(self._user, "history", [])
 
     def save(self) -> None:
-        """Persist history to disk."""
-        try:
-            with open(self._file, "w", encoding="utf-8") as f:
-                json.dump(self._sessions, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Failed to save history: {e}")
+        docstore.save(self._user, "history", self._sessions)
 
     def add_session(self, session: dict) -> dict:
         """Add a new interview session (delegates to upsert_session for deduplication)."""
@@ -92,48 +78,9 @@ class HistoryStore:
         logger.info(f"📦 Session {entry['id']} created: {entry['round_count']} entries")
         return entry
 
-    def sync_with_cloud(self) -> int:
-        """Sync missing sessions from cloud backend (Render) into local history.json."""
-        try:
-            import urllib.request
-            req = urllib.request.Request(
-                "https://acemate-backend.onrender.com/api/history",
-                headers={"User-Agent": "Acemate-Local-Sync/1.0"}
-            )
-            with urllib.request.urlopen(req, timeout=3.5) as resp:
-                if resp.status == 200:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    cloud_sessions = data.get("sessions", [])
-                    local_ids = {str(s.get("id")) for s in self._sessions}
-                    added = 0
-                    for cs in cloud_sessions:
-                        cid = str(cs.get("id"))
-                        if cid not in local_ids and cs.get("entries"):
-                            self._sessions.append(cs)
-                            local_ids.add(cid)
-                            added += 1
-                        elif cid in local_ids:
-                            for idx, ls in enumerate(self._sessions):
-                                if str(ls.get("id")) == cid:
-                                    if len(cs.get("entries", [])) > len(ls.get("entries", [])):
-                                        self._sessions[idx] = cs
-                    if added > 0:
-                        self.save()
-                        logger.info(f"🔄 Auto-synced {added} new sessions from cloud backend into local history.json")
-                    return added
-        except Exception:
-            pass
-        return 0
-
     def get_all(self) -> list[dict]:
-        """Get all sessions, reloaded from disk for guaranteed freshness."""
+        """Get all sessions, reloaded for freshness."""
         self.load()
-        # Periodic background check with cloud (every 30s max)
-        now = time.time()
-        if now - getattr(self, "_last_cloud_sync", 0) > 30:
-            self._last_cloud_sync = now
-            import threading
-            threading.Thread(target=self.sync_with_cloud, daemon=True).start()
         return self._sessions
 
     def get_session(self, session_id) -> Optional[dict]:
@@ -171,29 +118,16 @@ Stores "tell me about yourself" answer and custom facts for the AI.
 class AboutMeStore:
     """Persists personal intro data for interview context."""
 
-    def __init__(self):
-        self._file = config.CONTEXT_STORE_DIR / "about_me.json"
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._data: dict = {}
         self.load()
 
     def load(self) -> None:
-        """Load about-me data from disk."""
-        if self._file.exists():
-            try:
-                with open(self._file, "r", encoding="utf-8") as f:
-                    self._data = json.load(f)
-                logger.info("👤 About-me data loaded")
-            except Exception as e:
-                logger.warning(f"Failed to load about-me: {e}")
-                self._data = {}
+        self._data = docstore.load(self._user, "about_me", {})
 
     def save(self) -> None:
-        """Persist about-me data to disk."""
-        try:
-            with open(self._file, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Failed to save about me data: {e}")
+        docstore.save(self._user, "about_me", self._data)
 
     def set_data(self, data: dict) -> None:
         """Set about-me data. Expected keys: intro, facts, tell_me_about_yourself"""
@@ -236,26 +170,16 @@ class AboutMeStore:
 class ChatHistoryStore:
     """Persists chat history between the user and the AI across sessions and devices."""
 
-    def __init__(self):
-        self._file = config.CONTEXT_STORE_DIR / "chat_history.json"
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._history: list[dict] = []
         self.load()
 
     def load(self) -> None:
-        if self._file.exists():
-            try:
-                with open(self._file, "r", encoding="utf-8") as f:
-                    self._history = json.load(f)
-            except Exception as e:
-                logger.warning(f"Failed to load chat history: {e}")
-                self._history = []
+        self._history = docstore.load(self._user, "chat_history", [])
 
     def save(self) -> None:
-        try:
-            with open(self._file, "w", encoding="utf-8") as f:
-                json.dump(self._history, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Failed to save chat history: {e}")
+        docstore.save(self._user, "chat_history", self._history)
 
     def get_history(self) -> list[dict]:
         return self._history
@@ -270,11 +194,7 @@ class ChatHistoryStore:
 
     def clear(self) -> None:
         self._history = []
-        if self._file.exists():
-            try:
-                self._file.unlink()
-            except Exception as e:
-                logger.error(f"Failed to delete chat history file: {e}")
+        self.save()
         logger.info("🗑️ Chat history cleared")
 
 
@@ -284,32 +204,19 @@ class RecycleBinStore:
     Items remain safely stored here and are never automatically wiped.
     """
 
-    def __init__(self):
-        self._file = config.CONTEXT_STORE_DIR / "recycle_bin.json"
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._data = {"sessions": [], "chats": []}
         self.load()
 
     def load(self) -> None:
-        if self._file.exists():
-            try:
-                with open(self._file, "r", encoding="utf-8") as f:
-                    self._data = json.load(f)
-                    if not isinstance(self._data, dict):
-                        self._data = {"sessions": [], "chats": []}
-                    if "sessions" not in self._data: self._data["sessions"] = []
-                    if "chats" not in self._data: self._data["chats"] = []
-            except Exception as e:
-                logger.warning(f"Failed to load recycle bin: {e}")
-                self._data = {"sessions": [], "chats": []}
-        else:
-            self._data = {"sessions": [], "chats": []}
+        data = docstore.load(self._user, "recycle_bin", {})
+        self._data = data if isinstance(data, dict) else {}
+        self._data.setdefault("sessions", [])
+        self._data.setdefault("chats", [])
 
     def save(self) -> None:
-        try:
-            with open(self._file, "w", encoding="utf-8") as f:
-                json.dump(self._data, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Failed to save recycle bin: {e}")
+        docstore.save(self._user, "recycle_bin", self._data)
 
     def get_all(self) -> dict:
         return self._data
@@ -379,6 +286,4 @@ class RecycleBinStore:
         self._data = {"sessions": [], "chats": []}
         self.save()
 
-
-recycle_bin_store = RecycleBinStore()
 

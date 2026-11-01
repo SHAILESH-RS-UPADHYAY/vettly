@@ -11,6 +11,10 @@
         /* First paint: theme and appearance land on <html> before anything renders (appearance.js owns the rest) */
         (function () {
             var root = document.documentElement, ap = {}, saved = null;
+            if (location.protocol !== 'file:' && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) {
+                root.classList.add('auth-checking');
+                setTimeout(function () { root.classList.remove('auth-checking'); }, 6000);
+            }
             try { ap = JSON.parse(localStorage.getItem('vettly_appearance_v2') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
             var dark = saved === 'dark' || (saved !== 'parchment' && !!window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) root.classList.add('theme-dark');
@@ -27,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.4">
+    <link rel="stylesheet" href="./styles.css?v=8.5">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
@@ -109,6 +113,25 @@
     </div>
 
     <!-- Navigation: a sidebar on wide screens, an icon rail on tablets, a tab bar with a More sheet on phones -->
+    <!-- Sign-in for the hosted app (auth.js mounts Clerk here); never shown when Vettly runs on your machine -->
+    <div class="auth-gate" id="auth-gate" hidden>
+        <div class="auth-inner">
+            <div class="auth-copy">
+                <p class="auth-brand"><span class="logo-icon" aria-hidden="true">❖</span>Vettly</p>
+                <h1 class="auth-title">Walk into every interview <em>ready</em></h1>
+                <p class="auth-lede">Vettly turns your resume and the role you want into practice questions, model answers and a mentor who explains each one. For every field, from nursing to finance to code.</p>
+                <ul class="auth-points">
+                    <li><svg aria-hidden="true"><use href="#i-target"/></svg>Questions written for your role</li>
+                    <li><svg aria-hidden="true"><use href="#i-chats"/></svg>Answers that sound like you</li>
+                    <li><svg aria-hidden="true"><use href="#i-bento"/></svg>Five new ideas every morning</li>
+                </ul>
+            </div>
+            <div class="auth-panel">
+                <div class="auth-card" id="auth-card" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+
     <nav id="sidebar" aria-label="Main">
         <div class="sidebar-logo">
             <span class="logo-icon" aria-hidden="true">❖</span>
@@ -144,6 +167,7 @@
             </button>
         </div>
         <div class="sidebar-footer">
+            <div class="user-slot" data-user-slot="full" hidden><div class="user-btn"></div></div>
             <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" title="Switch between Parchment and Spatial Dark">
                 <svg class="theme-ico theme-ico-light" aria-hidden="true"><use href="#i-scroll"/></svg>
                 <svg class="theme-ico theme-ico-dark" aria-hidden="true"><use href="#i-planet"/></svg>
@@ -159,6 +183,7 @@
     <dialog class="sheet" id="more-sheet" aria-labelledby="more-title">
         <span class="sheet-grab" aria-hidden="true"></span>
         <h2 id="more-title">More</h2>
+        <div class="user-slot user-slot-sheet" data-user-slot="full" hidden><div class="user-btn"></div></div>
         <div class="more-list">
             <button type="button" class="more-item" data-section="setup">
                 <span class="more-ico" data-tone="proj"><svg aria-hidden="true"><use href="#i-toolbox"/></svg></span>
@@ -1219,9 +1244,10 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
+    <script src="./auth.js?v=8.5"></script>
     <script src="./motion.js?v=8.1"></script>
     <script src="./appearance.js?v=8.1"></script>
-    <script src="./dashboard.js?v=8.4"></script>
+    <script src="./dashboard.js?v=8.5"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.2"></script>

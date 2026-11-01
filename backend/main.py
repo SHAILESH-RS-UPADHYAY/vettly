@@ -23,6 +23,9 @@ from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import config
+import docstore
+import users
+from users import PerUser
 from stt.deepgram_client import DeepgramSTTClient
 from ai.context_engine import ContextEngine
 from ai.filler_generator import FillerGenerator
@@ -45,7 +48,8 @@ logger = logging.getLogger("vettly")
 
 
 # ─── Global State ─────────────────────────────────────────────
-context_engine = ContextEngine()
+# Stores that hold someone's data are PerUser: each request sees only the signed-in user's own copy
+context_engine = PerUser(ContextEngine)
 filler_gen = FillerGenerator()
 answer_gen = AnswerGenerator()
 humanizer = Humanizer()
@@ -53,7 +57,7 @@ resume_parser = ResumeParser()
 github_scraper = GitHubScraper()
 qa_generator = QAGenerator()
 answer_validator = AnswerValidator()
-qa_cache = QACache()
+qa_cache = PerUser(QACache)
 question_matcher = QuestionMatcher(qa_cache)
 
 
@@ -132,10 +136,11 @@ def auto_detect_context_mode(question: str, current_mode: str, is_locked: bool =
     return current_mode
 
 # New stores for dashboard features
-from stores import HistoryStore, AboutMeStore, ChatHistoryStore, recycle_bin_store
-history_store = HistoryStore()
-about_me_store = AboutMeStore()
-chat_store = ChatHistoryStore()
+from stores import HistoryStore, AboutMeStore, ChatHistoryStore, RecycleBinStore
+history_store = PerUser(HistoryStore)
+about_me_store = PerUser(AboutMeStore)
+chat_store = PerUser(ChatHistoryStore)
+recycle_bin_store = PerUser(RecycleBinStore)
 
 # Track active interview sessions
 active_sessions: dict[str, dict] = {}
@@ -154,13 +159,12 @@ async def lifespan(app: FastAPI):
     else:
         logger.info("✅ All API keys validated")
 
-    # Load any previously saved context
-    context_engine.load_context()
-    qa_cache.load()
     provider_name = config.get_active_llm_provider().upper()
     studio_url = f"http://{config.HOST}:{config.PORT}"
-    logger.info("🧠 Context engine initialized")
-    logger.info(f"📦 Q&A cache: {qa_cache.count} prepared answers")
+    if users.auth_enabled():
+        logger.info(f"🔐 Sign-in on (Clerk), data in {'Postgres' if config.DATABASE_URL else 'local files'}")
+    else:
+        logger.info(f"📦 Q&A cache: {qa_cache.count} prepared answers (single-user local mode)")
     logger.info(f"🚀 Vettly Studio ready at: {studio_url} (Engine: {provider_name})")
     print(
         f"\n  ┌──────────────────────────────────────────────────────────────┐\n"
@@ -196,6 +200,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Who is asking ───────────────────────────────────────────
+@app.middleware("http")
+async def who_is_asking(request: Request, call_next):
+    """Each request starts with nobody signed in; anything that reads or writes data needs a verified session."""
+    users.begin_request()
+    if request.method != "OPTIONS" and users.is_protected(request.url.path):
+        try:
+            users.authenticate(request.headers.get("authorization", ""))
+        except users.AuthError as e:
+            return JSONResponse(status_code=e.status, content={"detail": str(e)})
+    return await call_next(request)
+
+
 # ─── Static Files (Web Dashboard) ────────────────────────────
 web_dir = Path(__file__).resolve().parent.parent / "web"
 
@@ -209,8 +226,30 @@ async def root():
         "name": "Vettly",
         "version": "1.0.0",
         "provider": config.get_active_llm_provider(),
-        "context_loaded": context_engine.has_context(),
+        "context_loaded": users.has_user() and context_engine.has_context(),
     }
+
+
+@app.get("/api/config")
+async def client_config():
+    """What the web app needs before anyone signs in: whether sign-in is on, and Clerk's public key."""
+    if not users.auth_enabled():
+        return {"auth": "none"}
+    return {
+        "auth": "clerk",
+        "clerk_publishable_key": config.CLERK_PUBLISHABLE_KEY,
+        "clerk_frontend_api": users.frontend_api(),
+    }
+
+
+@app.delete("/api/me")
+async def delete_my_data():
+    """Delete everything this user saved in Vettly (the sign-in account itself lives in Clerk)."""
+    try:
+        docstore.delete_user(users.user_id())
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+    return {"status": "deleted"}
 
 
 @app.get("/status")
@@ -235,15 +274,25 @@ async def upload_resume(file: UploadFile = File(...)):
     """Upload and parse a resume (PDF or DOCX)."""
     try:
         content = await file.read()
-        filename = file.filename or "resume"
+        filename = Path(file.filename or "resume").name   # a bare name: "../" can never climb out of uploads/
+        if len(content) > 10 * 1024 * 1024:
+            return JSONResponse(status_code=413, content={"error": "That file is over 10 MB"})
 
-        # Save the file
-        save_path = config.UPLOADS_DIR / filename
-        with open(save_path, "wb") as f:
-            f.write(content)
-
-        # Parse the resume
-        parsed = resume_parser.parse(save_path)
+        if users.auth_enabled():
+            # hosted: parse a temporary copy and keep only the text, never the file
+            import os
+            import tempfile
+            with tempfile.NamedTemporaryFile(suffix=Path(filename).suffix, delete=False) as tmp:
+                tmp.write(content)
+            try:
+                parsed = resume_parser.parse(Path(tmp.name))
+            finally:
+                os.unlink(tmp.name)
+        else:
+            save_path = config.UPLOADS_DIR / filename
+            save_path.write_bytes(content)
+            parsed = resume_parser.parse(save_path)
+        parsed["file_name"] = filename
         context_engine.set_resume(parsed)
 
         logger.info(f"📄 Resume uploaded and parsed: {filename}")
@@ -360,6 +409,7 @@ async def get_context():
     """Get the current loaded context summary."""
     return {
         "resume": context_engine.get_resume_summary(),
+        "resume_file": context_engine._resume.get("file_name"),
         "github": context_engine._github,
         "custom": context_engine.get_custom_contexts(),
         "full_context_length": len(context_engine.get_full_context()),
@@ -1367,6 +1417,9 @@ async def interview_session(websocket: WebSocket):
         - {"type": "answer", "text": "...", "done": true}
         - {"type": "status", "message": "..."}
     """
+    if users.auth_enabled():
+        await websocket.close(code=1008)   # live audio runs in the desktop app, not on the hosted site
+        return
     await websocket.accept()
     session_id = str(id(websocket))
     now_ts = datetime.now()
