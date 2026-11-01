@@ -1,0 +1,10 @@
+# Personal data stays off Vercel: the hosted demo starts with an empty profile
+backend/context_store/*.json
+!backend/context_store/context.example.json
+backend/uploads/
+backend/recordings/
+
+# Local tooling
+.playwright-mcp/
+.hallmark/
+*.bat
