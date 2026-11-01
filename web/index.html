@@ -13,8 +13,10 @@
             try { ap = JSON.parse(localStorage.getItem('vettly_appearance_v2') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
             var dark = saved === 'dark' || (saved !== 'parchment' && !!window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) root.classList.add('theme-dark');
-            var d = { look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss', sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full', tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting', bpMarks: 'ticks', bpTitle: 'mono', regPaper: 'ledger', regInk: 'blue', regHand: 'caveat', regDesk: 'ruled', regDoodles: 'none', regMarker: 'yellow' };
-            for (var k in d) root.setAttribute('data-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }), ap[k] || d[k]);
+            var d = { look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss', sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full', tape: 'mix', pages: 'clean' };
+            var attr = function (k) { return 'data-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }); };
+            for (var k in d) root.setAttribute(attr(k), ap[k] || d[k]);
+            for (var k2 in ap) if (!(k2 in d) && typeof ap[k2] === 'string') root.setAttribute(attr(k2), ap[k2]);   // each look's workshop options
             var hands = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' }, hand = (ap.look === 'register') && hands[ap.regHand];
             if (hand) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hand + '&display=swap'; document.head.appendChild(l); }
         })();
@@ -24,11 +26,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=7.6">
+    <link rel="stylesheet" href="./styles.css?v=8.0">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=7.7">
     <link rel="stylesheet" href="./looks.css?v=7.4">
-    <link rel="stylesheet" href="./paper.css?v=7.6">
+    <link rel="stylesheet" href="./paper.css?v=8.0">
+    <link rel="stylesheet" href="./workshop.css?v=8.0">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -750,51 +753,11 @@ Nice to Have:
                             <section class="studio-panel" data-panel="looks" role="tabpanel" aria-label="Looks">
                                 <p class="ap-note">A look restyles the whole app: type, edges, surfaces and its own colours. Poster Classic is your original design.</p>
                                 <div class="look-grid" data-ap-looks></div>
-                                <div class="bp-options reg-options" data-reg-options hidden>
-                                    <div class="bp-inner">
-                                        <div class="bp-head"><svg aria-hidden="true"><use href="#i-pencil"/></svg><div><h4>Notebook Studio</h4><p class="ap-note">Your Register stays as it is. Pick the paper, the pen and the desk it sits on.</p></div></div>
-                                        <h4>Paper</h4>
-                                        <div class="pick-grid" data-ap-regpapers></div>
-                                        <h4>Ink</h4>
-                                        <div class="swatches" data-ap-reginks role="group" aria-label="Ink"></div>
-                                        <h4>Handwriting</h4>
-                                        <div class="pick-grid" data-ap-reghands></div>
-                                        <h4>Desk</h4>
-                                        <div class="pick-grid" data-ap-regdesks></div>
-                                        <h4>Doodles</h4>
-                                        <div class="pick-grid" data-ap-regdoodles></div>
-                                        <h4>Highlighter</h4>
-                                        <div class="swatches" data-ap-regmarkers role="group" aria-label="Highlighter"></div>
-                                        <h4>Tape</h4>
-                                        <div class="pick-grid" data-ap-regtapes></div>
-                                        <h4>Pages</h4>
-                                        <div class="pick-grid" data-ap-regpages></div>
-                                    </div>
-                                </div>
-                                <div class="bp-options" data-bp-options hidden>
-                                    <div class="bp-inner">
-                                        <div class="bp-head"><svg aria-hidden="true"><use href="#i-wand"/></svg><div><h4>Blueprint Workshop</h4><p class="ap-note">Your Blueprint stays as it is. Re-ink it, swap the sheet, mark it up.</p></div></div>
-                                        <h4>Ink</h4>
-                                        <div class="swatches" data-ap-bpinks role="group" aria-label="Blueprint ink"></div>
-                                        <h4>Grid template</h4>
-                                        <div class="pick-grid" data-ap-bpgrids></div>
-                                        <h4>Sheet marks</h4>
-                                        <div class="pick-grid" data-ap-bpmarks></div>
-                                        <h4>Title style</h4>
-                                        <div class="pick-grid" data-ap-bptitles></div>
-                                        <h4>Tape</h4>
-                                        <div class="pick-grid" data-ap-bptapes></div>
-                                        <h4>Pages</h4>
-                                        <div class="pick-grid" data-ap-bppages></div>
-                                    </div>
-                                </div>
+                                <div class="look-workshop" data-look-workshop hidden></div>
                             </section>
                             <section class="studio-panel" data-panel="paper" role="tabpanel" aria-label="Paper and tape" hidden>
                                 <p class="ap-note">Washi tape and notebook paper for every page, in any look. Register is the full notebook look.</p>
-                                <h4>Washi tape</h4>
-                                <div class="pick-grid" data-ap-tapes></div>
-                                <h4>Pages</h4>
-                                <div class="pick-grid" data-ap-pages></div>
+                                <div class="paper-groups" data-ap-paper-groups></div>
                             </section>
                             <section class="studio-panel" data-panel="colours" role="tabpanel" aria-label="Colours" hidden>
                                 <div class="ap-head">
@@ -1196,7 +1159,7 @@ Nice to Have:
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
     <script src="./motion.js?v=7.0"></script>
-    <script src="./appearance.js?v=7.6"></script>
+    <script src="./appearance.js?v=8.0"></script>
     <script src="./dashboard.js?v=7.1"></script>
     <script src="./mentor.js?v=7.7"></script>
 </body>
