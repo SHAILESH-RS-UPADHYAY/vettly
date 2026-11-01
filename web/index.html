@@ -31,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.5">
+    <link rel="stylesheet" href="./styles.css?v=8.6">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
@@ -128,6 +128,7 @@
             </div>
             <div class="auth-panel">
                 <div class="auth-card" id="auth-card" aria-live="polite"></div>
+                <p class="auth-legal">By continuing you agree to the <a href="./terms.html">Terms</a> and <a href="./privacy.html">Privacy</a> policy.</p>
             </div>
         </div>
     </div>
@@ -930,6 +931,10 @@ Nice to Have:
                             </div>
                             <p class="ai-key-note">Your key is encrypted before it is stored and only used for your own requests.</p>
                         </form>
+                        <div class="danger-zone">
+                            <p><b>Delete my data</b><span>Removes everything you saved in Vettly. Your sign-in account stays until you delete it from the account menu.</span></p>
+                            <button type="button" class="btn btn-secondary btn-sm danger-btn" id="delete-data-btn">Delete my data</button>
+                        </div>
                     </div>
 
                     <!-- Backend Telemetry Card -->
@@ -1270,6 +1275,6 @@ Nice to Have:
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.5"></script>
-    <script src="./onboard.js?v=8.6"></script>
+    <script src="./onboard.js?v=8.7"></script>
 </body>
 </html>

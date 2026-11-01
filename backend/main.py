@@ -224,7 +224,14 @@ async def who_is_asking(request: Request, call_next):
             return JSONResponse(status_code=e.status, content={"detail": str(e)})
         except allowance.LimitReached as e:
             return JSONResponse(status_code=429, content={"detail": str(e)})
-    return await call_next(request)
+    response = await call_next(request)
+    # browser hardening: no MIME sniffing, no framing by other sites, no full URLs leaked to other origins
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if users.is_protected(request.url.path):
+        response.headers.setdefault("Cache-Control", "no-store")   # personal data never sits in shared caches
+    return response
 
 
 # ─── Static Files (Web Dashboard) ────────────────────────────

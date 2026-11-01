@@ -2208,3 +2208,9 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 .ai-key-form { display: grid; gap: 12px; margin-top: 12px; }
 .ai-key-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .ai-key-note { font-size: 0.84rem; color: var(--muted); }
+.auth-legal { margin: 10px 12px 0; font-size: 0.82rem; color: var(--muted); text-align: center; }
+.auth-legal a { color: var(--accent-ink); }
+.danger-zone { display: grid; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--rule-2); }
+.danger-zone p { display: grid; gap: 2px; }
+.danger-zone span { font-size: 0.86rem; color: var(--muted); }
+.danger-btn { justify-self: start; color: var(--bad); }
