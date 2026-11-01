@@ -556,7 +556,7 @@ async function loadPrepQuestions() {
                         <button class="prep-btn prep-btn-refine" onclick="event.stopPropagation();refinePrepAnswer(${origIdx})">
                             <span>✏️</span><span>Refine</span>
                         </button>
-                        <button class="prep-btn prep-btn-mentor" onclick="event.stopPropagation();mentorAsk(${origIdx + 1})" title="Discuss Q${origIdx + 1} with Mentor">
+                        <button class="prep-btn prep-btn-mentor" onclick="event.stopPropagation();mentorPinPrep(${origIdx + 1})" title="Pin Q${origIdx + 1} to the Mentor and ask about it">
                             <svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg><span>Ask Mentor</span>
                         </button>
                     </div>
@@ -564,6 +564,7 @@ async function loadPrepQuestions() {
             </div>
             `;
         }).join('');
+        mentorRepin();   // keep a Mentor pin on the fresh card
 
         if (recentlyGenerated && entries.length > 0) {
             recentlyGenerated = false;

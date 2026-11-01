@@ -288,6 +288,24 @@
     --accent-ink: #2b3346; --on-accent: #f6f1e7; --accent-soft: #e8e9ee; --focus: #2b3346; --glow-rgb: 74, 84, 112;
 }
 
+/* The original Vettly accents (Poster Classic defaults): poster orange by day, spatial sky by night */
+:root[data-accent="poster"]:not(.theme-dark), :root[data-accent="poster"] .preview-light {
+    --accent: #ea580c; --accent-rgb: 234, 88, 12; --accent-2: #fb923c; --accent-deep: #c2410c;
+    --accent-ink: #c2410c; --on-accent: #ffffff; --accent-soft: #fbe3d1; --focus: #ea580c; --glow-rgb: 234, 88, 12;
+}
+:root[data-accent="spatial"]:not(.theme-dark), :root[data-accent="spatial"] .preview-light {
+    --accent: #0284c7; --accent-rgb: 2, 132, 199; --accent-2: #38bdf8; --accent-deep: #0369a1;
+    --accent-ink: #0369a1; --on-accent: #f0f9ff; --accent-soft: #e0f2fe; --focus: #0284c7; --glow-rgb: 56, 189, 248;
+}
+:root.theme-dark[data-accent-dark="poster"], :root[data-accent-dark="poster"] .preview-dark {
+    --accent: #fb923c; --accent-rgb: 251, 146, 60; --accent-2: #fdba74; --accent-deep: #ea580c;
+    --accent-ink: #fdba74; --on-accent: #1a0b03; --accent-soft: #3a2216; --focus: #fb923c; --glow-rgb: 251, 146, 60;
+}
+:root.theme-dark[data-accent-dark="spatial"], :root[data-accent-dark="spatial"] .preview-dark {
+    --accent: #38bdf8; --accent-rgb: 56, 189, 248; --accent-2: #7dd3fc; --accent-deep: #0284c7;
+    --accent-ink: #38bdf8; --on-accent: #070914; --accent-soft: #0c2a3d; --focus: #38bdf8; --glow-rgb: 56, 189, 248;
+}
+
 /* ── Accent themes: dark mode (data-accent-dark) ── */
 :root.theme-dark[data-accent-dark="tangerine"], :root[data-accent-dark="tangerine"] .preview-dark {
     --accent: #ff8f52; --accent-rgb: 255, 143, 82; --accent-2: #ffb385; --accent-deep: #e0661f;

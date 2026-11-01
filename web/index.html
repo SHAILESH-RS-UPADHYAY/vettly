@@ -10,20 +10,21 @@
         /* First paint: theme and appearance land on <html> before anything renders (appearance.js owns the rest) */
         (function () {
             var root = document.documentElement, ap = {}, saved = null;
-            try { ap = JSON.parse(localStorage.getItem('vettly_appearance') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
+            try { ap = JSON.parse(localStorage.getItem('vettly_appearance_v2') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
             var dark = saved === 'dark' || (saved !== 'parchment' && !!window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) root.classList.add('theme-dark');
-            var d = { accent: 'tangerine', accentDark: 'sky', orb: 'porcelain', orbDark: 'gloss', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full' };
+            var d = { look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss', sidebar: 'poster', mentorSkin: 'frosted', pipeline: 'stream', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full' };
             for (var k in d) root.setAttribute('data-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }), ap[k] || d[k]);
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./tokens.css?v=5.1">
-    <link rel="stylesheet" href="./base.css?v=5.1">
-    <link rel="stylesheet" href="./styles.css?v=5.2">
-    <link rel="stylesheet" href="./mentor.css?v=5.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./tokens.css?v=6.0">
+    <link rel="stylesheet" href="./base.css?v=6.0">
+    <link rel="stylesheet" href="./styles.css?v=6.1">
+    <link rel="stylesheet" href="./mentor.css?v=6.0">
+    <link rel="stylesheet" href="./looks.css?v=6.1">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -70,6 +71,24 @@
             <symbol id="i-refresh" viewBox="0 0 256 256"><path fill="currentColor" d="M244 56v48a12 12 0 0 1-12 12h-48a12 12 0 1 1 0-24h17.1l-19-17.38c-.13-.12-.26-.24-.38-.37A76 76 0 1 0 127 204h1a75.53 75.53 0 0 0 52.15-20.72a12 12 0 0 1 16.49 17.45A99.45 99.45 0 0 1 128 228h-1.37a100 100 0 1 1 71.88-170.94L220 76.72V56a12 12 0 0 1 24 0"/></symbol>
             <symbol id="i-plus" viewBox="0 0 256 256"><path fill="currentColor" d="M228 128a12 12 0 0 1-12 12h-76v76a12 12 0 0 1-24 0v-76H40a12 12 0 0 1 0-24h76V40a12 12 0 0 1 24 0v76h76a12 12 0 0 1 12 12"/></symbol>
             <symbol id="i-caret-down" viewBox="0 0 256 256"><path fill="currentColor" d="m216.49 104.49l-80 80a12 12 0 0 1-17 0l-80-80a12 12 0 0 1 17-17L128 159l71.51-71.52a12 12 0 0 1 17 17Z"/></symbol>
+            <symbol id="i-scroll" viewBox="0 0 256 256"><path fill="currentColor" d="M200 176h-96s8 6 8 16a24 24 0 0 1-48 0V64a24 24 0 0 0-24-24h136a24 24 0 0 1 24 24Z" opacity=".2"/><path fill="currentColor" d="M96 104a8 8 0 0 1 8-8h64a8 8 0 0 1 0 16h-64a8 8 0 0 1-8-8m8 40h64a8 8 0 0 0 0-16h-64a8 8 0 0 0 0 16m128 48a32 32 0 0 1-32 32H88a32 32 0 0 1-32-32V64a16 16 0 0 0-32 0c0 5.74 4.83 9.62 4.88 9.66A8 8 0 0 1 24 88a7.9 7.9 0 0 1-4.79-1.61C18.05 85.54 8 77.61 8 64a32 32 0 0 1 32-32h136a32 32 0 0 1 32 32v104h8a8 8 0 0 1 4.8 1.6c1.2.86 11.2 8.790 11.2 22.4M96.26 173.48A8.07 8.07 0 0 1 104 168h88V64a16 16 0 0 0-16-16H67.69A31.7 31.7 0 0 1 72 64v128a16 16 0 0 0 32 0c0-5.74-4.83-9.62-4.88-9.66a7.82 7.82 0 0 1-2.86-8.86M216 192a12.58 12.58 0 0 0-3.23-8h-94a27 27 0 0 1 1.21 8a31.8 31.8 0 0 1-4.29 16H200a16 16 0 0 0 16-16"/></symbol>
+            <symbol id="i-planet" viewBox="0 0 256 256"><path fill="currentColor" d="M216 128a88 88 0 1 1-88-88a88 88 0 0 1 88 88" opacity=".2"/><path fill="currentColor" d="M245.11 60.68c-7.65-13.19-27.84-16.16-58.5-8.66A95.93 95.93 0 0 0 32 128a98 98 0 0 0 .78 12.31C5.09 169 5.49 186 10.9 195.32C16 204.16 26.64 208 40.64 208a124 124 0 0 0 28.79-4A95.93 95.93 0 0 0 224 128a97 97 0 0 0-.77-12.25c12.5-13 20.82-25.35 23.65-35.92c1.95-7.32 1.36-13.76-1.77-19.15M128 48a80.11 80.11 0 0 1 78 62.2c-17.06 16.06-40.15 32.53-62.07 45.13c-27.55 15.81-51.45 25.67-70.51 31.07A79.94 79.94 0 0 1 128 48M24.74 187.29c-1.46-2.51-.65-7.24 2.22-13a79 79 0 0 1 10.29-15.05a96 96 0 0 0 18 31.32c-17.25 2.9-28.01 1.05-30.51-3.27M128 208a79.45 79.45 0 0 1-38.56-9.94a370 370 0 0 0 62.43-28.86c21.58-12.39 40.68-25.82 56.07-39.08A80.07 80.07 0 0 1 128 208M231.42 75.69c-1.7 6.31-6.19 13.53-12.63 21.13a95.7 95.7 0 0 0-18-31.35c14.21-2.35 27.37-2.17 30.5 3.24c.9 1.57.95 3.92.13 6.98"/></symbol>
+            <symbol id="i-swatches" viewBox="0 0 256 256"><path fill="currentColor" d="m135.88 43.11l-25 143.14a35.71 35.71 0 0 1-41.34 29.2a36 36 0 0 1-28.95-41.71l25-143.13a8 8 0 0 1 9.19-6.49l54.67 9.73a8 8 0 0 1 6.43 9.26" opacity=".2"/><path fill="currentColor" d="M88 180a12 12 0 1 1-12-12a12 12 0 0 1 12 12m152-23.81V208a16 16 0 0 1-16 16H76a46.4 46.4 0 0 1-7.94-.68a44 44 0 0 1-35.43-50.95l25-143.13a15.94 15.94 0 0 1 18.47-13L130.84 26a16 16 0 0 1 12.92 18.52l-12.08 69L199.49 89a16 16 0 0 1 20.45 9.52L239 150.69a18.4 18.4 0 0 1 1 5.5m-137 28.68l25-143.13L73.46 32l-25 143.1a28 28 0 0 0 22.44 32.47A27.3 27.3 0 0 0 91.46 203A27.84 27.84 0 0 0 103 184.87M116.78 195L224 156.11L204.92 104l-76.42 27.7l-9.78 55.92a44.6 44.6 0 0 1-1.94 7.38M224 173.12L127.74 208H224Z"/></symbol>
+            <symbol id="i-sidebar" viewBox="0 0 256 256"><path fill="currentColor" d="M88 48v160H40a8 8 0 0 1-8-8V56a8 8 0 0 1 8-8Z" opacity=".2"/><path fill="currentColor" d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16M40 56h40v144H40Zm176 144H96V56h120z"/></symbol>
+            <symbol id="i-layout" viewBox="0 0 256 256"><path fill="currentColor" d="M104 104v104H40a8 8 0 0 1-8-8v-96Z" opacity=".2"/><path fill="currentColor" d="M216 40H40a16 16 0 0 0-16 16v144a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16m0 16v40H40V56ZM40 112h56v88H40Zm176 88H112v-88h104z"/></symbol>
+            <symbol id="i-path" viewBox="0 0 256 256"><path fill="currentColor" d="M224 200a24 24 0 1 1-24-24a24 24 0 0 1 24 24" opacity=".2"/><path fill="currentColor" d="M200 168a32.06 32.06 0 0 0-31 24H72a32 32 0 0 1 0-64h96a40 40 0 0 0 0-80H72a8 8 0 0 0 0 16h96a24 24 0 0 1 0 48H72a48 48 0 0 0 0 96h97a32 32 0 1 0 31-40m0 48a16 16 0 1 1 16-16a16 16 0 0 1-16 16"/></symbol>
+            <symbol id="i-wand" viewBox="0 0 256 256"><path fill="currentColor" d="M176 112L74.34 213.66a8 8 0 0 1-11.31 0L42.34 193a8 8 0 0 1 0-11.31L144 80Z" opacity=".2"/><path fill="currentColor" d="M248 152a8 8 0 0 1-8 8h-16v16a8 8 0 0 1-16 0v-16h-16a8 8 0 0 1 0-16h16v-16a8 8 0 0 1 16 0v16h16a8 8 0 0 1 8 8M56 72h16v16a8 8 0 0 0 16 0V72h16a8 8 0 0 0 0-16H88V40a8 8 0 0 0-16 0v16H56a8 8 0 0 0 0 16m128 120h-8v-8a8 8 0 0 0-16 0v8h-8a8 8 0 0 0 0 16h8v8a8 8 0 0 0 16 0v-8h8a8 8 0 0 0 0-16m35.31-112L80 219.31a16 16 0 0 1-22.62 0l-20.7-20.68a16 16 0 0 1 0-22.63L176 36.69a16 16 0 0 1 22.63 0l20.68 20.68a16 16 0 0 1 0 22.63m-54.63 32L144 91.31l-96 96L68.68 208ZM208 68.690L187.31 48l-32 32L176 100.69Z"/></symbol>
+            <linearGradient id="flow-aurora" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="150" y2="150" spreadMethod="reflect">
+                <stop offset="0" style="stop-color: var(--accent-2)"/>
+                <stop offset="0.35" style="stop-color: var(--c-beh)"/>
+                <stop offset="0.7" style="stop-color: var(--c-tech)"/>
+                <stop offset="1" style="stop-color: var(--accent-2)"/>
+                <animateTransform attributeName="gradientTransform" type="translate" from="0 0" to="300 300" dur="2.4s" repeatCount="indefinite"/>
+            </linearGradient>
+            <filter id="flow-zap" x="-10%" y="-30%" width="120%" height="160%">
+                <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" seed="1" result="n"><animate attributeName="seed" values="1;3;5;7;9;11" dur="0.48s" repeatCount="indefinite" calcMode="discrete"/></feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="n" scale="10" xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
             <symbol id="i-caret-right" viewBox="0 0 256 256"><path fill="currentColor" d="m184.49 136.49l-80 80a12 12 0 0 1-17-17L159 128L87.51 56.49a12 12 0 1 1 17-17l80 80a12 12 0 0 1-.02 17"/></symbol>
         </defs>
     </svg>
@@ -85,11 +104,13 @@
         <div class="sidebar-logo">
             <span class="logo-icon" aria-hidden="true">❖</span>
             <span class="logo-text">Vettly</span>
+            <span class="logo-badge">POSTER V2</span>
+            <span class="logo-tagline" aria-hidden="true">POSTER SPEC // ARCHITECT</span>
         </div>
         <div class="sidebar-nav">
             <span class="nav-pill" aria-hidden="true"></span>
             <button type="button" class="nav-item active" data-section="home" id="nav-home">
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-house"/></svg><span class="nav-label">Home</span>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-house"/></svg><span class="nav-label"><span class="v-classic">Overview Poster</span><span class="v-alt">Home</span></span>
             </button>
             <button type="button" class="nav-item" data-section="prep" id="nav-prep">
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-target"/></svg><span class="nav-label">Prep Studio</span>
@@ -101,20 +122,20 @@
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-toolbox"/></svg><span class="nav-label">Agent Toolbelt</span>
             </button>
             <button type="button" class="nav-item" data-section="aboutme" id="nav-aboutme" data-more>
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-user"/></svg><span class="nav-label">About me</span>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-user"/></svg><span class="nav-label"><span class="v-classic">About Me Profile</span><span class="v-alt">About me</span></span>
             </button>
             <button type="button" class="nav-item" data-section="settings" id="nav-settings" data-more>
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-gear"/></svg><span class="nav-label">Settings</span>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-gear"/></svg><span class="nav-label"><span class="v-classic">Settings Matrix</span><span class="v-alt">Settings</span></span>
             </button>
             <button type="button" class="nav-item nav-more" id="nav-more" aria-haspopup="dialog" aria-controls="more-sheet" aria-current="false">
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-more"/></svg><span class="nav-label">More</span>
             </button>
         </div>
         <div class="sidebar-footer">
-            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" aria-label="Switch theme">
-                <svg class="theme-ico theme-ico-moon" aria-hidden="true"><use href="#i-moon"/></svg>
-                <svg class="theme-ico theme-ico-sun" aria-hidden="true"><use href="#i-sun"/></svg>
-                <span id="theme-label">Dark mode</span>
+            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" aria-label="Switch between Parchment and Spatial Dark">
+                <svg class="theme-ico theme-ico-light" aria-hidden="true"><use href="#i-scroll"/></svg>
+                <svg class="theme-ico theme-ico-dark" aria-hidden="true"><use href="#i-planet"/></svg>
+                <span class="theme-text">Theme: <strong id="theme-label">Parchment</strong></span>
             </button>
             <div class="server-indicator" id="sidebar-status">
                 <span class="status-dot offline"></span>
@@ -144,7 +165,7 @@
             </button>
             <button type="button" class="more-item" onclick="toggleTheme(event)">
                 <span class="more-ico" data-tone="sys"><svg aria-hidden="true"><use href="#i-half"/></svg></span>
-                <span><b data-theme-toggle-label>Switch to dark mode</b><small>Colours, Mentor look and layout live in Settings</small></span>
+                <span><b data-theme-toggle-label>Theme: Parchment</b><small>Tap to switch. Looks, colours and the Mentor live in Settings</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
         </div>
@@ -159,7 +180,10 @@
                 
                 <!-- Poster Header -->
                 <div class="poster-header">
-                    <h1>Career prep <span>architect</span></h1>
+                    <div class="tape-corner" aria-hidden="true"></div>
+                    <div class="tape-corner right" aria-hidden="true"></div>
+                    <span class="handwritten-note" aria-hidden="true">Build smarter. Ship safer!</span>
+                    <h1>Career prep <em>architect</em></h1>
                     <p>Architect your technical depth, mock sessions & role-specific mastery with precision</p>
                 </div>
 
@@ -225,7 +249,9 @@
         <section class="page" id="page-setup">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1>Agent <span>Toolbelt</span></h1>
+                    <div class="tape-corner" aria-hidden="true"></div>
+                    <span class="handwritten-note left" aria-hidden="true">Tactile toolbelt ready!</span>
+                    <h1><span class="v-classic">Agent <em>Toolbelt</em> Builder</span><span class="v-alt">Agent <em>Toolbelt</em></span></h1>
                     <p>Design the modular tools your AI copilot uses during your live session</p>
                 </div>
 
@@ -515,7 +541,7 @@ Nice to Have:
         <section class="page" id="page-chat">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1>Live <span>Copilot</span></h1>
+                    <h1><span class="v-classic">Live <em>AI Copilot</em></span><span class="v-alt">Live <em>Copilot</em></span></h1>
                     <p>Practice responses and test real-time candidate retrieval</p>
                 </div>
                 <div class="chat-container">
@@ -543,7 +569,7 @@ Nice to Have:
         <section class="page" id="page-prep">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1>Prep <span>Studio</span></h1>
+                    <h1><span class="v-classic">Prep <em>Studio</em> HUD</span><span class="v-alt">Prep <em>Studio</em></span></h1>
                     <p>Synthesize questions, study streamed answers & fine-tune responses</p>
                 </div>
                 <div class="toolbelt-card prep-console">
@@ -621,7 +647,7 @@ Nice to Have:
         <section class="page" id="page-aboutme">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1>About <span>me</span></h1>
+                    <h1><span class="v-classic">Candidate <em>Profile</em></span><span class="v-alt">About <em>me</em></span></h1>
                     <p>Configure personal background rules and identity constraints</p>
                 </div>
                 <div class="dashboard-grid">
@@ -657,35 +683,44 @@ Nice to Have:
         <section class="page" id="page-settings">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1>Studio <span>settings</span></h1>
-                    <p>Appearance, backend connection, readiness checklist and keyboard shortcuts</p>
+                    <h1><span class="v-classic">Settings <em>Matrix</em></span><span class="v-alt">Studio <em>settings</em></span></h1>
+                    <p><span class="v-classic">Theme studio, backend API telemetry, readiness checklist &amp; workspace shortcuts</span><span class="v-alt">Theme studio, backend connection, readiness checklist and keyboard shortcuts</span></p>
                 </div>
                 <div class="dashboard-grid">
-                    <!-- Appearance: theme, a colour and Mentor look for each mode, layout format (appearance.js) -->
+                    <!-- Theme Studio: looks, colours, side panel, Mentor (logo, panel, pipeline) and layout (appearance.js) -->
                     <div class="toolbelt-card full-width appearance-card" id="appearance-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="h-ico" aria-hidden="true"><use href="#i-palette"/></svg>Appearance</h3>
+                            <h3><svg class="h-ico" aria-hidden="true"><use href="#i-wand"/></svg>Theme Studio</h3>
                             <button type="button" class="btn btn-sm btn-ghost" id="appearance-reset"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Reset to default</button>
                         </div>
-                        <div class="ap-grid">
-                            <section class="ap-block ap-row" aria-labelledby="ap-theme-h">
+                        <div class="studio-head">
+                            <div class="ap-row">
                                 <h4 id="ap-theme-h">Theme</h4>
                                 <div class="seg" data-ap-theme role="group" aria-labelledby="ap-theme-h">
-                                    <button type="button" data-v="light" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sun"/></svg>Light</button>
-                                    <button type="button" data-v="dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-moon"/></svg>Dark</button>
+                                    <button type="button" data-v="light" aria-pressed="false"><svg aria-hidden="true"><use href="#i-scroll"/></svg>Parchment</button>
+                                    <button type="button" data-v="dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-planet"/></svg>Spatial Dark</button>
                                     <button type="button" data-v="device" aria-pressed="false"><svg aria-hidden="true"><use href="#i-half"/></svg>Match device</button>
                                 </div>
+                            </div>
+                            <div class="seg studio-tabs" data-studio-tabs role="tablist" aria-label="Theme Studio sections">
+                                <button type="button" role="tab" data-tab="looks" aria-pressed="true"><svg aria-hidden="true"><use href="#i-swatches"/></svg>Looks</button>
+                                <button type="button" role="tab" data-tab="colours" aria-pressed="false"><svg aria-hidden="true"><use href="#i-palette"/></svg>Colours</button>
+                                <button type="button" role="tab" data-tab="sidebar" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sidebar"/></svg>Side panel</button>
+                                <button type="button" role="tab" data-tab="mentor" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Mentor</button>
+                                <button type="button" role="tab" data-tab="layout" aria-pressed="false"><svg aria-hidden="true"><use href="#i-layout"/></svg>Layout</button>
+                            </div>
+                        </div>
+                        <div class="studio-panels">
+                            <section class="studio-panel" data-panel="looks" role="tabpanel" aria-label="Looks">
+                                <p class="ap-note">A look restyles the whole app: type, edges, surfaces and its own colours. Poster Classic is your original design.</p>
+                                <div class="look-grid" data-ap-looks></div>
                             </section>
-                            <section class="ap-block" aria-labelledby="ap-style-h">
-                                <h4 id="ap-style-h">Style</h4>
-                                <div class="presets" data-ap-presets></div>
-                            </section>
-                            <section class="ap-block ap-span" aria-labelledby="ap-colour-h">
+                            <section class="studio-panel" data-panel="colours" role="tabpanel" aria-label="Colours" hidden>
                                 <div class="ap-head">
-                                    <h4 id="ap-colour-h">Colour and Mentor look</h4>
+                                    <p class="ap-note">Each theme keeps its own colour.</p>
                                     <div class="seg" data-ap-edit role="group" aria-label="Choose colours for">
-                                        <button type="button" data-v="light" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sun"/></svg>Light mode</button>
-                                        <button type="button" data-v="dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-moon"/></svg>Dark mode</button>
+                                        <button type="button" data-v="light" aria-pressed="true"><svg aria-hidden="true"><use href="#i-scroll"/></svg>Parchment</button>
+                                        <button type="button" data-v="dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-planet"/></svg>Spatial Dark</button>
                                     </div>
                                 </div>
                                 <div class="ap-mode preview-light" data-ap-mode-box>
@@ -695,21 +730,41 @@ Nice to Have:
                                         <span class="tone-pill" data-tone="tech"><svg aria-hidden="true"><use href="#i-code"/></svg>Technical</span>
                                         <span class="ap-sample-link">Link text</span>
                                     </div>
-                                    <p class="ap-label">Accent colour</p>
                                     <div class="swatches" data-ap-swatches role="group" aria-label="Accent colour"></div>
-                                    <p class="ap-label">Mentor look</p>
-                                    <div class="orb-picks" role="group" aria-label="Mentor look">
+                                    <p class="ap-note" data-ap-mode-note></p>
+                                </div>
+                            </section>
+                            <section class="studio-panel" data-panel="sidebar" role="tabpanel" aria-label="Side panel" hidden>
+                                <p class="ap-note">How the navigation panel looks. On phones it becomes the tab bar.</p>
+                                <div class="pick-grid" data-ap-sidebars></div>
+                            </section>
+                            <section class="studio-panel" data-panel="mentor" role="tabpanel" aria-label="Mentor" hidden>
+                                <div class="ap-head">
+                                    <h4>Logo</h4>
+                                    <div class="seg" data-ap-edit role="group" aria-label="Choose the logo for">
+                                        <button type="button" data-v="light" aria-pressed="true"><svg aria-hidden="true"><use href="#i-scroll"/></svg>Parchment</button>
+                                        <button type="button" data-v="dark" aria-pressed="false"><svg aria-hidden="true"><use href="#i-planet"/></svg>Spatial Dark</button>
+                                    </div>
+                                </div>
+                                <div class="ap-mode preview-light" data-ap-mode-box>
+                                    <div class="orb-picks" role="group" aria-label="Mentor logo">
                                         <button type="button" class="orb-pick" data-ap-orb="porcelain" aria-pressed="false"><span class="m-orb" data-look="porcelain" data-emblem></span><span>Porcelain</span></button>
                                         <button type="button" class="orb-pick" data-ap-orb="gloss" aria-pressed="false"><span class="m-orb" data-look="gloss" data-emblem></span><span>Classic glow</span></button>
                                         <button type="button" class="orb-pick" data-ap-orb="ember" aria-pressed="false"><span class="m-orb" data-look="ember" data-emblem></span><span>Ink + ember</span></button>
                                         <button type="button" class="orb-pick" data-ap-orb="ring" aria-pressed="false"><span class="m-orb" data-look="ring" data-emblem></span><span>Ink + ring</span></button>
                                         <button type="button" class="orb-pick" data-ap-orb="flat" aria-pressed="false"><span class="m-orb" data-look="flat" data-emblem></span><span>Flat</span></button>
                                     </div>
-                                    <p class="ap-note" data-ap-mode-note></p>
                                 </div>
+                                <h4>Panel skin</h4>
+                                <div class="pick-grid" data-ap-skins></div>
+                                <h4>Pipeline</h4>
+                                <p class="ap-note">The beam that joins what you asked about to the Mentor, in Live Copilot and Prep Studio.</p>
+                                <div class="pick-grid pipe-grid" data-ap-pipes></div>
                             </section>
-                            <section class="ap-block ap-span" aria-labelledby="ap-format-h">
-                                <h4 id="ap-format-h">Layout and format</h4>
+                            <section class="studio-panel" data-panel="layout" role="tabpanel" aria-label="Layout" hidden>
+                                <h4>Quick formats</h4>
+                                <div class="presets" data-ap-presets></div>
+                                <h4>Fine tune</h4>
                                 <div class="ap-options">
                                     <div class="ap-opt"><span class="ap-label" id="apo-density">Density</span>
                                         <div class="seg" data-ap-opt="density" role="group" aria-labelledby="apo-density"><button type="button" data-v="comfortable">Comfortable</button><button type="button" data-v="compact">Compact</button></div></div>
@@ -1037,15 +1092,17 @@ Nice to Have:
     <!-- The "flow" beam linking a pinned Copilot answer to the Doubt Desk -->
     <svg id="mentor-flow" class="mentor-flow" aria-hidden="true">
         <defs><marker id="mentor-dot" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4"><circle cx="5" cy="5" r="4"/></marker></defs>
-        <path class="rail"/>
-        <path class="beam" marker-start="url(#mentor-dot)" marker-end="url(#mentor-dot)"/>
+        <path class="flow-line rail"/>
+        <path class="flow-line beam" marker-start="url(#mentor-dot)" marker-end="url(#mentor-dot)"/>
+        <path class="flow-line pulse pulse-2" pathLength="100"/>
+        <path class="flow-line pulse" pathLength="100"/>
     </svg>
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./motion.js?v=5.0"></script>
-    <script src="./appearance.js?v=5.0"></script>
-    <script src="./dashboard.js?v=5.0"></script>
-    <script src="./mentor.js?v=5.0"></script>
+    <script src="./motion.js?v=6.0"></script>
+    <script src="./appearance.js?v=6.0"></script>
+    <script src="./dashboard.js?v=6.0"></script>
+    <script src="./mentor.js?v=6.0"></script>
 </body>
 </html>

@@ -262,12 +262,12 @@ function mentorAnchorTurn(turn) {
 // The pinned Copilot answer rides along with every message while it is pinned
 function mentorFocusPayload() {
     if (mentor.pinned && !mentor.pinned.isConnected) mentorUnpin();  // chat was re-rendered underneath
-    const bubble = mentor.pinned;
-    if (!bubble) return null;
+    const el = mentor.pinned;
+    if (!el) return null;
     return {
-        question: bubble._question || '',
-        answer: bubble.querySelector('.chat-bubble-content')?.innerText || '',
-        detail: bubble.querySelector('.chat-detailed-body')?.innerText || '',
+        question: el._question || '',
+        answer: el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || ''),
+        detail: el.querySelector('.chat-detailed-body')?.innerText || '',
     };
 }
 
@@ -514,19 +514,49 @@ function mentorResetLayout() {
 
 // ─── Doubt Desk: pin a Copilot answer, ask about it while the chat stays put ───
 
-function mentorPin(bubble) {
+// Pin a Copilot answer (or a Prep Studio card, via mentorPinPrep) to the Doubt Desk; the pipeline beam joins the two
+function mentorPin(el) {
     mentor.pinned?.classList.remove('mentor-focused');
-    mentor.pinned = bubble;
-    bubble.classList.add('mentor-focused');
+    mentor.pinned = el;
+    el.classList.add('mentor-focused');
+    const fromPrep = Boolean(el.closest('#page-prep'));
     const pin = document.getElementById('mentor-pin');
-    pin.querySelector('.mentor-pin-q').textContent = bubble._question || 'Copilot answer';
-    pin.querySelector('.mentor-pin-a').textContent = bubble.querySelector('.chat-bubble-content')?.innerText || '';
+    pin.querySelector('.mentor-pin-label').textContent = fromPrep ? 'Pinned from Prep Studio' : 'Pinned from Copilot';
+    pin.querySelector('.mentor-pin-btn').textContent = fromPrep ? 'Show card' : 'Show in chat';
+    pin.querySelector('.mentor-pin-q').textContent = el._question || 'Copilot answer';
+    pin.querySelector('.mentor-pin-a').textContent = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
     pin.classList.remove('hidden', 'pop');
     void pin.offsetWidth;  // restart the pop-in animation
     pin.classList.add('pop');
-    const doubtBtn = bubble.querySelector('.mentor-doubt-btn');
-    if (doubtBtn) mentorBurstFrom(doubtBtn, 10);
+    const from = el.querySelector('.mentor-doubt-btn, .prep-btn-mentor, [data-mentor-pin]');
+    if (from) mentorBurstFrom(from, 10);
     mentorToggle(true);
+}
+
+// Prep Studio: pin question n's card, cite it in the composer, and draw the pipeline from it
+function mentorPinPrep(n) {
+    const card = document.getElementById(`prep-card-${n - 1}`);
+    const entry = mentor.prep[n - 1];
+    if (!card || !entry) { mentorAsk(n); return; }
+    card._question = entry.question;
+    card._answer = entry.answer || '';
+    mentorPin(card);
+    const input = document.getElementById('mentor-input');
+    if (!input.value.includes(`@${n}`)) input.value = `@${n} `;
+    mentorAutosize();
+}
+
+// After Prep Studio re-renders its cards, keep the pin on the fresh card for the same question
+function mentorRepin() {
+    const el = mentor.pinned;
+    if (!el || el.isConnected || !el.id?.startsWith('prep-card-')) return;
+    const fresh = document.getElementById(el.id);
+    if (!fresh) return mentorUnpin();
+    fresh._question = el._question;
+    fresh._answer = el._answer;
+    fresh.classList.add('mentor-focused');
+    mentor.pinned = fresh;
+    mentorFlowKick();
 }
 
 function mentorUnpin() {
@@ -539,8 +569,9 @@ function mentorUnpin() {
 function mentorJumpToPinned() {
     if (!mentor.pinned?.isConnected) return mentorUnpin();
     const show = () => mentor.pinned?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    if (document.body.dataset.section === 'chat') return show();
-    switchSection('chat');
+    const home = mentor.pinned.closest('#page-prep') ? 'prep' : 'chat';
+    if (document.body.dataset.section === home) return show();
+    switchSection(home);
     setTimeout(show, 250);  // after switchSection's own scroll-to-bottom
 }
 
@@ -551,22 +582,30 @@ function mentorFlowKick() {
     }
 }
 
-// Redraws the beam every frame while it is visible, then stops itself
+// Redraws the beam every frame while it is visible, then stops itself.
+// A Copilot pin clips to the chat list; a Prep Studio pin clips to the window.
 function mentorFlow() {
     if (mentor.pinned && !mentor.pinned.isConnected) mentorUnpin();
     const svg = document.getElementById('mentor-flow');
-    const bubble = mentor.pinned;
-    const on = Boolean(bubble) && document.body.dataset.section === 'chat' && document.body.classList.contains('mentor-open');
+    const el = mentor.pinned;
+    const home = el?.closest('#page-prep') ? 'prep' : 'chat';
+    const on = Boolean(el) && document.body.dataset.section === home && document.body.classList.contains('mentor-open');
     svg.classList.toggle('on', on);
     if (!on) {
         mentor.flowing = false;
         return;
     }
-    const chat = document.getElementById('chat-messages').getBoundingClientRect();
-    const r = bubble.getBoundingClientRect();
-    const d = mentorBeamPath(r, document.getElementById('mentor-pin').getBoundingClientRect(), chat);
-    svg.querySelectorAll('path').forEach(path => path.setAttribute('d', d));
-    svg.classList.toggle('dim', r.bottom <= chat.top || r.top >= chat.bottom);
+    if (mentor.flowPaused !== mentorCalm()) {   // SVG (SMIL) animations ignore CSS, so pause them by hand
+        mentor.flowPaused = mentorCalm();
+        if (mentor.flowPaused) svg.pauseAnimations(); else svg.unpauseAnimations();
+    }
+    const clip = home === 'chat'
+        ? document.getElementById('chat-messages').getBoundingClientRect()
+        : { top: 0, bottom: innerHeight, left: 0, right: innerWidth };
+    const r = el.getBoundingClientRect();
+    const d = mentorBeamPath(r, document.getElementById('mentor-pin').getBoundingClientRect(), clip);
+    svg.querySelectorAll('.flow-line').forEach(path => path.setAttribute('d', d));
+    svg.classList.toggle('dim', r.bottom <= clip.top || r.top >= clip.bottom);
     requestAnimationFrame(mentorFlow);
 }
 
@@ -597,7 +636,7 @@ function mentorBeamPath(r, p, chat) {
 
 // ─── Delight: spark bursts, magnetic orb, spotlight frame ────────
 
-const mentorCalm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const mentorCalm = () => matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'calm';
 
 function mentorBurst(x, y, count) {
     if (mentorCalm()) return;
