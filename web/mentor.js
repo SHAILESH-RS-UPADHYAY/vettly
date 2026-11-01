@@ -602,7 +602,7 @@ function mentorUnpin() {
 function mentorJumpToPinned() {
     if (!mentor.pinned?.isConnected) return mentorUnpin();
     const show = () => mentor.pinned?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    const home = mentor.pinned.closest('#page-prep') ? 'prep' : 'chat';
+    const home = mentorHome(mentor.pinned);
     if (document.body.dataset.section === home) return show();
     switchSection(home);
     setTimeout(show, 250);  // after switchSection's own scroll-to-bottom
@@ -621,7 +621,7 @@ function mentorFlow() {
     if (mentor.pinned && !mentor.pinned.isConnected) mentorUnpin();
     const svg = document.getElementById('mentor-flow');
     const el = mentor.pinned;
-    const home = el?.closest('#page-prep') ? 'prep' : 'chat';
+    const home = el && mentorHome(el);
     // side by side only: stacked, the gutter's own flow carries it
     const on = Boolean(el) && document.getElementById('mentor').classList.contains('split')
         && document.body.classList.contains('mentor-open') && !mentorDeskStacked();
@@ -672,6 +672,9 @@ function mentorDeskPath(s) {
 
 // ─── Split Desk: the pinned card floats beside the chat (or above it), joined by the pipeline ───
 
+// Which page a pinned card lives on: Prep Studio, Brain Bento or the Copilot chat
+const mentorHome = el => el.closest('#page-prep') ? 'prep' : el.closest('#page-bento') ? 'bento' : 'chat';
+
 const mentorDeskStacked = () => getComputedStyle(document.getElementById('mentor-desk')).getPropertyValue('--stacked').trim() === '1';
 
 // The panel's layout box, ignoring the scale it opens and closes with
@@ -685,17 +688,19 @@ function mentorPanelRect() {
 // The sheet: the pinned question and its whole answer
 function mentorFillSheet(el) {
     const sheet = document.getElementById('mentor-sheet');
-    const fromPrep = Boolean(el.closest('#page-prep'));
-    if (fromPrep && el.dataset.tone) sheet.dataset.tone = el.dataset.tone; else delete sheet.dataset.tone;
-    const n = fromPrep ? Number(el.id.replace('prep-card-', '')) + 1 : 0;
-    document.getElementById('sheet-tag').innerHTML = fromPrep
-        ? `<b>Q${n}</b>${escapeHtml(el.querySelector('.tone-pill')?.textContent.trim() || '')}`
-        : '<b>Copilot</b>answer';
-    document.getElementById('sheet-from').textContent = fromPrep ? 'Pinned from Prep Studio' : 'Pinned from Live Copilot';
+    const from = mentorHome(el);
+    if (el.dataset.tone) sheet.dataset.tone = el.dataset.tone; else delete sheet.dataset.tone;
+    const n = from === 'prep' ? Number(el.id.replace('prep-card-', '')) + 1 : 0;
+    document.getElementById('sheet-tag').innerHTML = {
+        prep: `<b>Q${n}</b>${escapeHtml(el.querySelector('.tone-pill')?.textContent.trim() || '')}`,
+        bento: `<b>Bento</b>${escapeHtml(el.dataset.trackName || '')}`,
+        chat: '<b>Copilot</b>answer',
+    }[from];
+    document.getElementById('sheet-from').textContent = { prep: 'Pinned from Prep Studio', bento: 'Pinned from Brain Bento', chat: 'Pinned from Live Copilot' }[from];
     document.getElementById('sheet-q').textContent = el._question || 'Copilot answer';
     const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
     document.getElementById('sheet-a').innerHTML = answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
-    document.getElementById('sheet-label').textContent = fromPrep ? 'Model answer' : 'Copilot said'; 
+    document.getElementById('sheet-label').textContent = { prep: 'Model answer', bento: 'Interview answer', chat: 'Copilot said' }[from];
     sheet.querySelector('.sheet-body').scrollTop = 0;
 }
 

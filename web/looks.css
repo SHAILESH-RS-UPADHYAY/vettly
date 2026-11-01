@@ -133,7 +133,7 @@
 /* the nav icons get their own colours, like the original emoji did */
 :root[data-look="classic"] #nav-home .nav-icon { color: var(--accent); }
 :root[data-look="classic"] #nav-prep .nav-icon { color: var(--c-sit); }
-:root[data-look="classic"] #nav-daily .nav-icon { color: var(--c-sys); }
+:root[data-look="classic"] #nav-bento .nav-icon { color: var(--c-sys); }
 :root[data-look="classic"] #nav-chat .nav-icon { color: var(--c-tech); }
 :root[data-look="classic"] #nav-setup .nav-icon { color: var(--c-proj); }
 :root[data-look="classic"] #nav-aboutme .nav-icon { color: var(--c-beh); }

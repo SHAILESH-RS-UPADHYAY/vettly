@@ -42,6 +42,7 @@ function switchSection(name, { animate = false } = {}) {
     // Load data for specific sections
     if (name === 'aboutme') loadAboutMe();
     if (name === 'prep') loadPrepQuestions();
+    if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
     if (name === 'settings') Appearance.renderSettings();
     
     // Auto-scroll chat to bottom when switching to chat section
