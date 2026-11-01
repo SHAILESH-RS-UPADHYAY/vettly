@@ -16,7 +16,7 @@ const Appearance = (() => {
         look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss',
         sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream',
         density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full',
-        tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting',
+        tape: 'mix', pages: 'clean', bpInk: 'cyan', bpGrid: 'drafting', bpMarks: 'ticks', bpTitle: 'mono',
     };
     // a look also brings its own colours and side panel; each stays adjustable afterwards
     const LOOKS = [
@@ -42,6 +42,18 @@ const Appearance = (() => {
         ['dots', 'Dot grid', 'Quiet dots for sketching'],
         ['iso', 'Isometric', 'Thirty-degree lines for 3D sketches'],
         ['plain', 'Vellum', 'No grid, just the sheet'],
+    ];
+    const BP_MARKS = [
+        ['ticks', 'Corner ticks', 'The original drafting corners'],
+        ['cross', 'Crosshairs', 'Registration marks at each corner'],
+        ['title', 'Title block', 'A drawing title strip on every card'],
+        ['dims', 'Dimension lines', 'Measured edges with end stops'],
+        ['rivets', 'Rivets', 'An engineering plate'],
+    ];
+    const BP_TITLES = [
+        ['mono', 'Mono caps', 'The original monospace headings'],
+        ['stencil', 'Stencil', 'Heavy wide letters, like a crate'],
+        ['script', "Engineer's script", 'Handwritten notes on the plan'],
     ];
     // Paper & tape: for every look
     const TAPES = [
@@ -198,7 +210,7 @@ const Appearance = (() => {
     const pressed = (on) => `aria-pressed="${on}"`;
     const tile = (kind, id, name, desc, thumb) => `
         <button type="button" class="pick" data-ap-${kind}="${id}" ${pressed(false)}>
-            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
+            ${thumb}<span class="pick-name">${name}${id === DEFAULTS[{ side: 'sidebar', skin: 'mentorSkin', pipe: 'pipeline', tape: 'tape', page: 'pages', bpgrid: 'bpGrid', bpmark: 'bpMarks', bptitle: 'bpTitle' }[kind]] ? ' <span class="tag-default">Default</span>' : ''}</span>
             <span class="pick-desc">${desc}</span>
         </button>`;
     const pipeSvg = (id) => `<svg class="pipe-demo" data-pipe="${id}" viewBox="0 0 160 84" preserveAspectRatio="none" aria-hidden="true">
@@ -225,6 +237,13 @@ const Appearance = (() => {
             `<span class="pick-thumb page-thumb" data-pages="${id}" aria-hidden="true"></span>`)).join('');
         card.querySelector('[data-ap-bpgrids]').innerHTML = BP_GRIDS.map(([id, name, desc]) => tile('bpgrid', id, name, desc,
             `<span class="pick-thumb grid-thumb" data-grid="${id}" aria-hidden="true"></span>`)).join('');
+        card.querySelector('[data-ap-bpmarks]').innerHTML = BP_MARKS.map(([id, name, desc]) => tile('bpmark', id, name, desc,
+            `<span class="pick-thumb marks-thumb" data-marks="${id}" aria-hidden="true"><i></i></span>`)).join('');
+        card.querySelector('[data-ap-bptitles]').innerHTML = BP_TITLES.map(([id, name, desc]) => tile('bptitle', id, name, desc,
+            `<span class="pick-thumb title-thumb" data-title="${id}" aria-hidden="true">Plan A</span>`)).join('');
+        // the same tape and page choices as the Paper & tape tab, right here for Blueprint
+        card.querySelector('[data-ap-bptapes]').innerHTML = card.querySelector('[data-ap-tapes]').innerHTML;
+        card.querySelector('[data-ap-bppages]').innerHTML = card.querySelector('[data-ap-pages]').innerHTML;
     }
 
     function renderSettings() {
@@ -247,6 +266,8 @@ const Appearance = (() => {
         mark('[data-ap-tape]', 'apTape', prefs.tape);
         mark('[data-ap-page]', 'apPage', prefs.pages);
         mark('[data-ap-bpgrid]', 'apBpgrid', prefs.bpGrid);
+        mark('[data-ap-bpmark]', 'apBpmark', prefs.bpMarks);
+        mark('[data-ap-bptitle]', 'apBptitle', prefs.bpTitle);
         card.querySelector('[data-bp-options]').hidden = prefs.look !== 'blueprint';
         card.querySelector('[data-ap-bpinks]').innerHTML = BP_INKS.map(([id, name, light, dark]) => {
             const ink = isDark() ? dark : light;
@@ -286,7 +307,11 @@ const Appearance = (() => {
             if (seg.matches('[data-ap-theme]')) setThemeMode(b.dataset.v, b);
             else if (seg.matches('[data-studio-tabs]')) { tab = b.dataset.tab; store.set(TAB_KEY, tab); renderSettings(); }
             else if (seg.matches('[data-ap-edit]')) { editMode = b.dataset.v; renderSettings(); }
-            else if (b.dataset.apLook) { applyLook(b.dataset.apLook); burstFrom(card, `[data-ap-look="${b.dataset.apLook}"] .look-thumb`); }
+            else if (b.dataset.apLook) {
+                applyLook(b.dataset.apLook);
+                burstFrom(card, `[data-ap-look="${b.dataset.apLook}"] .look-thumb`);
+                if (b.dataset.apLook === 'blueprint') setTimeout(() => card.querySelector('[data-bp-options]')?.scrollIntoView({ behavior: calm() ? 'auto' : 'smooth', block: 'nearest' }), 450);
+            }
             else if (b.dataset.apAccent) {
                 const entry = ACCENTS.find(a => a[0] === b.dataset.apAccent);
                 set(editMode === 'dark' ? 'accentDark' : 'accent', b.dataset.apAccent);
@@ -299,6 +324,8 @@ const Appearance = (() => {
             else if (b.dataset.apTape) { set('tape', b.dataset.apTape); burstFrom(card, `[data-ap-tape="${b.dataset.apTape}"] .pick-thumb`); }
             else if (b.dataset.apPage) apply({ pages: b.dataset.apPage }, { transition: true });
             else if (b.dataset.apBpgrid) apply({ bpGrid: b.dataset.apBpgrid }, { transition: true });
+            else if (b.dataset.apBpmark) apply({ bpMarks: b.dataset.apBpmark }, { transition: true });
+            else if (b.dataset.apBptitle) apply({ bpTitle: b.dataset.apBptitle }, { transition: true });
             else if (b.dataset.apBpink) {
                 const ink = BP_INKS.find(i => i[0] === b.dataset.apBpink);
                 apply({ bpInk: ink[0], ...ink[4] }, { transition: true });
