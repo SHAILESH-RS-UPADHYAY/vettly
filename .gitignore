@@ -24,3 +24,7 @@ Thumbs.db
 
 # Browser test screenshots and logs
 .playwright-mcp/
+
+# Pulled hosted settings (vercel env pull) hold real keys
+.env.*
+!.env.example

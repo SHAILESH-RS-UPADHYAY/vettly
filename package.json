@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Vettly — AI Career Architect & Technical Prep Studio",
   "scripts": {
-    "dev": "cd backend && ..\\..\\acemate\\backend\\venv\\Scripts\\python.exe main.py",
-    "start": "cd backend && ..\\..\\acemate\\backend\\venv\\Scripts\\python.exe main.py"
+    "dev": "cd backend && python main.py",
+    "start": "cd backend && python main.py",
+    "test": "cd backend && python test_accounts.py"
   }
 }

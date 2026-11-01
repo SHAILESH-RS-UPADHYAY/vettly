@@ -2132,3 +2132,55 @@ textarea, input, select, img, pre { max-width: 100%; }
 @media (max-width: 30rem) { .today-tile { grid-template-columns: auto minmax(0, 1fr); } .today-tile .btn { grid-column: 1 / -1; } }
 @media (prefers-reduced-motion: reduce) { .typing-dots i, .today-tile, .chat-bubble { animation: none !important; } }
 :root[data-motion="calm"] :is(.typing-dots i, .today-tile, .chat-bubble) { animation: none !important; }
+
+/* ── Sign-in gate for the hosted app (auth.js + Clerk) ── */
+html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
+.auth-gate {
+    position: fixed; inset: 0; z-index: 3000; overflow-y: auto; overscroll-behavior: contain;
+    background-color: var(--paper);
+    background-image: radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 42%),
+        radial-gradient(circle at 88% 86%, color-mix(in srgb, var(--accent-2, var(--accent)) 12%, transparent), transparent 40%);
+    animation: gateIn 520ms var(--ease-out) both;
+}
+.auth-gate[hidden] { display: none; }
+.auth-inner {
+    display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: clamp(28px, 5vw, 72px);
+    min-height: 100%; max-width: 1180px; margin-inline: auto;
+    padding: max(32px, env(safe-area-inset-top)) 16px max(32px, env(safe-area-inset-bottom));
+}
+@media (min-width: 56rem) { .auth-inner { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); padding-inline: clamp(32px, 5vw, 72px); } }
+.auth-copy { display: grid; gap: 18px; justify-items: start; animation: authRise 700ms var(--spring) 80ms both; }
+.auth-brand { display: inline-flex; align-items: center; gap: 10px; font: 800 1.35rem/1 var(--font-display); color: var(--ink); }
+.auth-brand .logo-icon { color: var(--accent); font-size: 1.5rem; }
+.auth-title { font-family: var(--font-display); font-size: clamp(2.3rem, 5.6vw, 4.1rem); line-height: 1; color: var(--ink); text-wrap: balance; overflow-wrap: break-word; min-width: 0; }
+.auth-title em { font-style: normal; color: var(--accent); }
+.auth-lede { max-width: 46ch; font-size: 1.06rem; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.auth-points { display: grid; gap: 10px; list-style: none; padding: 0; margin: 4px 0 0; }
+.auth-points li { display: flex; align-items: center; gap: 10px; font-weight: 600; color: var(--ink); animation: authRise 600ms var(--spring) both; }
+.auth-points li:nth-child(1) { animation-delay: 260ms; }
+.auth-points li:nth-child(2) { animation-delay: 340ms; }
+.auth-points li:nth-child(3) { animation-delay: 420ms; }
+.auth-points svg { width: 22px; height: 22px; padding: 7px; box-sizing: content-box; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); flex-shrink: 0; }
+.auth-panel {
+    position: relative; justify-self: center; width: min(100%, 440px);
+    padding: 22px 10px 12px; border-radius: var(--r-card); border: 1px solid var(--rule);
+    background: var(--paper-2); box-shadow: var(--card-shadow);
+    animation: authDrop 760ms var(--spring) 160ms both;
+}
+.auth-panel::before {
+    content: ""; position: absolute; top: -13px; left: 50%; width: 120px; height: 26px; translate: -50% 0; rotate: -3deg;
+    background: var(--tape-1, var(--accent-soft)); opacity: 0.9; border-radius: 2px;
+}
+.auth-card { min-height: 380px; display: grid; place-items: center; }
+.auth-error { padding: 24px; text-align: center; color: var(--bad); }
+.auth-gate.leaving { animation: gateOut 480ms var(--ease-in-out) forwards; }
+@keyframes gateIn { from { opacity: 0; } }
+@keyframes gateOut { to { opacity: 0; transform: scale(1.03); } }
+@keyframes authRise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes authDrop { from { opacity: 0; transform: translateY(-22px) rotate(-1.5deg); } 65% { opacity: 1; transform: translateY(3px) rotate(0.4deg); } }
+.user-slot { display: flex; align-items: center; min-height: 44px; padding: 4px 6px; }
+.user-slot[hidden] { display: none; }
+.user-slot-sheet { margin: 2px 0 10px; padding: 6px 10px; border-radius: var(--r-ctl); background: var(--paper-3); }
+@media (min-width: 48rem) and (max-width: 63.99rem) { #sidebar .cl-userButtonOuterIdentifier { display: none; } }
+@media (prefers-reduced-motion: reduce) { .auth-gate, .auth-gate.leaving, .auth-copy, .auth-points li, .auth-panel { animation: none !important; } }
+:root[data-motion="calm"] :is(.auth-gate, .auth-copy, .auth-points li, .auth-panel) { animation: none !important; }

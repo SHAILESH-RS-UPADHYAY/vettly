@@ -8,3 +8,8 @@ backend/recordings/
 .playwright-mcp/
 .hallmark/
 *.bat
+
+# Secrets never ship with the code (Vercel holds its own env vars)
+**/.env
+**/.env.*
+!**/.env.example

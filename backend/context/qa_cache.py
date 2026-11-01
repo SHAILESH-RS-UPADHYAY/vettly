@@ -4,15 +4,16 @@ Stores pre-generated, humanization-validated Q&A pairs on disk.
 Loaded at startup for instant retrieval during live interviews.
 """
 
-import json
 import logging
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
-import config
+import docstore
+import users
 
 logger = logging.getLogger("vettly.context.qa_cache")
+
+_GENERATION: dict[str, dict] = {}   # bulk generation progress, by user
 
 
 class QACache:
@@ -21,44 +22,31 @@ class QACache:
     Each entry: question, answer, category, keywords, score, validated_at.
     """
 
-    def __init__(self):
-        self._cache_file = config.CONTEXT_STORE_DIR / "qa_cache.json"
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._entries: list[dict] = []
-        self._generation_status = {
+        # a bulk run outlives the request that started it, so its progress is kept per user, not per instance
+        self._generation_status = _GENERATION.setdefault(self._user, {
             "running": False,
             "total": 0,
             "completed": 0,
             "failed": 0,
             "started_at": None,
             "finished_at": None,
-        }
+        })
         self.load()
 
     def load(self) -> None:
-        """Load cached Q&A pairs from disk."""
-        if self._cache_file.exists():
-            try:
-                with open(self._cache_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self._entries = data.get("entries", [])
-                logger.info(f"📦 Loaded {len(self._entries)} cached Q&A pairs")
-            except Exception as e:
-                logger.warning(f"Failed to load Q&A cache: {e}")
-                self._entries = []
+        """Load this user's prepared Q&A pairs."""
+        self._entries = docstore.load(self._user, "qa_cache", {}).get("entries", [])
 
     def save(self) -> None:
-        """Persist Q&A cache to disk."""
-        try:
-            data = {
-                "entries": self._entries,
-                "last_updated": datetime.now().isoformat(),
-                "total_entries": len(self._entries),
-            }
-            with open(self._cache_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-            logger.info(f"💾 Saved {len(self._entries)} Q&A pairs to cache")
-        except Exception as e:
-            logger.error(f"Failed to save Q&A cache: {e}")
+        """Persist this user's prepared Q&A pairs."""
+        docstore.save(self._user, "qa_cache", {
+            "entries": self._entries,
+            "last_updated": datetime.now().isoformat(),
+            "total_entries": len(self._entries),
+        })
 
     def add_entry(
         self,

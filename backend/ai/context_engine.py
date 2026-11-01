@@ -5,7 +5,6 @@ Stores and retrieves candidate context for AI answer generation.
 V2: Added Rolling Summarizer for long-interview memory preservation.
 """
 
-import json
 import logging
 from pathlib import Path
 from typing import Optional
@@ -13,6 +12,8 @@ from typing import Optional
 from groq import AsyncGroq
 
 import config
+import docstore
+import users
 from ai.prompts import CONTEXT_TEMPLATE
 
 logger = logging.getLogger("vettly.ai.context")
@@ -46,14 +47,14 @@ class ContextEngine:
     Persists context to disk so it survives server restarts.
     """
 
-    def __init__(self):
+    def __init__(self, user: Optional[str] = None):
+        self._user = user or users.user_id()
         self._resume: dict = {}
         self._github: dict = {}
         self._custom: list[dict] = []
         self._structured: dict = {}  # Categorized context (projects, experience, skills, qa_bank, stories)
         self._assignment: dict = {}  # Company assignment/assessment (HIGHEST PRIORITY)
         self._rolling_summary: str = ""  # Persistent memory of summarized old conversation turns
-        self._context_file = config.CONTEXT_STORE_DIR / "context.json"
         self._groq_client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
         self.load_context()
 
@@ -255,36 +256,25 @@ class ContextEngine:
         logger.info("All context cleared")
 
     def load_context(self) -> None:
-        """Load persisted context from disk."""
-        if self._context_file.exists():
-            try:
-                with open(self._context_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self._resume = data.get("resume", {})
-                    self._github = data.get("github", {})
-                    self._custom = data.get("custom", [])
-                    self._structured = data.get("structured", {})
-                    self._assignment = data.get("assignment", {})
-                    self._rolling_summary = data.get("rolling_summary", "")
-                logger.info("Context loaded from disk")
-            except Exception as e:
-                logger.warning(f"Failed to load context: {e}")
+        """Load this user's saved context."""
+        data = docstore.load(self._user, "context", {})
+        self._resume = data.get("resume", {})
+        self._github = data.get("github", {})
+        self._custom = data.get("custom", [])
+        self._structured = data.get("structured", {})
+        self._assignment = data.get("assignment", {})
+        self._rolling_summary = data.get("rolling_summary", "")
 
     def _save(self) -> None:
-        """Persist context to disk."""
-        try:
-            data = {
-                "resume": self._resume,
-                "github": self._github,
-                "custom": self._custom,
-                "structured": self._structured,
-                "assignment": self._assignment,
-                "rolling_summary": self._rolling_summary,
-            }
-            with open(self._context_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Failed to save context: {e}")
+        """Persist this user's context."""
+        docstore.save(self._user, "context", {
+            "resume": self._resume,
+            "github": self._github,
+            "custom": self._custom,
+            "structured": self._structured,
+            "assignment": self._assignment,
+            "rolling_summary": self._rolling_summary,
+        })
 
     def _format_resume(self) -> str:
         """Format resume dict into a readable string for prompts."""
@@ -318,7 +308,7 @@ class ContextEngine:
 
             # Add remaining keys
             for key, value in self._resume.items():
-                if key in priority_order or key == "raw_text":
+                if key in priority_order or key in ("raw_text", "file_name"):
                     continue
                 if isinstance(value, list):
                     items = "\n".join(f"  - {item}" for item in value)

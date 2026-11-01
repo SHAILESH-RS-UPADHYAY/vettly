@@ -1988,7 +1988,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 const rs = document.getElementById('resume-status');
                 if (rs) rs.classList.remove('hidden');
                 const rfn = document.getElementById('resume-filename');
-                if (rfn) rfn.textContent = 'Shailesh_Upadhyay_Resume.pdf';
+                if (rfn) rfn.textContent = data.resume_file || 'Your resume';
                 const uz = document.getElementById('upload-zone');
                 if (uz) uz.classList.add('hidden');
                 updateChecklist('check-resume', true);
