@@ -102,7 +102,7 @@ const Bento = (() => {
         page.querySelector('#bento-box').innerHTML = todaysBox().map(({ l, forYou }, i) => {
             const t = text(l), tr = BENTO_TRACKS[l.track];
             const isDone = done.includes(l.id);
-            return `<button type="button" class="bento-cell${isDone ? ' is-done' : ''}" data-id="${l.id}" data-tone="${tr.tone}" style="--i:${i}" aria-pressed="${openId === l.id}" aria-label="${esc(t.title)}${isDone ? ', learned' : ''}">
+            return `<button type="button" class="bento-cell${isDone ? ' is-done' : ''}" data-id="${l.id}" data-tone="${tr.tone}" style="--i:${i}" aria-pressed="${openId === l.id}">
                 <span class="cell-lid" aria-hidden="true"></span>
                 <span class="cell-top"><span class="cell-no num">${i + 1}</span><span class="cell-track"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</span></span>
                 <span class="cell-title">${esc(t.title)}</span>
@@ -170,7 +170,7 @@ const Bento = (() => {
     function renderMenu(page) {
         const done = new Set(Object.values(state.done).flat());
         page.querySelector('#bento-menu-list').innerHTML = Object.entries(BENTO_TRACKS).map(([k, tr]) => `
-            <div class="menu-track" data-tone="${tr.tone}"><h4><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</h4>
+            <div class="menu-track" data-tone="${tr.tone}"><h3><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</h3>
             ${BENTO_LESSONS.filter(l => l.track === k).map(l => `<button type="button" class="menu-item" data-open="${l.id}">${done.has(l.id) ? '<svg aria-hidden="true"><use href="#i-check-bold"/></svg>' : '<i aria-hidden="true"></i>'}${esc(text(l).title)}</button>`).join('')}</div>`).join('');
     }
 

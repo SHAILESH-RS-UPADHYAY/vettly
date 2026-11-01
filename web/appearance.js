@@ -194,7 +194,7 @@ const Appearance = (() => {
             { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
             { duration: 620, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
         )).catch(() => {});
-        t.finished.finally(() => root.classList.remove('vt-theme'));
+        t.finished.finally(() => root.classList.remove('vt-theme')).catch(() => {});
     }
     function setThemeMode(mode, origin) {
         store.set(THEME_KEY, mode === 'dark' ? 'dark' : mode === 'light' ? 'parchment' : null);
@@ -217,7 +217,7 @@ const Appearance = (() => {
             Motion.pill(document.querySelector('.sidebar-nav'));
             if (typeof mentorFlowKick === 'function') mentorFlowKick();
         };
-        if (transition && document.startViewTransition && !calm()) document.startViewTransition(write);
+        if (transition && document.startViewTransition && !calm()) document.startViewTransition(write).ready.catch(() => {});
         else write();
     }
     const set = (key, value) => apply({ [key]: value }, { transition: key === 'look' || key === 'sidebar' });
