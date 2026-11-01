@@ -754,22 +754,71 @@
 
 /* ─── 9. App hooks: pinned bubble, flow beam, entry buttons ────────── */
 
-.chat-bubble.mentor-focused {
+/* Whatever the Mentor is pinned to (a Copilot answer or a Prep Studio card) glows while it is pinned */
+.mentor-focused {
     position: relative; border-color: rgba(var(--m-accent-rgb), 0.9) !important;
-    box-shadow: 0 0 0 3px rgba(var(--m-accent-rgb), 0.22);
+    box-shadow: 0 0 0 3px rgba(var(--m-accent-rgb), 0.22) !important;
 }
-.chat-bubble.mentor-focused::after {
-    content: ""; position: absolute; inset: -6px; border-radius: 18px; pointer-events: none;
+.mentor-focused::after {
+    content: ""; position: absolute; inset: -6px; border-radius: inherit; pointer-events: none;
     box-shadow: 0 0 26px rgba(var(--m-accent-rgb), 0.5);
     animation: mGlowPulse 2.8s var(--m-ease) infinite;
 }
+
+/* ─── The pipeline: a beam from the pinned item to the Mentor's pin card ───
+   One SVG (index.html #mentor-flow) with a rail, a beam and two pulses that share one path.
+   Looks (data-pipeline): stream (default) · laser · comet · morse · lightning · aurora · off.
+   The same rules draw the animated previews in Settings (.pipe-demo[data-pipe]). */
 .mentor-flow { position: fixed; inset: 0; z-index: 899; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--m-ease); }
 .mentor-flow.on { opacity: 1; }
 .mentor-flow.on.dim { opacity: 0.35; }
-.mentor-flow path { fill: none; stroke: var(--m-accent); stroke-linecap: round; }
-.mentor-flow .rail { stroke-width: 6; opacity: 0.12; }
-.mentor-flow .beam { stroke-width: 2; stroke-dasharray: 2 10; filter: drop-shadow(0 0 4px rgba(var(--m-accent-rgb), 0.9)); animation: mDash 0.9s linear infinite; }
-.mentor-flow marker circle { fill: var(--m-accent); }
+:root[data-pipeline="off"] .mentor-flow { display: none; }
+:is(.mentor-flow, .pipe-demo) path { fill: none; stroke: var(--m-accent); stroke-linecap: round; }
+:is(.mentor-flow, .pipe-demo) .rail { stroke-width: 6; opacity: 0.12; }
+:is(.mentor-flow, .pipe-demo) .beam { stroke-width: 2; stroke-dasharray: 2 10; filter: drop-shadow(0 0 4px rgba(var(--m-accent-rgb), 0.9)); animation: mDash 0.9s linear infinite; }
+:is(.mentor-flow, .pipe-demo) .pulse { display: none; }
+.mentor-flow marker circle, .pipe-demo .dot { fill: var(--m-accent); }
+
+/* Laser: a solid lit line with a white pulse racing along it */
+:is(:root[data-pipeline="laser"] .mentor-flow, .pipe-demo[data-pipe="laser"]) .rail { stroke-width: 10; opacity: 0.16; filter: blur(3px); }
+:is(:root[data-pipeline="laser"] .mentor-flow, .pipe-demo[data-pipe="laser"]) .beam { stroke-dasharray: none; stroke-width: 2.4; animation: none; filter: drop-shadow(0 0 6px rgba(var(--m-accent-rgb), 0.95)); }
+:is(:root[data-pipeline="laser"] .mentor-flow, .pipe-demo[data-pipe="laser"]) .pulse:not(.pulse-2) {
+    display: inline; stroke: #ffffff; stroke-width: 4; stroke-dasharray: 6 94;
+    filter: drop-shadow(0 0 6px rgba(var(--m-accent-rgb), 1)); animation: mRun 1.3s linear infinite;
+}
+
+/* Comet: a bright head trailing a soft tail */
+:is(:root[data-pipeline="comet"] .mentor-flow, .pipe-demo[data-pipe="comet"]) .rail { stroke-width: 2; opacity: 0.2; }
+:is(:root[data-pipeline="comet"] .mentor-flow, .pipe-demo[data-pipe="comet"]) .beam { stroke-opacity: 0; animation: none; filter: none; }
+:is(:root[data-pipeline="comet"] .mentor-flow, .pipe-demo[data-pipe="comet"]) .pulse { display: inline; animation: mRun 1.7s linear infinite; }
+:is(:root[data-pipeline="comet"] .mentor-flow, .pipe-demo[data-pipe="comet"]) .pulse-2 { stroke-width: 7; opacity: 0.38; stroke-dasharray: 26 74; filter: blur(1.5px); }
+:is(:root[data-pipeline="comet"] .mentor-flow, .pipe-demo[data-pipe="comet"]) .pulse:not(.pulse-2) {
+    stroke: #ffffff; stroke-width: 5; stroke-dasharray: 3 97; animation-delay: -0.39s;
+    filter: drop-shadow(0 0 7px rgba(var(--m-accent-rgb), 1));
+}
+
+/* Morse code: dot, dash, dot, dash, flowing */
+:is(:root[data-pipeline="morse"] .mentor-flow, .pipe-demo[data-pipe="morse"]) .rail { opacity: 0.08; }
+:is(:root[data-pipeline="morse"] .mentor-flow, .pipe-demo[data-pipe="morse"]) .beam { stroke-width: 3.2; stroke-dasharray: 1 7 11 7; animation: mMorse 1.15s linear infinite; filter: drop-shadow(0 0 3px rgba(var(--m-accent-rgb), 0.8)); }
+
+/* Lightning: the line jitters like current through a wire */
+:is(:root[data-pipeline="lightning"] .mentor-flow, .pipe-demo[data-pipe="lightning"]) .rail { stroke-width: 9; opacity: 0.12; }
+:is(:root[data-pipeline="lightning"] .mentor-flow, .pipe-demo[data-pipe="lightning"]) .beam {
+    stroke-dasharray: none; stroke-width: 2.2;
+    filter: url(#flow-zap) drop-shadow(0 0 5px rgba(var(--m-accent-rgb), 1));
+    animation: mZap 0.9s steps(2, jump-none) infinite;
+}
+
+/* Aurora: a flowing rainbow drawn from the accent and the category colours */
+:is(:root[data-pipeline="aurora"] .mentor-flow, .pipe-demo[data-pipe="aurora"]) .rail { stroke: url(#flow-aurora); stroke-width: 11; opacity: 0.2; filter: blur(4px); }
+:is(:root[data-pipeline="aurora"] .mentor-flow, .pipe-demo[data-pipe="aurora"]) .beam { stroke: url(#flow-aurora); stroke-dasharray: none; stroke-width: 3; animation: none; filter: drop-shadow(0 0 5px rgba(var(--glow-rgb), 0.8)); }
+:is(:root[data-pipeline="aurora"] .mentor-flow, .pipe-demo[data-pipe="aurora"]) .pulse:not(.pulse-2) { display: inline; stroke: #ffffff; stroke-width: 2; stroke-dasharray: 2 16; opacity: 0.85; animation: mRun 2.2s linear infinite; }
+
+.pipe-demo[data-pipe="off"] .beam { stroke-dasharray: 3 7; animation: none; filter: none; opacity: 0.35; }
+.pipe-demo[data-pipe="off"] .rail { opacity: 0.05; }
+
+@keyframes mMorse { to { stroke-dashoffset: -26; } }
+@keyframes mZap { 50% { opacity: 0.55; } }
 
 .chat-expand-btn.mentor-doubt-btn,
 .prep-btn.prep-btn-mentor {
@@ -861,7 +910,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .mentor *, .mentor *::before, .mentor *::after,
-    .mentor-flow .beam, .chat-bubble.mentor-focused::after { animation: none !important; transition-duration: 0.01ms !important; }
+    .mentor-flow path, .pipe-demo path, .mentor-focused::after { animation: none !important; transition-duration: 0.01ms !important; }
     .mentor-panel { transition-duration: 0.01ms !important; }
 }
 
@@ -890,3 +939,71 @@
     .mentor-rz { display: none; }
     .mentor-head { cursor: default; }
 }
+
+/* ─── 14. Panel skins (data-mentor-skin): frosted (default) · paper · glass · midnight · bubble ─── */
+
+/* Paper: a notebook by day, a chalkboard by night */
+:root[data-mentor-skin="paper"] {
+    --m-frame: #efe4cf; --m-frame-line: rgba(120, 72, 30, 0.4); --m-frame-hi: #fffaf0;
+    --m-surface-top: #fffaf0; --m-surface: #fcf4e2; --m-surface-edge: #fffdf7; --m-raised: #fffdf7; --m-field: #fffdf7;
+    --m-user-bg: #3b2f22; --m-user-text: #fff8ec; --m-grain-opacity: 0.07;
+    --m-rule: rgba(120, 72, 30, 0.11); --m-margin: rgba(220, 38, 38, 0.22);
+}
+:root.theme-dark[data-mentor-skin="paper"] {
+    --m-frame: #2b3a32; --m-frame-line: rgba(255, 255, 255, 0.3); --m-frame-hi: rgba(255, 255, 255, 0.06);
+    --m-surface-top: #26342d; --m-surface: #1f2b25; --m-surface-edge: rgba(255, 255, 255, 0.06); --m-raised: #2b3b33; --m-field: rgba(0, 0, 0, 0.22);
+    --m-text-strong: #f3f6ef; --m-text: rgba(243, 246, 239, 0.88); --m-text-2: #c4cfc1; --m-text-3: #97a595;
+    --m-line: rgba(255, 255, 255, 0.12); --m-line-strong: rgba(255, 255, 255, 0.22);
+    --m-user-bg: #f3f6ef; --m-user-text: #1f2b25; --m-grain-opacity: 0.08;
+    --m-rule: rgba(255, 255, 255, 0.05); --m-margin: rgba(255, 170, 170, 0.18);
+}
+:root[data-mentor-skin="paper"] .mentor-panel { border-style: dashed; border-width: 1.5px; -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-mentor-skin="paper"] .mentor-core {
+    background:
+        linear-gradient(90deg, transparent 0 44px, var(--m-margin) 44px 45.5px, transparent 45.5px),
+        repeating-linear-gradient(180deg, transparent 0 29px, var(--m-rule) 29px 30px),
+        linear-gradient(180deg, var(--m-surface-top), var(--m-surface));
+}
+:root[data-mentor-skin="paper"] .mentor-title strong { font-family: 'Caveat', cursive; font-style: normal; font-weight: 700; font-size: 32px; letter-spacing: 0; line-height: 0.9; }
+
+/* Clear glass: the page shows through, frosted */
+:root[data-mentor-skin="glass"] {
+    --m-frame: rgba(255, 255, 255, 0.3); --m-frame-line: rgba(255, 255, 255, 0.6); --m-frame-hi: rgba(255, 255, 255, 0.7);
+    --m-surface-top: rgba(255, 255, 255, 0.6); --m-surface: rgba(255, 255, 255, 0.4); --m-raised: rgba(255, 255, 255, 0.72); --m-field: rgba(255, 255, 255, 0.78);
+    --m-grain-opacity: 0;
+}
+:root.theme-dark[data-mentor-skin="glass"] {
+    --m-frame: rgba(255, 255, 255, 0.06); --m-frame-line: rgba(255, 255, 255, 0.16);
+    --m-surface-top: rgba(22, 31, 53, 0.6); --m-surface: rgba(15, 22, 39, 0.45); --m-raised: rgba(30, 41, 68, 0.72); --m-field: rgba(5, 8, 16, 0.45);
+}
+:root[data-mentor-skin="glass"] .mentor-panel { -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%); }
+
+/* Midnight: an ink panel in either theme */
+:root[data-mentor-skin="midnight"] {
+    --m-frame: rgba(14, 20, 36, 0.92); --m-frame-line: rgba(255, 255, 255, 0.11); --m-frame-hi: rgba(255, 255, 255, 0.08);
+    --m-surface-top: #161f35; --m-surface: #0f1627; --m-surface-edge: rgba(255, 255, 255, 0.07); --m-surface-ring: rgba(255, 255, 255, 0.04);
+    --m-raised: #161f35; --m-well: rgba(5, 8, 16, 0.45); --m-field: rgba(5, 8, 16, 0.5); --m-well-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+    --m-soft: rgba(255, 255, 255, 0.025); --m-hover: rgba(255, 255, 255, 0.06); --m-btn: rgba(255, 255, 255, 0.03); --m-btn-hover: rgba(255, 255, 255, 0.08);
+    --m-text-strong: #f3efe6; --m-text: rgba(243, 239, 230, 0.86); --m-text-2: #aab4c4; --m-text-3: #7d889b;
+    --m-line: rgba(170, 184, 206, 0.13); --m-line-strong: rgba(170, 184, 206, 0.24); --m-scroll: rgba(170, 184, 206, 0.22);
+    --m-user-bg: #1e2944; --m-user-text: #f3efe6; --m-user-line: rgba(170, 184, 206, 0.24);
+    --m-thumb: linear-gradient(180deg, #fffaf1, #e9e2d3); --m-thumb-text: #141b2c;
+    --m-code-inline: #f3efe6; --m-code-bg: rgba(5, 8, 16, 0.6); --m-code-text: #dbe3f0;
+    --m-sheen-dim: rgba(170, 184, 206, 0.35); --m-sweep: rgba(255, 255, 255, 0.1);
+    --m-entry-bg: linear-gradient(180deg, #1d2842, #111829); --m-entry-bg-hover: linear-gradient(180deg, #243152, #141c30);
+    --m-entry-text: #f3efe6; --m-entry-line: rgba(255, 255, 255, 0.12);
+    --m-shadow-rgb: 0, 0, 0; --m-glow-a: 0.22; --m-grain-opacity: 0.05; --m-grain-blend: overlay;
+}
+
+/* Bubble: extra round, tinted with the accent */
+:root[data-mentor-skin="bubble"] {
+    --m-frame: color-mix(in srgb, var(--accent) 20%, #ffffff); --m-frame-line: rgba(var(--accent-rgb), 0.45);
+    --m-surface-top: color-mix(in srgb, var(--accent) 5%, #ffffff); --m-surface: color-mix(in srgb, var(--accent) 9%, #fffdf9);
+    --m-user-bg: var(--accent); --m-user-text: var(--on-accent);
+}
+:root.theme-dark[data-mentor-skin="bubble"] {
+    --m-frame: color-mix(in srgb, var(--accent) 24%, #0f1627); --m-frame-line: rgba(var(--accent-rgb), 0.5);
+    --m-surface-top: color-mix(in srgb, var(--accent) 12%, #161f35); --m-surface: color-mix(in srgb, var(--accent) 7%, #0f1627);
+}
+:root[data-mentor-skin="bubble"] .mentor-panel { border-radius: 40px; border-width: 2px; padding: 8px; }
+:root[data-mentor-skin="bubble"] .mentor-core { border-radius: 32px; }
