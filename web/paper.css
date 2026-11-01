@@ -66,7 +66,7 @@
 }
 
 /* ── Pages: how every card is drawn ── */
-:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card) { animation: paperDrop 700ms var(--spring) backwards; }
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card) { animation: paperDrop 700ms var(--spring) backwards; transform-origin: 50% 0; }   /* swings from its tape, so a tall page never sweeps sideways */
 :root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(2) { animation-delay: 70ms; }
 :root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3) { animation-delay: 140ms; }
 :root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(n+4) { animation-delay: 210ms; }
@@ -151,6 +151,7 @@
 :root[data-look="register"] .toolbelt-card-header { border-bottom: 3px double var(--pg-margin); padding-bottom: 10px; margin-bottom: 18px; }
 :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3n+1) { rotate: -0.5deg; }
 :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3n+2) { rotate: 0.4deg; }
+:root[data-look="register"] .toolbelt-card:is(:has(.context-list, textarea), .bento-lesson, .bento-menu) { rotate: none; }   /* tall lists and forms sit straight: a tilt sweeps their far end off the screen */
 :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card) { transition: rotate var(--dur-long) var(--spring), translate var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out); }
 @media (hover: hover) { :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):hover { rotate: 0deg; translate: 0 -3px; } }
 :root[data-look="register"] .btn-primary { rotate: -0.8deg; transition: rotate var(--dur-long) var(--spring), transform var(--dur-micro) var(--ease-out), background-color var(--dur-short) var(--ease-out); }

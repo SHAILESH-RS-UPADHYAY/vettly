@@ -2498,18 +2498,12 @@ function renderToday() {
     let bento = {};
     try { bento = JSON.parse(localStorage.getItem('vettly_bento') || '{}'); } catch (e) { /* storage blocked */ }
     const eaten = (bento.done?.[new Date().toLocaleDateString('en-CA')] || []).length;
-    const toReview = prep.entries.filter(e => prepStatus(e) === 'review').length;
-    const C = 2 * Math.PI * 20;
-    el.innerHTML = `
-        <div class="today-tile" style="--i:0">
-            <svg class="bento-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="ring-fill" cx="24" cy="24" r="20" style="stroke-dasharray:${C};stroke-dashoffset:${C * (1 - eaten / 5)}"/></svg>
-            <div><b>${eaten} of 5 concepts</b><span>${bento.streak ? `${bento.streak} day streak` : 'Start a streak today'}</span></div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('bento', { animate: true })">Open Brain Bento</button>
-        </div>
-        <div class="today-tile" style="--i:1">
-            <span class="today-ico" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
-            <div><b>${prep.loaded ? `${toReview} answers to review` : 'Your prep bank'}</b><span>${prep.loaded ? `${prep.entries.length} questions in Prep Studio` : 'Generate your first question'}</span></div>
-            <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('prep', { animate: true })">Review in Prep Studio</button>
-        </div>`;
+    const set = (key, text) => { el.querySelector(`[data-today="${key}"]`).textContent = text; };
+    set('eaten', `${eaten} of 5 concepts`);
+    set('streak', bento.streak ? `${bento.streak} day streak` : 'Start a streak today');
+    el.querySelector('.ring-fill').style.strokeDashoffset = 125.66 * (1 - eaten / 5);
+    if (!prep.loaded) return;
+    set('review', `${prep.entries.filter(e => prepStatus(e) === 'review').length} answers to review`);
+    set('bank', `${prep.entries.length} questions in Prep Studio`);
 }
 renderToday();

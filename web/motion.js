@@ -33,7 +33,8 @@ const Motion = (() => {
         if (!document.startViewTransition || calm()) { update(); return; }
         root.classList.add('vt-page');
         const t = document.startViewTransition(update);
-        t.finished.finally(() => root.classList.remove('vt-page'));
+        t.ready.catch(() => {});   // skipped by a resize or rotation: the update still ran
+        t.finished.finally(() => root.classList.remove('vt-page')).catch(() => {});
     }
 
     // Segmented controls: a single thumb glides to the pressed option

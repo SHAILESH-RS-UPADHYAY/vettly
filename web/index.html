@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f6f1e7">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23ea580c'%3E%3Cpath d='M16 2l5 5-5 5-5-5z'/%3E%3Cpath d='M16 20l5 5-5 5-5-5z'/%3E%3Cpath d='M7 11l5 5-5 5-5-5z'/%3E%3Cpath d='M25 11l5 5-5 5-5-5z'/%3E%3C/g%3E%3C/svg%3E">
     <title>Vettly Prep Studio</title>
     <meta name="description" content="Practise interview questions grounded in your resume, GitHub and target job, rehearse answers with a live Copilot, and ask the Mentor anything.">
     <script>
@@ -26,13 +27,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.3">
+    <link rel="stylesheet" href="./styles.css?v=8.4">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
-    <link rel="stylesheet" href="./paper.css?v=8.0">
+    <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.0">
-    <link rel="stylesheet" href="./bento.css?v=8.1">
+    <link rel="stylesheet" href="./bento.css?v=8.2">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -143,7 +144,7 @@
             </button>
         </div>
         <div class="sidebar-footer">
-            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" aria-label="Switch between Parchment and Spatial Dark">
+            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" title="Switch between Parchment and Spatial Dark">
                 <svg class="theme-ico theme-ico-light" aria-hidden="true"><use href="#i-scroll"/></svg>
                 <svg class="theme-ico theme-ico-dark" aria-hidden="true"><use href="#i-planet"/></svg>
                 <span class="theme-text">Theme: <strong id="theme-label">Parchment</strong></span>
@@ -196,8 +197,20 @@
                     <span class="handwritten-note" aria-hidden="true">Build smarter. Ship safer!</span>
                     <h1>Career prep <em>architect</em></h1>
                     <p>Architect your technical depth, mock sessions & role-specific mastery with precision</p>
+                    <h2 class="sr-only">How Vettly works</h2>
                 </div>
-                <section class="today-card" id="today-card" aria-label="Today"></section>
+                <section class="today-card" id="today-card" aria-label="Today">
+                    <div class="today-tile" style="--i:0">
+                        <svg class="bento-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="ring-fill" cx="24" cy="24" r="20" style="stroke-dasharray:125.66;stroke-dashoffset:125.66"/></svg>
+                        <div><b data-today="eaten">0 of 5 concepts</b><span data-today="streak">Start a streak today</span></div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('bento', { animate: true })">Open Brain Bento</button>
+                    </div>
+                    <div class="today-tile" style="--i:1">
+                        <span class="today-ico" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
+                        <div><b data-today="review">Your prep bank</b><span data-today="bank">Generate your first question</span></div>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('prep', { animate: true })">Review in Prep Studio</button>
+                    </div>
+                </section>
 
                 <!-- 4 Workflow Cards (Matching Poster Step 1..4) -->
                 <div class="poster-grid-4">
@@ -226,21 +239,21 @@
                 <!-- Embedded Generated Poster Visual Media Cards -->
                 <div class="poster-media-grid">
                     <div class="poster-media-card">
-                        <img src="./agent_toolbelt_case.jpg" alt="Agent Toolbelt Case">
+                        <img src="./agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="1200" height="896" loading="lazy" decoding="async">
                         <div class="poster-media-card-body">
                             <h4>AGENT TOOLKIT PACK</h4>
                             <p>Modular background skills: Code Generation, Retrieval Guardrails & Evaluation.</p>
                         </div>
                     </div>
                     <div class="poster-media-card">
-                        <img src="./blueprint_architect.jpg" alt="Blueprint Architect">
+                        <img src="./blueprint_architect.webp" alt="Blueprint Architect" width="1200" height="896" loading="lazy" decoding="async">
                         <div class="poster-media-card-body">
                             <h4>BLUEPRINT SPECIFICATION</h4>
                             <p>Precision system design & database optimization stories ready for retrieval.</p>
                         </div>
                     </div>
                     <div class="poster-media-card">
-                        <img src="./copilot_hud_panel.jpg" alt="Copilot HUD Panel">
+                        <img src="./copilot_hud_panel.webp" alt="Copilot HUD Panel" width="1200" height="896" loading="lazy" decoding="async">
                         <div class="poster-media-card-body">
                             <h4>HUD CONTROL CENTER</h4>
                             <p>Real-time readiness telemetry and multi-engine practice studio.</p>
@@ -265,6 +278,7 @@
                     <span class="handwritten-note left" aria-hidden="true">Tactile toolbelt ready!</span>
                     <h1><span class="v-classic">Agent <em>Toolbelt</em> Builder</span><span class="v-alt">Agent <em>Toolbelt</em></span></h1>
                     <p>Design the modular tools your AI copilot uses during your live session</p>
+                    <h2 class="sr-only">What your copilot knows</h2>
                 </div>
                 <nav class="tb-summary" id="tb-summary" aria-label="What your copilot knows"></nav>
 
@@ -557,6 +571,7 @@ Nice to Have:
                 <div class="poster-header">
                     <h1><span class="v-classic">Live <em>AI Copilot</em></span><span class="v-alt">Live <em>Copilot</em></span></h1>
                     <p>Practice responses and test real-time candidate retrieval</p>
+                    <h2 class="sr-only">Your practice session</h2>
                 </div>
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages">
@@ -585,6 +600,7 @@ Nice to Have:
                 <div class="poster-header">
                     <h1><span class="v-classic">Prep <em>Studio</em> HUD</span><span class="v-alt">Prep <em>Studio</em></span></h1>
                     <p>Synthesize questions, study streamed answers &amp; fine-tune responses</p>
+                    <h2 class="sr-only">Generate and review questions</h2>
                 </div>
                 <!-- Synthesis Lab: pick a category and language, then generate -->
                 <div class="toolbelt-card prep-lab">
@@ -694,6 +710,7 @@ Nice to Have:
                 <div class="poster-header">
                     <h1><span class="v-classic">Brain <em>Bento</em> Box</span><span class="v-alt">Brain <em>Bento</em></span></h1>
                     <p>Five bite-sized concepts, packed fresh every morning</p>
+                    <h2 class="sr-only">Today's box</h2>
                 </div>
                 <div class="toolbelt-card bento-bar">
                     <div class="bento-stats">
@@ -729,6 +746,7 @@ Nice to Have:
                 <div class="poster-header">
                     <h1><span class="v-classic">Candidate <em>Profile</em></span><span class="v-alt">About <em>me</em></span></h1>
                     <p>Configure personal background rules and identity constraints</p>
+                    <h2 class="sr-only">Your answers and rules</h2>
                 </div>
                 <div class="dashboard-grid">
                     <div class="toolbelt-card full-width">
@@ -765,6 +783,7 @@ Nice to Have:
                 <div class="poster-header">
                     <h1><span class="v-classic">Settings <em>Matrix</em></span><span class="v-alt">Studio <em>settings</em></span></h1>
                     <p><span class="v-classic">Theme studio, backend API telemetry, readiness checklist &amp; workspace shortcuts</span><span class="v-alt">Theme studio, backend connection, readiness checklist and keyboard shortcuts</span></p>
+                    <h2 class="sr-only">Workspace settings</h2>
                 </div>
                 <div class="dashboard-grid">
                     <!-- Theme Studio: looks, colours, side panel, Mentor (logo, panel, pipeline) and layout (appearance.js) -->
@@ -782,26 +801,26 @@ Nice to Have:
                                     <button type="button" data-v="device" aria-pressed="false"><svg aria-hidden="true"><use href="#i-half"/></svg>Match device</button>
                                 </div>
                             </div>
-                            <div class="seg studio-tabs" data-studio-tabs role="tablist" aria-label="Theme Studio sections">
-                                <button type="button" role="tab" data-tab="looks" aria-pressed="true"><svg aria-hidden="true"><use href="#i-swatches"/></svg>Looks</button>
-                                <button type="button" role="tab" data-tab="paper" aria-pressed="false"><svg aria-hidden="true"><use href="#i-scroll"/></svg>Paper &amp; tape</button>
-                                <button type="button" role="tab" data-tab="colours" aria-pressed="false"><svg aria-hidden="true"><use href="#i-palette"/></svg>Colours</button>
-                                <button type="button" role="tab" data-tab="sidebar" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sidebar"/></svg>Side panel</button>
-                                <button type="button" role="tab" data-tab="mentor" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Mentor</button>
-                                <button type="button" role="tab" data-tab="layout" aria-pressed="false"><svg aria-hidden="true"><use href="#i-layout"/></svg>Layout</button>
+                            <div class="seg studio-tabs" data-studio-tabs role="group" aria-label="Theme Studio sections">
+                                <button type="button" data-tab="looks" aria-pressed="true"><svg aria-hidden="true"><use href="#i-swatches"/></svg>Looks</button>
+                                <button type="button" data-tab="paper" aria-pressed="false"><svg aria-hidden="true"><use href="#i-scroll"/></svg>Paper &amp; tape</button>
+                                <button type="button" data-tab="colours" aria-pressed="false"><svg aria-hidden="true"><use href="#i-palette"/></svg>Colours</button>
+                                <button type="button" data-tab="sidebar" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sidebar"/></svg>Side panel</button>
+                                <button type="button" data-tab="mentor" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Mentor</button>
+                                <button type="button" data-tab="layout" aria-pressed="false"><svg aria-hidden="true"><use href="#i-layout"/></svg>Layout</button>
                             </div>
                         </div>
                         <div class="studio-panels">
-                            <section class="studio-panel" data-panel="looks" role="tabpanel" aria-label="Looks">
+                            <section class="studio-panel" data-panel="looks" aria-label="Looks">
                                 <p class="ap-note">A look restyles the whole app: type, edges, surfaces and its own colours. Poster Classic is your original design.</p>
                                 <div class="look-grid" data-ap-looks></div>
                                 <div class="look-workshop" data-look-workshop hidden></div>
                             </section>
-                            <section class="studio-panel" data-panel="paper" role="tabpanel" aria-label="Paper and tape" hidden>
+                            <section class="studio-panel" data-panel="paper" aria-label="Paper and tape" hidden>
                                 <p class="ap-note">Washi tape and notebook paper for every page, in any look. Register is the full notebook look.</p>
                                 <div class="paper-groups" data-ap-paper-groups></div>
                             </section>
-                            <section class="studio-panel" data-panel="colours" role="tabpanel" aria-label="Colours" hidden>
+                            <section class="studio-panel" data-panel="colours" aria-label="Colours" hidden>
                                 <div class="ap-head">
                                     <p class="ap-note">Each theme keeps its own colour.</p>
                                     <div class="seg" data-ap-edit role="group" aria-label="Choose colours for">
@@ -820,11 +839,11 @@ Nice to Have:
                                     <p class="ap-note" data-ap-mode-note></p>
                                 </div>
                             </section>
-                            <section class="studio-panel" data-panel="sidebar" role="tabpanel" aria-label="Side panel" hidden>
+                            <section class="studio-panel" data-panel="sidebar" aria-label="Side panel" hidden>
                                 <p class="ap-note">How the navigation panel looks. On phones it becomes the tab bar.</p>
                                 <div class="pick-grid" data-ap-sidebars></div>
                             </section>
-                            <section class="studio-panel" data-panel="mentor" role="tabpanel" aria-label="Mentor" hidden>
+                            <section class="studio-panel" data-panel="mentor" aria-label="Mentor" hidden>
                                 <div class="ap-head">
                                     <h4>Logo</h4>
                                     <div class="seg" data-ap-edit role="group" aria-label="Choose the logo for">
@@ -847,7 +866,7 @@ Nice to Have:
                                 <p class="ap-note">The beam that joins what you asked about to the Mentor, in Live Copilot and Prep Studio.</p>
                                 <div class="pick-grid pipe-grid" data-ap-pipes></div>
                             </section>
-                            <section class="studio-panel" data-panel="layout" role="tabpanel" aria-label="Layout" hidden>
+                            <section class="studio-panel" data-panel="layout" aria-label="Layout" hidden>
                                 <h4>Quick formats</h4>
                                 <div class="presets" data-ap-presets></div>
                                 <h4>Fine tune</h4>
@@ -1200,11 +1219,11 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./motion.js?v=7.0"></script>
-    <script src="./appearance.js?v=8.0"></script>
-    <script src="./dashboard.js?v=8.3"></script>
+    <script src="./motion.js?v=8.1"></script>
+    <script src="./appearance.js?v=8.1"></script>
+    <script src="./dashboard.js?v=8.4"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
-    <script src="./bento.js?v=8.1"></script>
+    <script src="./bento.js?v=8.2"></script>
 </body>
 </html>
