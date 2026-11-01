@@ -1,0 +1,149 @@
+/* Brain Bento: today's five concepts as compartments of a bento box, and the lesson that opens from one.
+   Motion: compartments drop in and lift their lid on hover; diagram nodes pop in, links flow, a packet
+   travels the path. Calm and reduced motion keep everything still. */
+
+#page-bento { --page-max: 1320px; }
+#page-bento .page-inner { container: bento / inline-size; }
+
+/* ── The bar: date, streak, progress, language, tracks ── */
+.bento-bar { display: grid; gap: 14px; margin-bottom: var(--gap-stack); }
+.bento-stats { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
+.bento-date { font: 700 1.05rem/1.2 var(--font-body); color: var(--ink); margin-right: auto; }
+.bento-stat { display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--ink-2); }
+.bento-stat b { color: var(--ink); font-size: 1.05rem; }
+.bento-stat > svg { width: 20px; height: 20px; color: var(--warn); animation: flameFlicker 1.8s var(--ease-in-out) infinite; }
+@keyframes flameFlicker { 50% { transform: scale(1.12) rotate(-6deg); } }
+.bento-ring { width: 40px; height: 40px; transform: rotate(-90deg); }
+.bento-ring circle { fill: none; stroke: var(--paper-3); stroke-width: 6; }
+.bento-ring .ring-fill { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset 900ms var(--spring); }
+.bento-tracks { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 47.99rem) { .bento-tracks { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; } .bento-tracks .chip { flex-shrink: 0; } }
+
+/* ── The box: one big compartment and four small ones ── */
+.bento-box { display: grid; gap: 12px; margin-bottom: var(--gap-stack); grid-template-columns: minmax(0, 1fr); }
+@container bento (min-width: 560px) { .bento-box { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bento-cell:first-child { grid-column: 1 / -1; } }
+@container bento (min-width: 900px) { .bento-box { grid-template-columns: 1.35fr 1fr 1fr; grid-template-rows: repeat(2, minmax(150px, auto)); } .bento-cell:first-child { grid-column: auto; grid-row: span 2; } }
+.bento-cell {
+    position: relative; isolation: isolate; overflow: hidden; display: grid; align-content: start; gap: 8px; text-align: left;
+    min-height: 150px; padding: 18px 18px 16px; border-radius: var(--r-card);
+    border: 1.5px solid color-mix(in srgb, var(--cfg) 28%, var(--card-border));
+    background: radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--cfg) 14%, transparent), transparent 60%), var(--card-bg);
+    box-shadow: var(--card-shadow); color: var(--ink);
+    transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    animation: cellIn 620ms var(--spring) both; animation-delay: calc(var(--i, 0) * 70ms);
+}
+.bento-cell:first-child { min-height: 200px; }
+.bento-cell:first-child .cell-title { font-size: 1.45rem; }
+.cell-lid {   /* the compartment's lid: lifts on hover */
+    position: absolute; inset: 0 0 auto; height: 8px; z-index: 1;
+    background: linear-gradient(90deg, var(--cfg), color-mix(in srgb, var(--cfg) 45%, var(--accent)));
+    transform-origin: 0 100%; transition: transform var(--dur-long) var(--spring);
+}
+.cell-top { display: flex; align-items: center; gap: 8px; }
+.cell-no { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--cbg); color: var(--cfg); font: 700 0.85rem/1 var(--font-body); }
+.cell-track { display: inline-flex; align-items: center; gap: 6px; font: 600 0.78rem/1.2 var(--font-body); color: var(--cfg); }
+.cell-track svg { width: 15px; height: 15px; }
+.cell-title { font: 700 1.12rem/1.25 var(--font-body); color: var(--ink); text-wrap: balance; }
+.cell-hook { font-size: 0.9rem; color: var(--ink-2); text-wrap: pretty; }
+.cell-quote { position: relative; margin-top: 6px; padding: 14px 16px 14px 40px; border-radius: max(8px, calc(var(--r-card) - 8px)); background: var(--cbg); color: var(--ink); font-size: 0.95rem; font-style: italic; line-height: 1.55; text-wrap: pretty; }
+.cell-quote::before { content: "“"; position: absolute; left: 12px; top: 2px; font: 800 2.2rem/1 var(--font-serif-ed); color: var(--cfg); }
+.cell-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: auto; padding-top: 6px; font-size: 0.78rem; color: var(--muted); }
+.cell-for { padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
+.cell-done { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.cell-done svg { width: 12px; height: 12px; }
+.bento-cell.is-done { border-color: color-mix(in srgb, var(--ok) 45%, var(--card-border)); }
+.bento-cell.is-done .cell-title { color: var(--ink-2); }
+.bento-cell[aria-pressed="true"] { border-color: var(--cfg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cfg) 22%, transparent), var(--card-shadow-hover); }
+.bento-cell:active { transform: scale(0.98); }
+@media (hover: hover) {
+    .bento-cell:hover { transform: translateY(-5px) rotate(-0.4deg); box-shadow: var(--card-shadow-hover); }
+    .bento-cell:hover .cell-lid { transform: rotate(-5deg) translateY(-3px); }
+}
+@keyframes cellIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } }
+
+/* ── The lesson ── */
+.bento-lesson { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: var(--gap-stack); scroll-margin-top: 16px; container: lesson / inline-size; animation: lessonIn 600ms var(--spring) both; }
+.bento-lesson[hidden] { display: none; }
+@keyframes lessonIn { from { opacity: 0; transform: translateY(-12px) scale(0.985); } }
+.lesson-head { display: grid; gap: 8px; padding-right: 48px; }
+.lesson-head .tone-pill { justify-self: start; }
+.lesson-title { font: 800 clamp(1.4rem, 1.1rem + 1.2vw, 2rem)/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); text-wrap: balance; }
+.lesson-hook { font-size: 1rem; color: var(--ink-2); }
+.lesson-close { position: absolute; top: var(--pad-card); right: var(--pad-card); }
+.lesson-diagram { margin: 0; padding: 18px; border-radius: max(8px, calc(var(--r-card) - 6px)); background: color-mix(in srgb, var(--cbg) 55%, var(--paper-2)); border: 1px dashed color-mix(in srgb, var(--cfg) 35%, transparent); overflow: hidden; }
+.lesson-grid { display: grid; gap: 14px; }
+@container lesson (min-width: 640px) { .lesson-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+.lesson-block { display: grid; gap: 8px; align-content: start; }
+.lesson-block h3 { display: flex; align-items: center; gap: 8px; font: 700 0.98rem/1.3 var(--font-body); color: var(--ink); }
+.lesson-block h3 svg { width: 19px; height: 19px; color: var(--accent-ink); }
+.lesson-block p { font-size: 0.97rem; line-height: 1.7; color: var(--ink-2); text-wrap: pretty; }
+.lesson-analogy { padding: 14px 16px; border-radius: max(8px, calc(var(--r-card) - 8px)); background: var(--accent-soft); }
+.lesson-analogy p { color: var(--ink); font-style: italic; }
+.lesson-interview { padding: 16px; border-radius: max(8px, calc(var(--r-card) - 8px)); border: 1.5px solid var(--rule-2); }
+.lesson-q { font-weight: 700; color: var(--ink) !important; }
+.lesson-a { padding: 12px 14px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--paper-3) 70%, transparent); border-radius: 0 10px 10px 0; }
+.lesson-follow { display: flex; flex-wrap: wrap; gap: 8px; }
+.lesson-follow .chip { white-space: normal; text-align: left; min-height: 40px; }
+.lesson-related { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.lesson-rel { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border: 1px solid var(--rule-2); border-radius: var(--r-ctl); background: var(--card-bg); color: var(--ink); text-align: left; font-size: 0.92rem; transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.lesson-rel span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) { .lesson-rel:hover { border-color: var(--accent); } }
+.lesson-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 6px; border-top: 1px dashed var(--rule-2); }
+.lesson-actions .btn { min-height: 46px; }
+.lesson-actions .prep-btn-mentor svg { width: 14px; height: 14px; }
+
+/* ── Diagrams ── */
+.dg { display: block; width: 100%; height: auto; max-height: 420px; overflow: visible; }
+.dg-v { display: none; max-width: 360px; margin: 0 auto; }
+@container lesson (max-width: 619px) { .dg-h { display: none; } .dg-v { display: block; } }
+.dg-cycle { max-width: 380px; margin: 0 auto; }
+.dg-layers { max-width: 520px; margin: 0 auto; }
+.dg-node rect { fill: var(--card-bg); stroke: var(--cfg); stroke-width: 2; }
+.dg-node text { fill: var(--ink); font: 600 13px/1 var(--font-body); }
+.dg-node { transform-box: fill-box; transform-origin: center; animation: dgPop 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 140ms + 120ms); }
+.dg-layer rect { fill: color-mix(in srgb, var(--cbg) 70%, var(--card-bg)); }
+.dg-layer { animation-name: dgSlide; }
+.dg-link { fill: none; stroke: var(--cfg); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 5 6; animation: dgFlow 1s linear infinite, dgFade 400ms ease-out both; animation-delay: 0s, calc(var(--i, 0) * 140ms + 300ms); }
+.dg-arrow { fill: var(--cfg); }
+.dg-orbit { fill: none; stroke: color-mix(in srgb, var(--cfg) 18%, transparent); stroke-width: 10; }
+.dg-packet { fill: var(--accent); offset-rotate: 0deg; animation: dgPacket 3.2s var(--ease-in-out) infinite 1s; filter: drop-shadow(0 0 6px var(--accent)); }
+.dg-packet-loop { animation: dgPacket 5s linear infinite 1s; }
+.dg-compare { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 12px; }
+@container lesson (max-width: 479px) { .dg-compare { grid-template-columns: minmax(0, 1fr); } .dg-vs { justify-self: center; } }
+.dg-col { padding: 14px 16px; border-radius: 14px; background: var(--card-bg); border: 2px solid var(--cfg); animation: dgPop 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 160ms + 100ms); }
+.dg-col:last-of-type { border-style: dashed; }
+.dg-col h4 { font: 700 1.05rem/1.2 var(--font-body); color: var(--cfg); margin-bottom: 8px; }
+.dg-col ul { list-style: none; display: grid; gap: 7px; }
+.dg-col li { position: relative; padding-left: 18px; font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); animation: dgFade 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 110ms + 360ms); }
+.dg-col li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 7px; height: 7px; border-radius: 50%; background: var(--cfg); }
+.dg-vs { align-self: center; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 800 0.85rem/1 var(--font-body); animation: vsPulse 2.4s var(--ease-in-out) infinite; }
+@keyframes dgPop { from { opacity: 0; transform: scale(0.6); } }
+@keyframes dgSlide { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes dgFade { from { opacity: 0; } }
+@keyframes dgFlow { to { stroke-dashoffset: -22; } }
+@keyframes dgPacket { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+@keyframes vsPulse { 50% { transform: scale(1.1); } }
+
+/* ── The full menu ── */
+.bento-menu { margin-bottom: var(--gap-stack); }
+.bento-menu summary { display: flex; align-items: center; gap: 10px; cursor: pointer; font: 700 1rem/1.3 var(--font-body); color: var(--ink); list-style: none; }
+.bento-menu summary::-webkit-details-marker { display: none; }
+.bento-menu summary svg { width: 20px; height: 20px; color: var(--accent-ink); transition: transform var(--dur-long) var(--spring); }
+.bento-menu[open] summary svg.caret { transform: rotate(90deg); }
+.bento-menu-list { display: grid; gap: 16px; margin-top: 16px; }
+@container bento (min-width: 720px) { .bento-menu-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bento (min-width: 1100px) { .bento-menu-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.menu-track { display: grid; gap: 4px; align-content: start; }
+.menu-track h4 { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font: 700 0.86rem/1.3 var(--font-body); color: var(--cfg); }
+.menu-track h4 svg { width: 16px; height: 16px; }
+.menu-item { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 6px 10px; border: 0; border-radius: var(--r-ctl); background: transparent; color: var(--ink-2); text-align: left; font-size: 0.9rem; transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out); }
+.menu-item i { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--cfg); flex-shrink: 0; }
+.menu-item svg { width: 13px; height: 13px; color: var(--ok); flex-shrink: 0; }
+@media (hover: hover) { .menu-item:hover { background: var(--cbg); color: var(--ink); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg { animation: none !important; }
+    .dg-packet { display: none; }
+}
+:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg) { animation: none !important; }
+:root[data-motion="calm"] .dg-packet { display: none; }
