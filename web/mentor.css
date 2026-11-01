@@ -18,12 +18,12 @@
 @property --m-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 
 :root {
-    /* Accent — brand orange */
-    --m-accent: #e67537;
-    --m-accent-rgb: 230, 117, 55;
-    --m-accent-deep: #b8410b;
-    --m-accent-ink: #b3400d;                 /* accent as text on the surface (AA) */
-    --m-on-accent: #1a1006;                  /* text and icons on accent fills */
+    /* Accent: follows the app's accent theme in both modes (tokens.css) */
+    --m-accent: var(--accent);
+    --m-accent-rgb: var(--accent-rgb);
+    --m-accent-deep: var(--accent-deep);
+    --m-accent-ink: var(--accent-ink);       /* accent as text on the surface (AA) */
+    --m-on-accent: var(--on-accent);         /* text and icons on accent fills */
 
     /* Surfaces */
     --m-frame: rgba(255, 255, 255, 0.8);
@@ -78,26 +78,16 @@
     /* Depth */
     --m-shadow-rgb: 120, 72, 30;             /* warm umber, tinted to the parchment */
     --m-glow-a: 0.12;
-    --m-orb-core: #fb923c;                   /* the emblem: lit side → shaded side */
-    --m-orb-deep: #ea580c;
-    --m-orb-shade: rgba(154, 52, 18, 0.32);
-    --m-orb-aura: 0.3;
     --m-grain-opacity: 0.035;
     --m-grain-blend: multiply;
 
     /* Motion + type */
     --m-ease: cubic-bezier(0.32, 0.72, 0, 1);
     --m-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
-    --m-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+    --m-serif: var(--font-display);          /* the Mentor's voice: the app's display face */
 }
 
-body.theme-dark {
-    --m-accent: #53bcea;
-    --m-accent-rgb: 83, 188, 234;
-    --m-accent-deep: #0369a1;
-    --m-accent-ink: #53bcea;
-    --m-on-accent: #04121c;
-
+.theme-dark {
     --m-frame: rgba(255, 255, 255, 0.05);
     --m-frame-line: rgba(255, 255, 255, 0.11);
     --m-frame-hi: rgba(255, 255, 255, 0.08);
@@ -146,73 +136,164 @@ body.theme-dark {
 
     --m-shadow-rgb: 0, 0, 0;
     --m-glow-a: 0.22;
-    --m-orb-core: var(--m-accent);
-    --m-orb-deep: var(--m-accent-deep);
-    --m-orb-shade: rgba(10, 14, 26, 0.38);
-    --m-orb-aura: 0.5;
     --m-grain-opacity: 0.05;
     --m-grain-blend: overlay;
 }
 
 /* ─── 2. The emblem: a liquid orb with light running along its lines ─
-   Layers (markup in mentor.js → MENTOR_EMBLEM):
-   aura (breathing glow) · sphere (liquid light) · art: bezel ticks,
-   two orbits with racing light, a sparkle whose outline is traced. */
+   Layers (markup in mentor.js → MENTOR_EMBLEM): aura · sphere · art (bezel ticks, two orbits with
+   racing light, a sparkle whose outline is traced). Five looks, each a set of tokens built from the
+   accent theme: Classic glow, Porcelain, Ink + ember, Flat, Ink + ring. Light mode reads data-orb,
+   dark mode data-orb-dark (set on <html> by the bootstrap); a preview orb names its own data-look. */
 
 .m-orb {
     --s: 40px;
+    /* Classic glow (the default token set) */
+    --orb-spec: rgba(255, 249, 238, 0.9);
+    --orb-sheen: rgba(255, 255, 255, 0.26);
+    --orb-shade: var(--orb-gloss-shade);
+    --orb-deep: var(--accent-deep);
+    --orb-core: var(--orb-gloss-core);
+    --orb-shadow: inset 0 -5px 12px var(--orb-gloss-shade), inset 0 1px 1px rgba(255, 255, 255, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.14), 0 10px 24px -8px rgba(var(--glow-rgb), 0.7);
+    --orb-aura: rgba(var(--glow-rgb), var(--orb-gloss-aura));
+    --orb-star: #fff9ee;
+    --orb-star-fx: drop-shadow(0 1px 1.5px var(--orb-gloss-shade));
+    --orb-line: rgba(255, 249, 238, 0.3);
+    --orb-run: rgba(255, 250, 240, 0.5);
+    --orb-head: #ffffff;
+    --orb-head-fx: drop-shadow(0 0 2px #ffffff);
+    --orb-halo: rgba(255, 250, 240, 0.35);
+    --orb-bezel: rgba(255, 249, 238, 0.5);
+    --orb-ripple: rgba(var(--glow-rgb), 0.5);
     position: relative; flex-shrink: 0; isolation: isolate;
     display: inline-grid; place-items: center;
     width: var(--s); height: var(--s);
 }
+
+/* Porcelain: an ivory disc with an accent sparkle (the light-mode default) */
+:root:not(.theme-dark)[data-orb="porcelain"] .m-orb:not([data-look]),
+:root.theme-dark[data-orb-dark="porcelain"] .m-orb:not([data-look]),
+.m-orb[data-look="porcelain"] {
+    --orb-spec: rgba(255, 255, 255, 0.95);
+    --orb-sheen: rgba(255, 255, 255, 0.5);
+    --orb-shade: var(--orb-porcelain-inset);
+    --orb-deep: var(--orb-porcelain-deep);
+    --orb-core: var(--orb-porcelain-core);
+    --orb-shadow: inset 0 -4px 10px var(--orb-porcelain-inset), inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        0 0 0 1px var(--orb-porcelain-edge), 0 12px 26px -12px var(--orb-porcelain-drop);
+    --orb-aura: transparent;
+    --orb-star: var(--orb-porcelain-star);
+    --orb-star-fx: drop-shadow(0 1px 1px color-mix(in srgb, var(--orb-porcelain-star) 30%, transparent));
+    --orb-line: color-mix(in srgb, var(--orb-porcelain-star) 24%, transparent);
+    --orb-run: color-mix(in srgb, var(--orb-porcelain-star) 55%, transparent);
+    --orb-head: var(--orb-porcelain-star);
+    --orb-head-fx: none;
+    --orb-halo: color-mix(in srgb, var(--orb-porcelain-star) 32%, transparent);
+    --orb-bezel: color-mix(in srgb, var(--orb-porcelain-star) 34%, transparent);
+    --orb-ripple: color-mix(in srgb, var(--orb-porcelain-star) 36%, transparent);
+}
+
+/* Ink + ember and Ink + ring: a navy disc whose sparkle glows in the accent */
+:root:not(.theme-dark)[data-orb="ember"] .m-orb:not([data-look]),
+:root.theme-dark[data-orb-dark="ember"] .m-orb:not([data-look]),
+.m-orb[data-look="ember"],
+:root:not(.theme-dark)[data-orb="ring"] .m-orb:not([data-look]),
+:root.theme-dark[data-orb-dark="ring"] .m-orb:not([data-look]),
+.m-orb[data-look="ring"] {
+    --orb-spec: rgba(255, 255, 255, 0.16);
+    --orb-sheen: rgba(255, 255, 255, 0.09);
+    --orb-shade: transparent;
+    --orb-deep: var(--orb-ember-deep);
+    --orb-core: var(--orb-ember-core);
+    --orb-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -6px 12px rgba(0, 0, 0, 0.35),
+        0 0 0 1px var(--orb-ember-edge), 0 14px 26px -12px var(--orb-ember-drop);
+    --orb-aura: transparent;
+    --orb-star: var(--accent-2);
+    --orb-star-fx: drop-shadow(0 0 3px rgba(var(--glow-rgb), 0.7));
+    --orb-line: rgba(var(--glow-rgb), 0.26);
+    --orb-run: rgba(var(--glow-rgb), 0.62);
+    --orb-head: #fff7ee;
+    --orb-head-fx: drop-shadow(0 0 2px rgba(var(--glow-rgb), 0.95));
+    --orb-halo: rgba(var(--glow-rgb), 0.45);
+    --orb-bezel: rgba(var(--glow-rgb), 0.36);
+    --orb-ripple: var(--orb-ripple-ink);
+}
+:root:not(.theme-dark)[data-orb="ring"] .m-orb:not([data-look]),
+:root.theme-dark[data-orb-dark="ring"] .m-orb:not([data-look]),
+.m-orb[data-look="ring"] {
+    --orb-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -6px 12px rgba(0, 0, 0, 0.35),
+        0 0 0 2px var(--paper), 0 0 0 4px var(--accent), 0 14px 26px -12px var(--orb-ember-drop);
+    --orb-ripple: rgba(var(--accent-rgb), 0.38);
+}
+
+/* Flat: a solid accent disc, no gloss and no halo */
+:root:not(.theme-dark)[data-orb="flat"] .m-orb:not([data-look]),
+:root.theme-dark[data-orb-dark="flat"] .m-orb:not([data-look]),
+.m-orb[data-look="flat"] {
+    --orb-spec: rgba(255, 255, 255, 0.14);
+    --orb-sheen: transparent;
+    --orb-shade: transparent;
+    --orb-deep: var(--accent);
+    --orb-core: var(--accent-2);
+    --orb-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 0 0 1px color-mix(in srgb, var(--accent) 75%, #000),
+        0 14px 26px -12px rgba(var(--accent-rgb), 0.6);
+    --orb-aura: transparent;
+    --orb-star: var(--on-accent);
+    --orb-star-fx: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.22));
+    --orb-line: color-mix(in srgb, var(--on-accent) 45%, transparent);
+    --orb-run: color-mix(in srgb, var(--on-accent) 60%, transparent);
+    --orb-head: var(--on-accent);
+    --orb-head-fx: none;
+    --orb-halo: color-mix(in srgb, var(--on-accent) 40%, transparent);
+    --orb-bezel: color-mix(in srgb, var(--on-accent) 45%, transparent);
+    --orb-ripple: rgba(var(--accent-rgb), 0.4);
+}
+
 .m-orb-aura {
     position: absolute; inset: -32%; z-index: -1; border-radius: 50%;
-    background: radial-gradient(circle, rgba(var(--m-accent-rgb), var(--m-orb-aura)), rgba(var(--m-accent-rgb), 0) 66%);
+    background: radial-gradient(circle, var(--orb-aura), transparent 66%);
     animation: mBreathe 4.8s var(--m-ease) infinite;
 }
 .m-orb-sphere {
     position: absolute; inset: 0; border-radius: 50%;
     background:
-        radial-gradient(circle at 31% 25%, rgba(255, 249, 238, 0.9), rgba(255, 249, 238, 0) 30%),
-        conic-gradient(from var(--m-angle), rgba(255, 255, 255, 0) 0deg, rgba(255, 255, 255, 0.26) 70deg, rgba(255, 255, 255, 0) 150deg, var(--m-orb-shade) 250deg, rgba(255, 255, 255, 0) 360deg),
-        radial-gradient(circle at 64% 76%, var(--m-orb-deep), var(--m-orb-core) 72%);
-    box-shadow:
-        inset 0 -5px 12px var(--m-orb-shade),
-        inset 0 1px 1px rgba(255, 255, 255, 0.55),
-        0 0 0 1px rgba(255, 255, 255, 0.14),
-        0 10px 24px -8px rgba(var(--m-accent-rgb), 0.75);
+        radial-gradient(circle at 31% 25%, var(--orb-spec), transparent 32%),
+        conic-gradient(from var(--m-angle), transparent 0deg, var(--orb-sheen) 70deg, transparent 150deg, var(--orb-shade) 250deg, transparent 360deg),
+        radial-gradient(circle at 64% 76%, var(--orb-deep), var(--orb-core) 72%);
+    box-shadow: var(--orb-shadow);
     animation: mSpin 10s linear infinite;
 }
 .m-orb-art { position: relative; width: 100%; height: 100%; overflow: visible; }
 .m-bezel {                                                      /* watch-bezel ticks, slowly turning */
-    fill: none; stroke: rgba(255, 249, 238, 0.5); stroke-width: 0.8; stroke-dasharray: 0.7 2.6;
+    fill: none; stroke: var(--orb-bezel); stroke-width: 0.8; stroke-dasharray: 0.7 2.6;
     transform-box: view-box; transform-origin: 50% 50%;
     animation: mTurn 26s linear infinite;
 }
 .m-orbits { transform-box: view-box; transform-origin: 50% 50%; animation: mTurn 16s linear infinite; }
-.m-ring { fill: none; stroke: rgba(255, 249, 238, 0.3); stroke-width: 0.8; }
+.m-ring { fill: none; stroke: var(--orb-line); stroke-width: 0.8; }
 .m-run {                                                        /* comet tail racing along each orbit */
-    fill: none; stroke: rgba(255, 250, 240, 0.5); stroke-width: 1.2; stroke-linecap: round;
+    fill: none; stroke: var(--orb-run); stroke-width: 1.2; stroke-linecap: round;
     stroke-dasharray: 22 78;
     animation: mRun 2.8s linear infinite;
 }
 .m-run-head {                                                   /* its bright head, kept at the tail's leading end */
-    stroke: #ffffff; stroke-width: 2; stroke-dasharray: 5 95;
-    filter: drop-shadow(0 0 2px #ffffff);
+    stroke: var(--orb-head); stroke-width: 2; stroke-dasharray: 5 95;
+    filter: var(--orb-head-fx);
     animation-delay: -0.476s;                                   /* 17% of the loop ahead of the tail */
 }
 .m-run-2 { animation-duration: 3.8s; animation-direction: reverse; }
 .m-run-2.m-run-head { animation-delay: 0s; }                    /* running backwards, the lead is the dash start */
 .m-star-group {
     transform-box: fill-box; transform-origin: center;
-    filter: drop-shadow(0 1px 1.5px var(--m-orb-shade));
+    filter: var(--orb-star-fx);
     animation: mTwinkle 4.8s var(--m-ease) infinite;
 }
-.m-star { fill: #fff9ee; }
-.m-halo { fill: none; stroke: rgba(255, 250, 240, 0.35); stroke-width: 0.7; }
+.m-star { fill: var(--orb-star); }
+.m-halo { fill: none; stroke: var(--orb-halo); stroke-width: 0.7; }
 .m-halo-trace {                                                 /* a spark tracing the sparkle's halo */
-    fill: none; stroke: #ffffff; stroke-width: 1.5; stroke-linecap: round;
-    stroke-dasharray: 10 90; filter: drop-shadow(0 0 2px #ffffff);
+    fill: none; stroke: var(--orb-head); stroke-width: 1.5; stroke-linecap: round;
+    stroke-dasharray: 10 90; filter: var(--orb-head-fx);
     animation: mRun 2.4s linear infinite;
 }
 
@@ -233,19 +314,19 @@ body.theme-dark {
 .mentor-orb:hover .m-orb { scale: 1.07; }
 .mentor-orb:active .m-orb { scale: 0.95; }
 .mentor-orb .m-orb-art { transition: rotate 0.8s var(--m-spring); }
-.mentor-orb::before {                                           /* calm ripple while closed */
+.mentor-orb .m-orb::before {                                    /* calm ripple while closed, in the look's colour */
     content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
-    border: 1.5px solid rgba(var(--m-accent-rgb), 0.55);
+    border: 1.5px solid var(--orb-ripple);
     animation: mRipple 5.5s var(--m-ease) infinite;
 }
 .mentor-orb::after {                                            /* active ring while open */
     content: ""; position: absolute; inset: -6px; border-radius: 50%; pointer-events: none;
     border: 1.5px solid rgba(var(--m-accent-rgb), 0.6);
-    box-shadow: 0 0 18px rgba(var(--m-accent-rgb), 0.35);
+    box-shadow: 0 0 18px rgba(var(--m-accent-rgb), 0.3);
     opacity: 0; scale: 0.8;
     transition: opacity 0.4s var(--m-ease), scale 0.6s var(--m-spring);
 }
-.mentor[data-state="open"] .mentor-orb::before { animation: none; opacity: 0; }
+.mentor[data-state="open"] .mentor-orb .m-orb::before { animation: none; opacity: 0; }
 .mentor[data-state="open"] .mentor-orb::after { opacity: 1; scale: 1; }
 .mentor[data-state="open"] .mentor-orb .m-orb-art { rotate: 180deg; }    /* a twirl, never an arrow */
 
@@ -268,14 +349,14 @@ body.theme-dark {
 .mentor[data-state="open"] .mentor-orb-tip { display: none; }
 
 /* Live Copilot: keep the orb clear of the chat's Send button */
-body[data-section="chat"] #page-chat { padding-right: 84px; }
+@media (min-width: 48rem) { body[data-section="chat"] #page-chat { padding-right: 84px; } }
 
 /* ─── 4. Window: frosted frame holding the core ───────────────────── */
 
 .mentor-panel {
     position: fixed; right: 26px; bottom: 102px; z-index: 901;
-    width: min(420px, calc(100vw - 32px));
-    height: min(640px, calc(100vh - 130px));
+    width: min(420px, calc(100% - 32px));
+    height: min(640px, calc(100dvh - 130px));
     padding: 6px; border-radius: 30px;
     background: var(--m-frame);
     border: 1px solid var(--m-frame-line);
@@ -369,8 +450,8 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
 .mentor-avatar { --s: 38px; }
 .mentor-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .mentor-title strong {
-    font-family: var(--m-serif); font-style: italic; font-weight: 400;
-    font-size: 27px; line-height: 0.95; letter-spacing: -0.2px; color: var(--m-text-strong);
+    font-family: var(--m-serif); font-weight: 800;
+    font-size: 21px; line-height: 1; letter-spacing: -0.03em; color: var(--m-text-strong);
 }
 .mentor-meta { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .mentor-live { position: relative; width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: #22c55e; transition: background 0.4s var(--m-ease); }
@@ -419,7 +500,7 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
 .mentor-pin-x { width: 26px; padding: 0; display: grid; place-items: center; }
 .mentor-pin-x svg { width: 12px; height: 12px; }
 .mentor-pin-q, .mentor-pin-a { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-.mentor-pin-q { -webkit-line-clamp: 1; line-clamp: 1; font-family: var(--m-serif); font-style: italic; font-size: 17px; line-height: 1.3; color: var(--m-text-strong); }
+.mentor-pin-q { -webkit-line-clamp: 1; line-clamp: 1; font-family: var(--m-serif); font-weight: 700; font-size: 15px; line-height: 1.3; letter-spacing: -0.01em; color: var(--m-text-strong); }
 .mentor-pin-a { -webkit-line-clamp: 2; line-clamp: 2; margin-top: 2px; font-size: 12.5px; line-height: 1.5; color: var(--m-text-2); }
 
 /* ─── 6. Conversation ─────────────────────────────────────────────── */
@@ -443,12 +524,12 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
     animation: mSend 0.6s var(--m-spring) backwards;
 }
 .mentor-msg.bot { font-size: 14.5px; line-height: 1.72; color: var(--m-text); overflow-wrap: anywhere; animation: mRise 0.8s var(--m-ease) 0.08s backwards; }
-.mentor-by { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-family: var(--m-serif); font-style: italic; font-size: 16px; color: var(--m-text-2); }
+.mentor-by { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-family: var(--m-serif); font-weight: 700; font-size: 13.5px; letter-spacing: -0.01em; color: var(--m-text-2); }
 .mentor-by svg { width: 13px; height: 13px; fill: var(--m-accent); filter: drop-shadow(0 0 6px rgba(var(--m-accent-rgb), 0.6)); }
 .mentor-msg.bot.streaming .mentor-by svg { animation: mTurn 1.6s var(--m-ease) infinite; }
 .mentor-msg.bot.done .mentor-by svg { animation: mStarPop 0.9s var(--m-spring); }
 .mentor-thinking {
-    display: inline-block; font-family: var(--m-serif); font-style: italic; font-size: 18px; color: transparent;
+    display: inline-block; font-family: var(--m-serif); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; color: transparent;
     background: linear-gradient(100deg, var(--m-sheen-dim) 30%, var(--m-text-strong) 50%, var(--m-sheen-dim) 70%) 0 0 / 250% 100%;
     -webkit-background-clip: text; background-clip: text;
     animation: mSheen 2s linear infinite;
@@ -471,7 +552,7 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
 .mentor-md > :last-child { margin-bottom: 0; }
 .mentor-md p, .mentor-md ul, .mentor-md ol, .mentor-md pre, .mentor-md table, .mentor-md blockquote { margin: 0 0 12px; }
 .mentor-md h1, .mentor-md h2, .mentor-md h3, .mentor-md h4 {
-    margin: 20px 0 8px; font-family: var(--m-serif); font-weight: 400;
+    margin: 20px 0 8px; font-family: var(--m-serif); font-weight: 700; letter-spacing: -0.015em;
     font-size: 21px; line-height: 1.2; color: var(--m-text-strong); text-wrap: balance;
 }
 .mentor-md h4 { font-size: 18px; }
@@ -516,7 +597,7 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
 .mentor-empty-orb::after { width: 4px; height: 4px; margin: -2px; animation: mOrbitWide 7.5s linear infinite reverse; }
 .mentor-empty h4 {
     max-width: 21ch; margin-bottom: 10px;
-    font-family: var(--m-serif); font-weight: 400; font-size: 30px; line-height: 1.08; letter-spacing: -0.3px;
+    font-family: var(--m-serif); font-weight: 800; font-size: 24px; line-height: 1.1; letter-spacing: -0.025em;
     color: var(--m-text-strong); text-wrap: balance;
     animation: mRise 0.9s var(--m-ease) 0.08s backwards;
 }
@@ -682,7 +763,7 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
     box-shadow: 0 0 26px rgba(var(--m-accent-rgb), 0.5);
     animation: mGlowPulse 2.8s var(--m-ease) infinite;
 }
-.mentor-flow { position: fixed; inset: 0; z-index: 899; width: 100vw; height: 100vh; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--m-ease); }
+.mentor-flow { position: fixed; inset: 0; z-index: 899; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--m-ease); }
 .mentor-flow.on { opacity: 1; }
 .mentor-flow.on.dim { opacity: 0.35; }
 .mentor-flow path { fill: none; stroke: var(--m-accent); stroke-linecap: round; }
@@ -782,4 +863,30 @@ body[data-section="chat"] #page-chat { padding-right: 84px; }
     .mentor *, .mentor *::before, .mentor *::after,
     .mentor-flow .beam, .chat-bubble.mentor-focused::after { animation: none !important; transition-duration: 0.01ms !important; }
     .mentor-panel { transition-duration: 0.01ms !important; }
+}
+
+/* ─── 13. Phones: the launcher rides above the tab bar; the panel opens as a sheet ─── */
+@media (max-width: 47.99rem) {
+    .mentor-orb {
+        right: max(14px, env(safe-area-inset-right, 0px));
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 12px);
+        width: 52px; height: 52px;
+    }
+    .mentor-orb .m-orb { --s: 52px; }
+    body[data-section="chat"] .mentor-orb { bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 84px); }
+    .mentor-orb-tip { display: none; }
+    .mentor-panel,
+    .mentor.custom .mentor-panel {
+        left: max(8px, env(safe-area-inset-left, 0px)) !important;
+        right: max(8px, env(safe-area-inset-right, 0px)) !important;
+        top: auto !important;
+        width: auto !important;
+        bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 74px) !important;
+        height: calc(100dvh - var(--tabbar-h) - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px) - 90px) !important;
+        max-height: 680px;
+        border-radius: 26px;
+        transform-origin: calc(100% - 26px) calc(100% + 40px);
+    }
+    .mentor-rz { display: none; }
+    .mentor-head { cursor: default; }
 }
