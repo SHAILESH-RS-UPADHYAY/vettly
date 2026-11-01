@@ -1,0 +1,235 @@
+/* Paper & tape: washi tape on every page, notebook treatments for cards, the Register look,
+   the Spiral notebook side panel, and Blueprint's inks and grid templates.
+   Attributes on <html>: data-tape (mix | kraft | candy | drafting | none) · data-pages (clean | register | torn | spiral)
+   data-look="register" · data-sidebar="spiral" · data-bp-ink (cyan | green | red | violet | amber | teal | graphite)
+   data-bp-grid (drafting | graph | dots | iso | plain).
+   Motion: tape sticks on with a spring when a page opens and peels on hover; paper drops in; the register title's
+   squiggle draws itself. All of it stops under Calm or reduced motion. */
+
+/* ── Tokens: tape patterns, page lines, kraft and rings ── */
+:root {
+    --tape-shine: rgba(255, 255, 255, 0.55); --tape-shine-2: rgba(255, 255, 255, 0.78);
+    --pg-rule: rgba(72, 126, 204, 0.16); --pg-margin: rgba(178, 34, 52, 0.5); --pg-hole: var(--paper);
+    --ring: #8f969f; --ring-hi: #eef1f4;
+    --kraft: #c9a374; --kraft-2: #b78d5c; --kraft-fiber: rgba(90, 60, 25, 0.1); --kraft-ink: #3b2a14; --kraft-label: #fffaf0;
+    --paper-shadow: 0 1px 0 rgba(60, 40, 10, 0.05), 0 12px 24px -16px rgba(60, 40, 10, 0.45);
+    --torn: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10V6l4-3 4 4 4-5 5 4 4-3 5 5 4-4 5 2 4-5 5 4 4-2 5 4 4-5 5 4 4-2 5 4 4-5 5 3 4-4 5 5 4-3 5 2 4-4 5 3 4-2 5 4 4-2V10z'/%3E%3C/svg%3E");
+    --squiggle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M0 5c5-5 5-5 10 0s5 5 10 0 5-5 10 0 5 5 10 0' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+:root.theme-dark { --pg-rule: rgba(160, 200, 255, 0.08); --pg-margin: rgba(255, 140, 140, 0.4); --ring: #6b737d; --ring-hi: #c9ced6; --kraft: #5c4529; --kraft-2: #4a3620; --kraft-fiber: rgba(0, 0, 0, 0.18); --kraft-ink: #f3e6cf; --kraft-label: #2b3243; --paper-shadow: 0 14px 26px -16px rgba(0, 0, 0, 0.7); --tape-shine: rgba(255, 255, 255, 0.3); --tape-shine-2: rgba(255, 255, 255, 0.45); }
+
+:root {   /* every tape, named once; the styles below and the Settings thumbnails both read these */
+    --washi-peach: repeating-linear-gradient(-45deg, var(--tape-shine) 0 5px, transparent 5px 11px), rgba(255, 180, 118, 0.8);
+    --washi-sky: radial-gradient(circle, var(--tape-shine-2) 1.6px, transparent 2.2px) 0 0 / 9px 9px, rgba(140, 200, 230, 0.8);
+    --washi-lilac: linear-gradient(90deg, var(--tape-shine) 1px, transparent 1px) 0 0 / 7px 7px, linear-gradient(var(--tape-shine) 1px, transparent 1px) 0 0 / 7px 7px, rgba(186, 165, 236, 0.8);
+    --washi-mint: repeating-linear-gradient(90deg, var(--tape-shine) 0 3px, transparent 3px 8px), rgba(150, 216, 166, 0.8);
+    --kraft-a: repeating-linear-gradient(87deg, rgba(120, 85, 40, 0.12) 0 1px, transparent 1px 5px), rgba(214, 188, 140, 0.9);
+    --kraft-b: repeating-linear-gradient(93deg, rgba(120, 85, 40, 0.1) 0 1px, transparent 1px 6px), rgba(204, 176, 126, 0.9);
+    --candy-white: rgba(255, 255, 255, 0.85);
+    --candy-pink: repeating-linear-gradient(-45deg, var(--candy-white) 0 6px, rgba(255, 110, 160, 0.85) 6px 12px);
+    --candy-sun: repeating-linear-gradient(-45deg, var(--candy-white) 0 6px, rgba(255, 196, 60, 0.85) 6px 12px);
+    --candy-sky: repeating-linear-gradient(-45deg, var(--candy-white) 0 6px, rgba(90, 180, 255, 0.85) 6px 12px);
+    --candy-mint: repeating-linear-gradient(-45deg, var(--candy-white) 0 6px, rgba(120, 214, 140, 0.85) 6px 12px);
+    --drafting: linear-gradient(rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.1)), rgba(250, 238, 196, 0.55);
+    --kraft-shadow: 8px 0 24px -12px rgba(50, 30, 5, 0.5); --label-shadow: 0 6px 14px -8px rgba(40, 25, 5, 0.6);
+}
+:root, :root[data-tape="mix"] { --tape-1: var(--washi-peach); --tape-2: var(--washi-sky); --tape-3: var(--washi-lilac); --tape-4: var(--washi-mint); }
+:root[data-tape="kraft"] { --tape-1: var(--kraft-a); --tape-2: var(--kraft-b); --tape-3: var(--kraft-a); --tape-4: var(--kraft-b); }
+:root[data-tape="candy"] { --tape-1: var(--candy-pink); --tape-2: var(--candy-sun); --tape-3: var(--candy-sky); --tape-4: var(--candy-mint); }
+:root[data-tape="drafting"] { --tape-1: var(--drafting); --tape-2: var(--drafting); --tape-3: var(--drafting); --tape-4: var(--drafting); }
+
+/* ── Washi tape on cards and page titles ── */
+:root:not([data-tape="none"]) :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty)::after,
+:root:not([data-tape="none"]) .poster-header:not(:has(.tape-corner))::after {
+    content: ""; position: absolute; z-index: 4; pointer-events: none;
+    top: -11px; left: var(--tape-x, 50%); width: var(--tape-w, 92px); height: 24px;
+    background: var(--tape, var(--tape-1));
+    clip-path: polygon(0 0, 100% 0, 97% 20%, 100% 40%, 97% 60%, 100% 80%, 97% 100%, 0 100%, 3% 80%, 0 60%, 3% 40%, 0 20%);
+    transform: translateX(-50%) rotate(var(--tape-r, -3deg));
+    opacity: 0.94;
+    transition: transform var(--dur-long) var(--spring);
+    animation: tapeStick 760ms var(--spring) var(--tape-d, 160ms) backwards;
+}
+:is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(4n+1)::after { --tape: var(--tape-1); --tape-x: 16%; --tape-r: -9deg; --tape-w: 84px; --tape-d: 120ms; }
+:is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(4n+2)::after { --tape: var(--tape-2); --tape-x: 50%; --tape-r: 2deg; --tape-w: 104px; --tape-d: 200ms; }
+:is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(4n+3)::after { --tape: var(--tape-3); --tape-x: 84%; --tape-r: 8deg; --tape-w: 80px; --tape-d: 260ms; }
+:is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(4n+4)::after { --tape: var(--tape-4); --tape-x: 30%; --tape-r: -4deg; --tape-w: 96px; --tape-d: 320ms; }
+.poster-header::after { --tape: var(--tape-2); --tape-x: 54px; --tape-r: -6deg; --tape-w: 88px; }
+.prep-sheet .toolbelt-card::after { display: none; }
+.prep-empty::after { --tape: var(--tape-3); }
+@media (hover: hover) {
+    :is(.toolbelt-card, .step-card, .poster-media-card, .q-card):hover::after { transform: translateX(-50%) translateY(-4px) rotate(calc(var(--tape-r, -3deg) * -0.5)) scale(1.05); }
+}
+@keyframes tapeStick {
+    from { opacity: 0; transform: translateX(-50%) translateY(-18px) rotate(calc(var(--tape-r, -3deg) - 16deg)) scale(1.35); }
+    60% { opacity: 1; transform: translateX(-50%) translateY(2px) rotate(var(--tape-r, -3deg)) scale(0.96); }
+}
+
+/* ── Pages: how every card is drawn ── */
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card) { animation: paperDrop 700ms var(--spring) backwards; }
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(2) { animation-delay: 70ms; }
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3) { animation-delay: 140ms; }
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(n+4) { animation-delay: 210ms; }
+@keyframes paperDrop { from { opacity: 0; transform: translateY(-16px) rotate(-1.6deg); } 60% { opacity: 1; transform: translateY(3px) rotate(0.5deg); } }
+
+/* register: blue rules and a red double margin, like a school register */
+:root[data-pages="register"] :is(.toolbelt-card, .step-card, .q-card, .prep-empty) {
+    background-image:
+        linear-gradient(90deg, transparent 9px, var(--pg-margin) 9px 10.5px, transparent 10.5px 13px, var(--pg-margin) 13px 14.5px, transparent 14.5px),
+        repeating-linear-gradient(180deg, transparent 0 27px, var(--pg-rule) 27px 28px);
+    background-color: var(--card-bg);
+}
+
+/* torn: pages ripped out of a notebook, the odd ones at the top, the even ones at the bottom, with punch holes */
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card)::before {
+    content: ""; position: absolute; z-index: 1; left: -1px; right: -1px; top: -9px; height: 10px; pointer-events: none;
+    background: var(--card-bg);
+    -webkit-mask: var(--torn) 0 100% / 120px 10px repeat-x; mask: var(--torn) 0 100% / 120px 10px repeat-x;
+    border-radius: 0;
+}
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(odd) { border-top-color: transparent; border-top-left-radius: 0; border-top-right-radius: 0; }
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(even) { border-bottom-color: transparent; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(even)::before { top: auto; bottom: -9px; transform: scaleY(-1); }
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .q-card):nth-child(odd) {
+    background-image: radial-gradient(circle at 12px 12px, var(--pg-hole) 0 3.5px, var(--rule-2) 4px 4.6px, transparent 5px);
+    background-size: 26px 26px; background-repeat: repeat-x; background-color: var(--card-bg);
+}
+:root[data-pages="torn"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card):nth-child(even)::after { top: auto; bottom: -11px; }
+@keyframes tearIn { from { clip-path: inset(0 0 100% 0); } }
+
+/* spiral: a coil binding along the top of every card, the tape moves to the foot */
+:root[data-pages="spiral"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card)::before {
+    content: ""; position: absolute; z-index: 2; left: 16px; right: 16px; top: -12px; height: 24px; pointer-events: none;
+    background: radial-gradient(ellipse 5px 11px at 50% 50%, transparent 0 52%, var(--ring-hi) 56% 64%, var(--ring) 68% 88%, transparent 92%) 0 0 / 22px 100% repeat-x;
+}
+:root[data-pages="spiral"] :is(.toolbelt-card, .step-card, .q-card) {
+    background-image: radial-gradient(circle at 11px 12px, var(--pg-hole) 0 3.2px, var(--rule-2) 3.6px 4.2px, transparent 4.6px);
+    background-size: 22px 24px; background-position: 16px 0; background-repeat: repeat-x; background-color: var(--card-bg);
+}
+:root[data-pages="spiral"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card)::after { top: auto; bottom: -11px; }
+
+/* the stories under Register, Torn and Spiral sit on a desk: a softer paper shadow */
+:root:not([data-pages="clean"]) :is(.toolbelt-card, .step-card, .poster-media-card, .q-card) { box-shadow: var(--paper-shadow); }
+
+/* ── The Register look: an old school register by day, a chalkboard by night ── */
+:root[data-look="register"] {
+    --paper: #f6f0e1; --paper-2: #fffdf5; --paper-3: #eee6d2; --sidebar: #efe6d1; --field: #fffef9;
+    --ink: #1f2c4a; --ink-2: #445378; --muted: #687289;
+    --rule: rgba(72, 126, 204, 0.2); --rule-2: rgba(72, 126, 204, 0.32);
+    --grid-line: rgba(72, 126, 204, 0.18); --grid-line-2: transparent;
+    --pill: #1f2c4a; --on-pill: #fffdf5;
+    --card-bg: #fffdf5; --card-border: rgba(120, 90, 50, 0.16);
+    --pg-rule: rgba(72, 126, 204, 0.17); --pg-margin: rgba(178, 34, 52, 0.55);
+    --font-display: 'Caveat', var(--font-body);
+    --reg-title: #1f2c4a;
+}
+:root.theme-dark[data-look="register"] {
+    --paper: #1b2620; --paper-2: #22312a; --paper-3: #2a3a32; --sidebar: #1f2b25; --field: #1d2a23;
+    --ink: #eef2ea; --ink-2: #c6d0c3; --muted: #9aa897;
+    --rule: rgba(255, 255, 255, 0.1); --rule-2: rgba(255, 255, 255, 0.2);
+    --grid-line: rgba(255, 255, 255, 0.06); --grid-line-2: transparent;
+    --pill: #eef2ea; --on-pill: #1b2620;
+    --card-bg: #22312a; --card-border: rgba(255, 255, 255, 0.1);
+    --pg-rule: rgba(255, 255, 255, 0.07); --pg-margin: rgba(255, 140, 140, 0.42);
+    --reg-title: #f6e7a1;
+}
+:root[data-look="register"] .blueprint-grid-bg {   /* the whole desk is ruled paper */
+    -webkit-mask-image: none; mask-image: none;
+    background-image: repeating-linear-gradient(180deg, transparent 0 31px, var(--grid-line) 31px 32px);
+    background-size: auto;
+}
+:root[data-look="register"] .poster-header h1 { font: 700 clamp(2.3rem, 1.7rem + 2.4vw, 3.5rem)/0.95 var(--font-display); letter-spacing: 0; color: var(--reg-title); text-transform: none; }
+:root[data-look="register"] .poster-header h1::after {   /* a squiggle that draws itself under the title */
+    content: ""; display: block; width: min(240px, 70%); height: 10px; margin-top: 6px;
+    background: var(--accent);
+    -webkit-mask: var(--squiggle) 0 50% / 40px 10px repeat-x; mask: var(--squiggle) 0 50% / 40px 10px repeat-x;
+    clip-path: inset(0 100% 0 0);
+    animation: drawLine 1100ms var(--ease-out) 250ms forwards;
+}
+:root[data-look="register"] .poster-header p { font: 500 1.02rem/1.5 var(--font-body); color: var(--ink-2); text-transform: none; letter-spacing: 0; }
+:root[data-look="register"] :is(.toolbelt-card-header h3, .step-card h3, .poster-media-card-body h4, .lab-title, .dock-head h3) { font: 700 1.55rem/1.05 var(--font-display); letter-spacing: 0; }
+:root[data-look="register"] .toolbelt-card-header { border-bottom: 3px double var(--pg-margin); padding-bottom: 10px; margin-bottom: 18px; }
+:root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3n+1) { rotate: -0.5deg; }
+:root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):nth-child(3n+2) { rotate: 0.4deg; }
+:root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card) { transition: rotate var(--dur-long) var(--spring), translate var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out); }
+@media (hover: hover) { :root[data-look="register"] :is(.toolbelt-card, .step-card, .poster-media-card):hover { rotate: 0deg; translate: 0 -3px; } }
+:root[data-look="register"] .btn-primary { rotate: -0.8deg; transition: rotate var(--dur-long) var(--spring), transform var(--dur-micro) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+:root[data-look="register"] .btn-primary:hover { rotate: 0deg; }
+:root[data-look="register"] .badge-pill { border-radius: 999px; }
+@keyframes drawLine { to { clip-path: inset(0 0 0 0); } }
+
+/* ── Spiral notebook side panel: a kraft cover with a coil down its edge ── */
+:root[data-sidebar="spiral"] #sidebar {
+    background:
+        repeating-linear-gradient(88deg, var(--kraft-fiber) 0 1px, transparent 1px 7px),
+        repeating-linear-gradient(-2deg, var(--kraft-fiber) 0 1px, transparent 1px 11px),
+        linear-gradient(160deg, var(--kraft), var(--kraft-2));
+    border-right: 0; box-shadow: var(--kraft-shadow);
+    --nav-ink: var(--kraft-ink);
+}
+:root[data-sidebar="spiral"] .nav-item:not(.active) { color: var(--kraft-ink); }
+:root[data-sidebar="spiral"] .nav-pill { background: var(--kraft-label); box-shadow: var(--label-shadow); }
+:root[data-sidebar="spiral"] .nav-item.active { color: var(--ink); }
+:root[data-sidebar="spiral"] :is(.sidebar-logo, .sidebar-footer) { color: var(--kraft-ink); }
+@media (min-width: 48rem) {
+    :root[data-sidebar="spiral"] #sidebar::after {
+        content: ""; position: absolute; top: 14px; bottom: 14px; right: -9px; width: 18px; pointer-events: none; z-index: 2;
+        background: radial-gradient(ellipse 11px 5px at 50% 50%, transparent 0 52%, var(--ring-hi) 56% 64%, var(--ring) 68% 88%, transparent 92%) 0 0 / 100% 22px repeat-y;
+    }
+}
+
+/* ── Blueprint inks: the same drafting sheet in another colour ── */
+:root[data-look="blueprint"][data-bp-ink="green"] { --paper: #eef6ef; --paper-2: #f8fcf8; --paper-3: #e0eee2; --sidebar: #e4f1e6; --ink: #0e2e1c; --ink-2: #355a43; --muted: #4f7a5e; --rule: rgba(22, 128, 61, 0.16); --rule-2: rgba(22, 128, 61, 0.3); --grid-line: rgba(22, 128, 61, 0.14); --grid-line-2: rgba(22, 128, 61, 0.07); --pill: #0e2e1c; --on-pill: #eef6ef; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="green"] { --paper: #061710; --paper-2: #0a2417; --paper-3: #0f3020; --sidebar: #081f12; --field: #091d12; --ink: #e2f6e9; --ink-2: #a6d3b4; --muted: #83b493; --rule: rgba(120, 230, 160, 0.16); --rule-2: rgba(120, 230, 160, 0.3); --grid-line: rgba(120, 230, 160, 0.12); --grid-line-2: rgba(120, 230, 160, 0.06); --pill: #e2f6e9; --on-pill: #061710; }
+:root[data-look="blueprint"][data-bp-ink="red"] { --paper: #fbf0f0; --paper-2: #fffafa; --paper-3: #f4e1e2; --sidebar: #f7e8e9; --ink: #3a0e14; --ink-2: #6e3540; --muted: #8a5560; --rule: rgba(200, 30, 50, 0.15); --rule-2: rgba(200, 30, 50, 0.28); --grid-line: rgba(200, 30, 50, 0.13); --grid-line-2: rgba(200, 30, 50, 0.065); --pill: #3a0e14; --on-pill: #fbf0f0; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="red"] { --paper: #1a070b; --paper-2: #260c12; --paper-3: #331219; --sidebar: #20090e; --field: #1f0a0f; --ink: #fde8eb; --ink-2: #e2aab3; --muted: #c28892; --rule: rgba(255, 130, 150, 0.16); --rule-2: rgba(255, 130, 150, 0.3); --grid-line: rgba(255, 130, 150, 0.12); --grid-line-2: rgba(255, 130, 150, 0.06); --pill: #fde8eb; --on-pill: #1a070b; }
+:root[data-look="blueprint"][data-bp-ink="violet"] { --paper: #f2effb; --paper-2: #fbfaff; --paper-3: #e6e0f6; --sidebar: #ece7f9; --ink: #1d1240; --ink-2: #4a3d78; --muted: #66598f; --rule: rgba(110, 70, 220, 0.15); --rule-2: rgba(110, 70, 220, 0.28); --grid-line: rgba(110, 70, 220, 0.13); --grid-line-2: rgba(110, 70, 220, 0.065); --pill: #1d1240; --on-pill: #f2effb; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="violet"] { --paper: #100a24; --paper-2: #171033; --paper-3: #1f1642; --sidebar: #130c2b; --field: #140d2c; --ink: #ede8ff; --ink-2: #bcb0ec; --muted: #9a8fcc; --rule: rgba(180, 150, 255, 0.16); --rule-2: rgba(180, 150, 255, 0.3); --grid-line: rgba(180, 150, 255, 0.12); --grid-line-2: rgba(180, 150, 255, 0.06); --pill: #ede8ff; --on-pill: #100a24; }
+:root[data-look="blueprint"][data-bp-ink="amber"] { --paper: #f8f1e1; --paper-2: #fffbf2; --paper-3: #efe3c9; --sidebar: #f3e9d2; --ink: #2f1f06; --ink-2: #634a20; --muted: #806538; --rule: rgba(176, 112, 10, 0.17); --rule-2: rgba(176, 112, 10, 0.3); --grid-line: rgba(176, 112, 10, 0.14); --grid-line-2: rgba(176, 112, 10, 0.07); --pill: #2f1f06; --on-pill: #f8f1e1; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="amber"] { --paper: #171005; --paper-2: #221808; --paper-3: #2d200b; --sidebar: #1b1306; --field: #1c1407; --ink: #fbefd6; --ink-2: #ddc08a; --muted: #bea06a; --rule: rgba(250, 190, 90, 0.16); --rule-2: rgba(250, 190, 90, 0.3); --grid-line: rgba(250, 190, 90, 0.12); --grid-line-2: rgba(250, 190, 90, 0.06); --pill: #fbefd6; --on-pill: #171005; }
+:root[data-look="blueprint"][data-bp-ink="teal"] { --paper: #ecf7f6; --paper-2: #f8fdfc; --paper-3: #dcefed; --sidebar: #e2f3f1; --ink: #072b29; --ink-2: #2f5c59; --muted: #4a7a76; --rule: rgba(14, 130, 122, 0.16); --rule-2: rgba(14, 130, 122, 0.3); --grid-line: rgba(14, 130, 122, 0.14); --grid-line-2: rgba(14, 130, 122, 0.07); --pill: #072b29; --on-pill: #ecf7f6; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="teal"] { --paper: #041817; --paper-2: #072322; --paper-3: #0b2f2d; --sidebar: #051c1b; --field: #061e1d; --ink: #e0f7f5; --ink-2: #9fd6d0; --muted: #7cb6b0; --rule: rgba(110, 230, 215, 0.16); --rule-2: rgba(110, 230, 215, 0.3); --grid-line: rgba(110, 230, 215, 0.12); --grid-line-2: rgba(110, 230, 215, 0.06); --pill: #e0f7f5; --on-pill: #041817; }
+:root[data-look="blueprint"][data-bp-ink="graphite"] { --paper: #f1f2f4; --paper-2: #fbfbfc; --paper-3: #e4e6ea; --sidebar: #eaecef; --ink: #15181e; --ink-2: #444a55; --muted: #636a77; --rule: rgba(40, 46, 58, 0.15); --rule-2: rgba(40, 46, 58, 0.28); --grid-line: rgba(40, 46, 58, 0.12); --grid-line-2: rgba(40, 46, 58, 0.06); --pill: #15181e; --on-pill: #f1f2f4; }
+:root.theme-dark[data-look="blueprint"][data-bp-ink="graphite"] { --paper: #0f1114; --paper-2: #16191d; --paper-3: #1d2126; --sidebar: #121417; --field: #13161a; --ink: #eceef2; --ink-2: #b4bac5; --muted: #949ba8; --rule: rgba(220, 225, 235, 0.14); --rule-2: rgba(220, 225, 235, 0.26); --grid-line: rgba(220, 225, 235, 0.1); --grid-line-2: rgba(220, 225, 235, 0.05); --pill: #eceef2; --on-pill: #0f1114; }
+
+/* ── Blueprint grid templates (drafting is the original) ── */
+:root[data-look="blueprint"][data-bp-grid="graph"] .blueprint-grid-bg { background-size: 40px 40px, 40px 40px, 8px 8px, 8px 8px; }
+:root[data-look="blueprint"][data-bp-grid="dots"] .blueprint-grid-bg { background-image: radial-gradient(circle, var(--grid-line) 0 1.3px, transparent 1.8px); background-size: 22px 22px; }
+:root[data-look="blueprint"][data-bp-grid="iso"] .blueprint-grid-bg {
+    background-image: repeating-linear-gradient(30deg, var(--grid-line) 0 1px, transparent 1px 28px), repeating-linear-gradient(150deg, var(--grid-line) 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, var(--grid-line-2) 0 1px, transparent 1px 32.33px);
+    background-size: auto;
+}
+:root[data-look="blueprint"][data-bp-grid="plain"] .blueprint-grid-bg { background-image: none; }
+
+/* ── Theme Studio thumbnails for these options ── */
+.tape-thumb, .page-thumb, .grid-thumb { position: relative; display: block; height: 64px; border-radius: 10px; overflow: hidden; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+.tape-thumb::before { content: ""; position: absolute; inset: 18px 22px 10px; border-radius: 6px; background: var(--card-bg); box-shadow: var(--paper-shadow); }
+.tape-thumb i { position: absolute; top: 9px; left: 50%; width: 58px; height: 18px; transform: translateX(-50%) rotate(-5deg); background: var(--tape-1);
+    clip-path: polygon(0 0, 100% 0, 96% 25%, 100% 50%, 96% 75%, 100% 100%, 0 100%, 4% 75%, 0 50%, 4% 25%); }
+.tape-thumb[data-tape="mix"] i { background: var(--washi-peach); }
+.tape-thumb[data-tape="kraft"] i { background: var(--kraft-a); }
+.tape-thumb[data-tape="candy"] i { background: var(--candy-pink); }
+.tape-thumb[data-tape="drafting"] i { background: var(--drafting); }
+.tape-thumb[data-tape="none"] i { display: none; }
+.page-thumb::before { content: ""; position: absolute; inset: 14px 18px 10px; border-radius: 6px; background-color: var(--card-bg); box-shadow: var(--paper-shadow); }
+.page-thumb[data-pages="register"]::before { background-image: linear-gradient(90deg, transparent 7px, var(--pg-margin) 7px 8px, transparent 8px 10px, var(--pg-margin) 10px 11px, transparent 11px), repeating-linear-gradient(180deg, transparent 0 8px, var(--pg-rule) 8px 9px); }
+.page-thumb[data-pages="torn"]::before { top: 18px; border-radius: 0 0 6px 6px; }
+.page-thumb[data-pages="torn"]::after { content: ""; position: absolute; left: 18px; right: 18px; top: 12px; height: 7px; background: var(--card-bg); -webkit-mask: var(--torn) 0 100% / 40px 7px repeat-x; mask: var(--torn) 0 100% / 40px 7px repeat-x; }
+.page-thumb[data-pages="spiral"]::after { content: ""; position: absolute; left: 22px; right: 22px; top: 7px; height: 14px; background: radial-gradient(ellipse 3px 6px at 50% 50%, transparent 0 50%, var(--ring) 60% 88%, transparent 92%) 0 0 / 11px 100% repeat-x; }
+.grid-thumb { background-color: var(--paper); }
+.grid-thumb[data-grid="drafting"] { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px), linear-gradient(var(--grid-line-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px); background-size: 32px 32px, 32px 32px, 8px 8px, 8px 8px; }
+.grid-thumb[data-grid="graph"] { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px), linear-gradient(var(--grid-line-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px); background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px; }
+.grid-thumb[data-grid="dots"] { background-image: radial-gradient(circle, var(--grid-line) 0 1.2px, transparent 1.7px); background-size: 10px 10px; }
+.grid-thumb[data-grid="iso"] { background-image: repeating-linear-gradient(30deg, var(--grid-line) 0 1px, transparent 1px 12px), repeating-linear-gradient(150deg, var(--grid-line) 0 1px, transparent 1px 12px); }
+.bp-options { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--rule-2); }
+.bp-options[hidden] { display: none; }
+.bp-options .swatch-name { font-size: 0.82rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    :root :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
+    :root :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
+    :root[data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
+}
+:root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card, .q-card, .prep-empty, .poster-header)::after,
+:root[data-motion="calm"] :is(.toolbelt-card, .step-card, .poster-media-card) { animation: none !important; }
+:root[data-motion="calm"][data-look="register"] .poster-header h1::after { animation: none !important; clip-path: none; }
