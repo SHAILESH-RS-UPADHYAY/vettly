@@ -14,7 +14,7 @@ const Appearance = (() => {
 
     const DEFAULTS = {
         look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss',
-        sidebar: 'poster', mentorSkin: 'frosted', pipeline: 'stream',
+        sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream',
         density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full',
     };
     // a look also brings its own colours and side panel; each stays adjustable afterwards

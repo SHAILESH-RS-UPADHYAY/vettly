@@ -940,31 +940,219 @@
     .mentor-head { cursor: default; }
 }
 
-/* ─── 14. Panel skins (data-mentor-skin): frosted (default) · paper · glass · midnight · bubble ─── */
+/* ─── 14. Panel skins (data-mentor-skin): paper (default, the notebook) · frosted · glass · midnight · bubble ─── */
 
-/* Paper: a notebook by day, a chalkboard by night */
+/* Notebook: a school register page by day, a chalkboard in a wooden frame by night.
+   The page is drawn from the panel's own box, so it re-fits at any size: a dark double margin line from the top
+   edge down, a double header rule under the title, blue rules the answers sit on (they scroll with the text),
+   punched holes, a stack of pages underneath, washi tape holding it down, and your messages as sticky notes.
+   mentor.js (mentorSnap) rounds blocks that are not text (notes, code, tables) up to whole ruled lines. */
 :root[data-mentor-skin="paper"] {
-    --m-frame: #efe4cf; --m-frame-line: rgba(120, 72, 30, 0.4); --m-frame-hi: #fffaf0;
-    --m-surface-top: #fffaf0; --m-surface: #fcf4e2; --m-surface-edge: #fffdf7; --m-raised: #fffdf7; --m-field: #fffdf7;
-    --m-user-bg: #3b2f22; --m-user-text: #fff8ec; --m-grain-opacity: 0.07;
-    --m-rule: rgba(120, 72, 30, 0.11); --m-margin: rgba(220, 38, 38, 0.22);
+    --nb-x: clamp(38px, 11%, 56px);          /* the margin line, from the page's left edge */
+    --nb-lh: 28px;                           /* one ruled line */
+    --nb-hand: 'Caveat', var(--font-body);
+    --nb-paper: #fffdf6; --nb-paper-2: #fbf6e6; --nb-edge: rgba(120, 90, 50, 0.24);
+    --nb-rule: rgba(72, 126, 204, 0.3); --nb-margin: rgba(170, 32, 50, 0.78); --nb-head: rgba(170, 32, 50, 0.7);
+    --nb-ink: #1f2c4a; --nb-ink-2: #46557a; --nb-pencil: #6f7787; --nb-red: #b3263a;
+    --nb-note: #fff1a6; --nb-note-2: #ffdbe4; --nb-note-ink: #3b2f12;
+    --nb-hole: #dccfb0; --nb-hole-dark: #c9b994; --nb-hole-ring: rgba(110, 80, 40, 0.5);
+    --nb-tape: rgba(255, 190, 120, 0.7); --nb-tape-2: rgba(150, 210, 230, 0.7); --nb-tape-line: rgba(255, 255, 255, 0.5);
+    --nb-highlight: rgba(255, 224, 82, 0.6); --nb-card: #ffffff; --nb-shadow: rgba(80, 55, 20, 0.45);
+    --nb-margin-layer: linear-gradient(90deg,
+        transparent calc(var(--nb-x) - 4px), var(--nb-margin) 0 calc(var(--nb-x) - 2.5px),
+        transparent 0 var(--nb-x), var(--nb-margin) 0 calc(var(--nb-x) + 1.5px), transparent 0);
+    --m-frame: transparent; --m-frame-line: transparent; --m-frame-hi: transparent;
+    --m-surface-top: var(--nb-paper); --m-surface: var(--nb-paper-2); --m-surface-edge: transparent; --m-surface-ring: transparent;
+    --m-raised: var(--nb-card); --m-field: transparent; --m-soft: rgba(72, 126, 204, 0.08);
+    --m-text-strong: var(--nb-ink); --m-text: var(--nb-ink); --m-text-2: var(--nb-ink-2); --m-text-3: var(--nb-pencil);
+    --m-line: rgba(72, 126, 204, 0.26); --m-line-strong: rgba(72, 126, 204, 0.42);
+    --m-user-bg: var(--nb-note); --m-user-text: var(--nb-note-ink); --m-grain-opacity: 0.07; --m-grain-blend: multiply;
+    --m-code-bg: var(--nb-card);
 }
 :root.theme-dark[data-mentor-skin="paper"] {
-    --m-frame: #2b3a32; --m-frame-line: rgba(255, 255, 255, 0.3); --m-frame-hi: rgba(255, 255, 255, 0.06);
-    --m-surface-top: #26342d; --m-surface: #1f2b25; --m-surface-edge: rgba(255, 255, 255, 0.06); --m-raised: #2b3b33; --m-field: rgba(0, 0, 0, 0.22);
-    --m-text-strong: #f3f6ef; --m-text: rgba(243, 246, 239, 0.88); --m-text-2: #c4cfc1; --m-text-3: #97a595;
-    --m-line: rgba(255, 255, 255, 0.12); --m-line-strong: rgba(255, 255, 255, 0.22);
-    --m-user-bg: #f3f6ef; --m-user-text: #1f2b25; --m-grain-opacity: 0.08;
-    --m-rule: rgba(255, 255, 255, 0.05); --m-margin: rgba(255, 170, 170, 0.18);
+    --nb-paper: #22342b; --nb-paper-2: #1c2b23; --nb-edge: rgba(0, 0, 0, 0.45);
+    --nb-rule: rgba(255, 255, 255, 0.09); --nb-margin: rgba(255, 142, 142, 0.66); --nb-head: rgba(255, 255, 255, 0.42);
+    --nb-ink: #eef2ea; --nb-ink-2: #cbd5c8; --nb-pencil: #a2b09f; --nb-red: #ffa3a3;
+    --nb-note: #efe190; --nb-note-2: #f5c6d2; --nb-note-ink: #2c2812;
+    --nb-hole: transparent; --nb-hole-dark: transparent; --nb-hole-ring: transparent;
+    --nb-wood: #8a5f3b; --nb-wood-2: #5b3c23; --nb-wood-hi: rgba(255, 220, 170, 0.22);
+    --nb-tape: rgba(255, 205, 140, 0.62); --nb-tape-2: rgba(160, 215, 235, 0.55);
+    --nb-highlight: rgba(246, 231, 161, 0.3); --nb-card: #2b3f35; --nb-shadow: rgba(0, 0, 0, 0.6);
+    --m-raised: var(--nb-card); --m-soft: rgba(255, 255, 255, 0.06);
+    --m-line: rgba(255, 255, 255, 0.14); --m-line-strong: rgba(255, 255, 255, 0.26);
+    --m-grain-opacity: 0.1; --m-grain-blend: overlay; --m-code-bg: rgba(0, 0, 0, 0.25);
 }
-:root[data-mentor-skin="paper"] .mentor-panel { border-style: dashed; border-width: 1.5px; -webkit-backdrop-filter: none; backdrop-filter: none; }
-:root[data-mentor-skin="paper"] .mentor-core {
+
+/* the page, its stack and the tape */
+:root[data-mentor-skin="paper"] .mentor-panel {
+    padding: 8px 12px 14px 6px; border: 0; border-radius: 12px; background: transparent;
+    box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+:root[data-mentor-skin="paper"] .mentor-panel::before {   /* washi tape across the top edge */
+    content: ""; position: absolute; z-index: 6; top: -4px; left: 50%; width: 104px; height: 26px; pointer-events: none;
     background:
-        linear-gradient(90deg, transparent 0 44px, var(--m-margin) 44px 45.5px, transparent 45.5px),
-        repeating-linear-gradient(180deg, transparent 0 29px, var(--m-rule) 29px 30px),
-        linear-gradient(180deg, var(--m-surface-top), var(--m-surface));
+        repeating-linear-gradient(-45deg, var(--nb-tape-line) 0 5px, transparent 5px 11px),
+        var(--nb-tape);
+    clip-path: polygon(0 0, 100% 0, 97% 20%, 100% 40%, 97% 60%, 100% 80%, 97% 100%, 0 100%, 3% 80%, 0 60%, 3% 40%, 0 20%);
+    transform: translateX(-50%) rotate(-3deg);
+    opacity: 0.95;
 }
-:root[data-mentor-skin="paper"] .mentor-title strong { font-family: 'Caveat', cursive; font-style: normal; font-weight: 700; font-size: 32px; letter-spacing: 0; line-height: 0.9; }
+.mentor[data-state="open"] .mentor-panel::before { animation: nbTape 0.9s var(--m-spring) 0.25s backwards; }
+:root[data-mentor-skin="paper"] .mentor-core {
+    border-radius: 4px 10px 10px 4px;
+    background: var(--nb-margin-layer), linear-gradient(180deg, var(--nb-paper), var(--nb-paper-2));
+    box-shadow:
+        0 0 0 1px var(--nb-edge),
+        4px 5px 0 -1px var(--nb-paper-2), 4px 5px 0 0 var(--nb-edge),
+        8px 10px 0 -1px var(--nb-paper-2), 8px 10px 0 0 var(--nb-edge),
+        0 34px 60px -26px var(--nb-shadow);
+}
+:root[data-mentor-skin="paper"] .mentor-core::after {     /* three punched holes in the margin (this layer is the light sweep in other skins) */
+    content: ""; position: absolute; z-index: 5; inset: 0 auto 0 0; width: var(--nb-x); pointer-events: none;
+    transform: none; animation: none;
+    background:
+        radial-gradient(circle at 50% 16%, var(--nb-hole-dark) 0 2px, var(--nb-hole) 3.5px 5.5px, var(--nb-hole-ring) 6px 7.5px, transparent 8px),
+        radial-gradient(circle at 50% 50%, var(--nb-hole-dark) 0 2px, var(--nb-hole) 3.5px 5.5px, var(--nb-hole-ring) 6px 7.5px, transparent 8px),
+        radial-gradient(circle at 50% 84%, var(--nb-hole-dark) 0 2px, var(--nb-hole) 3.5px 5.5px, var(--nb-hole-ring) 6px 7.5px, transparent 8px);
+}
+:root[data-mentor-skin="paper"] .mentor-glow,
+:root[data-mentor-skin="paper"] .mentor-panel::after { display: none; }   /* no ambient glow, no frame spotlight on paper */
+
+/* chalkboard: a wooden frame instead of a page stack */
+:root.theme-dark[data-mentor-skin="paper"] .mentor-panel {
+    padding: 9px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--nb-wood), var(--nb-wood-2));
+    box-shadow: inset 0 1px 0 var(--nb-wood-hi), inset 0 0 0 1px rgba(0, 0, 0, 0.35), 0 34px 70px -26px var(--nb-shadow);
+}
+:root.theme-dark[data-mentor-skin="paper"] .mentor-core { border-radius: 5px; box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.4); }
+
+/* header: the register's top strip, with the date and page number pencilled in, closed by a double rule */
+:root[data-mentor-skin="paper"] .mentor-head {
+    padding: 22px 10px 10px calc(var(--nb-x) + 12px);
+    background: var(--nb-margin-layer), var(--nb-paper);
+    border-bottom: 3px double var(--nb-head);
+}
+:root[data-mentor-skin="paper"] .mentor-head::after { display: none; }
+:root[data-mentor-skin="paper"] .mentor-head::before {
+    content: "Date " attr(data-date) "      Page " attr(data-page);
+    position: absolute; top: 5px; right: 16px; white-space: pre; pointer-events: none;
+    font: 600 14px/1 var(--nb-hand); color: var(--nb-pencil);
+}
+:root[data-mentor-skin="paper"] .mentor-title strong { font: 700 32px/0.9 var(--nb-hand); letter-spacing: 0; color: var(--nb-ink); }
+:root[data-mentor-skin="paper"] .mentor-meta { color: var(--nb-pencil); }
+:root[data-mentor-skin="paper"] .mentor-icon-btn { background: transparent; border-color: transparent; color: var(--nb-pencil); }
+:root[data-mentor-skin="paper"] .mentor-icon-btn:hover { background: var(--m-soft); border-color: var(--m-line); color: var(--nb-ink); }
+
+/* the pinned answer: an index card clipped to the page */
+:root[data-mentor-skin="paper"] .mentor-pin {
+    margin: 14px 14px 4px calc(var(--nb-x) + 12px); border: 0; border-radius: 3px;
+    overflow: visible;
+    background: linear-gradient(var(--nb-red), var(--nb-red)) 0 26px / 100% 1px no-repeat, var(--nb-card);
+    box-shadow: 0 8px 16px -10px var(--nb-shadow), 0 0 0 1px var(--nb-edge);
+    rotate: -0.6deg;
+}
+:root[data-mentor-skin="paper"] .mentor-pin::before { left: 14px; top: -7px; bottom: auto; width: 12px; height: 26px; border-radius: 6px; background: none; box-shadow: none; border: 2px solid var(--nb-pencil); border-bottom-color: transparent; }
+:root[data-mentor-skin="paper"] .mentor-pin-label { color: var(--nb-red); font: 700 16px/1 var(--nb-hand); padding-left: 16px; }
+:root[data-mentor-skin="paper"] .mentor-pin-q { font: 700 19px/1.25 var(--nb-hand); }
+
+/* the conversation rides the ruled lines; the rules scroll with it */
+:root[data-mentor-skin="paper"] .mentor-msgs {
+    gap: var(--nb-lh);
+    padding: var(--nb-lh) 16px var(--nb-lh) calc(var(--nb-x) + 14px);
+    background:
+        var(--nb-margin-layer),
+        repeating-linear-gradient(180deg, transparent 0 21px, var(--nb-rule) 21px 22px, transparent 22px var(--nb-lh)),
+        var(--nb-paper-2);
+    background-attachment: local;
+}
+:root[data-mentor-skin="paper"] .mentor-turn { gap: var(--nb-lh); }
+:root[data-mentor-skin="paper"] .mentor-msg.bot { font-size: 14.5px; line-height: var(--nb-lh); color: var(--nb-ink); animation: nbInk 0.9s var(--m-ease) 0.05s backwards; }
+:root[data-mentor-skin="paper"] .mentor-by { margin: 0; font: 700 20px/var(--nb-lh) var(--nb-hand); letter-spacing: 0; color: var(--nb-red); }
+:root[data-mentor-skin="paper"] .mentor-by svg { fill: var(--nb-red); filter: none; }
+:root[data-mentor-skin="paper"] .mentor-thinking { font: 700 19px/var(--nb-lh) var(--nb-hand); }
+:root[data-mentor-skin="paper"] .mentor-md > * { margin: 0 0 var(--nb-lh); }
+:root[data-mentor-skin="paper"] .mentor-md > :last-child { margin-bottom: 0; }
+:root[data-mentor-skin="paper"] .mentor-md :is(p, li, blockquote, td, th) { line-height: var(--nb-lh); }
+:root[data-mentor-skin="paper"] .mentor-md li { margin: 0; }
+:root[data-mentor-skin="paper"] .mentor-md li > p { margin: 0; }
+:root[data-mentor-skin="paper"] .mentor-md :is(h1, h2, h3, h4) { margin: 0 0 0; font: 700 22px/var(--nb-lh) var(--nb-hand); letter-spacing: 0; color: var(--nb-red); }
+:root[data-mentor-skin="paper"] .mentor-md strong { color: var(--nb-ink); background: linear-gradient(transparent 52%, var(--nb-highlight) 52% 92%, transparent 92%); }
+:root[data-mentor-skin="paper"] .mentor-md ul > li::before { background: var(--nb-red); }
+:root[data-mentor-skin="paper"] .mentor-md ol > li::marker { color: var(--nb-red); }
+:root[data-mentor-skin="paper"] .mentor-md code { background: var(--m-soft); border-color: transparent; }
+:root[data-mentor-skin="paper"] .mentor-md pre {   /* code: an index card taped onto the page */
+    position: relative; margin-bottom: var(--nb-lh); border: 0; border-radius: 3px;
+    background: linear-gradient(var(--nb-red), var(--nb-red)) 0 0 / 100% 2px no-repeat, var(--nb-card);
+    box-shadow: 0 8px 16px -10px var(--nb-shadow), 0 0 0 1px var(--nb-edge);
+    rotate: -0.4deg;
+}
+:root[data-mentor-skin="paper"] .mentor-md blockquote { border-left: 3px solid var(--nb-red); background: transparent; }
+:root[data-mentor-skin="paper"] .mentor-md hr { background: var(--nb-head); height: 2px; }
+
+/* your messages: sticky notes, each stuck on with a strip of tape */
+:root[data-mentor-skin="paper"] .mentor-msg.user {
+    position: relative; max-width: 80%; padding: 6px 16px 8px; border: 0; border-radius: 2px 2px 16px 2px;
+    background: var(--nb-note); color: var(--nb-note-ink);
+    font: 600 19px/var(--nb-lh) var(--nb-hand);
+    box-shadow: 0 12px 18px -12px var(--nb-shadow), inset 0 -12px 18px -16px rgba(120, 80, 0, 0.35);
+    rotate: -1.4deg; transform-origin: 50% 0;
+    animation: nbNote 0.8s var(--m-spring) backwards;
+}
+:root[data-mentor-skin="paper"] .mentor-turn:nth-child(even) .mentor-msg.user { background: var(--nb-note-2); rotate: 1.1deg; }
+:root[data-mentor-skin="paper"] .mentor-msg.user::before {
+    content: ""; position: absolute; top: -10px; left: 50%; width: 56px; height: 18px; pointer-events: none;
+    background: repeating-linear-gradient(90deg, var(--nb-tape-line) 0 4px, transparent 4px 9px), var(--nb-tape-2);
+    transform: translateX(-50%) rotate(-5deg); opacity: 0.9;
+}
+:root[data-mentor-skin="paper"] .mentor-ref { border-radius: 50%; border: 1.5px solid var(--nb-red); background: transparent; color: var(--nb-red); font: 700 15px/1 var(--nb-hand); padding: 3px 6px; }
+
+/* the empty page */
+:root[data-mentor-skin="paper"] .mentor-empty { margin: 0; padding: 0; }
+:root[data-mentor-skin="paper"] .mentor-empty h4 { font: 700 30px/calc(var(--nb-lh) * 1.5) var(--nb-hand); letter-spacing: 0; color: var(--nb-ink); margin: 0; }
+:root[data-mentor-skin="paper"] .mentor-empty p { margin: 0; font-size: 14.5px; line-height: var(--nb-lh); color: var(--nb-ink-2); }
+:root[data-mentor-skin="paper"] .mentor-chips { border-top: 0; }
+:root[data-mentor-skin="paper"] .mentor-chips button { min-height: var(--nb-lh); padding: 0; border-bottom: 0; background: transparent; }
+:root[data-mentor-skin="paper"] .mentor-chip-label { font: 600 18px/var(--nb-lh) var(--nb-hand); color: var(--nb-ink); }
+:root[data-mentor-skin="paper"] .mentor-chip-q { color: var(--nb-red); border-color: var(--nb-red); background: transparent; }
+
+/* the composer: write on the last lines of the page, send with a red ink stamp */
+:root[data-mentor-skin="paper"] .mentor-input {
+    padding: 10px 12px 14px calc(var(--nb-x) + 12px);
+    background:
+        var(--nb-margin-layer),
+        repeating-linear-gradient(180deg, transparent 0 21px, var(--nb-rule) 21px 22px, transparent 22px var(--nb-lh)),
+        var(--nb-paper-2);
+}
+:root[data-mentor-skin="paper"] .mentor-input::before { display: none; }
+:root[data-mentor-skin="paper"] .mentor-field {
+    border: 0; border-bottom: 2px solid var(--nb-ink-2); border-radius: 0; background: transparent; box-shadow: none;
+}
+:root[data-mentor-skin="paper"] .mentor-field:focus-within { border-color: var(--nb-red); box-shadow: 0 2px 0 var(--nb-red); }
+:root[data-mentor-skin="paper"] .mentor-field textarea { min-height: 42px; padding: 7px 4px 7px; font: 500 15px/var(--nb-lh) var(--font); color: var(--nb-ink); scrollbar-width: none; }
+:root[data-mentor-skin="paper"] .mentor-field textarea::-webkit-scrollbar { display: none; }
+:root[data-mentor-skin="paper"] .mentor-field textarea::placeholder { font: 600 17px/var(--nb-lh) var(--nb-hand); color: var(--nb-pencil); }
+:root[data-mentor-skin="paper"] .mentor-send {
+    color: var(--nb-paper); background: var(--nb-red);
+    box-shadow: 0 0 0 2px var(--nb-paper-2), 0 0 0 3.5px var(--nb-red), 0 6px 12px -6px var(--nb-shadow);
+    rotate: -8deg;
+}
+:root[data-mentor-skin="paper"] .mentor-send:hover:not(:disabled) { rotate: 0deg; }
+:root[data-mentor-skin="paper"] .mentor-lang { background: transparent; border: 1.5px dashed var(--m-line-strong); box-shadow: none; }
+:root[data-mentor-skin="paper"] .mentor-lang-thumb { background: var(--nb-highlight); box-shadow: none; }
+:root[data-mentor-skin="paper"] .mentor-lang button.active { color: var(--nb-ink); }
+:root[data-mentor-skin="paper"] .mentor-example { rotate: -2deg; box-shadow: 0 0 0 2px var(--nb-paper-2), 0 0 0 3.5px var(--m-accent), 0 8px 16px -8px rgba(var(--m-accent-rgb), 0.7); }
+
+/* phones: the sheet is a page too */
+@media (max-width: 47.99rem) {
+    :root[data-mentor-skin="paper"] .mentor-panel { border-radius: 12px !important; }
+    :root[data-mentor-skin="paper"] { --nb-x: 34px; }
+}
+
+@keyframes nbTape { from { opacity: 0; transform: translate(-50%, -16px) rotate(-14deg) scale(1.3); } 60% { opacity: 1; transform: translate(-50%, 2px) rotate(-1deg) scale(0.96); } }
+@keyframes nbNote { from { opacity: 0; transform: translateY(-20px) rotate(-9deg) scale(1.12); } 55% { opacity: 1; transform: translateY(3px) rotate(2deg) scale(0.98); } 80% { transform: translateY(-1px) rotate(-0.6deg); } }
+@keyframes nbInk { from { opacity: 0; filter: blur(3px); } }
+@media (prefers-reduced-motion: reduce) { :root[data-mentor-skin="paper"] .mentor-panel::before, :root[data-mentor-skin="paper"] :is(.mentor-msg.user, .mentor-msg.bot) { animation: none !important; } }
+:root[data-motion="calm"][data-mentor-skin="paper"] :is(.mentor-msg.user, .mentor-msg.bot), :root[data-motion="calm"][data-mentor-skin="paper"] .mentor-panel::before { animation: none !important; }
 
 /* Clear glass: the page shows through, frosted */
 :root[data-mentor-skin="glass"] {

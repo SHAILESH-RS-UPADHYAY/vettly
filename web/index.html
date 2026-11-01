@@ -13,7 +13,7 @@
             try { ap = JSON.parse(localStorage.getItem('vettly_appearance_v2') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
             var dark = saved === 'dark' || (saved !== 'parchment' && !!window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) root.classList.add('theme-dark');
-            var d = { look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss', sidebar: 'poster', mentorSkin: 'frosted', pipeline: 'stream', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full' };
+            var d = { look: 'classic', accent: 'poster', accentDark: 'spatial', orb: 'porcelain', orbDark: 'gloss', sidebar: 'poster', mentorSkin: 'paper', pipeline: 'stream', density: 'comfortable', cards: 'soft', corners: 'round', text: 'default', bg: 'particles', motion: 'full' };
             for (var k in d) root.setAttribute('data-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }), ap[k] || d[k]);
         })();
     </script>
@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./base.css?v=7.0">
     <link rel="stylesheet" href="./styles.css?v=7.0">
     <link rel="stylesheet" href="./prep.css?v=7.1">
-    <link rel="stylesheet" href="./mentor.css?v=7.0">
+    <link rel="stylesheet" href="./mentor.css?v=7.2">
     <link rel="stylesheet" href="./looks.css?v=7.0">
 </head>
 <body data-section="home">
@@ -1133,8 +1133,8 @@ Nice to Have:
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
     <script src="./motion.js?v=7.0"></script>
-    <script src="./appearance.js?v=7.0"></script>
+    <script src="./appearance.js?v=7.2"></script>
     <script src="./dashboard.js?v=7.1"></script>
-    <script src="./mentor.js?v=7.0"></script>
+    <script src="./mentor.js?v=7.2"></script>
 </body>
 </html>
