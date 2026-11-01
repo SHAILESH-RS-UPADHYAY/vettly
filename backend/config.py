@@ -14,10 +14,18 @@ load_dotenv(BACKEND_DIR / ".env")
 
 
 # ─── API Keys (Multi-Provider Support) ───────────────────────
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+# The four AI keys are looked up per request (see __getattr__ below): a user who saved their own key gets it here
+_SERVER_KEYS = {n: os.getenv(n, "") for n in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY")}
+
+
+def __getattr__(name):
+    if name in _SERVER_KEYS:
+        from allowance import own_keys
+        mine = own_keys.get()
+        return mine[name] if mine is not None else _SERVER_KEYS[name]
+    raise AttributeError(name)
+
+
 DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY", "")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 
@@ -75,14 +83,10 @@ for directory in [UPLOADS_DIR, CONTEXT_STORE_DIR, RECORDINGS_DIR]:
 
 def get_active_llm_provider() -> str:
     """Return the active LLM provider based on configured API keys."""
-    if ANTHROPIC_API_KEY and not ANTHROPIC_API_KEY.startswith("your_"):
-        return "claude"
-    if GEMINI_API_KEY and not GEMINI_API_KEY.startswith("your_"):
-        return "gemini"
-    if OPENAI_API_KEY and not OPENAI_API_KEY.startswith("your_"):
-        return "openai"
-    if GROQ_API_KEY and not GROQ_API_KEY.startswith("your_"):
-        return "groq"
+    for name, provider in (("ANTHROPIC_API_KEY", "claude"), ("GEMINI_API_KEY", "gemini"), ("OPENAI_API_KEY", "openai"), ("GROQ_API_KEY", "groq")):
+        key = __getattr__(name)
+        if key and not key.startswith("your_"):
+            return provider
     return "unconfigured"
 
 

@@ -914,6 +914,24 @@ Nice to Have:
                         </div>
                     </div>
 
+                    <!-- AI usage and the user's own key (hosted app only; onboard.js fills it) -->
+                    <div class="toolbelt-card ai-key-card" id="ai-key-card" hidden>
+                        <div class="toolbelt-card-header">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>AI answers</h3>
+                        </div>
+                        <p class="toolbelt-card-desc" id="ai-key-status">Checking today's allowance...</p>
+                        <form class="ai-key-form" id="ai-key-form">
+                            <label class="ob-field"><span>Provider</span>
+                                <select name="provider"><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic Claude</option></select></label>
+                            <label class="ob-field"><span>Your API key</span><input name="key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a key to use your own AI quota"></label>
+                            <div class="ai-key-actions">
+                                <button type="submit" class="btn btn-primary btn-sm">Save my key</button>
+                                <button type="button" class="btn btn-secondary btn-sm" id="ai-key-remove" hidden>Remove my key</button>
+                            </div>
+                            <p class="ai-key-note">Your key is encrypted before it is stored and only used for your own requests.</p>
+                        </form>
+                    </div>
+
                     <!-- Backend Telemetry Card -->
                     <div class="toolbelt-card" id="settings-conn-card">
                         <div class="toolbelt-card-header">
@@ -1245,13 +1263,13 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./auth.js?v=8.5"></script>
+    <script src="./auth.js?v=8.6"></script>
     <script src="./motion.js?v=8.1"></script>
     <script src="./appearance.js?v=8.1"></script>
     <script src="./dashboard.js?v=8.5"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.5"></script>
-    <script src="./onboard.js?v=8.5"></script>
+    <script src="./onboard.js?v=8.6"></script>
 </body>
 </html>

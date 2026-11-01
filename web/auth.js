@@ -23,7 +23,11 @@
         if (!token) return rawFetch(input, init);
         const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
         headers.set('Authorization', `Bearer ${token}`);
-        return rawFetch(input, { ...init, headers });
+        const res = await rawFetch(input, { ...init, headers });
+        if (res.status === 429) {   // out of free AI answers: say so plainly, wherever it happened
+            res.clone().json().then(d => window.Motion?.toast(d.detail || 'Daily AI limit reached', 'error')).catch(() => {});
+        }
+        return res;
     };
 
     // Clerk's widgets take the current look's colours, so they sit in the page instead of on top of it

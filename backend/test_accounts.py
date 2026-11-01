@@ -13,6 +13,8 @@ DB = os.path.join(tempfile.mkdtemp(), "vettly-test.db")
 os.environ["DATABASE_URL"] = "sqlite:///" + DB
 os.environ["CLERK_PUBLISHABLE_KEY"] = "pk_test_" + base64.b64encode(b"test.clerk.accounts.dev$").decode()
 os.environ.pop("VERCEL", None)
+os.environ["FREE_DAILY_AI"] = "2"
+os.environ["KEY_ENCRYPTION_SECRET"] = "test-secret"
 
 import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
@@ -79,3 +81,17 @@ with TestClient(main.app) as client:
     assert client.get("/api/profile", headers=b).json() == {}
     assert client.get("/prepare/categories", headers=a).json()["categories"] is None
 print("profile check passed")
+
+# allowance: two free AI calls a day, then 429 until the user saves their own key
+with TestClient(main.app) as client:
+    c = as_user("user_c")
+    for _ in range(2):
+        assert client.post("/api/chat", json={"message": "hi"}, headers=c).status_code != 429
+    assert client.post("/api/chat", json={"message": "hi"}, headers=c).status_code == 429
+    assert client.get("/api/ai-key", headers=c).json()["free_left"] == 0
+    assert client.post("/api/ai-key", json={"provider": "groq", "key": "gsk_" + "x" * 40}, headers=c).json()["has_key"] is True
+    assert client.post("/api/chat", json={"message": "hi"}, headers=c).status_code != 429
+    import docstore
+    assert "gsk_" not in str(docstore.load("user_c", "ai_key", {}))   # stored encrypted
+    assert client.get("/api/ai-key", headers=as_user("user_d")).json()["free_left"] == 2
+print("allowance check passed")
