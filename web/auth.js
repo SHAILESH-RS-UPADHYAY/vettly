@@ -63,7 +63,7 @@
         g.hidden = false;
         root.classList.remove('auth-checking');
         if (error) {
-            card.innerHTML = '<p class="auth-error">Sign-in could not load. Check your connection and reload the page.</p>';
+            card.innerHTML = `<p class="auth-error">${error}</p>`;
             return;
         }
         clerk.mountSignIn(card, { withSignUp: true, appearance: appearance() });
@@ -88,12 +88,13 @@
     (async () => {
         let cfg = {};
         try { cfg = await (await rawFetch('/api/config')).json(); } catch (e) { /* an older server or a plain file server: open as before */ }
+        if (cfg.auth === 'unconfigured') { showGate('Vettly is opening soon. Sign-in is still being set up, so please check back shortly.'); return; }
         if (cfg.auth !== 'clerk') { root.classList.remove('auth-checking'); open(); return; }
         try {
             clerk = await loadClerk(cfg);
             await clerk.load();
         } catch (e) {
-            showGate(true);
+            showGate('Sign-in could not load. Check your connection and reload the page.');
             return;
         }
         clerk.addListener(({ user }) => {

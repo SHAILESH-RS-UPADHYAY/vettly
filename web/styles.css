@@ -2196,7 +2196,7 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 .ob-field[hidden] { display: none; }
 .ob-field :is(input, select) { min-height: 44px; padding: 0 12px; border-radius: var(--r-ctl); border: 1px solid var(--rule-2); background: var(--field, var(--paper)); color: var(--ink); font: inherit; font-weight: 500; }
 .ob-field :is(input, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.onboard-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
+.onboard-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 .profile-btn { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: 0; border-radius: var(--r-ctl); background: transparent; color: var(--ink-2); font: 600 0.88rem/1 var(--font-body); }
 .profile-btn svg { width: 18px; height: 18px; color: var(--accent-ink); }
 @media (hover: hover) { .profile-btn:hover { background: var(--paper-3); } }

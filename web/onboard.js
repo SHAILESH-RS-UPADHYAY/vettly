@@ -24,7 +24,7 @@ const Onboard = (() => {
             <label class="ob-field"><span>Role you're preparing for</span><input name="role" required maxlength="80" value="${esc(profile.role)}" placeholder="Staff nurse, ICU"></label>
             <label class="ob-field"><span>Your level</span>
                 <select name="level">${LEVELS.map(l => `<option${profile.level === l ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
-            <div class="onboard-actions"><button type="submit" class="btn btn-primary">Start preparing</button></div>
+            <div class="onboard-actions"><button type="button" class="btn btn-secondary" data-ob-later>Not now</button><button type="submit" class="btn btn-primary">Start preparing</button></div>
         </form>`;
     }
 
@@ -39,6 +39,7 @@ const Onboard = (() => {
         }
         dlg.innerHTML = dialogHtml();
         const form = dlg.querySelector('form');
+        form.querySelector('[data-ob-later]').addEventListener('click', () => dlg.close());
         form.field.addEventListener('change', () => { form.querySelector('.ob-other').hidden = form.field.value !== 'Other'; });
         form.addEventListener('submit', async e => {
             e.preventDefault();
@@ -123,7 +124,11 @@ const Onboard = (() => {
 
     async function start() {
         await window.Auth?.ready;
-        try { profile = await (await fetch(`${API_BASE}/api/profile`)).json(); } catch (e) { return; }
+        try {
+            const res = await fetch(`${API_BASE}/api/profile`);
+            if (!res.ok) return;   // an error is not "no profile yet": never open onboarding on one
+            profile = await res.json();
+        } catch (e) { return; }
         if (!profile.onboarded) open(); else loadCategories();
         keyCard();
     }
