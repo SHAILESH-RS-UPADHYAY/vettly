@@ -42,9 +42,15 @@ def main() -> None:
     os.environ["DATABASE_URL"] = db
 
     query = urllib.parse.urlencode({"email_address": args.email})
-    request = urllib.request.Request(f"https://api.clerk.com/v1/users?{query}", headers={"Authorization": f"Bearer {secret}"})
-    with urllib.request.urlopen(request, timeout=20) as response:
-        found = json.load(response)
+    # a browser-like name: Clerk's CDN rejects Python's default "Python-urllib" agent with a 403
+    request = urllib.request.Request(f"https://api.clerk.com/v1/users?{query}", headers={
+        "Authorization": f"Bearer {secret}", "User-Agent": "vettly-import/1.0", "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            found = json.load(response)
+    except urllib.error.HTTPError as e:
+        why = {401: "CLERK_SECRET_KEY is wrong or from another Clerk app", 403: "Clerk refused the request"}.get(e.code, "Clerk returned an error")
+        sys.exit(f"{why} (HTTP {e.code}): {e.read().decode(errors='replace')[:300]}")
     if not found:
         sys.exit(f"No account with {args.email} yet. Sign up on the site first, then run this again.")
     user = found[0]["id"]
