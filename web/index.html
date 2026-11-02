@@ -31,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.6">
+    <link rel="stylesheet" href="./styles.css?v=8.7">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
@@ -127,7 +127,13 @@
                 </ul>
             </div>
             <div class="auth-panel">
+                <div class="auth-tabs" role="group" aria-label="Sign in or create an account">
+                    <button type="button" data-auth-mode="in" aria-pressed="false">Sign in</button>
+                    <button type="button" data-auth-mode="up" aria-pressed="true">Create account</button>
+                </div>
                 <div class="auth-card" id="auth-card" aria-live="polite"></div>
+                <p class="auth-switch" data-auth-hint="up">Already have an account? <button type="button" class="auth-link" data-auth-mode="in">Sign in</button></p>
+                <p class="auth-switch" data-auth-hint="in" hidden>New here? <button type="button" class="auth-link" data-auth-mode="up">Create an account</button> first: GitHub, Google and LinkedIn sign-in only find accounts that already exist.</p>
                 <p class="auth-legal">By continuing you agree to the <a href="./terms.html">Terms</a> and <a href="./privacy.html">Privacy</a> policy.</p>
             </div>
         </div>
@@ -1268,7 +1274,7 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./auth.js?v=8.8"></script>
+    <script src="./auth.js?v=9.0"></script>
     <script src="./motion.js?v=8.1"></script>
     <script src="./appearance.js?v=8.9"></script>
     <script src="./dashboard.js?v=8.5"></script>

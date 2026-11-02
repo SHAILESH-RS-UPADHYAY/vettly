@@ -4,7 +4,8 @@
  *
  * Every same-origin API call waits until we know who is signed in, then carries their session token,
  * so the rest of the app keeps calling fetch() exactly as it always has.
- * Sign-in methods (email and LinkedIn) are whatever is switched on in the Clerk dashboard.
+ * Sign in and Create account are two separate tabs, so nobody tries a social login for an account that does not exist yet.
+ * The sign-in methods themselves (email, GitHub, LinkedIn...) are whatever is switched on in the Clerk dashboard.
  */
 (() => {
     const API = /^\/(?:api|context|upload|github|prepare|status)(?:\/|$)/;
@@ -12,7 +13,7 @@
     const CLERK_JS = '@clerk/clerk-js@5';
     const rawFetch = window.fetch.bind(window);
     const root = document.documentElement;
-    let clerk = null, signedIn = false, open;
+    let clerk = null, signedIn = false, mounted = null, flipping = false, open;
     const ready = new Promise(resolve => { open = resolve; });
 
     window.fetch = async (input, init = {}) => {
@@ -66,14 +67,53 @@
             card.innerHTML = `<p class="auth-error">${error}</p>`;
             return;
         }
-        clerk.mountSignIn(card, { withSignUp: true, appearance: appearance() });
+        let known = false;
+        try { known = localStorage.getItem('vettly_has_account') === '1'; } catch (e) { /* storage blocked */ }
+        setMode(known ? 'in' : 'up');   // first visit: create an account; returning visitors: sign in
     }
+
+    // One Clerk form at a time: either sign in or create an account
+    function swapForm(next) {
+        const card = document.getElementById('auth-card');
+        if (mounted === 'in') clerk.unmountSignIn(card);
+        else if (mounted === 'up') clerk.unmountSignUp(card);
+        if (next === 'up') clerk.mountSignUp(card, { appearance: appearance() });
+        else clerk.mountSignIn(card, { withSignUp: false, appearance: appearance() });
+        mounted = next;
+        document.querySelectorAll('.auth-tabs [data-auth-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.authMode === next)));
+        document.querySelectorAll('[data-auth-hint]').forEach(p => { p.hidden = p.dataset.authHint !== next; });
+    }
+
+    // Switching tabs flips the whole board in a backflip; the form changes while it is upside down.
+    // Calm mode and reduced motion swap instantly.
+    function setMode(next, animate) {
+        const panel = document.querySelector('.auth-panel');
+        const still = !animate || !panel || flipping || window.Motion?.calm?.() || matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (still) { swapForm(next); return; }
+        flipping = true;
+        const turn = next === 'up' ? -1 : 1;   // create account flips back, sign in flips forward
+        const spin = deg => `perspective(1400px) rotateX(${turn * deg}deg)`;
+        const flip = panel.animate([
+            { transform: `${spin(0)} translateY(0) scale(1)` },
+            { transform: `${spin(180)} translateY(-28px) scale(1.06)`, offset: 0.45 },
+            { transform: `${spin(360)} translateY(0) scale(1)` },
+        ], { duration: 1050, easing: 'cubic-bezier(0.34, 1.2, 0.64, 1)' });
+        setTimeout(() => swapForm(next), 430);
+        flip.finished.catch(() => {}).finally(() => { flipping = false; });
+    }
+    gate().addEventListener('click', e => {
+        const b = e.target.closest('[data-auth-mode]');
+        if (b && clerk && !signedIn && b.dataset.authMode !== mounted) setMode(b.dataset.authMode, true);
+    });
 
     function enter() {
         signedIn = true;
+        try { localStorage.setItem('vettly_has_account', '1'); } catch (e) { /* storage blocked */ }
         const g = gate();
         if (!g.hidden) {
-            clerk.unmountSignIn(document.getElementById('auth-card'));
+            const card = document.getElementById('auth-card');
+            if (mounted === 'in') clerk.unmountSignIn(card); else if (mounted === 'up') clerk.unmountSignUp(card);
+            mounted = null;
             g.classList.add('leaving');
             setTimeout(() => { g.hidden = true; g.classList.remove('leaving'); }, 480);
         }
