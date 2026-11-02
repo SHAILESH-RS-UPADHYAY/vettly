@@ -6,7 +6,7 @@
  * mentor.css do the rest. The first paint is set by the bootstrap in index.html, so nothing flashes.
  */
 const Appearance = (() => {
-    const THEME_KEY = 'acemate_poster_theme';      // 'dark' | 'parchment' | absent (match device)
+    const THEME_KEY = 'acemate_poster_theme';      // 'dark' | 'device' | 'parchment' or absent (light, the default)
     const STORE_KEY = 'vettly_appearance_v2';
     const TAB_KEY = 'vettly_studio_tab';
     const root = document.documentElement;
@@ -159,7 +159,7 @@ const Appearance = (() => {
     try { prefs = { ...DEFAULTS, ...JSON.parse(store.get(STORE_KEY, '{}')) }; } catch (e) { /* keep defaults */ }
     const save = () => store.set(STORE_KEY, JSON.stringify(prefs));
 
-    const themeMode = () => ({ dark: 'dark', parchment: 'light' }[store.get(THEME_KEY, '')] || 'device');
+    const themeMode = () => ({ dark: 'dark', device: 'device' }[store.get(THEME_KEY, '')] || 'light');
     const isDark = () => root.classList.contains('theme-dark');
     const calm = () => (typeof Motion !== 'undefined' && Motion.calm());
 
@@ -197,7 +197,7 @@ const Appearance = (() => {
         t.finished.finally(() => root.classList.remove('vt-theme')).catch(() => {});
     }
     function setThemeMode(mode, origin) {
-        store.set(THEME_KEY, mode === 'dark' ? 'dark' : mode === 'light' ? 'parchment' : null);
+        store.set(THEME_KEY, mode === 'dark' ? 'dark' : mode === 'light' ? 'parchment' : 'device');
         applyDark(mode === 'dark' || (mode === 'device' && darkQuery.matches), origin);
         renderSettings();
     }
