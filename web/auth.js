@@ -40,7 +40,7 @@
                 colorBackground: v('--paper-2'), colorInputBackground: v('--field') || v('--paper'), colorInputText: v('--ink'),
                 borderRadius: '12px', fontFamily: v('--font-body'),
             },
-            elements: { rootBox: { width: '100%' }, cardBox: { width: '100%', boxShadow: 'none' }, card: { boxShadow: 'none', background: 'transparent' } },
+            elements: { rootBox: { width: '100%' }, cardBox: { width: '100%', boxShadow: 'none' }, card: { boxShadow: 'none', background: 'transparent' }, footerAction: { display: 'none' } },   // the tabs switch between the forms
         };
     }
 
