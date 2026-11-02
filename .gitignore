@@ -28,3 +28,6 @@ Thumbs.db
 # Pulled hosted settings (vercel env pull) hold real keys
 .env.*
 !.env.example
+
+# Private notes and tracking: never pushed or deployed
+.private/
