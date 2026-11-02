@@ -178,7 +178,7 @@ GROQ_API_KEY=gsk_...
 Locally, Vettly is single-user: no sign-in, data in `backend/context_store/`. On Vercel it becomes multi-user: every visitor signs in and gets a private data space.
 
 1. **Connect the repo** in Vercel (New Project → import this GitHub repo). Vercel detects the FastAPI app in `api/index.py`; `.vercelignore` keeps your local data, resumes and `.env` files out of the upload. Every push to `main` deploys production.
-2. **Sign-in: Clerk.** Vercel → your project → Integrations → Marketplace → **Clerk**. It sets `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. In the Clerk dashboard → User & authentication, switch on the methods you want: **Email**, **Google**, **LinkedIn**, **Phone** (SMS needs a paid Clerk plan). For a production Clerk instance, add your own Google and LinkedIn OAuth credentials and your domain.
+2. **Sign-in: Clerk.** Vercel → your project → Integrations → Marketplace → **Clerk**. It sets `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY`. In the Clerk dashboard → User & authentication, switch on **Email** and **LinkedIn** only, and leave Phone and other social logins off. For a production Clerk instance, add your own LinkedIn OAuth credentials and your domain.
 3. **Database: Neon.** Vercel → Storage → Create → **Neon Postgres**, connect it to the project. It sets `DATABASE_URL`; Vettly creates its one table (`user_docs`) on first use.
 4. **Environment variables** (Vercel → Settings → Environment Variables):
    - one or more AI keys: `GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`

@@ -4,7 +4,7 @@
  *
  * Every same-origin API call waits until we know who is signed in, then carries their session token,
  * so the rest of the app keeps calling fetch() exactly as it always has.
- * Sign-in methods (email, Google, phone, LinkedIn...) are whatever is switched on in the Clerk dashboard.
+ * Sign-in methods (email and LinkedIn) are whatever is switched on in the Clerk dashboard.
  */
 (() => {
     const API = /^\/(?:api|context|upload|github|prepare|status)(?:\/|$)/;
