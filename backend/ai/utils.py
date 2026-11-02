@@ -150,8 +150,11 @@ async def generate_multi_provider_completion(
       3. OpenAI (OPENAI_API_KEY)
       4. Groq (GROQ_API_KEY)
     """
+    attempted: list[str] = []   # providers that had a key, so a failure is not reported as a missing key
+
     # 1. Try Anthropic Claude
     if getattr(config, "ANTHROPIC_API_KEY", "") and not config.ANTHROPIC_API_KEY.startswith("your_"):
+        attempted.append("Claude")
         try:
             return await call_claude_messages(
                 system_prompt=system_prompt,
@@ -163,12 +166,14 @@ async def generate_multi_provider_completion(
         except Exception as e:
             logger.warning(f"Claude API error ({e}); checking fallback providers...")
 
-    # 2. Try Google Gemini (Flagship gemini-3.1-pro-preview -> fast fallback gemini-3.8-flash)
+    # 2. Try Google Gemini (GEMINI_MODEL, then GEMINI_FAST_MODEL, then other free-tier models)
     if getattr(config, "GEMINI_API_KEY", "") and not config.GEMINI_API_KEY.startswith("your_"):
-        primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.1-pro-preview")
-        fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.8-flash")
+        attempted.append("Gemini")
+        primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.6-flash")
+        fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.1-flash-lite")
         candidate_models = []
-        for m in [primary_gemini, fast_gemini, "gemini-3.1-pro-preview", "gemini-3.8-flash", "gemini-flash-latest"]:
+        # then models that have free-tier quota: a busy one (503) just moves on to the next
+        for m in [primary_gemini, fast_gemini, "gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
             if m and m not in candidate_models:
                 candidate_models.append(m)
 
@@ -217,6 +222,7 @@ async def generate_multi_provider_completion(
 
     # 3. Try OpenAI
     if getattr(config, "OPENAI_API_KEY", "") and not config.OPENAI_API_KEY.startswith("your_"):
+        attempted.append("OpenAI")
         try:
             from openai import AsyncOpenAI
             client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
@@ -242,6 +248,7 @@ async def generate_multi_provider_completion(
 
     # 4. Try Groq
     if getattr(config, "GROQ_API_KEY", "") and not config.GROQ_API_KEY.startswith("your_"):
+        attempted.append("Groq")
         from groq import AsyncGroq
         client = AsyncGroq(api_key=config.GROQ_API_KEY)
         # Keep system + user prompt within Groq's free-tier token budget
@@ -265,6 +272,11 @@ async def generate_multi_provider_completion(
         )
         return res.choices[0].message.content.strip()
 
+    if attempted:
+        raise RuntimeError(
+            f"The AI service is busy or over its quota right now ({', '.join(attempted)} tried). "
+            "Try again in a minute, or add a key for another provider."
+        )
     raise RuntimeError(
         "No valid LLM API key configured in backend/.env. "
         "Please add ANTHROPIC_API_KEY (Claude), GEMINI_API_KEY, or GROQ_API_KEY."

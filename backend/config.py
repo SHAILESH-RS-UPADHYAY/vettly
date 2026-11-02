@@ -43,10 +43,11 @@ CHUNK_SIZE = int(SAMPLE_RATE * CHUNK_DURATION_MS / 1000) * 2  # 2 bytes per samp
 
 # ─── LLM Settings ────────────────────────────────────────────
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-latest")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-pro-preview")
-GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.8-flash")
-# Mentor bot: Google's alias that always tracks the newest Gemini Pro release
-GEMINI_BOT_MODEL = os.getenv("GEMINI_BOT_MODEL", "gemini-pro-latest")
+# Defaults that work on the Gemini free tier (Pro models have no free quota); set the env vars to use Pro on a paid key
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+GEMINI_FAST_MODEL = os.getenv("GEMINI_FAST_MODEL", "gemini-3.1-flash-lite")
+# Mentor bot: a flash model by default; on a paid key, "gemini-pro-latest" tracks the newest Pro release
+GEMINI_BOT_MODEL = os.getenv("GEMINI_BOT_MODEL", "gemini-3.6-flash")
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
