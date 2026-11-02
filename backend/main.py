@@ -255,7 +255,7 @@ async def root():
 async def client_config():
     """What the web app needs before anyone signs in: whether sign-in is on, and Clerk's public key."""
     if not users.auth_enabled():
-        return {"auth": "none"}
+        return {"auth": "unconfigured" if config.ON_VERCEL else "none"}
     return {
         "auth": "clerk",
         "clerk_publishable_key": config.CLERK_PUBLISHABLE_KEY,
