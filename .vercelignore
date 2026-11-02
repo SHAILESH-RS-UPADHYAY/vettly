@@ -13,3 +13,6 @@ backend/recordings/
 **/.env
 **/.env.*
 !**/.env.example
+
+# Private notes and tracking
+.private/
