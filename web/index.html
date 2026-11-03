@@ -31,15 +31,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.7">
+    <link rel="stylesheet" href="./styles.css?v=8.9">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.4">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.0">
     <link rel="stylesheet" href="./bento.css?v=8.2">
-    <link rel="stylesheet" href="./onboard.css?v=1.0">
-    <link rel="stylesheet" href="./tour.css?v=1.1">
+    <link rel="stylesheet" href="./onboard.css?v=2.1">
+    <link rel="stylesheet" href="./tour.css?v=2.0">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -117,6 +117,10 @@
     <!-- Navigation: a sidebar on wide screens, an icon rail on tablets, a tab bar with a More sheet on phones -->
     <!-- Sign-in for the hosted app (auth.js mounts Clerk here); never shown when Vettly runs on your machine -->
     <div class="auth-gate" id="auth-gate" hidden>
+        <button type="button" class="theme-switch auth-theme" onclick="toggleTheme(event)" aria-label="Switch between light and dark">
+            <svg class="ts-sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="ts-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+            <span class="ts-label"><span class="ts-to-dark">Dark</span><span class="ts-to-light">Light</span></span>
+        </button>
         <div class="auth-inner">
             <div class="auth-copy">
                 <p class="auth-brand"><span class="logo-icon" aria-hidden="true">❖</span>Vettly</p>
@@ -1293,15 +1297,15 @@ Nice to Have:
 
     <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./auth.js?v=9.1"></script>
+    <script src="./auth.js?v=9.2"></script>
     <script src="./motion.js?v=8.1"></script>
     <script src="./appearance.js?v=8.9"></script>
     <script src="./dashboard.js?v=8.5"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.5"></script>
-    <script src="./tour.js?v=1.0"></script>
-    <script src="./onboard-scenes.js?v=1.0"></script>
-    <script src="./onboard.js?v=9.1"></script>
+    <script src="./tour.js?v=2.0"></script>
+    <script src="./onboard-scenes.js?v=2.1"></script>
+    <script src="./onboard.js?v=9.3"></script>
 </body>
 </html>
