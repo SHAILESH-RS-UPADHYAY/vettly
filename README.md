@@ -7,7 +7,7 @@
 
 <!-- Animated Typing Subtitle -->
 <a href="https://github.com/SHAILESH-RS-UPADHYAY/vettly">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=800&size=18&duration=3000&pause=800&color=EA580C&center=true&vCenter=true&width=860&lines=%E2%9D%96+VETTLY+%E2%80%94+AI+Career+Readiness+Architect+%26+Technical+Prep+Studio;1.+80%2C000-Char+Priority+RAG+Toolbelt+%28Resume+%2B+GitHub+%2B+JD+%2B+STAR%29;2.+4-Provider+Auto-Failover+Router+%28Claude+3.5+%E2%86%94+Gemini+2.5+%E2%86%94+OpenAI+%E2%86%94+Groq%29;3.+7-Dimension+RL+Humanizer+Loop+%2B+9-Category+Prep+Studio+HUD" alt="Typing SVG" />
+  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=800&size=18&duration=3000&pause=800&color=EA580C&center=true&vCenter=true&width=860&lines=%E2%9D%96+VETTLY+%E2%80%94+AI+Career+Readiness+Architect+%26+Technical+Prep+Studio;1.+80%2C000-Char+Priority+RAG+Toolbelt+%28Resume+%2B+GitHub+%2B+JD+%2B+STAR%29;2.+4-Provider+Auto-Failover+Router+%28Gemini+%E2%86%94+Groq+%E2%86%94+Claude+%E2%86%94+OpenAI%29;3.+7-Dimension+RL+Humanizer+Loop+%2B+9-Category+Prep+Studio+HUD" alt="Typing SVG" />
 </a>
 
 <br/>
@@ -30,6 +30,21 @@
 **Vettly** is a full-stack **AI Career Readiness Architect & Technical Interview Preparation Studio** engineered with a tactile **Parchment Blueprint HUD** and a **Multi-Model RAG Backend**.
 
 Unlike generic interview flashcard apps, Vettly ingests your **actual engineering footprint** — parsing your **Resume (`.pdf`/`.docx`)**, scraping your **public GitHub repositories & README trees**, extracting stack requirements from your **Target Job Description**, and indexing your **Company Take-Home Assignments & STAR stories** into an attention-ordered **80,000-character RAG context window**.
+
+### For every student, in every field
+
+Vettly is for MBA, nursing, medical, marketing, SEO, finance, law, design, teaching, hospitality and public-service students as much as for engineers. A resume, job post and GitHub are optional: your field and role are enough to start.
+
+| Room | What it does |
+|---|---|
+| **Daybook** | Your day on one page: the next most useful step, your streak, today's Bento and real numbers. |
+| **Prep Studio** | Category tiles for your field (built in, no AI needed) and questions with model answers in your voice. |
+| **Brain Bento** | 86 built-in lessons in 14 field packs; every topic floats in a pond and opens into a lesson. |
+| **Live Copilot** | A register you write in: chapters, an archive shelf, answers inked word by word, a chapter clock and a stopwatch. |
+| **The Attic** | Deleted chapters and sessions wait here (the tab can be hidden). |
+| **Atelier** | Themes, page looks, register styles, which tabs show, and every keyboard shortcut (⌘K / Ctrl K palette). |
+| **Key Ring** | Free Gemini and Groq keys (plus Claude and OpenAI) with an illustrated step-by-step guide; tried in that order. |
+| **Passport** | Your account, export your data, delete your data. |
 
 ---
 
@@ -124,7 +139,7 @@ sequenceDiagram
     API->>CACHE: get_all() (Fetch last 15 questions for deduplication)
     API->>QAG: generate_single_question(context, category, existing_questions)
     QAG->>RTR: generate_multi_provider_completion(json_mode=True)
-    Note over RTR: Priority Failover Chain:<br/>Claude 3.5 Sonnet ➔ Gemini 2.5 Flash ➔ OpenAI ➔ Groq
+    Note over RTR: Priority Failover Chain:<br/>Gemini ➔ Groq ➔ Claude ➔ OpenAI
     RTR-->>QAG: Structured JSON {question, initial_answer, difficulty, keywords}
     API->>VAL: generate_validated_answer(question, context, language)
     Note over VAL: Step 1: Generate grounded 1st-person answer<br/>Step 2: Humanizer strips robotic AI meta-openers<br/>Step 3: 7-Dimension Scoring (Naturalness, Metrics, Flow)
