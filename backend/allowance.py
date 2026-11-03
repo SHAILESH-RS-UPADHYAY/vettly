@@ -2,7 +2,8 @@
 Allowance — who pays for AI calls on the hosted site.
 
 Each signed-in user gets FREE_DAILY_AI calls a day on the server's keys, inside a hard server-wide cap
-(GLOBAL_DAILY_AI). A user who saves their own provider key uses it instead, with no limit. Saved keys are
+(GLOBAL_DAILY_AI). A user who saves their own keys (one per provider: Gemini, Groq, Claude, OpenAI) uses those
+instead, with no limit; the router tries them in that order. Saved keys are
 encrypted with KEY_ENCRYPTION_SECRET; without that secret, own keys simply can't be saved.
 Running Vettly on your own machine (no sign-in) skips all of this.
 """
@@ -52,27 +53,73 @@ def _count(user: str) -> int:
     return doc.get("n", 0) if doc.get("day") == _today() else 0
 
 
+ORDER = ("gemini", "groq", "anthropic", "openai")   # the router's order: free tiers first
+
+
+def _saved(uid: str) -> dict:
+    """The user's keys, one per provider ({provider: {"key": encrypted, "last4": "…"}}); older single-key docs migrate."""
+    doc = docstore.load(uid, "ai_keys", None)
+    if doc is None:
+        old = docstore.load(uid, "ai_key", {})
+        doc = {old["provider"]: {"key": old["key"], "last4": ""}} if old.get("key") and old.get("provider") in PROVIDERS else {}
+    return {p: v for p, v in doc.items() if p in PROVIDERS and isinstance(v, dict) and v.get("key")}
+
+
 def status() -> dict:
     uid = users.user_id()
-    saved = docstore.load(uid, "ai_key", {})
+    saved = _saved(uid)
     used = _count(uid)
-    return {"provider": saved.get("provider"), "has_key": bool(saved.get("key")), "own_keys_enabled": _fernet() is not None,
-            "free_limit": FREE_DAILY_AI, "free_left": max(0, FREE_DAILY_AI - used)}
+    keys = {p: {"saved": p in saved, "last4": saved.get(p, {}).get("last4", "")} for p in ORDER}
+    first = next((p for p in ORDER if p in saved), None)
+    return {"keys": keys, "order": list(ORDER), "provider": first, "has_key": bool(saved),
+            "own_keys_enabled": _fernet() is not None, "free_limit": FREE_DAILY_AI, "free_left": max(0, FREE_DAILY_AI - used)}
+
+
+def _clean(provider: str, key: str) -> str:
+    key = (key or "").strip()
+    if provider not in PROVIDERS:
+        raise ValueError("Pick Gemini, Groq, Claude or OpenAI")
+    if not (20 <= len(key) <= 300) or any(c.isspace() for c in key):
+        raise ValueError("That doesn't look like a full API key. Copy the whole key and paste it again")
+    return key
 
 
 def save_key(provider: str, key: str) -> dict:
     f = _fernet()
     if f is None:
         raise ValueError("Own keys aren't switched on for this site yet")
-    if provider not in PROVIDERS or not (20 <= len(key.strip()) <= 300):
-        raise ValueError("Pick a provider and paste a full API key")
-    docstore.save(users.user_id(), "ai_key", {"provider": provider, "key": f.encrypt(key.strip().encode()).decode()})
+    key = _clean(provider, key)
+    uid = users.user_id()
+    saved = _saved(uid)
+    saved[provider] = {"key": f.encrypt(key.encode()).decode(), "last4": key[-4:]}
+    docstore.save(uid, "ai_keys", saved)
     return status()
 
 
-def remove_key() -> dict:
-    docstore.save(users.user_id(), "ai_key", {})
+def remove_key(provider: str = "") -> dict:
+    uid = users.user_id()
+    saved = _saved(uid)
+    if provider:
+        saved.pop(provider, None)
+    else:
+        saved = {}
+    docstore.save(uid, "ai_keys", saved)
+    docstore.save(uid, "ai_key", {})   # the old single-key doc never comes back
     return status()
+
+
+def decrypted_keys(uid: str) -> dict:
+    """{ENV_NAME: plain key} for every key the user saved and the server can still read."""
+    f = _fernet()
+    if f is None:
+        return {}
+    out = {}
+    for p, v in _saved(uid).items():
+        try:
+            out[PROVIDERS[p]] = f.decrypt(v["key"].encode()).decode()
+        except Exception:
+            pass   # unreadable (secret rotated): treat as not saved
+    return out
 
 
 def begin_ai_call() -> None:
@@ -80,20 +127,48 @@ def begin_ai_call() -> None:
     if not users.auth_enabled():
         return
     uid = users.user_id()
-    saved = docstore.load(uid, "ai_key", {})
-    f = _fernet()
-    if saved.get("key") and f is not None:
-        try:
-            key = f.decrypt(saved["key"].encode()).decode()
-            own_keys.set({name: (key if p == saved["provider"] else "") for p, name in PROVIDERS.items()})
-            return
-        except Exception:
-            pass   # an unreadable key (secret rotated): fall back to the free allowance
+    mine = decrypted_keys(uid)
+    if mine:   # their own keys only (never the server's): Gemini, Groq, Claude, OpenAI in turn
+        own_keys.set({name: mine.get(name, "") for name in PROVIDERS.values()})
+        return
     used, total = _count(uid), _count("_global")
     if used >= FREE_DAILY_AI:
-        raise LimitReached(f"You've used today's {FREE_DAILY_AI} free AI answers. Add your own API key in Settings to keep going, or come back tomorrow.")
+        raise LimitReached(f"You've used today's {FREE_DAILY_AI} free AI answers. Add a free Gemini or Groq key in Settings → Key Ring to keep going, or come back tomorrow.")
     if total >= GLOBAL_DAILY_AI:
-        raise LimitReached("Vettly has reached today's free AI limit for everyone. Add your own API key in Settings to keep going.")
+        raise LimitReached("Vettly has reached today's free AI limit for everyone. Add a free Gemini or Groq key in Settings → Key Ring to keep going.")
     # ponytail: read-then-write counters can undercount under heavy concurrency; fine as a cost guard
     docstore.save(uid, "usage", {"day": _today(), "n": used + 1})
     docstore.save("_global", "usage", {"day": _today(), "n": total + 1})
+
+
+# A key check that spends nothing: each provider's "list models" call needs a valid key and uses no tokens
+_CHECKS = {
+    "gemini": ("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1", lambda k: {"x-goog-api-key": k}),
+    "groq": ("https://api.groq.com/openai/v1/models", lambda k: {"Authorization": f"Bearer {k}"}),
+    "anthropic": ("https://api.anthropic.com/v1/models?limit=1", lambda k: {"x-api-key": k, "anthropic-version": "2023-06-01"}),
+    "openai": ("https://api.openai.com/v1/models", lambda k: {"Authorization": f"Bearer {k}"}),
+}
+
+
+async def test_key(provider: str, key: str = "") -> dict:
+    """Is this key (or the saved one) accepted by its provider? Returns {"ok": bool, "message": str}."""
+    import httpx
+    if provider not in _CHECKS:
+        raise ValueError("Pick Gemini, Groq, Claude or OpenAI")
+    key = _clean(provider, key) if key else decrypted_keys(users.user_id()).get(PROVIDERS[provider], "")
+    if not key:
+        raise ValueError("No key saved for this provider yet")
+    url, headers = _CHECKS[provider]
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            r = await client.get(url, headers=headers(key))
+    except httpx.HTTPError:
+        return {"ok": False, "message": "Couldn't reach the provider just now. Try again in a moment."}
+    if r.status_code == 200:
+        return {"ok": True, "message": "Key works"}
+    # Google answers a wrong key with 400 API_KEY_INVALID, the others with 401/403
+    if r.status_code in (401, 403) or (provider == "gemini" and r.status_code == 400 and "API_KEY" in r.text):
+        return {"ok": False, "message": "The provider rejected this key. Copy it again from their site, or create a new one."}
+    if r.status_code == 429:
+        return {"ok": True, "message": "Key works, but it's rate-limited right now"}
+    return {"ok": False, "message": f"The provider answered {r.status_code}. Try again in a moment."}

@@ -130,3 +130,6 @@ const Motion = (() => {
 
     return { calm, glide, page, thumb, thumbs, watchSeg, pill, count, burst, stagger, toast };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Motion = Motion;

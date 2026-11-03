@@ -290,8 +290,8 @@
 
 /* The original Vettly accents (Poster Classic defaults): poster orange by day, spatial sky by night */
 :root[data-accent="poster"]:not(.theme-dark), :root[data-accent="poster"] .preview-light {
-    --accent: #ea580c; --accent-rgb: 234, 88, 12; --accent-2: #fb923c; --accent-deep: #c2410c;
-    --accent-ink: #c2410c; --on-accent: #ffffff; --accent-soft: #fbe3d1; --focus: #ea580c; --glow-rgb: 234, 88, 12;
+    --accent: #cb4a08; --accent-rgb: 203, 74, 8; --accent-2: #fb923c; --accent-deep: #b23f07;   /* #ea580c gave white text 3.6:1; this is 4.6:1 (WCAG AA) */
+    --accent-ink: #b23f07; --on-accent: #ffffff; --accent-soft: #fbe3d1; --focus: #cb4a08; --glow-rgb: 234, 88, 12;
 }
 :root[data-accent="spatial"]:not(.theme-dark), :root[data-accent="spatial"] .preview-light {
     --accent: #0284c7; --accent-rgb: 2, 132, 199; --accent-2: #38bdf8; --accent-deep: #0369a1;

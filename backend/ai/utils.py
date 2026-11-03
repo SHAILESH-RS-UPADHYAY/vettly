@@ -134,6 +134,105 @@ async def call_claude_messages(
     return ""
 
 
+# Free tiers first: Gemini and Groq cost the user nothing, Claude and OpenAI need paid credits
+PROVIDER_ORDER = ("gemini", "groq", "claude", "openai")
+PROVIDER_KEYS = {"gemini": "GEMINI_API_KEY", "groq": "GROQ_API_KEY", "claude": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
+PROVIDER_LABELS = {"gemini": "Gemini", "groq": "Groq", "claude": "Claude", "openai": "OpenAI"}
+
+
+def _usable(attr: str) -> bool:
+    key = getattr(config, attr, "") or ""
+    return bool(key) and not key.startswith("your_")
+
+
+async def _via_claude(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+    return await call_claude_messages(
+        system_prompt=system_prompt, user_prompt=user_prompt, history=history,
+        max_tokens=max_tokens, temperature=temperature,
+    )
+
+
+async def _via_gemini(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+    """GEMINI_MODEL, then GEMINI_FAST_MODEL, then other free-tier models: a busy one (503) just moves on."""
+    primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.6-flash")
+    fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.1-flash-lite")
+    candidate_models = []
+    for m in [primary_gemini, fast_gemini, "gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
+        if m and m not in candidate_models:
+            candidate_models.append(m)
+
+    full_user_prompt = ""
+    if history:
+        for msg in history[-10:]:
+            r = "USER" if msg.get("role") == "user" else "ASSISTANT"
+            full_user_prompt += f"{r}: {msg.get('content', '')}\n"
+        full_user_prompt += "\n"
+    full_user_prompt += user_prompt
+
+    # Gemini 3.x thinking models share maxOutputTokens between reasoning and output tokens
+    gen_config = {"temperature": temperature, "maxOutputTokens": max(max_tokens * 4, 4096)}
+    if json_mode:
+        gen_config["responseMimeType"] = "application/json"
+    payload = {
+        "systemInstruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"role": "user", "parts": [{"text": full_user_prompt}]}],
+        "generationConfig": gen_config,
+    }
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for gm_name in candidate_models:
+            clean_model = gm_name.replace("models/", "")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent"
+            try:
+                # the key travels in a header, never in the URL, so it can't end up in logs
+                resp = await client.post(url, json=payload, headers={"x-goog-api-key": config.GEMINI_API_KEY})
+                if resp.status_code == 200:
+                    candidates = resp.json().get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        text_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
+                        if not text_chunks and parts:
+                            text_chunks = [p.get("text", "") for p in parts if p.get("text")]
+                        out = "\n".join(text_chunks).strip()
+                        if out:
+                            return out
+                logger.warning(f"Gemini model '{clean_model}' returned HTTP {resp.status_code}: {resp.text[:200]}; trying next model...")
+            except Exception as e:
+                logger.warning(f"Gemini model '{clean_model}' error ({type(e).__name__}); trying next model...")
+    return None
+
+
+async def _via_openai(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+    from openai import AsyncOpenAI
+    client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in (history or [])[-10:]:
+        messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+    messages.append({"role": "user", "content": user_prompt})
+    res = await call_openai_with_retry(
+        client, client.chat.completions.create, model=getattr(config, "OPENAI_MODEL", "gpt-4o-mini"),
+        messages=messages, max_tokens=max_tokens, temperature=temperature,
+    )
+    return res.choices[0].message.content.strip()
+
+
+async def _via_groq(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+    from groq import AsyncGroq
+    client = AsyncGroq(api_key=config.GROQ_API_KEY)
+    # keep system + user prompt within Groq's free-tier token budget
+    messages = [{"role": "system", "content": system_prompt[:14000]}]
+    for msg in (history or [])[-8:]:
+        messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+    messages.append({"role": "user", "content": user_prompt[:14000]})
+    res = await call_groq_with_retry(
+        client, client.chat.completions.create, model=getattr(config, "GROQ_MODEL", "llama-3.3-70b-versatile"),
+        messages=messages, max_tokens=min(max_tokens, 4000), temperature=temperature,
+    )
+    return res.choices[0].message.content.strip()
+
+
+_CALLERS = {"gemini": _via_gemini, "groq": _via_groq, "claude": _via_claude, "openai": _via_openai}
+
+
 async def generate_multi_provider_completion(
     system_prompt: str,
     user_prompt: str,
@@ -143,134 +242,20 @@ async def generate_multi_provider_completion(
     json_mode: bool = False,
 ) -> str:
     """
-    Unified Multi-Provider LLM router for Vettly.
-    Tries configured providers in priority order:
-      1. Anthropic Claude (ANTHROPIC_API_KEY)
-      2. Google Gemini (GEMINI_API_KEY)
-      3. OpenAI (OPENAI_API_KEY)
-      4. Groq (GROQ_API_KEY)
+    Unified multi-provider router for Vettly: Gemini → Groq → Claude → OpenAI (PROVIDER_ORDER).
+    Providers without a key are skipped; a failing provider hands over to the next one.
     """
     attempted: list[str] = []   # providers that had a key, so a failure is not reported as a missing key
-
-    # 1. Try Anthropic Claude
-    if getattr(config, "ANTHROPIC_API_KEY", "") and not config.ANTHROPIC_API_KEY.startswith("your_"):
-        attempted.append("Claude")
+    for name in PROVIDER_ORDER:
+        if not _usable(PROVIDER_KEYS[name]):
+            continue
+        attempted.append(PROVIDER_LABELS[name])
         try:
-            return await call_claude_messages(
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                history=history,
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
+            out = await _CALLERS[name](system_prompt, user_prompt, history, max_tokens, temperature, json_mode)
+            if out:
+                return out
         except Exception as e:
-            logger.warning(f"Claude API error ({e}); checking fallback providers...")
-
-    # 2. Try Google Gemini (GEMINI_MODEL, then GEMINI_FAST_MODEL, then other free-tier models)
-    if getattr(config, "GEMINI_API_KEY", "") and not config.GEMINI_API_KEY.startswith("your_"):
-        attempted.append("Gemini")
-        primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.6-flash")
-        fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.1-flash-lite")
-        candidate_models = []
-        # then models that have free-tier quota: a busy one (503) just moves on to the next
-        for m in [primary_gemini, fast_gemini, "gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
-            if m and m not in candidate_models:
-                candidate_models.append(m)
-
-        full_user_prompt = ""
-        if history:
-            for msg in history[-10:]:
-                r = "USER" if msg.get("role") == "user" else "ASSISTANT"
-                full_user_prompt += f"{r}: {msg.get('content', '')}\n"
-            full_user_prompt += "\n"
-        full_user_prompt += user_prompt
-
-        # Gemini 3.x thinking models share maxOutputTokens between reasoning and output tokens
-        gen_config = {
-            "temperature": temperature,
-            "maxOutputTokens": max(max_tokens * 4, 4096),
-        }
-        if json_mode:
-            gen_config["responseMimeType"] = "application/json"
-
-        payload = {
-            "systemInstruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"role": "user", "parts": [{"text": full_user_prompt}]}],
-            "generationConfig": gen_config,
-        }
-
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            for gm_name in candidate_models:
-                clean_model = gm_name.replace("models/", "")
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent?key={config.GEMINI_API_KEY}"
-                try:
-                    resp = await client.post(url, json=payload)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        candidates = data.get("candidates", [])
-                        if candidates:
-                            parts = candidates[0].get("content", {}).get("parts", [])
-                            text_chunks = [p.get("text", "") for p in parts if not p.get("thought") and p.get("text")]
-                            if not text_chunks and parts:
-                                text_chunks = [p.get("text", "") for p in parts if p.get("text")]
-                            out = "\n".join(text_chunks).strip()
-                            if out:
-                                return out
-                    logger.warning(f"Gemini model '{clean_model}' returned HTTP {resp.status_code}: {resp.text[:200]}; trying next model...")
-                except Exception as e:
-                    logger.warning(f"Gemini model '{clean_model}' error ({e}); trying next model...")
-
-    # 3. Try OpenAI
-    if getattr(config, "OPENAI_API_KEY", "") and not config.OPENAI_API_KEY.startswith("your_"):
-        attempted.append("OpenAI")
-        try:
-            from openai import AsyncOpenAI
-            client = AsyncOpenAI(api_key=config.OPENAI_API_KEY)
-            messages = [{"role": "system", "content": system_prompt}]
-            if history:
-                for msg in history[-10:]:
-                    messages.append({
-                        "role": msg.get("role", "user"),
-                        "content": msg.get("content", ""),
-                    })
-            messages.append({"role": "user", "content": user_prompt})
-            res = await call_openai_with_retry(
-                client,
-                client.chat.completions.create,
-                model=getattr(config, "OPENAI_MODEL", "gpt-4o-mini"),
-                messages=messages,
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
-            return res.choices[0].message.content.strip()
-        except Exception as e:
-            logger.warning(f"OpenAI API error ({e}); checking fallback providers...")
-
-    # 4. Try Groq
-    if getattr(config, "GROQ_API_KEY", "") and not config.GROQ_API_KEY.startswith("your_"):
-        attempted.append("Groq")
-        from groq import AsyncGroq
-        client = AsyncGroq(api_key=config.GROQ_API_KEY)
-        # Keep system + user prompt within Groq's free-tier token budget
-        safe_sys = system_prompt[:14000] if len(system_prompt) > 14000 else system_prompt
-        safe_usr = user_prompt[:14000] if len(user_prompt) > 14000 else user_prompt
-        messages = [{"role": "system", "content": safe_sys}]
-        if history:
-            for msg in history[-8:]:
-                messages.append({
-                    "role": msg.get("role", "user"),
-                    "content": msg.get("content", ""),
-                })
-        messages.append({"role": "user", "content": safe_usr})
-        res = await call_groq_with_retry(
-            client,
-            client.chat.completions.create,
-            model=getattr(config, "GROQ_MODEL", "llama-3.3-70b-versatile"),
-            messages=messages,
-            max_tokens=min(max_tokens, 4000),
-            temperature=temperature,
-        )
-        return res.choices[0].message.content.strip()
+            logger.warning(f"{PROVIDER_LABELS[name]} failed ({type(e).__name__}: {str(e)[:160]}); trying the next provider...")
 
     if attempted:
         raise RuntimeError(
@@ -278,8 +263,7 @@ async def generate_multi_provider_completion(
             "Try again in a minute, or add a key for another provider."
         )
     raise RuntimeError(
-        "No valid LLM API key configured in backend/.env. "
-        "Please add ANTHROPIC_API_KEY (Claude), GEMINI_API_KEY, or GROQ_API_KEY."
+        "No AI key yet. Add a free Gemini or Groq key in Settings → Key Ring to get answers."
     )
 
 

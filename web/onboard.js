@@ -1,24 +1,28 @@
 /**
- * Onboarding and the user's field: an eight-page first-visit dialog (two animated pages on what Vettly is, three questions,
- * three animated pages on how the backend works; scenes in onboard-scenes.js) whose answers
- * shape every prompt, the Prep Studio category tiles and the default role. Uses dashboard.js globals.
+ * Onboarding and the user's field: a ten-page first-visit dialog (two animated pages on what Vettly is, three questions,
+ * three animated pages on how the backend works, then "Power it up" with the two free keys and "Make it yours" with the
+ * Atelier, shortcuts and The Attic; scenes in onboard-scenes.js) whose answers shape every prompt, the Prep Studio
+ * category tiles and the default role. Uses dashboard.js globals, KEY_PROVIDERS/KeyRing/KeyGuide and Tabs.
  */
 const Onboard = (() => {
-    const FIELDS = ['Technology', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing', 'Design', 'Education',
-        'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
+    const FIELDS = ['Technology', 'Business & management (MBA)', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing',
+        'Design', 'Education', 'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
     const LEVELS = ['Student or fresher', 'Early career', 'Mid-level', 'Senior', 'Lead or manager'];
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
     const ICONS = ['sparkle', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
-    let profile = {};
+    let profile = {}, current = null;
     const esc = s => escapeHtml(String(s || ''));
 
     const hasTour = () => typeof Tour !== 'undefined';
     const S = typeof OnboardScenes !== 'undefined' ? OnboardScenes : null;
-    // Pages: 0-1 show what Vettly is, 2-4 ask about you (saved on 4), 5-7 show how the backend works
-    const PAGES = 8, SAVE = 4, NAME = 2, ROLE = 4;
+    // Pages: 0-1 show what Vettly is, 2-4 ask about you (saved on 4), 5-7 show how the backend works, 8 the free keys,
+    // 9 the Atelier
+    const SAVE = 4, NAME = 2, ROLE = 4, KEYS = 8;
+    const touch = () => matchMedia('(hover: none)').matches;
+    const MOD = () => (window.Shortcuts?.mac ? '⌘' : 'Ctrl');
     const MARK = '<svg class="ob-logo" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l5 5-5 5-5-5zM25 11l5 5-5 5-5-5zM16 20l5 5-5 5-5-5zM7 11l5 5-5 5-5-5z"/></svg>';
     const THEME_BTN = `<button type="button" class="theme-switch" onclick="toggleTheme(event)" aria-label="Switch between light and dark">
-        <svg class="ts-sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="ts-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        <svg class="sunmoon" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="sm-ob"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><circle class="sm-bite" cx="18.5" cy="5.5" r="6.2" fill="#000"/></mask></defs><circle class="sm-core" cx="12" cy="12" r="5" mask="url(#sm-ob)"/><g class="sm-rays"><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(0 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(45 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(90 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(135 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(180 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(225 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(270 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(315 12 12)"/></g></svg>
         <span class="ts-label"><span class="ts-to-dark">Dark</span><span class="ts-to-light">Light</span></span></button>`;
 
     // [scene, figure caption, kicker, title, lede, handwritten aside]
@@ -31,12 +35,17 @@ const Onboard = (() => {
         ['badge', 'Candidate spec', 'About you · 2 of 3', 'Which field are you in?', 'It decides your Prep Studio categories and the ideas in your daily Bento.', ''],
         ['badge', 'Candidate spec', 'About you · 3 of 3', 'What are you preparing for?', 'Every question and model answer is pitched at this role and level.', ''],
         ['context', 'Context fusion · context_engine.py', 'How it works · 1 of 3', 'First, it learns you',
-            'Your resume, GitHub, the job description and your stories become one context of up to 80,000 characters, packed most important first so nothing key gets lost.', 'the job always goes first'],
+            'Your field and role are enough to start. Add a resume, GitHub, a job description or your stories whenever you like: they join one context of up to 80,000 characters, packed most important first.', 'all of it optional'],
         ['router', 'Failover router · ai/utils.py', 'How it works · 2 of 3', 'Then it finds a model that’s free',
-            'Claude goes first. If it’s busy, Gemini, OpenAI or Groq answers instead, so you’re never left waiting.', 'no dead ends'],
+            'Gemini goes first. If it’s busy, Groq answers, then Claude or OpenAI if you added them, so you’re never left waiting.', 'no dead ends'],
         ['polish', 'Humanizer + 7 checks · answer_validator.py', 'How it works · 3 of 3', 'Finally, it sounds like you',
             'Robotic phrases get struck out, then every answer is scored on 7 checks and rewritten until it passes. Only then does it reach Prep Studio.', 'no “as an AI…”'],
+        ['keys', 'Key Ring · allowance.py', 'Power it up', 'Add two free keys',
+            'You get a few free answers a day. For as many as you like, add your own Gemini and Groq keys: both are free and take about a minute. Add both, so when one is busy the other answers.', 'free, both of them'],
+        ['yours', 'Atelier · shortcuts.js', 'Make it yours', 'Your studio, your way',
+            () => `The Atelier holds the looks: themes, page styles and how Live Copilot writes. ${touch() ? '' : `Press ${MOD()} K to jump anywhere and ? for every shortcut. `}The Attic keeps what you delete; hide its tab if you never need it.`, 'try it now'],
     ];
+    const PAGES = COPY.length;
 
     function fields(n) {
         const other = profile.field && !FIELDS.includes(profile.field);
@@ -49,6 +58,23 @@ const Onboard = (() => {
             <label class="ob-field"><span>Your level</span>
                 <select name="level">${LEVELS.map(l => `<option${profile.level === l ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
             <p class="ob-error" role="alert" hidden>Add the role you're preparing for.</p>`;
+        if (n === KEYS) {
+            if (!window.Auth?.enabled?.() || typeof KEY_PROVIDERS === 'undefined') return `<p class="ob-key-note">Running on your own computer: Vettly uses the keys in <code>backend/.env</code> (<code>GEMINI_API_KEY</code>, <code>GROQ_API_KEY</code>).</p>`;
+            return `<div class="ob-keys">${KEY_PROVIDERS.filter(p => p.free).map(p => `
+                <div class="ob-key" data-p="${p.id}">
+                    <span class="ob-key-mark" aria-hidden="true">${p.mark}</span>
+                    <span class="ob-key-head"><b>${p.name}</b><span class="kr-badge free">Free</span></span>
+                    <span class="ob-key-in"><label class="sr-only" for="ob-key-${p.id}">${p.name} API key</label>
+                        <input id="ob-key-${p.id}" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (${p.prefix}…)">
+                        <button type="button" class="btn btn-secondary btn-sm" data-ob-key-save>Save</button></span>
+                    <p class="ob-key-state" aria-live="polite"></p>
+                    <span class="ob-key-links"><a href="${p.url}" target="_blank" rel="noopener">Get a free key<svg aria-hidden="true"><use href="#i-external"/></svg></a><button type="button" data-ob-guide="${p.id}">Show me how, step by step</button></span>
+                </div>`).join('')}
+                <p class="ob-key-note">Keys are encrypted and only used for your own answers. Skip this if you like: change them any time in Settings → Key Ring.</p></div>`;
+        }
+        if (n === KEYS + 1) return `<div class="ob-yours">
+                <label class="tab-switch"><input type="checkbox" data-tab-toggle="attic" checked><span class="tab-switch-ui" aria-hidden="true"></span><span><b>Show The Attic</b><small>Where deleted chats and sessions wait</small></span></label>
+                <div class="ob-kbd"><p><kbd>${MOD()}</kbd><kbd>K</kbd>Jump anywhere</p><p><kbd>?</kbd>Every shortcut</p><p><kbd>Shift</kbd><kbd>D</kbd>Light or dark</p></div></div>`;
         return '';
     }
 
@@ -63,7 +89,7 @@ const Onboard = (() => {
                 ${THEME_BTN}
             </header>
             ${COPY.map(([scene, fig, kicker, title, lede, aside], n) => `
-            <section class="ob-page${scene === 'badge' ? ' ob-ask' : ''}" data-ob-page="${n}" aria-labelledby="ob-h${n}"${n ? ' hidden' : ''}>
+            <section class="ob-page${scene === 'badge' || scene === 'keys' ? ' ob-ask' : ''}" data-ob-page="${n}" aria-labelledby="ob-h${n}"${n ? ' hidden' : ''}>
                 <figure class="ob-stage" data-scene="${scene}" data-focus="${['', '', 'name', 'field', 'role'][n] || ''}">
                     ${S ? S.markup(scene) : ''}
                     <figcaption><b>Fig. ${String(n + 1).padStart(2, '0')}</b> <span>${fig}</span></figcaption>
@@ -73,7 +99,7 @@ const Onboard = (() => {
                     <p class="ob-num"><b>${String(n + 1).padStart(2, '0')}</b><span>/ ${String(PAGES).padStart(2, '0')}</span></p>
                     <p class="ob-kicker">${kicker}</p>
                     <h2 id="ob-h${n}" tabindex="-1">${title}</h2>
-                    <p class="onboard-lede">${lede}</p>
+                    <p class="onboard-lede">${typeof lede === 'function' ? lede() : lede}</p>
                     ${fields(n)}
                     ${aside ? `<p class="ob-aside" aria-hidden="true"><svg viewBox="0 0 40 20"><path d="M38 4 C 26 2, 14 6, 4 15 m 0 0 l 1 -8 m -1 8 l 8 -1"/></svg>${aside}</p>` : ''}
                 </div>
@@ -124,7 +150,9 @@ const Onboard = (() => {
             back.hidden = n === 0 || n === SAVE + 1 || (editing && n === NAME);
             later.hidden = n > SAVE;
             next.querySelector('span').textContent = n === 0 ? 'Show me around' : n === SAVE ? (editing ? 'Save changes' : 'Save and continue')
-                : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing') : 'Next';
+                : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing')
+                : n === KEYS && form.querySelector('.ob-key') && !form.querySelector('.ob-key.is-saved') ? 'Skip for now' : 'Next';
+            if (n === KEYS) loadKeys();
             pages[n].classList.remove('ob-in'); void pages[n].offsetWidth; pages[n].classList.add('ob-in');
             const stage = pages[n].querySelector('.ob-stage');
             if (S && stage) requestAnimationFrame(() => { if (page === n) stopScene = S.play(stage.dataset.scene, stage); });
@@ -140,6 +168,61 @@ const Onboard = (() => {
             return ok;
         };
 
+        // ── the keys page: paste, and the key is saved (encrypted) and checked with the provider, right there ──
+        const keyRow = id => form.querySelector(`.ob-key[data-p="${id}"]`);
+        const keyState = (row, text, tone = '') => { const st = row.querySelector('.ob-key-state'); st.textContent = text; row.classList.toggle('is-bad', tone === 'bad'); };
+        const markSaved = (row, last4) => {
+            row.classList.add('is-saved'); row.classList.remove('is-bad');
+            const input = row.querySelector('input'); input.value = ''; input.disabled = true; input.placeholder = `Saved ••••${last4 || ''}`;
+            row.querySelector('[data-ob-key-save]').hidden = true;
+        };
+        const relabel = () => { if (page === KEYS) next.querySelector('span').textContent = form.querySelector('.ob-key.is-saved') || !form.querySelector('.ob-key') ? 'Next' : 'Skip for now'; };
+        async function loadKeys() {
+            if (!form.querySelector('.ob-key') || !window.KeyRing) return;
+            try {
+                const st = await KeyRing.api('GET', '/api/ai-key');
+                form.querySelectorAll('.ob-key').forEach(row => {
+                    const k = st.keys?.[row.dataset.p];
+                    if (k?.saved) markSaved(row, k.last4);
+                    else if (!st.own_keys_enabled) { row.querySelector('input').disabled = true; keyState(row, 'Saving your own keys isn’t switched on for this site yet.', 'bad'); }
+                });
+                relabel();
+            } catch (e) { /* offline: the boxes still work when it's back */ }
+        }
+        async function saveKey(row) {
+            const input = row.querySelector('input'), key = input.value.trim(), btn = row.querySelector('[data-ob-key-save]');
+            if (!key || row.classList.contains('is-saved')) return true;
+            btn.disabled = true; keyState(row, 'Saving…');
+            try {
+                const st = await KeyRing.api('POST', '/api/ai-key', { provider: row.dataset.p, key });
+                markSaved(row, st.keys?.[row.dataset.p]?.last4 || key.slice(-4));
+                keyState(row, 'Saved. Checking it with the provider…');
+                Motion.burst?.(row.querySelector('.ob-key-mark'), 12, ['var(--ok)', 'var(--accent)']);
+                relabel();
+                window.Daybook?.refresh?.();
+                KeyRing.api('POST', '/api/ai-key/test', { provider: row.dataset.p })
+                    .then(r => {
+                        keyState(row, r.ok ? `✓ ${r.message}` : r.message, r.ok ? '' : 'bad');
+                        if (!r.ok) {   // rejected: open the box again for a fresh key
+                            row.classList.remove('is-saved');
+                            Object.assign(input, { disabled: false, placeholder: 'Paste a new key' });
+                            row.querySelector('[data-ob-key-save]').hidden = false;
+                            relabel();
+                        }
+                    })
+                    .catch(() => keyState(row, 'Saved. We couldn’t check it just now; Settings → Key Ring can test it later.'));
+                return true;
+            } catch (e) { keyState(row, e.message, 'bad'); input.focus(); return false; }
+            finally { btn.disabled = false; }
+        }
+        form.addEventListener('click', e => {
+            const s = e.target.closest('[data-ob-key-save]'); if (s) saveKey(s.closest('.ob-key'));
+            const g = e.target.closest('[data-ob-guide]'); if (g && window.KeyGuide) KeyGuide.open(g.dataset.obGuide);
+        });
+        form.addEventListener('paste', e => { const row = e.target.closest?.('.ob-key'); if (row) setTimeout(() => saveKey(row), 0); });
+        current = { dlg, focusKey: id => { show(KEYS); const row = keyRow(id); row?.querySelector('input:not(:disabled)')?.focus(); row?.scrollIntoView({ block: 'nearest' }); } };
+        window.Tabs?.apply?.();
+
         later.addEventListener('click', () => dlg.close());
         back.addEventListener('click', () => show(page - 1));
         form.field.addEventListener('change', () => { form.querySelector('.ob-other').hidden = form.field.value !== 'Other'; });
@@ -154,13 +237,29 @@ const Onboard = (() => {
             if (page === NAME && !need(form.name)) return;
             if (page === ROLE && !need(form.role)) return;
             if (page === PAGES - 1) { dlg.close(); return; }
+            if (page === KEYS) {   // Enter in a key box saves it before moving on; a bad key keeps you here
+                for (const row of form.querySelectorAll('.ob-key')) if (!(await saveKey(row))) return;
+                show(page + 1); return;
+            }
             if (page !== SAVE) { show(page + 1); return; }
             const f = Object.fromEntries(new FormData(form));
             const body = { name: f.name.trim(), role: f.role.trim(), level: f.level, field: f.field === 'Other' ? (f.field_other.trim() || 'Other') : f.field };
+            const label = next.querySelector('span');
+            const errBox = pages[SAVE].querySelector('.ob-error');
+            errBox.hidden = true;
             next.disabled = true;
+            next.classList.add('is-busy');
+            label.textContent = 'Saving…';
+            // never leave the button hanging: a cold server or a dropped connection ends in a clear message and a retry
+            const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 15000);
             try {
-                const res = await fetch(`${API_BASE}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await fetch(`${API_BASE}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+                if (!res.ok) {
+                    const detail = await res.json().then(d => d.detail || d.error).catch(() => '');
+                    throw new Error(res.status === 401 ? 'Your session ended. Sign in again, then press Save.'
+                        : res.status === 429 ? (detail || 'Too many requests right now. Wait a moment and try again.')
+                        : detail || `The server answered ${res.status}. Try again in a moment.`);
+                }
                 profile = await res.json();
                 loadCategories();
                 if (typeof Bento !== 'undefined') Bento.useField();
@@ -171,74 +270,44 @@ const Onboard = (() => {
                 saved.hidden = false;
                 show(SAVE + 1);
             } catch (err) {
-                const errBox = pages[SAVE].querySelector('.ob-error');
-                errBox.textContent = `Could not save your answers (${err.message}). Try again.`;
+                errBox.textContent = err.name === 'AbortError'
+                    ? 'Vettly is taking too long to answer (it may be waking up). Press Try again.'
+                    : (navigator.onLine === false ? 'You seem to be offline. Reconnect, then press Try again.' : err.message);
                 errBox.hidden = false;
+                label.textContent = 'Try again';
+                console.warn('Onboarding save failed:', err);
+                return;
             } finally {
+                clearTimeout(timer);
                 next.disabled = false;
+                next.classList.remove('is-busy');
             }
         });
         dlg.showModal();
         show(page);
     }
 
-    // Prep Studio tiles: the curated tech set, or eight categories written for the user's own field
-    async function loadCategories() {
+    // Prep Studio tiles: the curated tech set for tech, built-in tiles for every listed field (bento-fields.js, no AI
+    // needed), and for "Other" eight categories the server writes for the user's own field (or interview basics)
+    function paintCategories(categories) {
         const group = document.getElementById('prep-category-group');
-        if (!group) return;
+        if (!group || !categories?.length) return;
+        group.innerHTML = categories.map((c, i) => {
+            PREP_CATS[c.id] = PREP_CATS[c.id] || [c.label, TONES[i % TONES.length], ICONS[i % ICONS.length]];
+            return `<button type="button" class="cat-tile category-btn${i ? '' : ' active'}" data-tone="${TONES[i % TONES.length]}" aria-pressed="${!i}" style="--i:${i}" onclick="selectCategory('${c.id}', this)"><svg aria-hidden="true"><use href="#i-${ICONS[i % ICONS.length]}"/></svg><span>${esc(c.label)}</span></button>`;
+        }).join('');
+        currentPrepCategory = categories[0].id;
+    }
+    const builtIn = pack => (window.FIELD_PREP_CATEGORIES?.[pack] || []).map(([id, label]) => ({ id, label }));
+    async function loadCategories() {
+        if (!document.getElementById('prep-category-group')) return;
+        const packs = window.bentoPacksFor?.(profile.field, profile.role);
+        if (packs === null) return;   // technology: the curated tiles already on the page
+        if (packs && packs[0] !== 'craft') return paintCategories(builtIn(packs[0]));
         try {
             const { categories } = await (await fetch(`${API_BASE}/prepare/categories`)).json();
-            if (!categories?.length) return;
-            group.innerHTML = categories.map((c, i) => {
-                PREP_CATS[c.id] = PREP_CATS[c.id] || [c.label, TONES[i % TONES.length], ICONS[i % ICONS.length]];
-                return `<button type="button" class="cat-tile category-btn${i ? '' : ' active'}" data-tone="${TONES[i % TONES.length]}" aria-pressed="${!i}" style="--i:${i}" onclick="selectCategory('${c.id}', this)"><svg aria-hidden="true"><use href="#i-${ICONS[i % ICONS.length]}"/></svg><span>${esc(c.label)}</span></button>`;
-            }).join('');
-            currentPrepCategory = categories[0].id;
-        } catch (e) { /* keep the curated tiles */ }
-    }
-
-    // Settings: today's free AI answers and the user's own key (only where sign-in is on)
-    async function keyCard() {
-        const card = document.getElementById('ai-key-card');
-        if (!card || !window.Auth?.enabled()) return;
-        const form = document.getElementById('ai-key-form'), remove = document.getElementById('ai-key-remove');
-        const show = s => {
-            card.hidden = false;
-            document.getElementById('ai-key-status').textContent = s.has_key
-                ? `Using your own ${s.provider} key, with no daily limit.`
-                : `${s.free_left} of ${s.free_limit} free AI answers left today.${s.own_keys_enabled ? ' Add your own key for unlimited answers.' : ''}`;
-            remove.hidden = !s.has_key;
-            form.querySelectorAll('select, input, button[type=submit]').forEach(el => { el.disabled = !s.own_keys_enabled; });
-        };
-        const call = async (method, body) => {
-            const res = await fetch(`${API_BASE}/api/ai-key`, { method, headers: { 'Content-Type': 'application/json' }, body: body && JSON.stringify(body) });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-            return data;
-        };
-        try { show(await call('GET')); } catch (e) { return; }
-        const del = document.getElementById('delete-data-btn');
-        del?.addEventListener('click', async () => {
-            if (!del.dataset.armed) {   // two taps instead of a browser dialog
-                del.dataset.armed = '1';
-                del.textContent = 'Tap again to delete everything';
-                setTimeout(() => { delete del.dataset.armed; del.textContent = 'Delete my data'; }, 5000);
-                return;
-            }
-            del.disabled = true;
-            const res = await fetch(`${API_BASE}/api/me`, { method: 'DELETE' });
-            if (res.ok) { Motion.toast('Everything you saved in Vettly is deleted.', 'ok'); setTimeout(() => location.reload(), 1200); }
-            else { del.disabled = false; Motion.toast('Could not delete your data. Try again.', 'error'); }
-        });
-        form.addEventListener('submit', async e => {
-            e.preventDefault();
-            try { show(await call('POST', { provider: form.provider.value, key: form.key.value })); form.key.value = ''; Motion.toast('Saved. Vettly now uses your own key.', 'ok'); }
-            catch (err) { Motion.toast(err.message, 'error'); }
-        });
-        remove.addEventListener('click', async () => {
-            try { show(await call('DELETE')); Motion.toast('Removed your key. You are back on the free allowance.', 'ok'); }
-            catch (err) { Motion.toast(err.message, 'error'); }
-        });
+            paintCategories(categories?.length ? categories : builtIn('craft'));
+        } catch (e) { paintCategories(builtIn('craft')); }
     }
 
     async function start() {
@@ -249,9 +318,14 @@ const Onboard = (() => {
             profile = await res.json();
         } catch (e) { return; }
         if (!profile.onboarded) open(); else { loadCategories(); if (hasTour()) Tour.maybeStart(); }
-        keyCard();
     }
     start();
 
-    return { open, role: () => profile.role, field: () => profile.field };
+    // KeyGuide's last step lands back here when it was opened from the keys page
+    const isOpen = () => !!(current?.dlg?.open);
+    const focusKey = id => { if (isOpen()) current.focusKey(id); };
+    return { open, isOpen, focusKey, role: () => profile.role, field: () => profile.field };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Onboard = Onboard;

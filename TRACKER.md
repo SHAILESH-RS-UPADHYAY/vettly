@@ -1,0 +1,106 @@
+# Vettly launch tracker
+
+Where the public-launch work stands, so anyone (or any new session) can pick up exactly where it stopped.
+Work happens on the `dev` branch; each phase lands on `main` through one pull request. Rules for commits are in `CLAUDE.md`.
+
+**Resume here:** the first unchecked box below. Update this file in the same commit as the work it describes.
+
+## Decisions (approved)
+
+- Names: Home → **Daybook** · layouts & shortcuts tab → **Atelier** · recycle bin → **The Attic** · API keys → **Key Ring** · manage account → **Passport**
+- Sidebar: Daybook → Agent Toolbelt → Prep Studio → Brain Bento → Live Copilot → The Attic (hideable) → Atelier → Settings → About me
+- AI provider order: **Gemini → Groq → Claude → OpenAI**. Users can save one key per provider; their own keys are used first, then the free daily allowance (25/day, `FREE_DAILY_AI`).
+- Resume, job description and GitHub are optional. A new account starts completely empty.
+- Must work on iPhone, iPad, Android, Mac and Windows (phone, tablet, laptop, desktop widths; touch and mouse).
+- Stack stays plain HTML/CSS/JS + FastAPI (no framework rewrite). GSAP (pinned, cdnjs) only for the register page turns and the Bento topic cloud.
+
+## Phase 0 · Groundwork
+
+- [x] `dev` branch from `main`, commits unsigned as the repo owner
+- [x] Backend runs locally against SQLite with fake Clerk users (`backend/test_accounts.py` passes)
+- [x] Fresh-account audit: the API returns empty data; the pre-filled data came from `web/index.html`
+- [x] This tracker
+
+## Phase 1 · Launch blockers
+
+- [x] Remove the unauthenticated history sync from `acemate-backend.onrender.com` (`web/dashboard.js` `loadHistory`)
+- [x] Remove baked-in personal data: GitHub username, job description (title, company, text, chips, "SPEC ACTIVE"), resume pills, Copilot suggestions, `RADAR`/`WebVory` examples, mock conversations, backend "shailesh"/"radar" matchers, old "Acemate" naming
+- [x] Empty states for a new account; resume / JD / GitHub clearly optional (JD skill chips detected for any field)
+- [x] Onboarding save: 15 s timeout, "Saving…", readable error with Try again (never stuck)
+- [x] One saved key per provider (`ai_keys`, last 4 only ever returned); router order Gemini → Groq → Claude → OpenAI; Mentor, evaluate and analyze use the chain too; `/api/ai-key/test` (no tokens spent); `backend/test_keys.py`
+- [x] CORS from `ALLOWED_ORIGINS` (no credentials cross-site). Function time limit: owner checks it in Vercel (no `vercel.json`, to keep Vercel's zero-config FastAPI routing)
+- [x] Link previews (Open Graph / Twitter) with `%SITE_URL%` filled per domain by `GET /`, share image, icons, web manifest; marked / DOMPurify / GSAP vendored in `web/vendor/`
+- [x] Hide the local "server URL" card on the hosted site (`.hosted .local-only`)
+
+## Phase 2 · Structure, names, shortcuts
+
+- [x] Sidebar order and new names; phone More sheet (+ Search & commands, tour)
+- [x] Atelier tab: Theme Studio, shortcuts, tab visibility (chat looks come in Phase 5)
+- [x] The Attic tab with "Show this tab" switch, saved per account (`POST /api/prefs`) and cached locally
+- [x] One shortcut registry (`web/shortcuts.js`) driving real shortcuts + the Atelier list; command palette (Ctrl/⌘ K, phone: More → Search & commands)
+- [x] Animated sun/moon theme switch (sign-in, onboarding, sidebar)
+
+## Phase 3 · Key Ring, Passport, key guide
+
+- [x] Key Ring: provider cards in fallback order, masked keys, show/hide, paste-to-save, Test (no tokens), Replace, two-tap Remove, deep links (`web/keyring.js`)
+- [x] Illustrated step-by-step guide modal for Gemini, Groq, Claude, OpenAI (drawn screens + moving cursor; last step drops you into that provider's box)
+- [x] Passport: account card, manage security (Clerk), export my data (`GET /api/me/export`), delete, sign out. Removed the fake "Studio Readiness" card
+
+## Phase 4 · Daybook (home)
+
+- [x] Greeting, Up next (picks the most useful step), 7-day streak, Bento ring, real stats, quick actions from the registry, setup checklist, key chain (`web/daybook.js`). Also: every module is now on `window` (a top-level `const` is not), which fixed silent cross-module calls
+
+## Phase 5 · Live Copilot register
+
+- [x] Chat threads in the backend: `chapters` doc, `/api/chats` list/new/open/rename/archive/time/delete, old history becomes Chapter 1, torn-out chapters restore whole from The Attic (`backend/test_chapters.py`)
+- [x] Book UI: stacked page edges, ribbon, chapters index (drawer on phones/tablets), archive shelf, page-turn on new/open chapter, tear-out flies to The Attic (`web/register.js`, `web/register.css`)
+- [x] Answers written in ink word by word with a pen nib (Kalam; Devanagari too); chapter clock synced to the chapter; practice stopwatch (T) saved with the message as "spoke for m:ss"
+- [x] Copilot looks in the Atelier: Manuscript, Field notebook, Ledger, Night library, Plain chat; ink effect on/off; N = new chapter
+
+## Phase 6 · Brain Bento for every field
+
+- [x] Built-in lesson packs per field (`web/bento-fields.js`: 86 lessons in 14 packs: interview craft, business/MBA,
+      marketing, SEO, nursing, clinical medicine, finance, sales, design, education, operations, law, hospitality,
+      public service); the field and role pick the packs, tech keeps its tracks plus interview craft
+- [x] Prep Studio tiles per field with no AI call ("Other" still asks the AI, falling back to interview basics);
+      "Business & management (MBA)" added to onboarding
+- [x] Prep works with no resume: the onboarding profile becomes the context (`candidate_context()` in main.py)
+- [x] "Fresh today": six AI-written lessons only when the user asks (opening Brain Bento no longer spends an answer)
+- [x] The pond: every topic floats, drifts and bounces; it slows under the cursor, a finger holds it, a tap on the
+      water sends a ripple, and a tapped topic grows into the lesson card; still cloud under reduced/calm motion
+- [x] Checked: `backend/test_fields.py`; browser on desktop 1440/1280 dark, iPad both ways, iPhone 14/SE, Galaxy S9+
+
+## Phase 7 · Onboarding and tour
+
+- [x] "Power it up" page: a swinging key-ring plate, paste-to-save boxes for the two free keys (Gemini, Groq) with
+      "Get a free key" links and the step-by-step guide; a rejected key reopens its box; local mode explains `.env`
+- [x] Router scene and copy reordered: Gemini first, then Groq, Claude, OpenAI; context page says resume is optional
+- [x] "Make it yours" page: an Atelier plate (theme flips, ⌘K palette, The Attic tucks away), the Attic switch
+      (saved to the account) and three shortcuts (hidden on touch screens)
+- [x] Tour: Daybook, Agent Toolbelt (optional), Prep, Bento, Copilot, The Attic (skipped when hidden), Atelier,
+      Key Ring (with the aistudio.google.com/apikey link) and About me
+- [x] Checked: fresh account through all 10 pages and the tour; key save, bad key, guide round-trip; iPhone 14/SE,
+      iPad, dark; no overflow, no errors
+
+## Phase 8 · Launch hardening
+
+- [x] Security review of the whole branch: no high-confidence issues; `%SITE_URL%` now only takes a plain host
+- [x] Accessibility (axe-core 4.10, WCAG A/AA + best practice) on all 9 pages, light and dark: 0 violations
+      (Poster orange deepened to #cb4a08 and the classic grey to #56607a for 4.5:1 text; Copilot title tap area 44px)
+- [x] Lighthouse (local, so no HTTP/2 or CDN): Accessibility, Best Practices, SEO 100; Performance desktop 77 → 95,
+      mobile 56 → 66 (gzip on, scripts deferred, the Daybook date line held so nothing jumps; CLS 0.19 → 0.05)
+- [x] Device matrix, every page: iPhone SE/15, Pixel 7, Galaxy S9+, iPad Mini, iPad Pro 11 landscape, 1280, 1080p,
+      1440p: no sideways scroll, no small touch targets, no script errors
+- [x] Launch kit: share image and icons (Phase 1), README "for every student" section and provider order,
+      privacy page covers several keys, export, Key Ring removal and on-device settings
+- [ ] Safari engine (WebKit is not installed here): check the Vercel preview on a real iPhone and Mac
+- [ ] Lighthouse again on the Vercel preview (HTTP/2, CDN) once the owner settings below are in place
+
+## Settings only the owner can change (Vercel / Clerk)
+
+- [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
+- [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
+- [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
+- [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
+- [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
+- [ ] Personal files are tracked in git (`backend/uploads/*.pdf`, `backend/context_store/*.json`). They never deploy (`.vercelignore`), but before making the **repository** public: back them up, then `git rm --cached` them

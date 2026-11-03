@@ -7,17 +7,23 @@ const Tour = (() => {
     const KEY = 'vettly_tour_v1';
     const phone = () => matchMedia('(max-width: 47.99rem)').matches;
 
-    // nav: the sidebar item to point at; on phones, items that live in More point at the More tab
-    const STEPS = [
-        { title: 'A quick tour of Vettly', body: 'Seven stops, about a minute. Use the buttons or your arrow keys, and press Esc to leave at any point.' },
-        { section: 'home', nav: 'nav-home', title: 'Home', body: 'Your day at a glance: today’s focus, what to practise next and where you left off.' },
-        { section: 'prep', nav: 'nav-prep', title: 'Prep Studio', body: 'Pick a category and Vettly writes a question for your role, then streams a model answer you can study and refine.' },
-        { section: 'bento', nav: 'nav-bento', title: 'Brain Bento', body: 'Five bite-sized concepts from your field, packed fresh every morning.' },
-        { section: 'chat', nav: 'nav-chat', title: 'Live Copilot', body: 'Practise answering out loud or by typing. The copilot answers in your voice, using what you have told it.' },
-        { section: 'setup', nav: 'nav-setup', more: true, title: 'Agent Toolbelt', body: 'Add your resume, GitHub, the job description and your stories here. The more it knows, the more every answer sounds like you.' },
-        { section: 'aboutme', nav: 'nav-aboutme', more: true, title: 'About me', body: 'Your intro, strengths and the rules for how Vettly should describe you.' },
-        { section: 'settings', nav: 'nav-settings', more: true, title: 'Settings', body: 'Looks, colours, your AI answers and shortcuts. You can take this tour again from here any time.' },
+    // nav: the sidebar item to point at; on phones, items that live in More point at the More tab.
+    // optional: a tab the user can hide (the stop is skipped when it is hidden); focus: a card to bring into view
+    const ALL = [
+        { title: 'A quick tour of Vettly', body: n => `${n} stops, about a minute. Use the buttons or your arrow keys, and press Esc to leave at any point.` },
+        { section: 'home', nav: 'nav-home', title: 'Daybook', body: 'Your day on one page: what to practise next, today’s Bento, your streak and the shortcuts you use most.' },
+        { section: 'setup', nav: 'nav-setup', more: true, title: 'Agent Toolbelt', body: 'Optional: add a resume, a job description or GitHub, and answers get more personal. Your field and role are enough to start.' },
+        { section: 'prep', nav: 'nav-prep', title: 'Prep Studio', body: 'Pick a category and Vettly writes a question for your role, then a model answer you can study and refine.' },
+        { section: 'bento', nav: 'nav-bento', title: 'Brain Bento', body: 'Five bite-sized ideas from your field every morning, and every topic floating in the pond. Tap one to learn it.' },
+        { section: 'chat', nav: 'nav-chat', title: 'Live Copilot', body: 'Practise out loud or by typing. Each chapter of the register keeps its questions, answers and times, and the stopwatch times you.' },
+        { section: 'attic', nav: 'nav-attic', more: true, optional: 'attic', title: 'The Attic', body: 'Deleted chapters and sessions wait here, so nothing is lost by accident. Don’t need it? Hide the tab in the Atelier.' },
+        { section: 'atelier', nav: 'nav-atelier', more: true, title: 'Atelier', body: 'Make it yours: themes, page styles, how Live Copilot writes, which tabs show, and every keyboard shortcut.' },
+        { section: 'settings', nav: 'nav-settings', more: true, focus: 'keyring-card', title: 'Key Ring', body: 'Add a free Gemini key for as many answers as you like, and a free Groq key as its backup. Get the Gemini one at',
+            link: ['https://aistudio.google.com/apikey', 'aistudio.google.com/apikey'] },
+        { section: 'aboutme', nav: 'nav-aboutme', more: true, title: 'About me', body: 'Your intro, strengths and the rules for how Vettly should describe you. You can take this tour again from the More menu.' },
     ];
+    let STEPS = ALL;
+    const pick = () => ALL.filter(s => !s.optional || !window.Tabs?.hidden?.(s.optional));
 
     let dlg, ring, card, i = 0, startSection = 'home';
 
@@ -37,7 +43,7 @@ const Tour = (() => {
                 <p class="tour-head"><b class="tour-num" aria-hidden="true"></b><span class="tour-count" id="tour-count"></span></p>
                 <h2 id="tour-title" tabindex="-1"></h2>
                 <p id="tour-body"></p>
-                <div class="tour-dots" aria-hidden="true">${STEPS.map(() => '<span></span>').join('')}</div>
+                <div class="tour-dots" aria-hidden="true"></div>
                 <div class="tour-actions">
                     <button type="button" class="btn btn-ghost btn-sm" data-tour="skip">Skip tour</button>
                     <span class="tour-spacer"></span>
@@ -91,7 +97,14 @@ const Tour = (() => {
         dlg.querySelector('#tour-count').textContent = i ? `Stop ${i} of ${STEPS.length - 1}` : 'Welcome · 1 minute';
         dlg.querySelector('.tour-num').textContent = i ? String(i).padStart(2, '0') : '';
         dlg.querySelector('#tour-title').textContent = step.title;
-        dlg.querySelector('#tour-body').textContent = step.body + (step.more && phone() ? ' On your phone it lives under More.' : '');
+        const body = dlg.querySelector('#tour-body');
+        body.textContent = (typeof step.body === 'function' ? step.body(STEPS.length - 1) : step.body) + (step.link ? ' ' : '');
+        if (step.link) {
+            const a = Object.assign(document.createElement('a'), { href: step.link[0], target: '_blank', rel: 'noopener', textContent: step.link[1] });
+            body.append(a, '.');
+        }
+        if (step.more && phone()) body.append(' On your phone it lives under More.');
+        if (step.focus) setTimeout(() => document.getElementById(step.focus)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 380);
         dlg.querySelectorAll('.tour-dots span').forEach((d, k) => d.classList.toggle('on', k === i));
         dlg.querySelector('[data-tour=back]').hidden = i === 0;
         const next = dlg.querySelector('[data-tour=next]');
@@ -105,6 +118,8 @@ const Tour = (() => {
         if (!dlg) build();
         if (dlg.open) return;
         startSection = document.body.dataset.section || 'home';
+        STEPS = pick();
+        dlg.querySelector('.tour-dots').innerHTML = STEPS.map(() => '<span></span>').join('');
         dlg.showModal();
         go(0);
     }
@@ -130,3 +145,6 @@ const Tour = (() => {
 
     return { start, maybeStart, seen };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Tour = Tour;

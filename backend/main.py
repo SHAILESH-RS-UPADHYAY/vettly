@@ -1,10 +1,11 @@
 """
-Acemate — Main FastAPI Server
+Vettly — Main FastAPI Server
 WebSocket-based real-time interview assistant.
 """
 
 import asyncio
 import json
+import os
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -130,11 +131,35 @@ def auto_detect_context_mode(question: str, current_mode: str, is_locked: bool =
     if is_locked:
         return current_mode
     q_lower = question.lower()
-    if any(kw in q_lower for kw in ["luq", "far lab", "farcana", "dizzaract", "digital twin"]):
+    # any candidate: questions about past roles lean on experience, questions about things they built on projects
+    if any(kw in q_lower for kw in ["your last job", "previous role", "internship", "at your company", "your manager", "work experience"]):
         return "experience"
-    elif any(kw in q_lower for kw in ["radar", "iota", "address parser"]):
+    elif any(kw in q_lower for kw in ["your project", "you built", "you made", "final-year project", "capstone"]):
         return "projects"
     return current_mode
+
+def profile_context() -> str:
+    """The candidate's onboarding answers as a short context block, so Prep and Copilot work with no resume at all."""
+    prof = profile_store.get()
+    rows = [(k, (prof.get(k) or "").strip()) for k in ("name", "field", "role", "level")]
+    rows = [f"{k.title()}: {v}" for k, v in rows if v]
+    return ("=== CANDIDATE PROFILE ===\n" + "\n".join(rows) + "\n(No resume uploaded: keep examples general and true to this field and level, never invent employers or projects.)") if rows else ""
+
+
+def candidate_context(mode: str = "all") -> str:
+    """Everything the AI may know about the candidate: their profile, then resume, notes, GitHub and the rest."""
+    base = context_engine.get_full_context(mode)
+    prof = profile_context()
+    if not prof:
+        return base
+    return prof + ("\n\n" + base if context_engine.has_context() else "")
+
+
+def has_any_context() -> bool:
+    """A resume, notes or a JD, or at least the field and role from onboarding."""
+    prof = profile_store.get()
+    return context_engine.has_context() or bool(prof.get("field") or prof.get("role"))
+
 
 def who() -> str:
     """The candidate's own name and role for prompts, from their profile (set at onboarding)."""
@@ -200,14 +225,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow web clients
+# CORS: the web app is served from the same origin, so cross-site callers are only allowed from ALLOWED_ORIGINS.
+# Sign-in travels as a bearer token, never a cookie, so no credentials are ever shared cross-site.
+_origins = [o.strip().rstrip("/") for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_origins or ["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["authorization", "content-type"],
 )
+# Text goes out compressed (about 70% smaller on a phone). Live-streamed answers (text/event-stream) are left alone,
+# so they still arrive word by word.
+from starlette.middleware.gzip import GZipMiddleware  # noqa: E402
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 # ─── Who is asking ───────────────────────────────────────────
 @app.middleware("http")
@@ -275,6 +306,12 @@ async def save_profile(request: Request):
     return profile_store.update(await request.json())
 
 
+@app.post("/api/prefs")
+async def save_prefs(request: Request):
+    """Per-account preferences, such as hidden optional tabs."""
+    return {"prefs": profile_store.set_prefs(await request.json())}
+
+
 TECH_FIELDS = ("", "technology", "software", "it", "engineering")
 
 
@@ -323,18 +360,21 @@ async def prep_categories():
 
 
 @app.get("/api/bento/field")
-async def bento_for_field():
-    """Brain Bento's concepts for a non-tech field: six a day, written for the user's field and role and cached for
-    the day. Tech fields (and any failure) get None, so the curated pack is used."""
+async def bento_for_field(peek: bool = False):
+    """Brain Bento's "Fresh today": six concepts written for the user's own field and role, cached for the day. The
+    built-in packs (web/bento-fields.js) need no AI; these are extra. `peek` returns today's six only if they were
+    already written, so opening Brain Bento never spends an answer: the user asks for them with a button."""
     prof = profile_store.get()
     field, role = (prof.get("field") or "").strip(), (prof.get("role") or "").strip()
-    if field.lower() in TECH_FIELDS:
+    if not field and not role:
         return {"lessons": None}
     today = datetime.now().strftime("%Y-%m-%d")
     uid = users.user_id()
     cached = docstore.load(uid, "bento_field", {})
     if cached.get("day") == today and cached.get("for") == f"{field}|{role}" and cached.get("lessons"):
-        return {"lessons": cached["lessons"], "field": field}
+        return {"lessons": cached["lessons"], "field": field or role}
+    if peek:
+        return {"lessons": None}
     from ai.utils import generate_multi_provider_completion
     try:
         allowance.begin_ai_call()
@@ -347,13 +387,15 @@ async def bento_for_field():
                 '"diagram": {"type": "flow", "nodes": ["3 to 5 short steps"]}}]} with exactly 6 lessons. '
                 "Use the field's real concepts, standards and situations, at the given level. Simple words."
             ),
-            user_prompt=f"Field: {field}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
+            user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
             max_tokens=3500, temperature=0.7, json_mode=True,
         )
         items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
+    except allowance.LimitReached as e:
+        return {"lessons": None, "error": str(e)}
     except Exception as e:
         logger.warning(f"Field concepts unavailable: {e}")
-        return {"lessons": None}
+        return {"lessons": None, "error": "Couldn't write fresh ones just now. Today's box still has plenty."}
     lessons = []
     for i, l in enumerate(items[:6]):
         if not isinstance(l, dict) or not l.get("title") or not l.get("body"):
@@ -361,14 +403,14 @@ async def bento_for_field():
         nodes = [str(n)[:40] for n in (l.get("diagram") or {}).get("nodes", [])][:5]
         lessons.append({
             "id": f"f{i}-" + "".join(ch for ch in str(l.get("id", "")).lower() if ch.isalnum() or ch == "-")[:40],
-            "track": "field", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
+            "track": "fresh", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
             "diagram": {"type": "flow", "nodes": nodes} if len(nodes) >= 3 else None,
             "en": {k: (l.get(k) if k == "follow" else str(l.get(k, ""))[:900]) for k in ("title", "hook", "body", "analogy", "q", "a", "follow")},
         })
     if not lessons:
         return {"lessons": None}
     docstore.save(uid, "bento_field", {"day": today, "for": f"{field}|{role}", "lessons": lessons})
-    return {"lessons": lessons, "field": field}
+    return {"lessons": lessons, "field": field or role}
 
 
 @app.get("/api/ai-key")
@@ -387,8 +429,28 @@ async def ai_key_save(request: Request):
 
 
 @app.delete("/api/ai-key")
-async def ai_key_remove():
-    return allowance.remove_key()
+async def ai_key_remove(provider: str = ""):
+    """Remove one provider's key (?provider=gemini), or every saved key."""
+    return allowance.remove_key(provider)
+
+
+@app.post("/api/ai-key/test")
+async def ai_key_test(request: Request):
+    """Check a key with the provider without spending tokens: the pasted one, or the saved one."""
+    data = await request.json()
+    try:
+        return await allowance.test_key(str(data.get("provider", "")), str(data.get("key", "") or ""))
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+
+@app.get("/api/me/export")
+async def export_my_data():
+    """Everything this user saved, as one JSON file. Secrets (saved AI keys) and usage counters stay out."""
+    from fastapi.responses import Response
+    docs = {k: v for k, v in docstore.export_user(users.user_id()).items() if k not in ("ai_keys", "ai_key", "usage")}
+    body = json.dumps({"exported_at": datetime.now().isoformat(timespec="seconds"), "documents": docs}, ensure_ascii=False, indent=2)
+    return Response(body, media_type="application/json", headers={"Content-Disposition": 'attachment; filename="vettly-export.json"'})
 
 
 @app.delete("/api/me")
@@ -467,7 +529,7 @@ async def upload_custom_context(
     return {"status": "success", "title": title}
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class GenerateQuestionsRequest(BaseModel):
@@ -506,16 +568,10 @@ Candidate's Answer: {req.user_answer}
 Provide constructive feedback on their answer. Point out strengths, weaknesses, and provide a polished, ideal version of the answer. Keep it concise.
 """
     try:
-        from groq import AsyncGroq
-        import config
-        client = AsyncGroq(api_key=config.GROQ_API_KEY)
-        response = await client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=800,
-            temperature=0.7
+        from ai.utils import generate_multi_provider_completion
+        feedback = await generate_multi_provider_completion(
+            system_prompt="You are an expert interview coach.", user_prompt=prompt, max_tokens=800, temperature=0.7,
         )
-        feedback = response.choices[0].message.content.strip()
         return {"status": "success", "feedback": feedback}
     except Exception as e:
         logger.error(f"Failed to evaluate answer: {e}")
@@ -561,7 +617,7 @@ async def get_context():
         "resume_file": context_engine._resume.get("file_name"),
         "github": context_engine._github,
         "custom": context_engine.get_custom_contexts(),
-        "full_context_length": len(context_engine.get_full_context()),
+        "full_context_length": len(candidate_context()),
     }
 
 
@@ -685,10 +741,10 @@ async def prepare_qa(
     count: int = Form(default=60),
 ):
     """Generate pre-interview Q&A pairs from loaded context."""
-    if not context_engine.has_context():
+    if not has_any_context():
         return JSONResponse(
             status_code=400,
-            content={"error": "No context loaded. Upload resume or add context first."},
+            content={"error": "Tell Vettly your field and role first (Settings → Edit profile), or add a resume in Agent Toolbelt."},
         )
 
     if qa_cache.status.get("running"):
@@ -721,7 +777,7 @@ async def _run_preparation(
     )
 
     try:
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         # Step 1: Generate questions
         logger.info("📝 Step 1/2: Generating interview questions...")
@@ -847,7 +903,7 @@ async def refine_answer(request: Request):
             return JSONResponse(status_code=404, content={"error": "Invalid Q&A index"})
 
         entry = entries[index]
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         from ai.prompts import REFINE_SYSTEM_PROMPT, REFINE_USER_TEMPLATE
         from ai.utils import generate_multi_provider_completion
@@ -929,13 +985,13 @@ async def prepare_single_question(request: Request):
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,39}", category):
             return JSONResponse(status_code=400, content={"error": "Invalid category name."})
 
-        if not context_engine.has_context():
+        if not has_any_context():
             return JSONResponse(
                 status_code=400,
-                content={"error": "No context loaded. Upload resume or add context first."},
+                content={"error": "Tell Vettly your field and role first (Settings → Edit profile), or add a resume in Agent Toolbelt."},
             )
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         # Get existing questions to avoid duplicates
         existing = [e["question"] for e in qa_cache.get_all()]
@@ -1036,8 +1092,10 @@ async def get_assignment():
 # ─── Chat Endpoint (Direct AI Interaction) ────────────────────
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(..., max_length=8000)
     history: list[dict] = []  # [{role: "user"/"assistant", content: "..."}]
+    chat_id: Optional[str] = None   # the register chapter this message belongs to
+    think_ms: Optional[int] = Field(None, ge=0, le=1000 * 60 * 60)   # the practice stopwatch, if it was running
 
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
@@ -1046,10 +1104,13 @@ async def api_chat(req: ChatRequest):
         import time
         from ai.utils import generate_multi_provider_completion
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
-        # Save user message to backend store
-        chat_store.add_message("user", req.message)
+        # the chapter on screen is the one written in, even if another device opened a different one
+        if req.chat_id and req.chat_id != chat_store.chapters()["open"]:
+            chat_store.open_chapter(req.chat_id)
+        started = time.monotonic()
+        chat_store.add_message("user", req.message, think_ms=req.think_ms)
 
         # Include about-me data in context
         about_me_ctx = about_me_store.get_intro_context()
@@ -1114,7 +1175,7 @@ If the user specifies an instruction, preference, correction, or rule about how 
         )
 
         # Update backend store with assistant reply
-        chat_store.add_message("assistant", reply_text)
+        chat_store.add_message("assistant", reply_text, ms=int((time.monotonic() - started) * 1000))
 
         return {"response": reply_text}
     except Exception as e:
@@ -1147,6 +1208,44 @@ async def clear_chat_history():
     return {"status": "success", "message": "Chat history moved to Recycle Bin"}
 
 
+# ─── The register: chapters of the Live Copilot ───────────────
+
+@app.get("/api/chats")
+async def list_chapters():
+    """Every chapter (newest first) without messages, and which one is open."""
+    return {**chat_store.chapters(), "stats": chat_store.stats()}
+
+
+@app.post("/api/chats")
+async def new_chapter(request: Request):
+    """Begin a new chapter (an untouched open one is reused)."""
+    data = await request.json() if request.headers.get("content-length", "0") != "0" else {}
+    return {"chapter": chat_store.create(str(data.get("title", "") or "")), **chat_store.chapters()}
+
+
+@app.post("/api/chats/{cid}/open")
+async def open_chapter(cid: str):
+    ch = chat_store.open_chapter(cid)
+    return ch if ch else JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+
+
+@app.patch("/api/chats/{cid}")
+async def update_chapter(cid: str, request: Request):
+    """Rename, archive / unarchive, or record time spent (elapsed_ms only ever grows)."""
+    meta = chat_store.update(cid, await request.json())
+    return meta if meta else JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+
+
+@app.delete("/api/chats/{cid}")
+async def delete_chapter(cid: str):
+    """Tear a chapter out: it waits in The Attic until restored or deleted for good."""
+    ch = chat_store.remove(cid)
+    if not ch:
+        return JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+    recycle_bin_store.trash_chapter(ch)
+    return chat_store.chapters()
+
+
 # ─── Chat Expand (Detailed Technical Breakdown) ───────────────
 
 class ChatExpandRequest(BaseModel):
@@ -1165,7 +1264,7 @@ async def api_chat_expand(req: ChatExpandRequest):
         if not question:
             return JSONResponse(status_code=400, content={"error": "Question is required"})
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
         about_me_ctx = about_me_store.get_intro_context()
         if about_me_ctx:
             full_context += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
@@ -1230,7 +1329,7 @@ async def api_mentor(req: MentorRequest):
         return JSONResponse(status_code=400, content={"error": "Message is required"})
 
     entries = qa_cache.get_all()
-    background = context_engine.get_full_context()
+    background = candidate_context()
     about_me_ctx = about_me_store.get_intro_context()
     if about_me_ctx:
         background += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
@@ -1290,17 +1389,31 @@ Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@
         pointed.append(pinned)
     user_turn = f"{message}\n\n(Reply in {reply_language}.)"
     if pointed:
-        user_turn = "He is pointing at:\n\n" + "\n\n".join(pointed) + f"\n\n---\n{user_turn}"
+        user_turn = "The candidate is pointing at:\n\n" + "\n\n".join(pointed) + f"\n\n---\n{user_turn}"
 
     async def stream():
-        try:
-            async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
-                yield chunk
+        from ai.utils import _usable, generate_multi_provider_completion
+        sent = False
+        if _usable("GEMINI_API_KEY"):
+            try:
+                async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
+                    sent = True
+                    yield chunk
+                if sent:
+                    return
+            except Exception as e:
+                logger.warning(f"Mentor Gemini stream failed ({type(e).__name__}); falling back")
+                if sent:
+                    yield "\n\n*The answer was cut off. Send it again in a moment.*"
+                    return
+        try:   # no Gemini key, or Gemini failed before writing: Groq, Claude or OpenAI answers in one piece
+            yield await generate_multi_provider_completion(system_prompt, user_turn, history=req.history[-20:], max_tokens=1500)
         except Exception as e:
             logger.error(f"Mentor error: {e}")
-            yield f"\n\n*Mentor couldn't reach Gemini ({e}). Send it again in a moment.*"
+            yield f"\n\n*Mentor couldn't reach any AI provider ({e}).*"
 
-    return StreamingResponse(stream(), media_type="text/plain; charset=utf-8")
+    # "identity" tells the gzip layer to leave this alone, so the answer still arrives word by word
+    return StreamingResponse(stream(), media_type="text/plain; charset=utf-8", headers={"Content-Encoding": "identity", "Cache-Control": "no-cache"})
 
 
 # ─── Chat Analyze (Extract Preferences from Full History) ─────
@@ -1315,8 +1428,7 @@ async def analyze_chat_history(req: ChatAnalyzeRequest):
         if not req.history or len(req.history) < 2:
             return {"status": "success", "extracted": 0, "message": "Not enough history to analyze."}
 
-        from groq import AsyncGroq
-        client = AsyncGroq(api_key=config.GROQ_API_KEY)
+        from ai.utils import generate_multi_provider_completion
 
         # Build conversation text
         convo_text = "\n".join(
@@ -1341,17 +1453,9 @@ OUTPUT: Return a JSON array of extracted instructions. Each item:
 If no actionable instructions were found, return an empty array: []
 Return ONLY the JSON array."""
 
-        response = await client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": analysis_prompt},
-                {"role": "user", "content": f"CONVERSATION:\n{convo_text}"},
-            ],
-            max_tokens=2000,
-            temperature=0.3,
-        )
-
-        content = response.choices[0].message.content.strip()
+        content = (await generate_multi_provider_completion(
+            system_prompt=analysis_prompt, user_prompt=f"CONVERSATION:\n{convo_text}", max_tokens=2000, temperature=0.3,
+        )).strip()
 
         # Parse JSON
         if "```json" in content:
@@ -1468,12 +1572,15 @@ async def restore_recycle_bin_item(req: RecycleActionRequest):
                 return {"status": "success", "message": "Session restored successfully", "session": restored}
             return JSONResponse(status_code=404, content={"error": "Session not found in Recycle Bin"})
         elif req.item_type == "chat":
-            restored_messages = recycle_bin_store.restore_chat_batch(req.id)
-            if restored_messages is not None:
-                for msg in restored_messages:
-                    chat_store.add_message(msg.get("role", "user"), msg.get("content", ""))
-                return {"status": "success", "message": f"Restored {len(restored_messages)} chat messages"}
-            return JSONResponse(status_code=404, content={"error": "Chat batch not found in Recycle Bin"})
+            item = recycle_bin_store.take_chat_item(req.id)
+            if item is None:
+                return JSONResponse(status_code=404, content={"error": "Chat not found in The Attic"})
+            if item.get("chapter"):   # a whole chapter goes back into the register, opened
+                ch = chat_store.restore(item["chapter"])
+                return {"status": "success", "message": "Chapter restored to your register", "chapter": ch}
+            msgs = item.get("messages", [])   # an older batch of messages becomes a chapter of its own
+            ch = chat_store.restore({"id": item.get("id", "ch_restored"), "title": "Restored conversation", "messages": msgs})
+            return {"status": "success", "message": f"Restored {len(msgs)} messages as a chapter", "chapter": ch}
         return JSONResponse(status_code=400, content={"error": "Invalid item_type"})
     except Exception as e:
         logger.error(f"Recycle restore error: {e}")
@@ -1703,7 +1810,7 @@ async def interview_session(websocket: WebSocket):
         else:
             logger.info(f"🧠 Generating fresh answer [R{round_num}-Q{q_index}, mode={mode}, lang={lang}]")
             c_mode = active_sessions[session_id].get("context_mode", "all")
-            full_context = context_engine.get_full_context(c_mode)
+            full_context = candidate_context(c_mode)
             vision_ctx = active_sessions[session_id].get("vision_context", "")
             if vision_ctx:
                 full_context += f"\n\n=== SCREEN CONTENT (Screenshot Analysis) ===\n{vision_ctx}"
@@ -2118,7 +2225,7 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
         q_index = data.get("question_index", 1)
         question = data.get("question", "")
         c_mode = active_sessions[session_id].get("context_mode", "all")
-        full_context = context_engine.get_full_context(c_mode)
+        full_context = candidate_context(c_mode)
         history = active_sessions[session_id]["transcript_history"]
         mode = "detailed"
         lang = active_sessions[session_id].get("language", "en")
@@ -2295,7 +2402,7 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
             lang = active_sessions[session_id].get("language", "en")
             prev_answer_opener = active_sessions[session_id].get("last_answer_opener", "")
             c_mode = active_sessions[session_id].get("context_mode", "all")
-            full_context = context_engine.get_full_context(c_mode)
+            full_context = candidate_context(c_mode)
             vision_ctx = active_sessions[session_id].get("vision_context", "")
             if vision_ctx:
                 full_context += f"\n\n=== SCREEN CONTENT (Screenshot Analysis) ===\n{vision_ctx}"
@@ -2468,6 +2575,25 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
         await websocket.send_json({"type": "pong"})
 
 
+
+
+# ─── The app page, with link previews pointing at whichever domain served it ─────
+
+@app.get("/", include_in_schema=False)
+@app.get("/index.html", include_in_schema=False)
+async def app_page(request: Request):
+    """index.html with %SITE_URL% filled in, so Reddit, LinkedIn and X previews get absolute links on any domain."""
+    from fastapi.responses import HTMLResponse
+    import re
+    host = (request.headers.get("x-forwarded-host") or request.headers.get("host") or "localhost").split(",")[0].strip()
+    proto = (request.headers.get("x-forwarded-proto") or request.url.scheme).split(",")[0].strip()
+    # only a plain host[:port] and http(s) ever reach the page: a forged header can't break out of the meta tags
+    if not re.fullmatch(r"[A-Za-z0-9.-]{1,253}(:\d{1,5})?", host):
+        host = "localhost"
+    if proto not in ("http", "https"):
+        proto = "https"
+    html = (web_dir / "index.html").read_text(encoding="utf-8").replace("%SITE_URL%", f"{proto}://{host}")
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
 
 # ─── Static Files (Catch-All) ───────────────────────────────

@@ -124,6 +124,75 @@
 @keyframes dgPacket { from { offset-distance: 0%; } to { offset-distance: 100%; } }
 @keyframes vsPulse { 50% { transform: scale(1.1); } }
 
+/* ── The pond: every topic afloat. JS moves each bubble (transform); CSS bobs it, pops it in and squashes on a bump ── */
+.bento-pond { display: grid; gap: 12px; margin-bottom: var(--gap-stack); }
+.pond-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.pond-title { font: 800 1.3rem/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--ink); }
+.pond-hint { margin-top: 4px; font-size: 0.9rem; color: var(--ink-2); text-wrap: pretty; }
+.pond-stir { flex-shrink: 0; }
+@container bento (max-width: 420px) { .pond-stir span { display: none; } .pond-stir { padding: 0 10px; } .pond-title { font-size: 1.15rem; } }
+.pond-stir svg { width: 15px; height: 15px; transition: transform 600ms var(--spring); }
+.pond-stir:active svg { transform: rotate(-200deg); }
+.pond-water {
+    position: relative; overflow: hidden; container-type: inline-size; touch-action: pan-y;
+    height: clamp(280px, 30cqw, 400px); border-radius: max(10px, calc(var(--r-card) - 6px));
+    background:
+        radial-gradient(60% 70% at 12% 18%, color-mix(in srgb, var(--c-hr) 10%, transparent), transparent 70%),
+        radial-gradient(55% 60% at 88% 82%, color-mix(in srgb, var(--c-beh) 10%, transparent), transparent 70%),
+        radial-gradient(40% 50% at 70% 10%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%),
+        var(--paper-2);
+    box-shadow: inset 0 2px 10px color-mix(in srgb, var(--ink) 8%, transparent), inset 0 0 0 1px var(--rule-2);
+}
+@container bento (max-width: 560px) { .pond-water { height: 320px; } }
+.pond-water::after {   /* a slow sheen across the surface */
+    content: ""; position: absolute; inset: -40% -10%; pointer-events: none;
+    background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--card-bg) 40%, transparent) 50%, transparent 60%);
+    animation: pondSheen 9s var(--ease-in-out) infinite;
+}
+@keyframes pondSheen { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
+.pond-bubble {
+    position: absolute; left: 0; top: 0; z-index: 1; padding: 0; border: 0; background: none; color: var(--ink);
+    max-width: min(15rem, 72cqw); will-change: transform; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.pb-bob { display: block; animation: pbBob var(--bob, 3s) var(--ease-in-out) infinite alternate; animation-delay: calc(var(--i, 0) * -0.37s); }
+.pb-face {
+    display: flex; align-items: center; gap: 7px; padding: 9px 14px 9px 11px; border-radius: 20px;
+    border: 1.5px solid color-mix(in srgb, var(--cfg) 45%, transparent); background: color-mix(in srgb, var(--cbg) 82%, var(--card-bg));
+    box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--cfg) 55%, transparent), 0 1px 0 color-mix(in srgb, var(--card-bg) 60%, transparent) inset;
+    font: 600 0.88rem/1.25 var(--font-body); text-align: left; text-wrap: balance;
+    transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
+    animation: pbIn 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 45ms + 80ms);
+}
+.pb-face svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--cfg); }
+.pond-bubble.is-today .pb-face { border-width: 2px; border-color: var(--cfg); font-weight: 700; }
+.pond-bubble.is-done .pb-face { background: var(--card-bg); color: var(--ink-2); border-style: dashed; box-shadow: none; }
+.pond-bubble.is-done .pb-face svg { color: var(--ok); }
+.pond-bubble.is-open .pb-face { border-color: var(--cfg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cfg) 25%, transparent), 0 8px 20px -8px var(--cfg); }
+.pond-bubble:focus-visible { outline: none; }
+.pond-bubble:focus-visible .pb-face { outline: 2.5px solid var(--focus, var(--accent)); outline-offset: 3px; }
+@media (hover: hover) { .pond-bubble:hover { z-index: 3; } .pond-bubble:hover .pb-face { transform: scale(1.07); box-shadow: 0 12px 26px -10px var(--cfg); border-color: var(--cfg); } }
+.pond-bubble:active .pb-face { transform: scale(0.95); }
+@keyframes pbBob { from { transform: translateY(-3px) rotate(-0.8deg); } to { transform: translateY(3px) rotate(0.8deg); } }
+@keyframes pbIn { from { opacity: 0; transform: scale(0.3) translateY(14px); } }
+.pond-ripple { position: absolute; z-index: 0; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); pointer-events: none; animation: pondRipple 900ms var(--ease-out) forwards; }
+@keyframes pondRipple { to { transform: scale(14); opacity: 0; } }
+.pond-ghost {   /* the bubble on its way to becoming the lesson card */
+    position: fixed; z-index: 80; display: grid; place-items: center; overflow: hidden; pointer-events: none;
+    border: 2px solid var(--cfg); background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--cfg) 16%, transparent), transparent 60%), color-mix(in srgb, var(--cbg) 78%, var(--card-bg)); box-shadow: var(--card-shadow-hover);
+    font: 800 1.05rem/1.2 var(--font-body); color: var(--cfg);
+}
+.pond-ghost span { padding: 0 14px; text-align: center; animation: ghostText 620ms var(--ease-out) forwards; }
+@keyframes ghostText { 70% { opacity: 1; transform: scale(1.5); } to { opacity: 0; transform: scale(1.7); } }
+/* still: calm or reduced motion lays the topics out as a plain cloud */
+.pond-water.is-still { height: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 14px; }
+.pond-water.is-still .pond-bubble { position: static; transform: none !important; }
+.pond-water.is-still::after { display: none; }
+.bento-box-title { margin: 0 0 10px; font: 800 1.15rem/1.2 var(--font-display); color: var(--ink); }
+.bento-fresh { border-style: dashed; color: var(--accent-ink); }
+.bento-fresh svg { color: var(--accent); }
+.bento-fresh.is-busy svg { animation: freshWand 900ms var(--ease-in-out) infinite; }
+@keyframes freshWand { 50% { transform: rotate(-24deg) scale(1.15); } }
+
 /* ── The full menu ── */
 .bento-menu { margin-bottom: var(--gap-stack); }
 .bento-menu summary { display: flex; align-items: center; gap: 10px; cursor: pointer; font: 700 1rem/1.3 var(--font-body); color: var(--ink); list-style: none; }
@@ -142,8 +211,8 @@
 @media (hover: hover) { .menu-item:hover { background: var(--cbg); color: var(--ink); } }
 
 @media (prefers-reduced-motion: reduce) {
-    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg { animation: none !important; }
+    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .pb-bob, .pb-face, .pond-water::after { animation: none !important; }
     .dg-packet { display: none; }
 }
-:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg) { animation: none !important; }
+:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .pb-bob, .pb-face) { animation: none !important; }
 :root[data-motion="calm"] .dg-packet { display: none; }

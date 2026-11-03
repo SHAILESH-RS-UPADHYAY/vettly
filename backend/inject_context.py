@@ -1,5 +1,5 @@
 """
-Acemate Context Injector — CLEAN VERSION
+Vettly Context Injector — CLEAN VERSION
 Only injects experience data. All other context is managed via the dashboard UI.
 """
 import json

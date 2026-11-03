@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f6f1e7">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23ea580c'%3E%3Cpath d='M16 2l5 5-5 5-5-5z'/%3E%3Cpath d='M16 20l5 5-5 5-5-5z'/%3E%3Cpath d='M7 11l5 5-5 5-5-5z'/%3E%3Cpath d='M25 11l5 5-5 5-5-5z'/%3E%3C/g%3E%3C/svg%3E">
-    <title>Vettly Prep Studio</title>
-    <meta name="description" content="Practise interview questions grounded in your resume, GitHub and target job, rehearse answers with a live Copilot, and ask the Mentor anything.">
+    <title>Vettly · Interview prep for every field</title>
+    <meta name="description" content="Free interview prep for every student and every field: questions written for your role, model answers in your own voice, a daily five-idea Brain Bento and a Copilot to practise with. Bring a free Gemini or Groq key.">
+    <link rel="canonical" href="%SITE_URL%/">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Vettly">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- Link previews (Reddit, LinkedIn, X, WhatsApp): %SITE_URL% is filled in by the server for whichever domain served the page -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Vettly">
+    <meta property="og:url" content="%SITE_URL%/">
+    <meta property="og:title" content="Vettly · Walk into every interview ready">
+    <meta property="og:description" content="Questions written for your role, answers that sound like you, five fresh ideas every morning. Free, for every field: nursing, MBA, marketing, law, design, code.">
+    <meta property="og:image" content="%SITE_URL%/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Vettly: interview prep studio with questions, model answers and a daily Brain Bento">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vettly · Walk into every interview ready">
+    <meta name="twitter:description" content="Free interview prep for every field. Questions for your role, answers in your voice, a daily Brain Bento.">
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png">
     <script>
         /* First paint: theme and appearance land on <html> before anything renders (appearance.js owns the rest) */
         (function () {
@@ -28,18 +48,21 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./tokens.css?v=7.0">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./tokens.css?v=7.1">
     <link rel="stylesheet" href="./base.css?v=7.0">
-    <link rel="stylesheet" href="./styles.css?v=8.9">
+    <link rel="stylesheet" href="./styles.css?v=9.0">
     <link rel="stylesheet" href="./prep.css?v=7.4">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
-    <link rel="stylesheet" href="./looks.css?v=7.4">
+    <link rel="stylesheet" href="./looks.css?v=7.6">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.0">
-    <link rel="stylesheet" href="./bento.css?v=8.2">
-    <link rel="stylesheet" href="./onboard.css?v=2.1">
-    <link rel="stylesheet" href="./tour.css?v=2.0">
+    <link rel="stylesheet" href="./bento.css?v=9.0">
+    <link rel="stylesheet" href="./onboard.css?v=2.2">
+    <link rel="stylesheet" href="./keyring.css?v=1.1">
+    <link rel="stylesheet" href="./daybook.css?v=1.3">
+    <link rel="stylesheet" href="./register.css?v=1.3">
+    <link rel="stylesheet" href="./tour.css?v=2.1">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -72,6 +95,21 @@
             <symbol id="i-code" viewBox="0 0 256 256"><path fill="currentColor" d="m240 128l-48 40H64l-48-40l48-40h128Z" opacity=".2"/><path fill="currentColor" d="M69.12 94.15L28.5 128l40.62 33.85a8 8 0 1 1-10.24 12.29l-48-40a8 8 0 0 1 0-12.29l48-40a8 8 0 0 1 10.24 12.3m176 27.7l-48-40a8 8 0 1 0-10.24 12.3L227.5 128l-40.62 33.85a8 8 0 1 0 10.24 12.29l48-40a8 8 0 0 0 0-12.29m-82.39-89.37a8 8 0 0 0-10.25 4.79l-64 176a8 8 0 0 0 4.79 10.26A8.1 8.1 0 0 0 96 224a8 8 0 0 0 7.52-5.27l64-176a8 8 0 0 0-4.79-10.25"/></symbol>
             <symbol id="i-translate" viewBox="0 0 256 256"><path fill="currentColor" d="M224 184h-80l40-80ZM96 127.56A95.78 95.78 0 0 0 128 56H64a95.78 95.78 0 0 0 32 71.56" opacity=".2"/><path fill="currentColor" d="m247.15 212.42l-56-112a8 8 0 0 0-14.31 0l-21.71 43.43A88 88 0 0 1 108 126.93A103.65 103.65 0 0 0 135.69 64H160a8 8 0 0 0 0-16h-56V32a8 8 0 0 0-16 0v16H32a8 8 0 0 0 0 16h87.63A87.7 87.7 0 0 1 96 116.35a87.7 87.7 0 0 1-19-31a8 8 0 1 0-15.08 5.34A103.6 103.6 0 0 0 84 127a87.55 87.55 0 0 1-52 17a8 8 0 0 0 0 16a103.46 103.46 0 0 0 64-22.08a104.2 104.2 0 0 0 51.44 21.31l-26.6 53.19a8 8 0 0 0 14.31 7.16L148.94 192h70.11l13.79 27.58A8 8 0 0 0 240 224a8 8 0 0 0 7.15-11.58M156.94 176L184 121.89L211.05 176Z"/></symbol>
             <symbol id="i-copy" viewBox="0 0 256 256"><path fill="currentColor" d="M216 40v128h-48V88H88V40Z" opacity=".2"/><path fill="currentColor" d="M216 32H88a8 8 0 0 0-8 8v40H40a8 8 0 0 0-8 8v128a8 8 0 0 0 8 8h128a8 8 0 0 0 8-8v-40h40a8 8 0 0 0 8-8V40a8 8 0 0 0-8-8m-56 176H48V96h112Zm48-48h-32V88a8 8 0 0 0-8-8H96V48h112Z"/></symbol>
+            <symbol id="i-attic" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M48 112 128 44l80 68v96H48Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M24 124 128 36l104 88M48 104v104h160V104"/><circle cx="128" cy="124" r="22" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M100 208v-28h56v28"/></symbol>
+            <symbol id="i-command" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M96 96h64v64H96Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M96 96h64v64H96ZM96 96V72a24 24 0 1 0-24 24Zm64 0V72a24 24 0 1 1 24 24Zm-64 64v24a24 24 0 1 1-24-24Zm64 0v24a24 24 0 1 0 24-24Z"/></symbol>
+            <symbol id="i-key" viewBox="0 0 256 256"><circle cx="84" cy="172" r="44" fill="currentColor" opacity=".2"/><circle cx="84" cy="172" r="44" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M115 141 216 40m-40 40 32 32m-64-4 24 24"/></symbol>
+            <symbol id="i-passport" viewBox="0 0 256 256"><rect x="52" y="28" width="152" height="200" rx="16" fill="currentColor" opacity=".2"/><rect x="52" y="28" width="152" height="200" rx="16" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><circle cx="128" cy="108" r="36" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M92 108h72M128 72c-12 12-14 60 0 72 14-12 12-60 0-72M96 184h64"/></symbol>
+            <symbol id="i-book" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M128 72c-24-20-64-24-96-16v136c32-8 72-4 96 16 24-20 64-24 96-16V56c-32-8-72-4-96 16Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M128 72c-24-20-64-24-96-16v136c32-8 72-4 96 16 24-20 64-24 96-16V56c-32-8-72-4-96 16Zm0 0v136"/></symbol>
+            <symbol id="i-archive" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M48 88h160v112a8 8 0 0 1-8 8H56a8 8 0 0 1-8-8Z"/><rect x="32" y="48" width="192" height="40" rx="8" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M48 88v112a8 8 0 0 0 8 8h144a8 8 0 0 0 8-8V88M104 128h48"/></symbol>
+            <symbol id="i-clock" viewBox="0 0 256 256"><circle cx="128" cy="128" r="96" fill="currentColor" opacity=".2"/><circle cx="128" cy="128" r="96" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M128 72v56h56"/></symbol>
+            <symbol id="i-pen" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="m128 24 56 80-56 128-56-128Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="m128 24 56 80-56 128-56-128Zm0 112v96M128 136a16 16 0 1 0 0-32 16 16 0 0 0 0 32Z"/></symbol>
+            <symbol id="i-eye" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M128 56C48 56 16 128 16 128s32 72 112 72 112-72 112-72-32-72-112-72Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M128 56C48 56 16 128 16 128s32 72 112 72 112-72 112-72-32-72-112-72Z"/><circle cx="128" cy="128" r="40" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+            <symbol id="i-eye-off" viewBox="0 0 256 256"><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="m48 40 160 176M154 157a40 40 0 0 1-54-58M74 69C35 89 16 128 16 128s32 72 112 72a116 116 0 0 0 54-13M207 168c21-19 33-40 33-40s-32-72-112-72a124 124 0 0 0-21 2"/></symbol>
+            <symbol id="i-external" viewBox="0 0 256 256"><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M216 100V40h-60M144 112l72-72M184 144v64a8 8 0 0 1-8 8H48a8 8 0 0 1-8-8V80a8 8 0 0 1 8-8h64"/></symbol>
+            <symbol id="i-download" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M32 144h192v64a8 8 0 0 1-8 8H40a8 8 0 0 1-8-8Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M128 32v120m-48-48 48 48 48-48M32 144v64a8 8 0 0 0 8 8h176a8 8 0 0 0 8-8v-64"/></symbol>
+            <symbol id="i-sign-out" viewBox="0 0 256 256"><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M112 216H48a8 8 0 0 1-8-8V48a8 8 0 0 1 8-8h64M176 88l40 40-40 40M104 128h112"/></symbol>
+            <symbol id="i-shield" viewBox="0 0 256 256"><path fill="currentColor" opacity=".2" d="M40 56v56c0 84 88 112 88 112s88-28 88-112V56Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="M40 56v56c0 84 88 112 88 112s88-28 88-112V56Z"/><path fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" d="m92 128 24 24 48-48"/></symbol>
+            <symbol id="i-dots-grid" viewBox="0 0 256 256"><g fill="currentColor"><circle cx="76" cy="76" r="20"/><circle cx="180" cy="76" r="20"/><circle cx="76" cy="180" r="20"/><circle cx="180" cy="180" r="20"/></g></symbol>
             <symbol id="i-trash" viewBox="0 0 256 256"><path fill="currentColor" d="M200 56v152a8 8 0 0 1-8 8H64a8 8 0 0 1-8-8V56Z" opacity=".2"/><path fill="currentColor" d="M216 48h-40v-8a24 24 0 0 0-24-24h-48a24 24 0 0 0-24 24v8H40a8 8 0 0 0 0 16h8v144a16 16 0 0 0 16 16h128a16 16 0 0 0 16-16V64h8a8 8 0 0 0 0-16M96 40a8 8 0 0 1 8-8h48a8 8 0 0 1 8 8v8H96Zm96 168H64V64h128Zm-80-104v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0m48 0v64a8 8 0 0 1-16 0v-64a8 8 0 0 1 16 0"/></symbol>
             <symbol id="i-cap" viewBox="0 0 256 256"><path fill="currentColor" d="M216 113.07v53.22a8 8 0 0 1-2 5.31c-11.3 12.59-38.9 36.4-86 36.4s-74.68-23.81-86-36.4a8 8 0 0 1-2-5.31v-53.22L128 160Z" opacity=".2"/><path fill="currentColor" d="m251.76 88.94l-120-64a8 8 0 0 0-7.52 0l-120 64a8 8 0 0 0 0 14.12L32 117.87v48.42a15.9 15.9 0 0 0 4.06 10.65C49.16 191.53 78.51 216 128 216a130 130 0 0 0 48-8.76V240a8 8 0 0 0 16 0v-40.49a115.6 115.6 0 0 0 27.94-22.57a15.9 15.9 0 0 0 4.06-10.65v-48.42l27.76-14.81a8 8 0 0 0 0-14.12M128 200c-43.27 0-68.72-21.14-80-33.71V126.4l76.24 40.66a8 8 0 0 0 7.52 0L176 143.47v46.34c-12.6 5.88-28.48 10.19-48 10.19m80-33.75a97.8 97.8 0 0 1-16 14.25v-45.57l16-8.53Zm-20-47.31l-.22-.13l-56-29.87a8 8 0 0 0-7.52 14.12L171 128l-43 22.93L25 96l103-54.93L231 96Z"/></symbol>
             <symbol id="i-star" viewBox="0 0 256 256"><path fill="currentColor" d="m229.06 108.79l-48.7 42l14.88 62.79a8.4 8.4 0 0 1-12.52 9.17L128 189.09l-54.72 33.65a8.4 8.4 0 0 1-12.52-9.17l14.88-62.79l-48.7-42A8.46 8.46 0 0 1 31.73 94l63.91-5.2l24.62-59.6a8.36 8.36 0 0 1 15.48 0l24.62 59.6l63.91 5.2a8.46 8.46 0 0 1 4.79 14.79" opacity=".2"/><path fill="currentColor" d="M239.18 97.26A16.38 16.38 0 0 0 224.92 86l-59-4.76l-22.78-55.09a16.36 16.36 0 0 0-30.27 0L90.11 81.23L31.08 86a16.46 16.46 0 0 0-9.37 28.86l45 38.83L53 211.75a16.38 16.38 0 0 0 24.5 17.82l50.5-31.08l50.53 31.08A16.4 16.4 0 0 0 203 211.75l-13.76-58.07l45-38.83a16.43 16.43 0 0 0 4.94-17.59m-15.34 5.47l-48.7 42a8 8 0 0 0-2.56 7.91l14.88 62.8a.37.37 0 0 1-.17.48c-.18.14-.23.11-.38 0l-54.72-33.65a8 8 0 0 0-8.38 0l-54.72 33.67c-.15.09-.19.12-.38 0a.37.37 0 0 1-.17-.48l14.88-62.8a8 8 0 0 0-2.56-7.91l-48.7-42c-.12-.1-.23-.19-.13-.5s.18-.27.33-.29l63.92-5.16a8 8 0 0 0 6.72-4.94l24.62-59.61c.08-.17.11-.25.35-.25s.27.08.35.25L153 91.86a8 8 0 0 0 6.75 4.92l63.92 5.16c.15 0 .24 0 .33.29s0 .4-.16.5"/></symbol>
@@ -118,7 +156,7 @@
     <!-- Sign-in for the hosted app (auth.js mounts Clerk here); never shown when Vettly runs on your machine -->
     <div class="auth-gate" id="auth-gate" hidden>
         <button type="button" class="theme-switch auth-theme" onclick="toggleTheme(event)" aria-label="Switch between light and dark">
-            <svg class="ts-sun" aria-hidden="true"><use href="#i-sun"/></svg><svg class="ts-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+            <svg class="sunmoon" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="sm-gate"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><circle class="sm-bite" cx="18.5" cy="5.5" r="6.2" fill="#000"/></mask></defs><circle class="sm-core" cx="12" cy="12" r="5" mask="url(#sm-gate)"/><g class="sm-rays"><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(0 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(45 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(90 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(135 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(180 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(225 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(270 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(315 12 12)"/></g></svg>
             <span class="ts-label"><span class="ts-to-dark">Dark</span><span class="ts-to-light">Light</span></span>
         </button>
         <div class="auth-inner">
@@ -155,7 +193,10 @@
         <div class="sidebar-nav">
             <span class="nav-pill" aria-hidden="true"></span>
             <button type="button" class="nav-item active" data-section="home" id="nav-home">
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-house"/></svg><span class="nav-label"><span class="v-classic">Overview Poster</span><span class="v-alt">Home</span></span>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-house"/></svg><span class="nav-label">Daybook</span>
+            </button>
+            <button type="button" class="nav-item" data-section="setup" id="nav-setup" data-more>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-toolbox"/></svg><span class="nav-label">Agent Toolbelt</span>
             </button>
             <button type="button" class="nav-item" data-section="prep" id="nav-prep">
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-target"/></svg><span class="nav-label">Prep Studio</span>
@@ -166,14 +207,18 @@
             <button type="button" class="nav-item" data-section="chat" id="nav-chat">
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-chats"/></svg><span class="nav-label">Live Copilot</span>
             </button>
-            <button type="button" class="nav-item" data-section="setup" id="nav-setup" data-more>
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-toolbox"/></svg><span class="nav-label">Agent Toolbelt</span>
+            <span class="nav-rule" aria-hidden="true"></span>
+            <button type="button" class="nav-item" data-section="attic" id="nav-attic" data-more data-tab="attic">
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-attic"/></svg><span class="nav-label">The Attic</span>
             </button>
-            <button type="button" class="nav-item" data-section="aboutme" id="nav-aboutme" data-more>
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-user"/></svg><span class="nav-label"><span class="v-classic">About Me Profile</span><span class="v-alt">About me</span></span>
+            <button type="button" class="nav-item" data-section="atelier" id="nav-atelier" data-more>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-palette"/></svg><span class="nav-label">Atelier</span>
             </button>
             <button type="button" class="nav-item" data-section="settings" id="nav-settings" data-more>
-                <svg class="nav-icon" aria-hidden="true"><use href="#i-gear"/></svg><span class="nav-label"><span class="v-classic">Settings Matrix</span><span class="v-alt">Settings</span></span>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-gear"/></svg><span class="nav-label">Settings</span>
+            </button>
+            <button type="button" class="nav-item" data-section="aboutme" id="nav-aboutme" data-more>
+                <svg class="nav-icon" aria-hidden="true"><use href="#i-user"/></svg><span class="nav-label">About me</span>
             </button>
             <button type="button" class="nav-item nav-more" id="nav-more" aria-haspopup="dialog" aria-controls="more-sheet" aria-current="false">
                 <svg class="nav-icon" aria-hidden="true"><use href="#i-more"/></svg><span class="nav-label">More</span>
@@ -183,8 +228,7 @@
             <div class="user-slot" data-user-slot="full" hidden><div class="user-btn"></div></div>
             <button type="button" class="profile-btn" onclick="Onboard.open()"><svg aria-hidden="true"><use href="#i-user"/></svg><span>Your profile</span></button>
             <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme(event)" title="Switch between Parchment and Spatial Dark">
-                <svg class="theme-ico theme-ico-light" aria-hidden="true"><use href="#i-scroll"/></svg>
-                <svg class="theme-ico theme-ico-dark" aria-hidden="true"><use href="#i-planet"/></svg>
+                <svg class="sunmoon theme-ico" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="sm-side"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><circle class="sm-bite" cx="18.5" cy="5.5" r="6.2" fill="#000"/></mask></defs><circle class="sm-core" cx="12" cy="12" r="5" mask="url(#sm-side)"/><g class="sm-rays"><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(0 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(45 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(90 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(135 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(180 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(225 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(270 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(315 12 12)"/></g></svg>
                 <span class="theme-text">Theme: <strong id="theme-label">Parchment</strong></span>
             </button>
             <div class="server-indicator" id="sidebar-status">
@@ -201,7 +245,22 @@
         <div class="more-list">
             <button type="button" class="more-item" data-section="setup">
                 <span class="more-ico" data-tone="proj"><svg aria-hidden="true"><use href="#i-toolbox"/></svg></span>
-                <span><b>Agent Toolbelt</b><small>Resume, GitHub, job and your context</small></span>
+                <span><b>Agent Toolbelt</b><small>Resume, job post, GitHub. All optional</small></span>
+                <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
+            </button>
+            <button type="button" class="more-item" data-section="attic" data-tab="attic">
+                <span class="more-ico" data-tone="sit"><svg aria-hidden="true"><use href="#i-attic"/></svg></span>
+                <span><b>The Attic</b><small>Deleted things, waiting to come back</small></span>
+                <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
+            </button>
+            <button type="button" class="more-item" data-section="atelier">
+                <span class="more-ico" data-tone="sys"><svg aria-hidden="true"><use href="#i-palette"/></svg></span>
+                <span><b>Atelier</b><small>Looks, layout and shortcuts</small></span>
+                <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
+            </button>
+            <button type="button" class="more-item" data-section="settings">
+                <span class="more-ico" data-tone="tech"><svg aria-hidden="true"><use href="#i-gear"/></svg></span>
+                <span><b>Settings</b><small>Your keys, account and data</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
             <button type="button" class="more-item" data-section="aboutme">
@@ -209,9 +268,9 @@
                 <span><b>About me</b><small>Your intro, strengths and identity rules</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
-            <button type="button" class="more-item" data-section="settings">
-                <span class="more-ico" data-tone="tech"><svg aria-hidden="true"><use href="#i-gear"/></svg></span>
-                <span><b>Settings</b><small>Appearance, connection and shortcuts</small></span>
+            <button type="button" class="more-item" data-palette-open>
+                <span class="more-ico" data-tone="gen"><svg aria-hidden="true"><use href="#i-search"/></svg></span>
+                <span><b>Search &amp; commands</b><small>Jump anywhere, do anything</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
             <button type="button" class="more-item" data-tour-start>
@@ -221,7 +280,7 @@
             </button>
             <button type="button" class="more-item" onclick="toggleTheme(event)">
                 <span class="more-ico" data-tone="sys"><svg aria-hidden="true"><use href="#i-half"/></svg></span>
-                <span><b data-theme-toggle-label>Theme: Parchment</b><small>Tap to switch. Looks, colours and the Mentor live in Settings</small></span>
+                <span><b data-theme-toggle-label>Theme: Parchment</b><small>Tap to switch. Looks and colours live in the Atelier</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
         </div>
@@ -232,96 +291,102 @@
 
         <!-- ═══ OVERVIEW / POSTER PAGE ═══ -->
         <section class="page active" id="page-home">
-            <div class="page-inner">
-                
-                <!-- Poster Header -->
-                <div class="poster-header">
+            <div class="page-inner daybook">
+                <!-- Daybook: your day at a glance. daybook.js fills every number from your own data -->
+                <div class="poster-header db-head">
                     <div class="tape-corner" aria-hidden="true"></div>
-                    <div class="tape-corner right" aria-hidden="true"></div>
-                    <span class="handwritten-note" aria-hidden="true">Build smarter. Ship safer!</span>
-                    <h1>Career prep <em>architect</em></h1>
-                    <p>Architect your technical depth, mock sessions & role-specific mastery with precision</p>
-                    <h2 class="sr-only">How Vettly works</h2>
-                </div>
-                <section class="today-card" id="today-card" aria-label="Today">
-                    <div class="today-tile" style="--i:0">
-                        <svg class="bento-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="ring-fill" cx="24" cy="24" r="20" style="stroke-dasharray:125.66;stroke-dashoffset:125.66"/></svg>
-                        <div><b data-today="eaten">0 of 5 concepts</b><span data-today="streak">Start a streak today</span></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('bento', { animate: true })">Open Brain Bento</button>
-                    </div>
-                    <div class="today-tile" style="--i:1">
-                        <span class="today-ico" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
-                        <div><b data-today="review">Your prep bank</b><span data-today="bank">Generate your first question</span></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('prep', { animate: true })">Review in Prep Studio</button>
-                    </div>
-                </section>
-
-                <!-- 4 Workflow Cards (Matching Poster Step 1..4) -->
-                <div class="poster-grid-4">
-                    <div class="step-card">
-                        <div class="step-number">1.</div>
-                        <h3>CONTEXT TOOLBELT</h3>
-                        <p>Upload resume, GitHub repos, job specs & STAR stories into vector index.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">2.</div>
-                        <h3>MULTI-MODEL ENGINE</h3>
-                        <p>Claude, Gemini & Llama orchestration for grounded technical synthesis.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">3.</div>
-                        <h3>LIVE MOCK COPILOT</h3>
-                        <p>Interactive technical & behavioral practice grounded in your real codebase.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">4.</div>
-                        <h3>PREP STUDIO HUD</h3>
-                        <p>Synthesize role-specific Q&A streams across 9 engineering categories.</p>
-                    </div>
+                    <span class="handwritten-note left" aria-hidden="true">your day, at a glance</span>
+                    <p class="db-date" data-db="date"></p>
+                    <h1><span data-db="greet">Hello</span>, <em data-db="name">friend</em></h1>
+                    <p data-db="sub">Your interview prep, one page at a time.</p>
+                    <h2 class="sr-only">Today</h2>
                 </div>
 
-                <!-- Embedded Generated Poster Visual Media Cards -->
-                <div class="poster-media-grid">
-                    <div class="poster-media-card">
-                        <img src="./agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>AGENT TOOLKIT PACK</h4>
-                            <p>Modular background skills: Code Generation, Retrieval Guardrails & Evaluation.</p>
+                <div class="db-grid">
+                    <!-- the one thing to do next -->
+                    <article class="db-card db-next" data-db="next" style="--i:0">
+                        <p class="db-kicker">Up next</p>
+                        <h3 data-db="next-title">Getting your day ready…</h3>
+                        <p data-db="next-text"></p>
+                        <div class="db-next-actions" data-db="next-actions"></div>
+                        <svg class="db-next-art" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 8 L72 48 L112 60 L72 72 L60 112 L48 72 L8 60 L48 48Z"/></svg>
+                    </article>
+
+                    <!-- streak: the last seven days -->
+                    <article class="db-card db-streak" style="--i:1">
+                        <p class="db-kicker">Streak</p>
+                        <p class="db-big"><svg class="db-flame" aria-hidden="true"><use href="#i-fire"/></svg><b data-db="streak">0</b><span>days</span></p>
+                        <ol class="db-week" data-db="week" aria-label="The last seven days"></ol>
+                        <p class="db-small" data-db="streak-note">Finish a Brain Bento to start one.</p>
+                    </article>
+
+                    <!-- today's Brain Bento -->
+                    <article class="db-card db-bento" style="--i:2">
+                        <p class="db-kicker">Brain Bento</p>
+                        <div class="db-ring-row">
+                            <svg class="db-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="db-ring-fill" data-db="ring" cx="24" cy="24" r="20" pathLength="1"/></svg>
+                            <p><b data-db="bento">0 of 5</b><span>ideas today</span></p>
                         </div>
-                    </div>
-                    <div class="poster-media-card">
-                        <img src="./blueprint_architect.webp" alt="Blueprint Architect" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>BLUEPRINT SPECIFICATION</h4>
-                            <p>Precision system design & database optimization stories ready for retrieval.</p>
-                        </div>
-                    </div>
-                    <div class="poster-media-card">
-                        <img src="./copilot_hud_panel.webp" alt="Copilot HUD Panel" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>HUD CONTROL CENTER</h4>
-                            <p>Real-time readiness telemetry and multi-engine practice studio.</p>
-                        </div>
-                    </div>
+                        <button type="button" class="btn btn-secondary btn-sm" data-go="bento">Open today's box</button>
+                    </article>
+
+                    <!-- numbers that are really yours -->
+                    <article class="db-card db-stats" style="--i:3">
+                        <p class="db-kicker">Your practice</p>
+                        <dl>
+                            <div><dt>Questions</dt><dd data-db="q">0</dd></div>
+                            <div><dt>Accepted</dt><dd data-db="acc">0</dd></div>
+                            <div><dt>To review</dt><dd data-db="rev">0</dd></div>
+                            <div><dt>Copilot messages</dt><dd data-db="chat">0</dd></div>
+                        </dl>
+                    </article>
+
+                    <!-- quick actions: each one is a real shortcut from the registry -->
+                    <article class="db-card db-actions" style="--i:4">
+                        <div class="db-card-head"><p class="db-kicker">Quick actions</p><button type="button" class="db-link" data-go="atelier-keys">All shortcuts</button></div>
+                        <div class="db-action-grid" data-db="actions"></div>
+                    </article>
+
+                    <!-- set up your desk -->
+                    <article class="db-card db-setup" style="--i:5">
+                        <div class="db-card-head"><p class="db-kicker">Set up your desk</p><span class="db-pill" data-db="setup-count">0 / 5</span></div>
+                        <ul class="db-checklist" data-db="setup"></ul>
+                    </article>
+
+                    <!-- the fallback chain at a glance -->
+                    <article class="db-card db-keys" style="--i:6">
+                        <div class="db-card-head"><p class="db-kicker">AI keys</p><button type="button" class="db-link" data-go="settings">Key Ring</button></div>
+                        <ol class="db-chain" data-db="chain"></ol>
+                        <p class="db-small" data-db="keys-note"></p>
+                    </article>
                 </div>
 
-                <div style="text-align:center; margin-top:20px;">
-                    <button class="btn btn-primary" onclick="switchSection('setup', { animate: true })" style="padding:14px 28px; font-size:16px;">
-                        <span>Launch Context Toolbelt</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <!-- the rooms, as the poster shows them -->
+                <h2 class="db-section-title">Inside the studio</h2>
+                <div class="poster-media-grid db-rooms">
+                    <button type="button" class="poster-media-card" data-go="setup">
+                        <img src="./agent_toolbelt_case.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Agent Toolbelt</b><span>Everything Vettly knows about you. Resume, job post and GitHub, all optional.</span></span>
+                    </button>
+                    <button type="button" class="poster-media-card" data-go="prep">
+                        <img src="./blueprint_architect.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Prep Studio</b><span>Questions written for your role, with model answers you can refine.</span></span>
+                    </button>
+                    <button type="button" class="poster-media-card" data-go="chat">
+                        <img src="./copilot_hud_panel.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Live Copilot</b><span>Practise out loud. Answers come back in your own voice.</span></span>
                     </button>
                 </div>
             </div>
         </section>
-
         <!-- ═══ SETUP / CONTEXT TOOLBELT ═══ -->
         <section class="page" id="page-setup">
             <div class="page-inner">
                 <div class="poster-header">
                     <div class="tape-corner" aria-hidden="true"></div>
-                    <span class="handwritten-note left" aria-hidden="true">Tactile toolbelt ready!</span>
+                    <span class="handwritten-note left" aria-hidden="true">all of it optional!</span>
                     <h1><span class="v-classic">Agent <em>Toolbelt</em> Builder</span><span class="v-alt">Agent <em>Toolbelt</em></span></h1>
-                    <p>Design the modular tools your AI copilot uses during your live session</p>
+                    <p>Everything Vettly knows about you. Add what you have; skip what you don't.</p>
                     <h2 class="sr-only">What your copilot knows</h2>
                 </div>
                 <nav class="tb-summary" id="tb-summary" aria-label="What your copilot knows"></nav>
@@ -330,16 +395,16 @@
                     <!-- Resume Card -->
                     <div class="toolbelt-card" id="resume-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg>Resume Specs</h3>
-                            <span class="badge-pill badge-pill-blue"><span class="badge-dot"></span>INPUT SPEC</span>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg>Resume</h3>
+                            <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                         </div>
-                        <p class="toolbelt-card-desc">Parse experience, core technologies, and quantifiable achievements into AI context.</p>
+                        <p class="toolbelt-card-desc">Optional. Add it and answers draw on your real experience, projects and numbers.</p>
                         <div class="upload-zone" id="upload-zone">
                             <div class="upload-icon">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             </div>
                             <p style="font-weight:700; font-size:14px; margin: 8px 0 4px 0; color:var(--ink-primary);">Drop resume PDF or DOCX here</p>
-                            <span style="font-size:12px; color:var(--ink-secondary); display:block; margin-bottom:10px;">Click or drag to index candidate telemetry</span>
+                            <span style="font-size:12px; color:var(--ink-secondary); display:block; margin-bottom:10px;">Click to choose a file, or drag it here</span>
                             <span class="badge-pill badge-pill-slate">ACCEPTS .PDF, .DOCX, .TXT</span>
                             <input type="file" id="resume-input" accept=".pdf,.docx,.doc,.txt" hidden>
                         </div>
@@ -352,11 +417,7 @@
                                     </div>
                                     <span class="badge-pill badge-pill-emerald pulse-dot"><span class="badge-dot"></span>ACTIVE & PARSED</span>
                                 </div>
-                                <div class="resume-meta-tags">
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>2+ Yrs Backend AI</span>
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-brain"/></svg>PyTorch & FastAPI</span>
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>6 Projects Linked</span>
-                                </div>
+                                <div class="resume-meta-tags" id="resume-meta-tags"></div>
                                 <div style="display:flex; justify-content:flex-end; margin-top:6px;">
                                     <button class="btn btn-secondary btn-sm" id="reupload-btn"><svg class="i em-i" aria-hidden="true"><use href="#i-refresh"/></svg>Re-upload Resume</button>
                                 </div>
@@ -367,10 +428,10 @@
                     <!-- GitHub Card -->
                     <div class="toolbelt-card" id="github-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>GitHub Ingestion</h3>
-                            <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>CODE BASE</span>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>GitHub</h3>
+                            <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                         </div>
-                        <p class="toolbelt-card-desc">Sync your actual code repositories for authentic, deep architectural grounding.</p>
+                        <p class="toolbelt-card-desc">Optional, for people who code. Your public repos let answers cite real projects.</p>
                         <div class="form-group-clean">
                             <div class="form-label-row">
                                 <label class="form-label-clean" for="github-username">GitHub Profile</label>
@@ -378,7 +439,7 @@
                             </div>
                             <div class="input-addon-group">
                                 <span class="input-addon-prefix">github.com/</span>
-                                <input type="text" class="input-addon-field" id="github-username" placeholder="your-username" value="SHAILESH-RS-UPADHYAY">
+                                <input type="text" class="input-addon-field" id="github-username" placeholder="your-username" autocomplete="off" autocapitalize="off" spellcheck="false">
                                 <button class="btn btn-secondary" id="github-fetch-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Fetch Repos</button>
                             </div>
                         </div>
@@ -401,100 +462,56 @@
                         <div class="toolbelt-card-header">
                             <h3><svg class="i em-i" aria-hidden="true"><use href="#i-briefcase"/></svg>Target Job Description</h3>
                             <div class="tb-badges">
-                                <span class="badge-pill badge-pill-emerald" id="jd-sync-badge"><span class="badge-dot"></span>SPEC ACTIVE</span>
-                                <span class="badge-pill badge-pill-orange"><span class="badge-dot"></span>TARGET SPEC</span>
+                                <span class="badge-pill badge-pill-emerald" id="jd-sync-badge" style="display:none"><span class="badge-dot"></span>SAVED</span>
+                                <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                             </div>
                         </div>
-                        <p class="toolbelt-card-desc">Ground every answer in the exact requirements and tech stack of your upcoming interview.</p>
+                        <p class="toolbelt-card-desc">Optional. Paste the job post and questions and answers follow its exact requirements.</p>
                         <div class="context-form">
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div class="jd-meta-grid">
                                 <div class="form-group-clean" style="margin-bottom:0;">
                                     <div class="form-label-row">
-                                        <label class="form-label-clean" for="jd-title">Target Role / Title</label>
-                                        <span class="badge-pill badge-pill-slate">POSITION</span>
+                                        <label class="form-label-clean" for="jd-title">Role</label>
                                     </div>
-                                    <input type="text" id="jd-title" value="AI Product Engineer" placeholder="e.g. AI Product Engineer / Full-Stack AI Engineer">
+                                    <input type="text" id="jd-title" placeholder="e.g. Staff Nurse, Marketing Associate, Data Analyst">
                                 </div>
                                 <div class="form-group-clean" style="margin-bottom:0;">
                                     <div class="form-label-row">
-                                        <label class="form-label-clean" for="jd-company">Company / Client</label>
-                                        <span class="badge-pill badge-pill-slate">HIRING ENTITY</span>
+                                        <label class="form-label-clean" for="jd-company">Company</label>
                                     </div>
-                                    <input type="text" id="jd-company" value="Soft System Solution" placeholder="e.g. Soft System Solution">
+                                    <input type="text" id="jd-company" placeholder="e.g. Apollo Hospitals, Deloitte, Zomato">
                                 </div>
                             </div>
                             <div class="form-group-clean" style="margin-bottom:16px;">
                                 <div class="form-label-row" style="margin-bottom:8px;">
-                                    <label class="form-label-clean" for="jd-content">Job Description Requirements & Tech Stack</label>
-                                    <span class="badge-pill badge-pill-orange">RAG SPEC GROUNDING</span>
+                                    <label class="form-label-clean" for="jd-content">Job description</label>
                                 </div>
                                 <div class="jd-editor-container">
                                     <div class="jd-editor-bar">
                                         <div class="jd-editor-tab">
                                             <span class="jd-tab-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></span>
-                                            <span class="jd-tab-name">SPEC_REQUIREMENTS.md</span>
+                                            <span class="jd-tab-name">job-post.txt</span>
                                             <span class="jd-tab-dot"></span>
                                         </div>
                                         <div class="jd-editor-meta">
-                                            <span id="jd-char-count">1974 characters</span>
+                                            <span id="jd-char-count">0 characters</span>
                                             <span class="jd-meta-divider">•</span>
                                             <span>UTF-8</span>
                                         </div>
                                     </div>
-                                    <textarea id="jd-content" rows="12" placeholder="Paste the target job description requirements, responsibilities, and expected tech stack here...">About the Role:
-We're looking for a highly motivated AI Product Engineer who loves building innovative AI products from the ground up. This role is for someone who constantly explores the latest AI models, frameworks, and tools, rapidly prototypes new ideas, and turns them into production-ready applications. You should be comfortable working independently, making technical decisions, and delivering high-quality AI solutions that create measurable business impact.
-
-Responsibilities:
-• Design, build, and deploy AI-powered products from concept to production.
-• Research and evaluate the latest AI models, frameworks, and emerging technologies.
-• Develop AI applications using LLMs, AI agents, RAG pipelines, multimodal models, and modern automation tools.
-• Rapidly prototype new product ideas and validate them through experimentation.
-• Design scalable software architectures for AI applications.
-• Build backend services, APIs, and integrations to support AI products.
-• Work independently to solve complex technical challenges with minimal supervision.
-• Continuously improve products through testing, iteration, and performance optimization.
-• Share knowledge and recommend new technologies that can create competitive advantages for the company.
-
-Requirements:
-• Hands-on experience building applications using modern AI models and frameworks.
-• Deep understanding of LLMs, AI agents, Retrieval-Augmented Generation (RAG), automation, and multimodal AI.
-• Ability to independently design, build, test, and deploy products.
-• Strong software engineering skills using Python and JavaScript/TypeScript.
-• Experience building APIs and working with cloud services.
-• Strong understanding of software architecture and scalable system design.
-• Excellent problem-solving skills with a strong bias toward execution.
-• Self-driven mindset with outstanding research and continuous learning abilities.
-
-Nice to Have:
-• Experience with vector databases, embedding pipelines and AI orchestration frameworks such as LangChain, LangGraph, or similar.
-• Familiarity with Docker, Kubernetes, CI/CD, and cloud deployment.
-• Knowledge of frontend frameworks such as React or Next.js.
-• Familiarity with PHP programming.</textarea>
+                                    <textarea id="jd-content" rows="10" placeholder="Paste the job post here: the responsibilities, requirements and skills it asks for."></textarea>
                                     <div class="jd-chips-bar">
-                                        <span class="jd-chips-label">DETECTED STACK CHIPS:</span>
-                                        <div class="jd-chips-list" id="jd-chips-list">
-                                            <span class="badge-pill badge-pill-emerald">Python</span>
-                                            <span class="badge-pill badge-pill-blue">JavaScript / TypeScript</span>
-                                            <span class="badge-pill badge-pill-purple">LLMs &amp; AI Agents</span>
-                                            <span class="badge-pill badge-pill-orange">RAG Pipelines</span>
-                                            <span class="badge-pill badge-pill-blue">Multimodal AI</span>
-                                            <span class="badge-pill badge-pill-purple">LangChain &amp; LangGraph</span>
-                                            <span class="badge-pill badge-pill-blue">Vector DBs &amp; Embeddings</span>
-                                            <span class="badge-pill badge-pill-emerald">React &amp; Next.js</span>
-                                            <span class="badge-pill badge-pill-slate">APIs &amp; Cloud</span>
-                                            <span class="badge-pill badge-pill-blue">Docker &amp; Kubernetes</span>
-                                            <span class="badge-pill badge-pill-orange">CI/CD</span>
-                                            <span class="badge-pill badge-pill-slate">PHP</span>
-                                        </div>
+                                        <span class="jd-chips-label">SKILLS IT ASKS FOR:</span>
+                                        <div class="jd-chips-list" id="jd-chips-list"><span class="jd-chips-empty">They appear as you paste</span></div>
                                     </div>
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                    <button class="btn btn-primary" id="jd-save-btn"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save Job Description Spec</span></button>
-                                    <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear Buffer</span></button>
+                                    <button class="btn btn-primary" id="jd-save-btn"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save job description</span></button>
+                                    <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear</span></button>
                                 </div>
-                                <span class="badge-pill badge-pill-emerald" id="jd-status-badge"><span class="badge-dot"></span>SPEC ACTIVE &amp; SYNCED</span>
+                                <span class="badge-pill badge-pill-slate" id="jd-status-badge"><span class="badge-dot"></span>NOT ADDED YET</span>
                             </div>
                         </div>
                         <div class="import-status hidden" id="jd-status"></div>
@@ -524,7 +541,7 @@ Nice to Have:
                         <!-- Tab Panels -->
                         <div class="tab-panel active" id="panel-projects">
                             <div class="context-form">
-                                <input type="text" id="project-name" placeholder="Project name (e.g., RADAR, Digital Twin)">
+                                <input type="text" id="project-name" placeholder="Project name (e.g. Campus food app, Ward handover audit)">
                                 <div class="form-row"><input type="text" id="project-tech" placeholder="Tech stack (Python, PyTorch...)"><input type="text" id="project-role" placeholder="Your role"></div>
                                 <textarea id="project-desc" rows="3" placeholder="What did you build? Key metrics achieved..."></textarea>
                                 <textarea id="project-challenges" rows="2" placeholder="Key challenges and optimizations..."></textarea>
@@ -613,26 +630,64 @@ Nice to Have:
         <section class="page" id="page-chat">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1><span class="v-classic">Live <em>AI Copilot</em></span><span class="v-alt">Live <em>Copilot</em></span></h1>
-                    <p>Practice responses and test real-time candidate retrieval</p>
+                    <h1>Live <em>Copilot</em></h1>
+                    <p>Your practice register. Every conversation is a chapter you can keep, shelve or tear out.</p>
                     <h2 class="sr-only">Your practice session</h2>
                 </div>
-                <div class="chat-container">
+                <!-- The register: every conversation is a chapter (register.js). The message list and composer keep their ids -->
+                <div class="register" id="register" data-look="manuscript">
+                    <aside class="reg-index" id="reg-index" aria-label="Chapters">
+                        <div class="reg-index-head">
+                            <h3>Chapters</h3>
+                            <button type="button" class="reg-new" data-reg="new"><svg aria-hidden="true"><use href="#i-plus"/></svg>New chapter</button>
+                        </div>
+                        <label class="reg-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="reg-search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>
+                        <ol class="reg-list" id="reg-list" aria-label="Your chapters"></ol>
+                        <details class="reg-shelf" id="reg-shelf">
+                            <summary><svg aria-hidden="true"><use href="#i-archive"/></svg>Archive shelf <span class="reg-shelf-n" id="reg-shelf-n">0</span></summary>
+                            <ol class="reg-list" id="reg-archived" aria-label="Archived chapters"></ol>
+                        </details>
+                    </aside>
+                    <div class="reg-scrim" data-reg="close-index" aria-hidden="true"></div>
+                    <div class="reg-book">
+                        <article class="reg-page" id="reg-page" aria-labelledby="reg-title">
+                            <span class="reg-ribbon" aria-hidden="true"></span>
+                            <header class="reg-head">
+                                <button type="button" class="reg-index-btn" data-reg="index" aria-label="Show chapters" aria-controls="reg-index"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
+                                <div class="reg-heading">
+                                    <p class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></p>
+                                    <h3 class="reg-title"><button type="button" id="reg-title" data-reg="rename" title="Rename this chapter">A new chapter</button></h3>
+                                </div>
+                                <div class="reg-clocks">
+                                    <span class="reg-clock" title="Time spent in this chapter"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line class="reg-hand" x1="12" y1="12" x2="12" y2="5"/><circle class="reg-pin" cx="12" cy="12" r="1.4"/></svg><b id="reg-elapsed">0:00</b><span class="sr-only"> in this chapter</span></span>
+                                    <button type="button" class="reg-sw" id="reg-sw" data-reg="sw" aria-pressed="false" title="Practice stopwatch: time yourself answering out loud (T)">
+                                        <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="sw-track" cx="18" cy="18" r="15"/><circle class="sw-fill" cx="18" cy="18" r="15" pathLength="1"/><rect class="sw-crown" x="15.5" y="0" width="5" height="3" rx="1"/></svg>
+                                        <span class="sw-text"><b id="reg-sw-time">0:00</b><small id="reg-sw-label">Stopwatch</small></span>
+                                    </button>
+                                    <button type="button" class="reg-sw-reset" data-reg="sw-reset" aria-label="Reset the stopwatch" hidden><svg aria-hidden="true"><use href="#i-refresh"/></svg></button>
+                                </div>
+                                <div class="reg-tools">
+                                    <button type="button" data-reg="archive" title="Put this chapter on the archive shelf"><svg aria-hidden="true"><use href="#i-archive"/></svg><span>Archive</span></button>
+                                    <button type="button" data-reg="delete" title="Tear this chapter out (it waits in The Attic)"><svg aria-hidden="true"><use href="#i-trash"/></svg><span>Tear out</span></button>
+                                </div>
+                            </header>
                     <div class="chat-messages" id="chat-messages">
                         <div class="chat-welcome">
                             <span class="chat-welcome-badge"><i></i>Copilot ready</span>
                             <h3>Ask what an interviewer would ask</h3>
-                            <p>Answers stream from your resume, GitHub and prep bank in real time.</p>
+                            <p>Answers draw on whatever is in your Toolbelt. Nothing there yet? You still get strong, general answers.</p>
                             <div class="chat-suggestions">
                                 <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about yourself')">Tell me about yourself</button>
-                                <button class="chat-suggestion" onclick="sendChatSuggestion('How did you optimize p95 latency at WebVory?')">p95 latency at WebVory</button>
-                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about your experience with Advanced RAG')">Advanced RAG architecture</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Why do you want this role?')">Why this role?</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about a challenge you solved and what you learned')">A challenge you solved</button>
                             </div>
                         </div>
                     </div>
                     <div class="chat-input-area">
-                        <textarea id="chat-input" rows="1" placeholder="Ask an interview question…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-                        <button class="btn btn-primary chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send">Send <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+                        <textarea id="chat-input" rows="1" placeholder="Write an interview question…" aria-label="Write your question" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                        <button class="btn btn-primary chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send">Ink it <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+                    </div>
+                        </article>
                     </div>
                 </div>
             </div>
@@ -753,8 +808,7 @@ Nice to Have:
             <div class="page-inner">
                 <div class="poster-header">
                     <h1><span class="v-classic">Brain <em>Bento</em> Box</span><span class="v-alt">Brain <em>Bento</em></span></h1>
-                    <p>Five bite-sized concepts, packed fresh every morning</p>
-                    <h2 class="sr-only">Today's box</h2>
+                    <p data-bento-sub>Five bite-sized concepts, packed fresh every morning</p>
                 </div>
                 <div class="toolbelt-card bento-bar">
                     <div class="bento-stats">
@@ -767,16 +821,21 @@ Nice to Have:
                             <span class="prep-lang-opt">Hinglish</span>
                         </label>
                     </div>
-                    <div class="bento-tracks" data-bento-track role="group" aria-label="Which tracks to pack">
-                        <button type="button" class="chip" data-v="all" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Chef's Choice</button>
-                        <button type="button" class="chip" data-v="ai" data-tone="sys" aria-pressed="false"><svg aria-hidden="true"><use href="#i-brain"/></svg>AI, LLMs &amp; RAG</button>
-                        <button type="button" class="chip" data-v="backend" data-tone="tech" aria-pressed="false"><svg aria-hidden="true"><use href="#i-layout"/></svg>Backend &amp; system design</button>
-                        <button type="button" class="chip" data-v="frontend" data-tone="beh" aria-pressed="false"><svg aria-hidden="true"><use href="#i-code"/></svg>Frontend &amp; JavaScript</button>
-                        <button type="button" class="chip" data-v="devops" data-tone="proj" aria-pressed="false"><svg aria-hidden="true"><use href="#i-toolbox"/></svg>DevOps &amp; CS basics</button>
-                    </div>
+                    <div class="bento-tracks" data-bento-track role="group" aria-label="Which tracks to pack"></div>
                 </div>
-                <div class="bento-box" id="bento-box" aria-label="Today's five concepts"></div>
+                <section class="toolbelt-card bento-pond" id="bento-pond" aria-labelledby="pond-title">
+                    <header class="pond-head">
+                        <div>
+                            <h2 class="pond-title" id="pond-title">Help yourself</h2>
+                            <p class="pond-hint" data-pond-hint>Every topic, floating free. Tap one to open it.</p>
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-sm pond-stir" data-pond-stir aria-label="Stir the topics"><svg aria-hidden="true"><use href="#i-refresh"/></svg><span>Stir</span></button>
+                    </header>
+                    <div class="pond-water" data-pond role="group" aria-label="Topics to open"></div>
+                </section>
                 <article class="toolbelt-card bento-lesson" id="bento-lesson" hidden aria-live="polite"></article>
+                <h2 class="bento-box-title">Today's box</h2>
+                <div class="bento-box" id="bento-box" aria-label="Today's five concepts"></div>
                 <details class="toolbelt-card bento-menu">
                     <summary><svg class="caret" aria-hidden="true"><use href="#i-caret-right"/></svg>The full menu: every concept, by track</summary>
                     <div class="bento-menu-list" id="bento-menu-list"></div>
@@ -811,7 +870,7 @@ Nice to Have:
                     </div>
                     <div class="toolbelt-card">
                         <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-pencil"/></svg>Custom Identity Constraints</h3></div>
-                        <textarea id="aboutme-facts" rows="3" placeholder="Current Role = AI Python Developer at Webvory..."></textarea>
+                        <textarea id="aboutme-facts" rows="3" placeholder="Current role = Final-year B.Com student at St. Xavier's..."></textarea>
                     </div>
                     <div class="toolbelt-card full-width">
                         <button class="btn btn-primary" id="aboutme-save-btn" onclick="saveAboutMe()" style="width:100%;justify-content:center;"><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save About Me Profile</button>
@@ -825,9 +884,128 @@ Nice to Have:
         <section class="page" id="page-settings">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1><span class="v-classic">Settings <em>Matrix</em></span><span class="v-alt">Studio <em>settings</em></span></h1>
-                    <p><span class="v-classic">Theme studio, backend API telemetry, readiness checklist &amp; workspace shortcuts</span><span class="v-alt">Theme studio, backend connection, readiness checklist and keyboard shortcuts</span></p>
-                    <h2 class="sr-only">Workspace settings</h2>
+                    <h1>Your <em>settings</em></h1>
+                    <p>Your AI keys, your account and your data. Looks and shortcuts live in the Atelier.</p>
+                    <h2 class="sr-only">Keys, account and data</h2>
+                </div>
+                <div class="dashboard-grid">
+                    <!-- Key Ring: the user's own AI keys, in the order Vettly tries them (keyring.js) -->
+                    <div class="toolbelt-card full-width keyring-card" id="keyring-card" aria-live="polite"></div>
+                    <!-- Passport: the account, profile, export and delete (keyring.js) -->
+                    <div class="toolbelt-card full-width passport-card" id="passport-card"></div>
+
+                    <!-- Backend Telemetry Card -->
+                    <div class="toolbelt-card local-only" id="settings-conn-card">
+                        <div class="toolbelt-card-header">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg>Backend Telemetry</h3>
+                            <span class="badge-pill badge-pill-emerald pulse-dot" id="server-status-pill"><span class="badge-dot"></span>SERVER ONLINE</span>
+                        </div>
+                        <p class="toolbelt-card-desc">REST & WebSocket engine orchestrating real-time technical synthesis.</p>
+                        <div class="form-group-clean">
+                            <div class="form-label-row">
+                                <label class="form-label-clean" for="server-url-input">Engine API Endpoint</label>
+                                <span class="badge-pill badge-pill-slate">PORT 8766</span>
+                            </div>
+                            <div class="input-addon-group">
+                                <span class="input-addon-prefix">GET</span>
+                                <input type="text" class="input-addon-field" id="server-url-input" value="http://127.0.0.1:8766/api/health">
+                                <button class="btn btn-secondary" id="server-connect-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Test Ping</button>
+                            </div>
+                        </div>
+                        <div class="settings-telemetry-grid">
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Core Engine</span>
+                                <span class="telemetry-val" id="telemetry-engine">Vettly v1.0.0</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Latency Ping</span>
+                                <span class="telemetry-val" id="telemetry-ping" style="color:var(--poster-orange);"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>6ms p95</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Context Store</span>
+                                <span class="telemetry-val" id="telemetry-context">Ready & Loaded</span>
+                            </div>
+                            <div class="telemetry-tile">
+                                <span class="telemetry-lbl">Audio Stream</span>
+                                <span class="telemetry-val" id="telemetry-ws">Ready (Port 8766)</span>
+                            </div>
+                        </div>
+                        <div class="server-status" id="server-status" style="margin-top:14px; display:flex; align-items:center; gap:8px;">
+                            <span class="status-dot online"></span>
+                            <span id="server-status-text" style="font-family:var(--font-mono); font-size:13px; font-weight:600;">Connected — Vettly Core v1.0.0</span>
+                        </div>
+                    </div>
+
+                    <!-- Guided tour: replays the walkthrough from tour.js -->
+                    <div class="toolbelt-card full-width tour-card-settings" id="settings-tour-card">
+                        <div class="toolbelt-card-header">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Guided tour</h3>
+                        </div>
+                        <p class="toolbelt-card-desc">A one-minute walk through every page: what each one does and where to find it.</p>
+                        <div class="tour-settings-actions">
+                            <button type="button" class="btn btn-primary btn-sm" data-tour-start><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Take the tour</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="Onboard.open()"><svg class="i em-i" aria-hidden="true"><use href="#i-user"/></svg>Redo onboarding</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ THE ATTIC: deleted things wait here (hideable) ═══ -->
+        <section class="page" id="page-attic">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <div class="tape-corner" aria-hidden="true"></div>
+                    <span class="handwritten-note left" aria-hidden="true">nothing is ever lost</span>
+                    <h1>The <em>Attic</em></h1>
+                    <p>Everything you delete waits up here. Bring it back down, or let it go for good.</p>
+                    <h2 class="sr-only">Deleted items</h2>
+                    <label class="tab-switch attic-hide"><input type="checkbox" data-tab-toggle="attic" checked><span class="tab-switch-ui" aria-hidden="true"></span><span>Show this tab</span></label>
+                </div>
+                <div class="dashboard-grid">
+                    <!-- Persistent Recycle Bin Card -->
+                    <div class="toolbelt-card full-width" id="settings-recycle-card">
+                        <div class="toolbelt-card-header">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <h3><svg class="i em-i" aria-hidden="true"><use href="#i-attic"/></svg>Waiting in the Attic</h3>
+                                <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>NOTHING LOST</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span class="badge-pill badge-pill-orange" id="recycle-total-badge">0 ITEMS PRESERVED</span>
+                                <button class="btn btn-secondary btn-sm" id="btn-empty-recycle" onclick="emptyRecycleBin()" style="color:var(--poster-red); border-color:rgba(220,38,38,0.35);"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Empty Bin</button>
+                            </div>
+                        </div>
+                        <p class="toolbelt-card-desc">All soft-deleted copilot chat messages are safely preserved here. Items will never be wiped automatically — only you can restore or permanently purge them.</p>
+                        
+                        <div class="recycle-tabs-nav" style="display:flex; gap:10px; margin-bottom:16px; border-bottom:2px solid var(--border-main); padding-bottom:8px;">
+                            <button class="tab-btn active" id="tab-recycle-chats" onclick="switchRecycleTab('chats', this)"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Deleted Copilot Chats (<span id="recycle-chats-count">0</span>)</button>
+                        </div>
+
+                        <!-- Chats Trash List -->
+                        <div class="recycle-tab-panel active" id="recycle-panel-chats">
+                            <div class="recycle-list" id="recycle-chats-list">
+                                <div class="recycle-empty-state">
+                                    <div style="font-size:32px; margin-bottom:8px;"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg></div>
+                                    <h4 style="font-family:var(--font-poster); font-size:18px; color:var(--ink-primary);">No Deleted Chats</h4>
+                                    <p style="font-size:13px; color:var(--ink-secondary); margin-top:4px;">Cleared Live Copilot conversations will be archived here.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ THE ATELIER: looks, layout, shortcuts ═══ -->
+        <section class="page" id="page-atelier">
+            <div class="page-inner">
+                <div class="poster-header">
+                    <div class="tape-corner" aria-hidden="true"></div>
+                    <span class="handwritten-note left" aria-hidden="true">make it yours</span>
+                    <h1>The <em>Atelier</em></h1>
+                    <p>Looks, colours, layout and every shortcut, in one workshop.</p>
+                    <h2 class="sr-only">Looks, layout and shortcuts</h2>
                 </div>
                 <div class="dashboard-grid">
                     <!-- Theme Studio: looks, colours, side panel, Mentor (logo, panel, pipeline) and layout (appearance.js) -->
@@ -932,217 +1110,29 @@ Nice to Have:
                         </div>
                     </div>
 
-                    <!-- AI usage and the user's own key (hosted app only; onboard.js fills it) -->
-                    <div class="toolbelt-card ai-key-card" id="ai-key-card" hidden>
+                    <!-- The Copilot's book: register looks and the ink effect (register.js fills it) -->
+                    <div class="toolbelt-card full-width atelier-book" id="atelier-book"></div>
+                    <!-- Tabs: which optional tabs show in the side panel (saved per account) -->
+                    <div class="toolbelt-card" id="atelier-tabs-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>AI answers</h3>
+                            <h3><svg class="h-ico" aria-hidden="true"><use href="#i-sidebar"/></svg>Tabs</h3>
                         </div>
-                        <p class="toolbelt-card-desc" id="ai-key-status">Checking today's allowance...</p>
-                        <form class="ai-key-form" id="ai-key-form">
-                            <label class="ob-field"><span>Provider</span>
-                                <select name="provider"><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic Claude</option></select></label>
-                            <label class="ob-field"><span>Your API key</span><input name="key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a key to use your own AI quota"></label>
-                            <div class="ai-key-actions">
-                                <button type="submit" class="btn btn-primary btn-sm">Save my key</button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="ai-key-remove" hidden>Remove my key</button>
-                            </div>
-                            <p class="ai-key-note">Your key is encrypted before it is stored and only used for your own requests.</p>
-                        </form>
-                        <div class="danger-zone">
-                            <p><b>Delete my data</b><span>Removes everything you saved in Vettly. Your sign-in account stays until you delete it from the account menu.</span></p>
-                            <button type="button" class="btn btn-secondary btn-sm danger-btn" id="delete-data-btn">Delete my data</button>
-                        </div>
+                        <p class="toolbelt-card-desc">Keep the side panel to what you use. Hidden tabs keep their contents.</p>
+                        <label class="tab-switch"><input type="checkbox" data-tab-toggle="attic" checked><span class="tab-switch-ui" aria-hidden="true"></span><span><b>The Attic</b><small>Where deleted chats and sessions wait</small></span></label>
                     </div>
-
-                    <!-- Backend Telemetry Card -->
-                    <div class="toolbelt-card" id="settings-conn-card">
+                    <!-- Shortcuts: rendered from the one registry in shortcuts.js, so every row really works -->
+                    <div class="toolbelt-card full-width" id="atelier-keys-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg>Backend Telemetry</h3>
-                            <span class="badge-pill badge-pill-emerald pulse-dot" id="server-status-pill"><span class="badge-dot"></span>SERVER ONLINE</span>
+                            <h3><svg class="h-ico" aria-hidden="true"><use href="#i-keyboard"/></svg>Shortcuts</h3>
+                            <button type="button" class="btn btn-sm btn-secondary" data-palette-open><svg class="i" aria-hidden="true"><use href="#i-command"/></svg>Open the command palette</button>
                         </div>
-                        <p class="toolbelt-card-desc">REST & WebSocket engine orchestrating real-time technical synthesis.</p>
-                        <div class="form-group-clean">
-                            <div class="form-label-row">
-                                <label class="form-label-clean" for="server-url-input">Engine API Endpoint</label>
-                                <span class="badge-pill badge-pill-slate">PORT 8766</span>
-                            </div>
-                            <div class="input-addon-group">
-                                <span class="input-addon-prefix">GET</span>
-                                <input type="text" class="input-addon-field" id="server-url-input" value="http://127.0.0.1:8766/api/health">
-                                <button class="btn btn-secondary" id="server-connect-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Test Ping</button>
-                            </div>
-                        </div>
-                        <div class="settings-telemetry-grid">
-                            <div class="telemetry-tile">
-                                <span class="telemetry-lbl">Core Engine</span>
-                                <span class="telemetry-val" id="telemetry-engine">Vettly v1.0.0</span>
-                            </div>
-                            <div class="telemetry-tile">
-                                <span class="telemetry-lbl">Latency Ping</span>
-                                <span class="telemetry-val" id="telemetry-ping" style="color:var(--poster-orange);"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>6ms p95</span>
-                            </div>
-                            <div class="telemetry-tile">
-                                <span class="telemetry-lbl">Context Store</span>
-                                <span class="telemetry-val" id="telemetry-context">Ready & Loaded</span>
-                            </div>
-                            <div class="telemetry-tile">
-                                <span class="telemetry-lbl">Audio Stream</span>
-                                <span class="telemetry-val" id="telemetry-ws">Ready (Port 8766)</span>
-                            </div>
-                        </div>
-                        <div class="server-status" id="server-status" style="margin-top:14px; display:flex; align-items:center; gap:8px;">
-                            <span class="status-dot online"></span>
-                            <span id="server-status-text" style="font-family:var(--font-mono); font-size:13px; font-weight:600;">Connected — Vettly Core v1.0.0</span>
-                        </div>
-                    </div>
-
-                    <!-- Studio Readiness Checklist Card -->
-                    <div class="toolbelt-card" id="settings-checklist-card">
-                        <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>Studio Readiness Checklist</h3>
-                            <span class="badge-pill badge-pill-orange" id="checklist-progress-pill"><span class="badge-dot"></span>4/4 READY</span>
-                        </div>
-                        <p class="toolbelt-card-desc">Verify your knowledge base and AI engine pipelines for tailored preparation.</p>
-                        <div class="checklist-container">
-                            <div class="checklist-card" id="check-resume-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Resume Specifications</span>
-                                        <span class="checklist-step-desc">Parsed candidate telemetry & work history</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-resume"><span class="badge-dot"></span>PARSED</span>
-                            </div>
-                            <div class="checklist-card" id="check-github-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">GitHub Codebase Repos</span>
-                                        <span class="checklist-step-desc">3 public repositories indexed</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-github"><span class="badge-dot"></span>INDEXED</span>
-                            </div>
-                            <div class="checklist-card" id="check-server-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Local Backend Engine</span>
-                                        <span class="checklist-step-desc">Port 8766 health & multi-model router</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-server"><span class="badge-dot"></span>CONNECTED</span>
-                            </div>
-                            <div class="checklist-card" id="check-overlay-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Target Job Description Spec</span>
-                                        <span class="checklist-step-desc">Role requirements & tech stack grounded</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-overlay"><span class="badge-dot"></span>SYNCED</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep', { animate: true })" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Open Vettly Prep Studio</span></button>
-                    </div>
-
-                    <!-- Guided tour: replays the walkthrough from tour.js -->
-                    <div class="toolbelt-card full-width tour-card-settings" id="settings-tour-card">
-                        <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Guided tour</h3>
-                        </div>
-                        <p class="toolbelt-card-desc">A one-minute walk through every page: what each one does and where to find it.</p>
-                        <div class="tour-settings-actions">
-                            <button type="button" class="btn btn-primary btn-sm" data-tour-start><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Take the tour</button>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="Onboard.open()"><svg class="i em-i" aria-hidden="true"><use href="#i-user"/></svg>Redo onboarding</button>
-                        </div>
-                    </div>
-
-                    <!-- Workspace Keyboard Shortcuts Card -->
-                    <div class="toolbelt-card full-width" id="settings-hotkeys-card">
-                        <div class="toolbelt-card-header">
-                            <h3>⌨️ Studio Keyboard Shortcuts</h3>
-                            <span class="badge-pill badge-pill-slate"><span class="badge-dot"></span>WORKSPACE NAVIGATION</span>
-                        </div>
-                        <p class="toolbelt-card-desc">Fast keyboard controls across your Vettly Prep Studio and Live AI Copilot workspace.</p>
-                        <div class="hotkeys-grid">
-                            <div class="hotkey-card">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div class="hotkey-combo">
-                                        <kbd>Enter</kbd>
-                                    </div>
-                                    <span class="badge-pill badge-pill-orange">PRIMARY</span>
-                                </div>
-                                <span class="hotkey-card-title">Dispatch Copilot Prompt</span>
-                                <span class="hotkey-card-desc">Immediately sends your technical query or practice prompt in Live AI Copilot.</span>
-                            </div>
-                            <div class="hotkey-card">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div class="hotkey-combo">
-                                        <kbd>Shift</kbd> + <kbd>Enter</kbd>
-                                    </div>
-                                    <span class="badge-pill badge-pill-blue">EDITOR</span>
-                                </div>
-                                <span class="hotkey-card-title">Multi-Line Code Input</span>
-                                <span class="hotkey-card-desc">Inserts a clean line break inside the Copilot prompt for multi-line snippets.</span>
-                            </div>
-                            <div class="hotkey-card">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div class="hotkey-combo">
-                                        <kbd>Esc</kbd>
-                                    </div>
-                                    <span class="badge-pill badge-pill-emerald">SAFE GUARD</span>
-                                </div>
-                                <span class="hotkey-card-title">Dismiss Active Dialog</span>
-                                <span class="hotkey-card-desc">Safely closes any active confirmation or refinement modal without data loss.</span>
-                            </div>
-                            <div class="hotkey-card">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div class="hotkey-combo">
-                                        <kbd>Ctrl</kbd> + <kbd>C</kbd>
-                                    </div>
-                                    <span class="badge-pill badge-pill-emerald">CLIPBOARD</span>
-                                </div>
-                                <span class="hotkey-card-title">Copy Synthesized Answer</span>
-                                <span class="hotkey-card-desc">Copies synthesized Prep Studio or Copilot responses to the system clipboard.</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Persistent Recycle Bin Card -->
-                    <div class="toolbelt-card full-width" id="settings-recycle-card">
-                        <div class="toolbelt-card-header">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <h3><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Persistent Recycle Bin</h3>
-                                <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>ZERO DATA LOSS</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <span class="badge-pill badge-pill-orange" id="recycle-total-badge">0 ITEMS PRESERVED</span>
-                                <button class="btn btn-secondary btn-sm" id="btn-empty-recycle" onclick="emptyRecycleBin()" style="color:var(--poster-red); border-color:rgba(220,38,38,0.35);"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Empty Bin</button>
-                            </div>
-                        </div>
-                        <p class="toolbelt-card-desc">All soft-deleted copilot chat messages are safely preserved here. Items will never be wiped automatically — only you can restore or permanently purge them.</p>
-                        
-                        <div class="recycle-tabs-nav" style="display:flex; gap:10px; margin-bottom:16px; border-bottom:2px solid var(--border-main); padding-bottom:8px;">
-                            <button class="tab-btn active" id="tab-recycle-chats" onclick="switchRecycleTab('chats', this)"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Deleted Copilot Chats (<span id="recycle-chats-count">0</span>)</button>
-                        </div>
-
-                        <!-- Chats Trash List -->
-                        <div class="recycle-tab-panel active" id="recycle-panel-chats">
-                            <div class="recycle-list" id="recycle-chats-list">
-                                <div class="recycle-empty-state">
-                                    <div style="font-size:32px; margin-bottom:8px;"><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg></div>
-                                    <h4 style="font-family:var(--font-poster); font-size:18px; color:var(--ink-primary);">No Deleted Chats</h4>
-                                    <p style="font-size:13px; color:var(--ink-secondary); margin-top:4px;">Cleared Live Copilot conversations will be archived here.</p>
-                                </div>
-                            </div>
-                        </div>
+                        <p class="toolbelt-card-desc">Every shortcut below works anywhere in Vettly, except while you are typing.</p>
+                        <div class="keys-list" id="keys-list"></div>
                     </div>
                 </div>
             </div>
         </section>
+
     </main>
 
 
@@ -1295,17 +1285,25 @@ Nice to Have:
         <path class="flow-line pulse" pathLength="100"/>
     </svg>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
-    <script src="./auth.js?v=9.2"></script>
-    <script src="./motion.js?v=8.1"></script>
-    <script src="./appearance.js?v=8.9"></script>
-    <script src="./dashboard.js?v=8.5"></script>
-    <script src="./mentor.js?v=8.1"></script>
-    <script src="./bento-data.js?v=8.1"></script>
-    <script src="./bento.js?v=8.5"></script>
-    <script src="./tour.js?v=2.0"></script>
-    <script src="./onboard-scenes.js?v=2.1"></script>
-    <script src="./onboard.js?v=9.3"></script>
+    <!-- Libraries ship with the app (pinned, no third-party CDN at runtime) -->
+    <script defer src="./vendor/marked-18.0.14.umd.js"></script>
+    <script defer src="./vendor/purify-3.4.16.min.js"></script>
+    <script defer src="./vendor/gsap-3.13.0.min.js"></script>
+    <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
+    <script defer src="./auth.js?v=9.3"></script>
+    <script defer src="./motion.js?v=8.2"></script>
+    <script defer src="./appearance.js?v=9.0"></script>
+    <script defer src="./dashboard.js?v=8.9"></script>
+    <script defer src="./mentor.js?v=8.1"></script>
+    <script defer src="./bento-data.js?v=8.1"></script>
+    <script defer src="./bento-fields.js?v=1.0"></script>
+    <script defer src="./bento.js?v=9.0"></script>
+    <script defer src="./shortcuts.js?v=1.1"></script>
+    <script defer src="./keyring.js?v=1.2"></script>
+    <script defer src="./register.js?v=1.1"></script>
+    <script defer src="./daybook.js?v=1.2"></script>
+    <script defer src="./tour.js?v=2.2"></script>
+    <script defer src="./onboard-scenes.js?v=2.3"></script>
+    <script defer src="./onboard.js?v=9.6"></script>
 </body>
 </html>
