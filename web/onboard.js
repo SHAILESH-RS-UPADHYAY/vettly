@@ -4,8 +4,8 @@
  * shape every prompt, the Prep Studio category tiles and the default role. Uses dashboard.js globals.
  */
 const Onboard = (() => {
-    const FIELDS = ['Technology', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing', 'Design', 'Education',
-        'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
+    const FIELDS = ['Technology', 'Business & management (MBA)', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing',
+        'Design', 'Education', 'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
     const LEVELS = ['Student or fresher', 'Early career', 'Mid-level', 'Senior', 'Lead or manager'];
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
     const ICONS = ['sparkle', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
@@ -200,19 +200,27 @@ const Onboard = (() => {
         show(page);
     }
 
-    // Prep Studio tiles: the curated tech set, or eight categories written for the user's own field
-    async function loadCategories() {
+    // Prep Studio tiles: the curated tech set for tech, built-in tiles for every listed field (bento-fields.js, no AI
+    // needed), and for "Other" eight categories the server writes for the user's own field (or interview basics)
+    function paintCategories(categories) {
         const group = document.getElementById('prep-category-group');
-        if (!group) return;
+        if (!group || !categories?.length) return;
+        group.innerHTML = categories.map((c, i) => {
+            PREP_CATS[c.id] = PREP_CATS[c.id] || [c.label, TONES[i % TONES.length], ICONS[i % ICONS.length]];
+            return `<button type="button" class="cat-tile category-btn${i ? '' : ' active'}" data-tone="${TONES[i % TONES.length]}" aria-pressed="${!i}" style="--i:${i}" onclick="selectCategory('${c.id}', this)"><svg aria-hidden="true"><use href="#i-${ICONS[i % ICONS.length]}"/></svg><span>${esc(c.label)}</span></button>`;
+        }).join('');
+        currentPrepCategory = categories[0].id;
+    }
+    const builtIn = pack => (window.FIELD_PREP_CATEGORIES?.[pack] || []).map(([id, label]) => ({ id, label }));
+    async function loadCategories() {
+        if (!document.getElementById('prep-category-group')) return;
+        const packs = window.bentoPacksFor?.(profile.field, profile.role);
+        if (packs === null) return;   // technology: the curated tiles already on the page
+        if (packs && packs[0] !== 'craft') return paintCategories(builtIn(packs[0]));
         try {
             const { categories } = await (await fetch(`${API_BASE}/prepare/categories`)).json();
-            if (!categories?.length) return;
-            group.innerHTML = categories.map((c, i) => {
-                PREP_CATS[c.id] = PREP_CATS[c.id] || [c.label, TONES[i % TONES.length], ICONS[i % ICONS.length]];
-                return `<button type="button" class="cat-tile category-btn${i ? '' : ' active'}" data-tone="${TONES[i % TONES.length]}" aria-pressed="${!i}" style="--i:${i}" onclick="selectCategory('${c.id}', this)"><svg aria-hidden="true"><use href="#i-${ICONS[i % ICONS.length]}"/></svg><span>${esc(c.label)}</span></button>`;
-            }).join('');
-            currentPrepCategory = categories[0].id;
-        } catch (e) { /* keep the curated tiles */ }
+            paintCategories(categories?.length ? categories : builtIn('craft'));
+        } catch (e) { paintCategories(builtIn('craft')); }
     }
 
     async function start() {

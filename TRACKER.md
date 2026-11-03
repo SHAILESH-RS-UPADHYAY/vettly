@@ -59,8 +59,16 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 6 · Brain Bento for every field
 
-- [ ] Built-in lesson packs per field + Prep Studio category tiles per field
-- [ ] Floating, bouncing topic cloud that expands into the lesson
+- [x] Built-in lesson packs per field (`web/bento-fields.js`: 86 lessons in 14 packs: interview craft, business/MBA,
+      marketing, SEO, nursing, clinical medicine, finance, sales, design, education, operations, law, hospitality,
+      public service); the field and role pick the packs, tech keeps its tracks plus interview craft
+- [x] Prep Studio tiles per field with no AI call ("Other" still asks the AI, falling back to interview basics);
+      "Business & management (MBA)" added to onboarding
+- [x] Prep works with no resume: the onboarding profile becomes the context (`candidate_context()` in main.py)
+- [x] "Fresh today": six AI-written lessons only when the user asks (opening Brain Bento no longer spends an answer)
+- [x] The pond: every topic floats, drifts and bounces; it slows under the cursor, a finger holds it, a tap on the
+      water sends a ripple, and a tapped topic grows into the lesson card; still cloud under reduced/calm motion
+- [x] Checked: `backend/test_fields.py`; browser on desktop 1440/1280 dark, iPad both ways, iPhone 14/SE, Galaxy S9+
 
 ## Phase 7 · Onboarding and tour
 

@@ -57,7 +57,7 @@
     <link rel="stylesheet" href="./looks.css?v=7.4">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.0">
-    <link rel="stylesheet" href="./bento.css?v=8.2">
+    <link rel="stylesheet" href="./bento.css?v=9.0">
     <link rel="stylesheet" href="./onboard.css?v=2.1">
     <link rel="stylesheet" href="./keyring.css?v=1.1">
     <link rel="stylesheet" href="./daybook.css?v=1.2">
@@ -808,8 +808,7 @@
             <div class="page-inner">
                 <div class="poster-header">
                     <h1><span class="v-classic">Brain <em>Bento</em> Box</span><span class="v-alt">Brain <em>Bento</em></span></h1>
-                    <p>Five bite-sized concepts, packed fresh every morning</p>
-                    <h2 class="sr-only">Today's box</h2>
+                    <p data-bento-sub>Five bite-sized concepts, packed fresh every morning</p>
                 </div>
                 <div class="toolbelt-card bento-bar">
                     <div class="bento-stats">
@@ -822,16 +821,21 @@
                             <span class="prep-lang-opt">Hinglish</span>
                         </label>
                     </div>
-                    <div class="bento-tracks" data-bento-track role="group" aria-label="Which tracks to pack">
-                        <button type="button" class="chip" data-v="all" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Chef's Choice</button>
-                        <button type="button" class="chip" data-v="ai" data-tone="sys" aria-pressed="false"><svg aria-hidden="true"><use href="#i-brain"/></svg>AI, LLMs &amp; RAG</button>
-                        <button type="button" class="chip" data-v="backend" data-tone="tech" aria-pressed="false"><svg aria-hidden="true"><use href="#i-layout"/></svg>Backend &amp; system design</button>
-                        <button type="button" class="chip" data-v="frontend" data-tone="beh" aria-pressed="false"><svg aria-hidden="true"><use href="#i-code"/></svg>Frontend &amp; JavaScript</button>
-                        <button type="button" class="chip" data-v="devops" data-tone="proj" aria-pressed="false"><svg aria-hidden="true"><use href="#i-toolbox"/></svg>DevOps &amp; CS basics</button>
-                    </div>
+                    <div class="bento-tracks" data-bento-track role="group" aria-label="Which tracks to pack"></div>
                 </div>
-                <div class="bento-box" id="bento-box" aria-label="Today's five concepts"></div>
+                <section class="toolbelt-card bento-pond" id="bento-pond" aria-labelledby="pond-title">
+                    <header class="pond-head">
+                        <div>
+                            <h2 class="pond-title" id="pond-title">Help yourself</h2>
+                            <p class="pond-hint" data-pond-hint>Every topic, floating free. Tap one to open it.</p>
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-sm pond-stir" data-pond-stir aria-label="Stir the topics"><svg aria-hidden="true"><use href="#i-refresh"/></svg><span>Stir</span></button>
+                    </header>
+                    <div class="pond-water" data-pond role="group" aria-label="Topics to open"></div>
+                </section>
                 <article class="toolbelt-card bento-lesson" id="bento-lesson" hidden aria-live="polite"></article>
+                <h2 class="bento-box-title">Today's box</h2>
+                <div class="bento-box" id="bento-box" aria-label="Today's five concepts"></div>
                 <details class="toolbelt-card bento-menu">
                     <summary><svg class="caret" aria-hidden="true"><use href="#i-caret-right"/></svg>The full menu: every concept, by track</summary>
                     <div class="bento-menu-list" id="bento-menu-list"></div>
@@ -1292,13 +1296,14 @@
     <script src="./dashboard.js?v=8.9"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
-    <script src="./bento.js?v=8.6"></script>
+    <script src="./bento-fields.js?v=1.0"></script>
+    <script src="./bento.js?v=9.0"></script>
     <script src="./shortcuts.js?v=1.1"></script>
     <script src="./keyring.js?v=1.2"></script>
     <script src="./register.js?v=1.1"></script>
     <script src="./daybook.js?v=1.2"></script>
     <script src="./tour.js?v=2.1"></script>
     <script src="./onboard-scenes.js?v=2.2"></script>
-    <script src="./onboard.js?v=9.4"></script>
+    <script src="./onboard.js?v=9.5"></script>
 </body>
 </html>
