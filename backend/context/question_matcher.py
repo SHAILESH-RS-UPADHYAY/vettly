@@ -80,7 +80,7 @@ class QuestionMatcher:
             clean_live in (
                 "intro", "self intro", "introduction", "tell me about yourself",
                 "tell us about yourself", "introduce yourself", "who are you",
-                "who is shailesh", "give me an intro", "give an intro",
+                "give me an intro", "give an intro",
                 "walk me through your resume", "walk me through your background"
             )
             or clean_live.startswith("intro")
@@ -204,31 +204,6 @@ class QuestionMatcher:
                         "confidence": 1.0,
                         "match_type": "exact_intent",
                         "category": entry.get("category", "HR_CULTURE_FIT"),
-                        "score": entry.get("score", 1.0),
-                    }
-
-        # 5. Digital Twin / FAR Labs / Dizzaract Overview (< 1ms)
-        is_digital_twin_overview = (
-            any(k in clean_live for k in (
-                "digital twin", "far lab", "far labs", "dizzaract", "farcana",
-                "player behavior cloning", "behavior cloning project", "game ai project"
-            ))
-            and not any(sub in clean_live for sub in (
-                "timeline", "week", "schedule", "reward", "formula", "ppo", "reinforcement",
-                "15ms", "latency", "tensorrt", "sub-model", "sub model", "inverse dynamics",
-                "idm", "discriminator", "tensor format", "observation", "action tensor"
-            ))
-        )
-        if is_digital_twin_overview:
-            for entry in all_entries:
-                if "tell me about your digital twin project" in entry["question"].lower():
-                    logger.info(f"⚡ [Stage 0] Core Intent Match: Digital Twin | live: \"{live_question}\"")
-                    return {
-                        "question": entry["question"],
-                        "answer": entry["answer"],
-                        "confidence": 1.0,
-                        "match_type": "exact_intent",
-                        "category": entry.get("category", "PROJECT_DEEP_DIVE"),
                         "score": entry.get("score", 1.0),
                     }
 

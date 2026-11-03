@@ -2244,3 +2244,12 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 @media (hover: hover) { .theme-switch:hover { border-color: var(--accent); color: var(--ink); } .theme-switch:hover svg { rotate: 20deg; } }
 .theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .auth-theme { position: absolute; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); z-index: 2; }
+
+/* ── Toolbelt: optional cards, a job post for any field ── */
+.tb-optional { font-weight: 700; letter-spacing: 0.06em; }
+.jd-meta-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+@media (max-width: 40rem) { .jd-meta-grid { grid-template-columns: minmax(0, 1fr); } }
+.jd-chips-empty { font: 600 0.8rem/1.4 var(--font-body); color: var(--muted); font-style: italic; }
+.resume-meta-tags:empty { display: none; }
+/* the hosted site has no local server to point at */
+.hosted .local-only { display: none !important; }

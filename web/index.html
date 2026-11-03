@@ -5,8 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f6f1e7">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23ea580c'%3E%3Cpath d='M16 2l5 5-5 5-5-5z'/%3E%3Cpath d='M16 20l5 5-5 5-5-5z'/%3E%3Cpath d='M7 11l5 5-5 5-5-5z'/%3E%3Cpath d='M25 11l5 5-5 5-5-5z'/%3E%3C/g%3E%3C/svg%3E">
-    <title>Vettly Prep Studio</title>
-    <meta name="description" content="Practise interview questions grounded in your resume, GitHub and target job, rehearse answers with a live Copilot, and ask the Mentor anything.">
+    <title>Vettly · Interview prep for every field</title>
+    <meta name="description" content="Free interview prep for every student and every field: questions written for your role, model answers in your own voice, a daily five-idea Brain Bento and a Copilot to practise with. Bring a free Gemini or Groq key.">
+    <link rel="canonical" href="%SITE_URL%/">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Vettly">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- Link previews (Reddit, LinkedIn, X, WhatsApp): %SITE_URL% is filled in by the server for whichever domain served the page -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Vettly">
+    <meta property="og:url" content="%SITE_URL%/">
+    <meta property="og:title" content="Vettly · Walk into every interview ready">
+    <meta property="og:description" content="Questions written for your role, answers that sound like you, five fresh ideas every morning. Free, for every field: nursing, MBA, marketing, law, design, code.">
+    <meta property="og:image" content="%SITE_URL%/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Vettly: interview prep studio with questions, model answers and a daily Brain Bento">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Vettly · Walk into every interview ready">
+    <meta name="twitter:description" content="Free interview prep for every field. Questions for your role, answers in your voice, a daily Brain Bento.">
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png">
     <script>
         /* First paint: theme and appearance land on <html> before anything renders (appearance.js owns the rest) */
         (function () {
@@ -319,9 +339,9 @@
             <div class="page-inner">
                 <div class="poster-header">
                     <div class="tape-corner" aria-hidden="true"></div>
-                    <span class="handwritten-note left" aria-hidden="true">Tactile toolbelt ready!</span>
+                    <span class="handwritten-note left" aria-hidden="true">all of it optional!</span>
                     <h1><span class="v-classic">Agent <em>Toolbelt</em> Builder</span><span class="v-alt">Agent <em>Toolbelt</em></span></h1>
-                    <p>Design the modular tools your AI copilot uses during your live session</p>
+                    <p>Everything Vettly knows about you. Add what you have; skip what you don't.</p>
                     <h2 class="sr-only">What your copilot knows</h2>
                 </div>
                 <nav class="tb-summary" id="tb-summary" aria-label="What your copilot knows"></nav>
@@ -330,16 +350,16 @@
                     <!-- Resume Card -->
                     <div class="toolbelt-card" id="resume-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg>Resume Specs</h3>
-                            <span class="badge-pill badge-pill-blue"><span class="badge-dot"></span>INPUT SPEC</span>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg>Resume</h3>
+                            <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                         </div>
-                        <p class="toolbelt-card-desc">Parse experience, core technologies, and quantifiable achievements into AI context.</p>
+                        <p class="toolbelt-card-desc">Optional. Add it and answers draw on your real experience, projects and numbers.</p>
                         <div class="upload-zone" id="upload-zone">
                             <div class="upload-icon">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                             </div>
                             <p style="font-weight:700; font-size:14px; margin: 8px 0 4px 0; color:var(--ink-primary);">Drop resume PDF or DOCX here</p>
-                            <span style="font-size:12px; color:var(--ink-secondary); display:block; margin-bottom:10px;">Click or drag to index candidate telemetry</span>
+                            <span style="font-size:12px; color:var(--ink-secondary); display:block; margin-bottom:10px;">Click to choose a file, or drag it here</span>
                             <span class="badge-pill badge-pill-slate">ACCEPTS .PDF, .DOCX, .TXT</span>
                             <input type="file" id="resume-input" accept=".pdf,.docx,.doc,.txt" hidden>
                         </div>
@@ -352,11 +372,7 @@
                                     </div>
                                     <span class="badge-pill badge-pill-emerald pulse-dot"><span class="badge-dot"></span>ACTIVE & PARSED</span>
                                 </div>
-                                <div class="resume-meta-tags">
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>2+ Yrs Backend AI</span>
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-brain"/></svg>PyTorch & FastAPI</span>
-                                    <span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>6 Projects Linked</span>
-                                </div>
+                                <div class="resume-meta-tags" id="resume-meta-tags"></div>
                                 <div style="display:flex; justify-content:flex-end; margin-top:6px;">
                                     <button class="btn btn-secondary btn-sm" id="reupload-btn"><svg class="i em-i" aria-hidden="true"><use href="#i-refresh"/></svg>Re-upload Resume</button>
                                 </div>
@@ -367,10 +383,10 @@
                     <!-- GitHub Card -->
                     <div class="toolbelt-card" id="github-card">
                         <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>GitHub Ingestion</h3>
-                            <span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>CODE BASE</span>
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg>GitHub</h3>
+                            <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                         </div>
-                        <p class="toolbelt-card-desc">Sync your actual code repositories for authentic, deep architectural grounding.</p>
+                        <p class="toolbelt-card-desc">Optional, for people who code. Your public repos let answers cite real projects.</p>
                         <div class="form-group-clean">
                             <div class="form-label-row">
                                 <label class="form-label-clean" for="github-username">GitHub Profile</label>
@@ -378,7 +394,7 @@
                             </div>
                             <div class="input-addon-group">
                                 <span class="input-addon-prefix">github.com/</span>
-                                <input type="text" class="input-addon-field" id="github-username" placeholder="your-username" value="SHAILESH-RS-UPADHYAY">
+                                <input type="text" class="input-addon-field" id="github-username" placeholder="your-username" autocomplete="off" autocapitalize="off" spellcheck="false">
                                 <button class="btn btn-secondary" id="github-fetch-btn" style="border-radius:0; border:none; border-left:1.5px solid var(--border-main);">Fetch Repos</button>
                             </div>
                         </div>
@@ -401,100 +417,56 @@
                         <div class="toolbelt-card-header">
                             <h3><svg class="i em-i" aria-hidden="true"><use href="#i-briefcase"/></svg>Target Job Description</h3>
                             <div class="tb-badges">
-                                <span class="badge-pill badge-pill-emerald" id="jd-sync-badge"><span class="badge-dot"></span>SPEC ACTIVE</span>
-                                <span class="badge-pill badge-pill-orange"><span class="badge-dot"></span>TARGET SPEC</span>
+                                <span class="badge-pill badge-pill-emerald" id="jd-sync-badge" style="display:none"><span class="badge-dot"></span>SAVED</span>
+                                <span class="badge-pill badge-pill-slate tb-optional"><span class="badge-dot"></span>OPTIONAL</span>
                             </div>
                         </div>
-                        <p class="toolbelt-card-desc">Ground every answer in the exact requirements and tech stack of your upcoming interview.</p>
+                        <p class="toolbelt-card-desc">Optional. Paste the job post and questions and answers follow its exact requirements.</p>
                         <div class="context-form">
-                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                            <div class="jd-meta-grid">
                                 <div class="form-group-clean" style="margin-bottom:0;">
                                     <div class="form-label-row">
-                                        <label class="form-label-clean" for="jd-title">Target Role / Title</label>
-                                        <span class="badge-pill badge-pill-slate">POSITION</span>
+                                        <label class="form-label-clean" for="jd-title">Role</label>
                                     </div>
-                                    <input type="text" id="jd-title" value="AI Product Engineer" placeholder="e.g. AI Product Engineer / Full-Stack AI Engineer">
+                                    <input type="text" id="jd-title" placeholder="e.g. Staff Nurse, Marketing Associate, Data Analyst">
                                 </div>
                                 <div class="form-group-clean" style="margin-bottom:0;">
                                     <div class="form-label-row">
-                                        <label class="form-label-clean" for="jd-company">Company / Client</label>
-                                        <span class="badge-pill badge-pill-slate">HIRING ENTITY</span>
+                                        <label class="form-label-clean" for="jd-company">Company</label>
                                     </div>
-                                    <input type="text" id="jd-company" value="Soft System Solution" placeholder="e.g. Soft System Solution">
+                                    <input type="text" id="jd-company" placeholder="e.g. Apollo Hospitals, Deloitte, Zomato">
                                 </div>
                             </div>
                             <div class="form-group-clean" style="margin-bottom:16px;">
                                 <div class="form-label-row" style="margin-bottom:8px;">
-                                    <label class="form-label-clean" for="jd-content">Job Description Requirements & Tech Stack</label>
-                                    <span class="badge-pill badge-pill-orange">RAG SPEC GROUNDING</span>
+                                    <label class="form-label-clean" for="jd-content">Job description</label>
                                 </div>
                                 <div class="jd-editor-container">
                                     <div class="jd-editor-bar">
                                         <div class="jd-editor-tab">
                                             <span class="jd-tab-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></span>
-                                            <span class="jd-tab-name">SPEC_REQUIREMENTS.md</span>
+                                            <span class="jd-tab-name">job-post.txt</span>
                                             <span class="jd-tab-dot"></span>
                                         </div>
                                         <div class="jd-editor-meta">
-                                            <span id="jd-char-count">1974 characters</span>
+                                            <span id="jd-char-count">0 characters</span>
                                             <span class="jd-meta-divider">•</span>
                                             <span>UTF-8</span>
                                         </div>
                                     </div>
-                                    <textarea id="jd-content" rows="12" placeholder="Paste the target job description requirements, responsibilities, and expected tech stack here...">About the Role:
-We're looking for a highly motivated AI Product Engineer who loves building innovative AI products from the ground up. This role is for someone who constantly explores the latest AI models, frameworks, and tools, rapidly prototypes new ideas, and turns them into production-ready applications. You should be comfortable working independently, making technical decisions, and delivering high-quality AI solutions that create measurable business impact.
-
-Responsibilities:
-• Design, build, and deploy AI-powered products from concept to production.
-• Research and evaluate the latest AI models, frameworks, and emerging technologies.
-• Develop AI applications using LLMs, AI agents, RAG pipelines, multimodal models, and modern automation tools.
-• Rapidly prototype new product ideas and validate them through experimentation.
-• Design scalable software architectures for AI applications.
-• Build backend services, APIs, and integrations to support AI products.
-• Work independently to solve complex technical challenges with minimal supervision.
-• Continuously improve products through testing, iteration, and performance optimization.
-• Share knowledge and recommend new technologies that can create competitive advantages for the company.
-
-Requirements:
-• Hands-on experience building applications using modern AI models and frameworks.
-• Deep understanding of LLMs, AI agents, Retrieval-Augmented Generation (RAG), automation, and multimodal AI.
-• Ability to independently design, build, test, and deploy products.
-• Strong software engineering skills using Python and JavaScript/TypeScript.
-• Experience building APIs and working with cloud services.
-• Strong understanding of software architecture and scalable system design.
-• Excellent problem-solving skills with a strong bias toward execution.
-• Self-driven mindset with outstanding research and continuous learning abilities.
-
-Nice to Have:
-• Experience with vector databases, embedding pipelines and AI orchestration frameworks such as LangChain, LangGraph, or similar.
-• Familiarity with Docker, Kubernetes, CI/CD, and cloud deployment.
-• Knowledge of frontend frameworks such as React or Next.js.
-• Familiarity with PHP programming.</textarea>
+                                    <textarea id="jd-content" rows="10" placeholder="Paste the job post here: the responsibilities, requirements and skills it asks for."></textarea>
                                     <div class="jd-chips-bar">
-                                        <span class="jd-chips-label">DETECTED STACK CHIPS:</span>
-                                        <div class="jd-chips-list" id="jd-chips-list">
-                                            <span class="badge-pill badge-pill-emerald">Python</span>
-                                            <span class="badge-pill badge-pill-blue">JavaScript / TypeScript</span>
-                                            <span class="badge-pill badge-pill-purple">LLMs &amp; AI Agents</span>
-                                            <span class="badge-pill badge-pill-orange">RAG Pipelines</span>
-                                            <span class="badge-pill badge-pill-blue">Multimodal AI</span>
-                                            <span class="badge-pill badge-pill-purple">LangChain &amp; LangGraph</span>
-                                            <span class="badge-pill badge-pill-blue">Vector DBs &amp; Embeddings</span>
-                                            <span class="badge-pill badge-pill-emerald">React &amp; Next.js</span>
-                                            <span class="badge-pill badge-pill-slate">APIs &amp; Cloud</span>
-                                            <span class="badge-pill badge-pill-blue">Docker &amp; Kubernetes</span>
-                                            <span class="badge-pill badge-pill-orange">CI/CD</span>
-                                            <span class="badge-pill badge-pill-slate">PHP</span>
-                                        </div>
+                                        <span class="jd-chips-label">SKILLS IT ASKS FOR:</span>
+                                        <div class="jd-chips-list" id="jd-chips-list"><span class="jd-chips-empty">They appear as you paste</span></div>
                                     </div>
                                 </div>
                             </div>
                             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
                                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                                    <button class="btn btn-primary" id="jd-save-btn"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save Job Description Spec</span></button>
-                                    <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear Buffer</span></button>
+                                    <button class="btn btn-primary" id="jd-save-btn"><span><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save job description</span></button>
+                                    <button class="btn btn-secondary" id="jd-clear-btn" type="button"><span>Clear</span></button>
                                 </div>
-                                <span class="badge-pill badge-pill-emerald" id="jd-status-badge"><span class="badge-dot"></span>SPEC ACTIVE &amp; SYNCED</span>
+                                <span class="badge-pill badge-pill-slate" id="jd-status-badge"><span class="badge-dot"></span>NOT ADDED YET</span>
                             </div>
                         </div>
                         <div class="import-status hidden" id="jd-status"></div>
@@ -524,7 +496,7 @@ Nice to Have:
                         <!-- Tab Panels -->
                         <div class="tab-panel active" id="panel-projects">
                             <div class="context-form">
-                                <input type="text" id="project-name" placeholder="Project name (e.g., RADAR, Digital Twin)">
+                                <input type="text" id="project-name" placeholder="Project name (e.g. Campus food app, Ward handover audit)">
                                 <div class="form-row"><input type="text" id="project-tech" placeholder="Tech stack (Python, PyTorch...)"><input type="text" id="project-role" placeholder="Your role"></div>
                                 <textarea id="project-desc" rows="3" placeholder="What did you build? Key metrics achieved..."></textarea>
                                 <textarea id="project-challenges" rows="2" placeholder="Key challenges and optimizations..."></textarea>
@@ -622,11 +594,11 @@ Nice to Have:
                         <div class="chat-welcome">
                             <span class="chat-welcome-badge"><i></i>Copilot ready</span>
                             <h3>Ask what an interviewer would ask</h3>
-                            <p>Answers stream from your resume, GitHub and prep bank in real time.</p>
+                            <p>Answers draw on whatever is in your Toolbelt. Nothing there yet? You still get strong, general answers.</p>
                             <div class="chat-suggestions">
                                 <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about yourself')">Tell me about yourself</button>
-                                <button class="chat-suggestion" onclick="sendChatSuggestion('How did you optimize p95 latency at WebVory?')">p95 latency at WebVory</button>
-                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about your experience with Advanced RAG')">Advanced RAG architecture</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Why do you want this role?')">Why this role?</button>
+                                <button class="chat-suggestion" onclick="sendChatSuggestion('Tell me about a challenge you solved and what you learned')">A challenge you solved</button>
                             </div>
                         </div>
                     </div>
@@ -811,7 +783,7 @@ Nice to Have:
                     </div>
                     <div class="toolbelt-card">
                         <div class="toolbelt-card-header"><h3><svg class="i em-i" aria-hidden="true"><use href="#i-pencil"/></svg>Custom Identity Constraints</h3></div>
-                        <textarea id="aboutme-facts" rows="3" placeholder="Current Role = AI Python Developer at Webvory..."></textarea>
+                        <textarea id="aboutme-facts" rows="3" placeholder="Current role = Final-year B.Com student at St. Xavier's..."></textarea>
                     </div>
                     <div class="toolbelt-card full-width">
                         <button class="btn btn-primary" id="aboutme-save-btn" onclick="saveAboutMe()" style="width:100%;justify-content:center;"><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>Save About Me Profile</button>
@@ -955,7 +927,7 @@ Nice to Have:
                     </div>
 
                     <!-- Backend Telemetry Card -->
-                    <div class="toolbelt-card" id="settings-conn-card">
+                    <div class="toolbelt-card local-only" id="settings-conn-card">
                         <div class="toolbelt-card-header">
                             <h3><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg>Backend Telemetry</h3>
                             <span class="badge-pill badge-pill-emerald pulse-dot" id="server-status-pill"><span class="badge-dot"></span>SERVER ONLINE</span>
@@ -1295,8 +1267,11 @@ Nice to Have:
         <path class="flow-line pulse" pathLength="100"/>
     </svg>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked@18.0.14/lib/marked.umd.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.4.16/dist/purify.min.js"></script>
+    <!-- Libraries ship with the app (pinned, no third-party CDN at runtime) -->
+    <script src="./vendor/marked-18.0.14.umd.js"></script>
+    <script src="./vendor/purify-3.4.16.min.js"></script>
+    <script src="./vendor/gsap-3.13.0.min.js"></script>
+    <script src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script src="./auth.js?v=9.2"></script>
     <script src="./motion.js?v=8.1"></script>
     <script src="./appearance.js?v=8.9"></script>

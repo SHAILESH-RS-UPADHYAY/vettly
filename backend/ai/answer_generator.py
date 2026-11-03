@@ -94,7 +94,7 @@ class AnswerGenerator:
         # ── Speed optimization: cap context for concise answer mode ──
         # Full 147K context (36K tokens) causes 4+ second TTFT on Groq.
         # For 20-50 word answers, 18K chars (~4.5K tokens) contains all core
-        # projects (FAR Labs, Simplify Money, RADAR) while dropping TTFT to ~0.45s!
+        # projects while dropping time-to-first-token to ~0.45s
         if mode == "answer":
             context = context[:18000]
         elif mode == "detailed":

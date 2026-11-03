@@ -1,5 +1,5 @@
 """
-Acemate — System Prompts & Templates
+Vettly — System Prompts & Templates
 All prompts used by the AI modules for generating interview responses.
 
 V2: Major overhaul for opener variety, Hinglish enforcement, and resume priority.
