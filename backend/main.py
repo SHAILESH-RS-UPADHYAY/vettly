@@ -412,6 +412,15 @@ async def ai_key_test(request: Request):
         return JSONResponse(status_code=400, content={"error": str(e)})
 
 
+@app.get("/api/me/export")
+async def export_my_data():
+    """Everything this user saved, as one JSON file. Secrets (saved AI keys) and usage counters stay out."""
+    from fastapi.responses import Response
+    docs = {k: v for k, v in docstore.export_user(users.user_id()).items() if k not in ("ai_keys", "ai_key", "usage")}
+    body = json.dumps({"exported_at": datetime.now().isoformat(timespec="seconds"), "documents": docs}, ensure_ascii=False, indent=2)
+    return Response(body, media_type="application/json", headers={"Content-Disposition": 'attachment; filename="vettly-export.json"'})
+
+
 @app.delete("/api/me")
 async def delete_my_data():
     """Delete everything this user saved in Vettly (the sign-in account itself lives in Clerk)."""

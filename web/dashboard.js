@@ -44,6 +44,7 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
     if (name === 'home') renderToday();
     if (name === 'atelier') Appearance.renderSettings();
+    if (name === 'settings' && typeof KeyRing !== 'undefined') { KeyRing.load(); Passport.load(); }
     if (name === 'attic') loadRecycleBin();
     
     // Auto-scroll chat to bottom when switching to chat section

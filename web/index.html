@@ -59,6 +59,7 @@
     <link rel="stylesheet" href="./workshop.css?v=8.0">
     <link rel="stylesheet" href="./bento.css?v=8.2">
     <link rel="stylesheet" href="./onboard.css?v=2.1">
+    <link rel="stylesheet" href="./keyring.css?v=1.1">
     <link rel="stylesheet" href="./tour.css?v=2.0">
 </head>
 <body data-section="home">
@@ -838,27 +839,10 @@
                     <h2 class="sr-only">Keys, account and data</h2>
                 </div>
                 <div class="dashboard-grid">
-                    <!-- AI usage and the user's own key (hosted app only; onboard.js fills it) -->
-                    <div class="toolbelt-card ai-key-card" id="ai-key-card" hidden>
-                        <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-lightning"/></svg>AI answers</h3>
-                        </div>
-                        <p class="toolbelt-card-desc" id="ai-key-status">Checking today's allowance...</p>
-                        <form class="ai-key-form" id="ai-key-form">
-                            <label class="ob-field"><span>Provider</span>
-                                <select name="provider"><option value="gemini">Google Gemini</option><option value="groq">Groq</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic Claude</option></select></label>
-                            <label class="ob-field"><span>Your API key</span><input name="key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste a key to use your own AI quota"></label>
-                            <div class="ai-key-actions">
-                                <button type="submit" class="btn btn-primary btn-sm">Save my key</button>
-                                <button type="button" class="btn btn-secondary btn-sm" id="ai-key-remove" hidden>Remove my key</button>
-                            </div>
-                            <p class="ai-key-note">Your key is encrypted before it is stored and only used for your own requests.</p>
-                        </form>
-                        <div class="danger-zone">
-                            <p><b>Delete my data</b><span>Removes everything you saved in Vettly. Your sign-in account stays until you delete it from the account menu.</span></p>
-                            <button type="button" class="btn btn-secondary btn-sm danger-btn" id="delete-data-btn">Delete my data</button>
-                        </div>
-                    </div>
+                    <!-- Key Ring: the user's own AI keys, in the order Vettly tries them (keyring.js) -->
+                    <div class="toolbelt-card full-width keyring-card" id="keyring-card" aria-live="polite"></div>
+                    <!-- Passport: the account, profile, export and delete (keyring.js) -->
+                    <div class="toolbelt-card full-width passport-card" id="passport-card"></div>
 
                     <!-- Backend Telemetry Card -->
                     <div class="toolbelt-card local-only" id="settings-conn-card">
@@ -900,58 +884,6 @@
                             <span class="status-dot online"></span>
                             <span id="server-status-text" style="font-family:var(--font-mono); font-size:13px; font-weight:600;">Connected — Vettly Core v1.0.0</span>
                         </div>
-                    </div>
-
-                    <!-- Studio Readiness Checklist Card -->
-                    <div class="toolbelt-card" id="settings-checklist-card">
-                        <div class="toolbelt-card-header">
-                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-wand"/></svg>Studio Readiness Checklist</h3>
-                            <span class="badge-pill badge-pill-orange" id="checklist-progress-pill"><span class="badge-dot"></span>4/4 READY</span>
-                        </div>
-                        <p class="toolbelt-card-desc">Verify your knowledge base and AI engine pipelines for tailored preparation.</p>
-                        <div class="checklist-container">
-                            <div class="checklist-card" id="check-resume-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-file"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Resume Specifications</span>
-                                        <span class="checklist-step-desc">Parsed candidate telemetry & work history</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-resume"><span class="badge-dot"></span>PARSED</span>
-                            </div>
-                            <div class="checklist-card" id="check-github-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-github"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">GitHub Codebase Repos</span>
-                                        <span class="checklist-step-desc">3 public repositories indexed</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-github"><span class="badge-dot"></span>INDEXED</span>
-                            </div>
-                            <div class="checklist-card" id="check-server-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-plug"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Local Backend Engine</span>
-                                        <span class="checklist-step-desc">Port 8766 health & multi-model router</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-server"><span class="badge-dot"></span>CONNECTED</span>
-                            </div>
-                            <div class="checklist-card" id="check-overlay-card">
-                                <div class="checklist-card-info">
-                                    <div class="checklist-step-icon"><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg></div>
-                                    <div class="checklist-step-text">
-                                        <span class="checklist-step-title">Target Job Description Spec</span>
-                                        <span class="checklist-step-desc">Role requirements & tech stack grounded</span>
-                                    </div>
-                                </div>
-                                <span class="badge-pill badge-pill-emerald" id="check-overlay"><span class="badge-dot"></span>SYNCED</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep', { animate: true })" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Open Vettly Prep Studio</span></button>
                     </div>
 
                     <!-- Guided tour: replays the walkthrough from tour.js -->
@@ -1314,6 +1246,7 @@
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.5"></script>
     <script src="./shortcuts.js?v=1.0"></script>
+    <script src="./keyring.js?v=1.1"></script>
     <script src="./tour.js?v=2.0"></script>
     <script src="./onboard-scenes.js?v=2.1"></script>
     <script src="./onboard.js?v=9.3"></script>
