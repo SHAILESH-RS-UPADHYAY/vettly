@@ -9,7 +9,7 @@ const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:8766' 
 // ─── Section Navigation ──────────────────────────────────────
 
 // Sections reached through the More sheet on phones
-const MORE_SECTIONS = ['setup', 'aboutme', 'settings'];
+const MORE_SECTIONS = ['setup', 'attic', 'atelier', 'settings', 'aboutme'];
 const sideNav = document.querySelector('.sidebar-nav');
 
 // User-driven switches animate in a view transition; programmatic ones (Mentor jumps) apply at once
@@ -43,7 +43,8 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'prep') loadPrepQuestions();
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
     if (name === 'home') renderToday();
-    if (name === 'settings') Appearance.renderSettings();
+    if (name === 'atelier') Appearance.renderSettings();
+    if (name === 'attic') loadRecycleBin();
     
     // Auto-scroll chat to bottom when switching to chat section
     if (name === 'chat') {
@@ -839,12 +840,6 @@ async function prepCopy(index, btn) {
         timer = setTimeout(() => { prep.f.q = search.value.trim(); prepRender(); }, 220);
     });
 
-    // "/" jumps to search while Prep Studio is open
-    document.addEventListener('keydown', e => {
-        if (e.key !== '/' || document.body.dataset.section !== 'prep' || e.target.closest('input, textarea, [contenteditable]')) return;
-        e.preventDefault();
-        search.focus();
-    });
 
     // phones and tablets: the dock moves into the Filters sheet while it is open
     const sheetSlot = sheet.querySelector('[data-sheet-slot]');

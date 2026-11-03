@@ -279,6 +279,12 @@ async def save_profile(request: Request):
     return profile_store.update(await request.json())
 
 
+@app.post("/api/prefs")
+async def save_prefs(request: Request):
+    """Per-account preferences, such as hidden optional tabs."""
+    return {"prefs": profile_store.set_prefs(await request.json())}
+
+
 TECH_FIELDS = ("", "technology", "software", "it", "engineering")
 
 
