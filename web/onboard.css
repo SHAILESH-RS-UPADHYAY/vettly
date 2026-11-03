@@ -1,0 +1,202 @@
+/* ── Onboarding (onboard.js + onboard-scenes.js): eight pages, five of them animated scenes ── */
+.onboard { width: min(94vw, 580px); margin: auto; max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; }   /* base.css's reset drops the dialog's centring */
+.onboard-form { gap: 16px; }
+.ob-top { display: grid; gap: 10px; }
+.ob-count { display: flex; justify-content: space-between; font: 600 0.72rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.ob-kicker { color: var(--accent-ink); }
+.ob-progress { display: grid; grid-template-columns: repeat(var(--n, 8), minmax(0, 1fr)); gap: 5px; }
+.ob-progress span { height: 4px; border-radius: 999px; background: var(--paper-3); transition: background-color var(--dur-long) var(--ease-out); }
+.ob-progress span.on { background: color-mix(in srgb, var(--accent) 45%, var(--paper-3)); }
+.ob-progress span.now { background: var(--accent); }
+.ob-page { display: grid; gap: 12px; align-content: start; }
+.ob-ask { min-height: 250px; }
+.ob-page[hidden] { display: none; }
+.ob-page h2 { font: 800 1.5rem/1.15 var(--font-display); text-wrap: balance; outline: none; }
+.ob-page .onboard-lede { text-wrap: pretty; }
+.ob-page.ob-in > :not(.obs) { animation: obUp 520ms var(--ease-out) both; }
+.ob-page.ob-in > :nth-child(2) { animation-delay: 60ms; } .ob-page.ob-in > :nth-child(3) { animation-delay: 120ms; }
+.ob-page.ob-in > :nth-child(4) { animation-delay: 170ms; } .ob-page.ob-in > :nth-child(5) { animation-delay: 220ms; }
+.ob-page.ob-in > .obs { animation: obScale 640ms var(--spring) both; }
+@keyframes obUp { from { opacity: 0; transform: translateY(10px); } }
+@keyframes obScale { from { opacity: 0; transform: scale(0.96); } }
+.ob-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--accent-soft); color: var(--accent-ink); }
+.ob-mark svg { width: 24px; height: 24px; }
+.ob-error { color: var(--bad); font-size: 0.88rem; font-weight: 600; }
+.ob-error[hidden] { display: none; }
+.ob-field [aria-invalid="true"] { border-color: var(--bad); }
+.onboard-actions .ob-spacer { flex: 1; }
+.onboard-actions [hidden] { display: none; }
+
+/* ── Scene stage ── */
+.obs {
+    --st: color-mix(in srgb, var(--ink) 14%, transparent);
+    position: relative; height: 210px; overflow: hidden; isolation: isolate;
+    border: 1px solid var(--rule); border-radius: 18px;
+    background:
+        radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+        linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 22px 22px,
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 22px 22px,
+        var(--paper);
+}
+.obs svg { overflow: visible; }
+.obs-tag { display: flex; align-items: center; gap: 6px; font: 700 0.66rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-ink); }
+.obs-tag svg { width: 13px; height: 13px; }
+
+/* 1. Welcome: the mark assembles, four parts of the app orbit it */
+.obs-hero { display: grid; place-items: center; }
+.obs-glow { position: absolute; width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 30%, transparent), transparent 68%); animation: obBreathe 4s ease-in-out infinite; }
+@keyframes obBreathe { 50% { transform: scale(1.14); opacity: 0.7; } }
+.obs-mark { position: relative; width: 60px; height: 60px; fill: var(--accent); filter: drop-shadow(0 6px 14px color-mix(in srgb, var(--accent) 40%, transparent)); }
+.obs-mark .d { transform-box: fill-box; transform-origin: center; animation: obPiece 900ms var(--spring) both; }
+.obs-mark .d1 { --x: 0px; --y: -26px; } .obs-mark .d2 { --x: 26px; --y: 0px; animation-delay: 90ms; }
+.obs-mark .d3 { --x: 0px; --y: 26px; animation-delay: 180ms; } .obs-mark .d4 { --x: -26px; --y: 0px; animation-delay: 270ms; }
+@keyframes obPiece { from { opacity: 0; transform: translate(var(--x), var(--y)) rotate(90deg) scale(0.4); } }
+.obs-hero .obs-mark { animation: obFloat 5s 1s ease-in-out infinite; }
+@keyframes obFloat { 50% { transform: translateY(-4px) rotate(4deg); } }
+.obs-orbit { position: absolute; left: 50%; top: 50%; width: 164px; height: 164px; margin: -82px 0 0 -82px; border: 1.5px dashed var(--st); border-radius: 50%; animation: obSpin 32s linear infinite; }
+.obs-orbit-2 { width: 270px; height: 270px; margin: -135px 0 0 -135px; border-style: dotted; opacity: 0.7; animation-direction: reverse; animation-duration: 60s; }
+@keyframes obSpin { to { transform: rotate(360deg); } }
+.obs-sat { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: rotate(var(--a)) translateX(82px) rotate(calc(var(--a) * -1)); }
+.obs-chip {
+    position: absolute; left: 0; top: 0; translate: -50% -50%;
+    display: flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; white-space: nowrap;
+    border: 1px solid var(--rule); border-radius: 999px; background: var(--paper-2); box-shadow: var(--card-shadow);
+    font: 700 0.74rem/1 var(--font-body); color: var(--ink);
+    animation: obSpin 32s linear infinite reverse, obChipIn 700ms var(--spring) both;
+}
+.obs-sat:nth-child(2) .obs-chip { animation-delay: 0s, 450ms; } .obs-sat:nth-child(3) .obs-chip { animation-delay: 0s, 550ms; } .obs-sat:nth-child(4) .obs-chip { animation-delay: 0s, 650ms; }
+.obs-sat:nth-child(1) .obs-chip { animation-delay: 0s, 350ms; }
+@keyframes obChipIn { from { opacity: 0; scale: 0.4; } }
+.obs-chip svg { width: 15px; height: 15px; color: var(--accent-ink); }
+.obs-spark { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: 0; animation: obTwinkle 3.2s calc(var(--k) * 0.45s) ease-in-out infinite; }
+.obs-spark:nth-of-type(1) { left: 12%; top: 22%; } .obs-spark:nth-of-type(2) { left: 84%; top: 18%; } .obs-spark:nth-of-type(3) { left: 90%; top: 70%; }
+.obs-spark:nth-of-type(4) { left: 8%; top: 76%; } .obs-spark:nth-of-type(5) { left: 30%; top: 88%; } .obs-spark:nth-of-type(6) { left: 68%; top: 9%; } .obs-spark:nth-of-type(7) { left: 74%; top: 90%; }
+@keyframes obTwinkle { 40% { opacity: 0.8; transform: scale(1.4); } 80% { opacity: 0; transform: scale(0.6); } }
+
+/* 2. The studio: a small Vettly window cycling through three pages (9s loop, a third each) */
+.obs-studio { display: grid; place-items: center; }
+.obs-win { width: min(92%, 440px); height: 176px; display: grid; grid-template-rows: 24px 1fr; border: 1px solid var(--rule); border-radius: 14px; background: var(--paper-2); box-shadow: var(--card-shadow); overflow: hidden; }
+.obs-bar { display: flex; align-items: center; gap: 5px; padding: 0 10px; border-bottom: 1px solid var(--rule); background: var(--paper-3); }
+.obs-bar i { width: 7px; height: 7px; border-radius: 50%; background: var(--st); }
+.obs-bar span { margin-left: auto; margin-right: auto; padding: 2px 18px; border-radius: 999px; background: var(--paper-2); font: 600 0.6rem/1.4 var(--font-mono); color: var(--muted); }
+.obs-body { display: grid; grid-template-columns: 40px 1fr; min-height: 0; }
+.obs-side { display: grid; align-content: start; justify-items: center; gap: 4px; padding: 7px 0; border-right: 1px solid var(--rule); background: var(--sidebar, var(--paper-3)); }
+.obs-logo .obs-mark { width: 14px; height: 14px; filter: none; margin-bottom: 2px; }
+.obs-nav { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; color: var(--muted); animation: obNavOn 9s var(--d) infinite; }
+.obs-nav svg { width: 14px; height: 14px; }
+.obs-nav.idle { animation: none; }
+@keyframes obNavOn { 0%, 31% { background: var(--pill); color: var(--on-pill); } 34%, 100% { background: transparent; color: var(--muted); } }
+.obs-main { position: relative; }
+.obs-scene { position: absolute; inset: 0; display: grid; align-content: start; gap: 8px; padding: 10px 12px; opacity: 0; animation: obScene 9s var(--d) infinite; }
+@keyframes obScene { 0% { opacity: 0; transform: translateY(8px); } 4%, 29% { opacity: 1; transform: none; } 33.3%, 100% { opacity: 0; transform: translateY(-6px); } }
+.obs-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.obs-tiles span { height: 20px; border-radius: 6px; background: var(--c-gen-bg); animation: obPop 9s calc(var(--d) + var(--k) * 0.12s) var(--spring) infinite; }
+.obs-tiles span[data-tone="beh"] { background: var(--c-beh-bg); box-shadow: inset 0 0 0 1.5px var(--c-beh); } .obs-tiles span[data-tone="tech"] { background: var(--c-tech-bg); }
+.obs-tiles span[data-tone="sys"] { background: var(--c-sys-bg); } .obs-tiles span[data-tone="hr"] { background: var(--c-hr-bg); }
+.obs-q { display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 8px; background: var(--paper-3); font: 800 0.7rem/1 var(--font-display); color: var(--accent-ink); }
+.obs-type { height: 6px; width: 82%; border-radius: 3px; background: var(--ink); opacity: 0.55; transform-origin: left; animation: obType 9s var(--d) steps(14) infinite; }
+@keyframes obType { 0%, 5% { transform: scaleX(0); } 14%, 100% { transform: scaleX(1); } }
+.obs-lines { display: grid; gap: 5px; }
+.obs-lines span { height: 5px; border-radius: 3px; background: var(--st); transform-origin: left; animation: obLine 9s calc(var(--d) + var(--k) * 0.25s) var(--ease-out) infinite; }
+.obs-lines span:nth-child(2) { width: 90%; } .obs-lines span:nth-child(3) { width: 64%; }
+@keyframes obLine { 0%, 15% { transform: scaleX(0); } 21%, 100% { transform: scaleX(1); } }
+@keyframes obPop { 0%, 2% { transform: scale(0.3); opacity: 0; } 7%, 100% { transform: none; opacity: 1; } }
+.obs-bento { display: grid; grid-template-columns: 1.3fr 1fr 1fr; grid-template-rows: 44px 44px; gap: 6px; }
+.obs-bento span { border-radius: 9px; background: var(--c-tech-bg); animation: obPop 9s calc(var(--d) + var(--k) * 0.14s) var(--spring) infinite; }
+.obs-bento span:nth-child(1) { grid-row: span 2; background: var(--accent-soft); }
+.obs-bento span:nth-child(3) { background: var(--c-dsa-bg); } .obs-bento span:nth-child(4) { background: var(--c-beh-bg); } .obs-bento span:nth-child(5) { background: var(--c-sys-bg); }
+.obs-chat { display: grid; gap: 6px; }
+.obs-chat span { height: 18px; width: 62%; border-radius: 10px 10px 10px 3px; background: var(--paper-3); animation: obBubble 9s calc(var(--d) + var(--k) * 0.45s) var(--ease-out) infinite; }
+.obs-chat .me { justify-self: end; width: 70%; border-radius: 10px 10px 3px 10px; background: var(--accent); opacity: 0.85; }
+.obs-chat .short { width: 40%; }
+@keyframes obBubble { 0%, 3% { opacity: 0; transform: translateY(8px) scale(0.92); } 8%, 100% { opacity: 1; transform: none; } }
+
+/* 3 and 4. Workflow diagrams: comets run along the rails */
+.obs-svg { display: grid; place-items: center; padding: 6px 4px; }
+.obs-svg > svg { width: 100%; height: 100%; }
+.obs-svg text { font: 600 12px var(--font-body); fill: var(--ink); }
+.obs-svg .lbl { font: 700 9.5px var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+.obs-svg use { color: var(--accent-ink); }
+.obs-svg rect, .obs-svg circle { fill: var(--paper-2); stroke: var(--rule-2, var(--rule)); stroke-width: 1.2; }
+.obs-svg .rail { fill: none; stroke: var(--st); stroke-width: 1.6; stroke-dasharray: 3 4; }
+.obs-svg .rail.standby { opacity: 0.5; }
+.obs-svg .comet { fill: none; stroke: var(--accent); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 14 120; stroke-dashoffset: 14; opacity: 0; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 70%, transparent)); }
+.obs-ctx .stack { fill: color-mix(in srgb, var(--accent) 5%, var(--paper-2)); stroke: var(--accent); stroke-dasharray: 4 4; }
+.obs-ctx .fill { fill: var(--accent-soft); stroke: color-mix(in srgb, var(--accent) 45%, transparent); transform-box: fill-box; transform-origin: left; }
+.obs-ctx .layer text { font-size: 11.5px; }
+.obs-ctx .layer .n { font: 800 11px var(--font-mono); fill: var(--accent-ink); }
+
+/* router: 7s loop. question → router → Claude (busy) → Gemini (answers) */
+.obs-router .ask rect { fill: var(--pill); stroke: none; } .obs-router .ask text { fill: var(--on-pill); } .obs-router .ask use { color: var(--on-pill); }
+.obs-router .hub circle:not(.halo) { fill: var(--paper-2); stroke: var(--accent); stroke-width: 2; }
+.obs-router .halo { fill: color-mix(in srgb, var(--accent) 14%, transparent); stroke: none; transform-box: fill-box; transform-origin: center; animation: obHalo 7s var(--ease-out) infinite; }
+@keyframes obHalo { 0%, 12% { transform: scale(0.8); opacity: 0; } 16% { transform: scale(1); opacity: 1; } 24%, 40% { transform: scale(1.18); opacity: 0; } 44% { transform: scale(1); opacity: 1; } 52%, 100% { transform: scale(1.18); opacity: 0; } }
+.obs-router .r0 { animation: obR0 7s linear infinite; } .obs-router .r1 { animation: obR1 7s linear infinite; } .obs-router .r2 { animation: obR2 7s linear infinite; }
+@keyframes obR0 { 0% { stroke-dashoffset: 14; opacity: 1; } 12% { stroke-dashoffset: -100; opacity: 1; } 12.1%, 100% { opacity: 0; } }
+@keyframes obR1 { 0%, 16% { stroke-dashoffset: 14; opacity: 0; } 16.1% { opacity: 1; } 30% { stroke-dashoffset: -100; opacity: 1; } 30.1%, 100% { opacity: 0; stroke-dashoffset: -100; } }
+@keyframes obR2 { 0%, 44% { stroke-dashoffset: 14; opacity: 0; } 44.1% { opacity: 1; } 58% { stroke-dashoffset: -100; opacity: 1; } 58.1%, 100% { opacity: 0; stroke-dashoffset: -100; } }
+.obs-router .flag { font: 700 9.5px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; opacity: 0; }
+.obs-router .flag.busy { fill: var(--bad); animation: obBusyF 7s infinite; } .obs-router .flag.ok { fill: var(--ok); animation: obOkF 7s infinite; }
+.obs-router .p0 rect { animation: obBusy 7s infinite; } .obs-router .p1 rect { animation: obOk 7s infinite; }
+.obs-router .p2, .obs-router .p3 { opacity: 0.6; }
+@keyframes obBusy { 0%, 29% { stroke: var(--rule-2, var(--rule)); fill: var(--paper-2); } 31%, 46% { stroke: var(--bad); fill: var(--bad-bg); } 50%, 100% { stroke: var(--rule-2, var(--rule)); fill: var(--paper-2); } }
+@keyframes obBusyF { 0%, 30% { opacity: 0; } 33%, 46% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes obOk { 0%, 57% { stroke: var(--rule-2, var(--rule)); fill: var(--paper-2); } 60%, 90% { stroke: var(--ok); fill: var(--ok-bg); } 96%, 100% { stroke: var(--rule-2, var(--rule)); fill: var(--paper-2); } }
+@keyframes obOkF { 0%, 58% { opacity: 0; } 62%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+
+/* 5. Polish: strike the robotic opener, write it plainly, then score 7 checks (one pass, ~4s) */
+.obs-polish { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px; height: auto; padding: 14px; }
+.obs-draft, .obs-score { display: grid; align-content: start; gap: 7px; padding: 12px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper-2); box-shadow: var(--card-shadow); }
+.obs-text { font-size: 0.8rem; line-height: 1.45; color: var(--ink-2); }
+.obs-text s { text-decoration: none; background: linear-gradient(var(--bad), var(--bad)) left 55% / 100% 1.5px no-repeat; color: var(--muted); opacity: 0.5; animation: obStrike 1.4s 0.5s var(--ease-out) both; }
+@keyframes obStrike { 0% { background-size: 0 1.5px; color: var(--ink-2); opacity: 1; } 60% { background-size: 100% 1.5px; color: var(--ink-2); opacity: 1; } }
+.obs-new { background: linear-gradient(transparent 60%, color-mix(in srgb, var(--accent) 22%, transparent) 60%); font-weight: 600; color: var(--ink); animation: obUp 600ms 1.6s var(--ease-out) both; }
+.obs-rest { display: inline; animation: obUp 600ms 2s var(--ease-out) both; }
+.obs-check { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 8px; font: 600 0.66rem/1 var(--font-body); color: var(--ink-2); }
+.obs-check i { height: 5px; border-radius: 3px; background: var(--paper-3); overflow: hidden; }
+.obs-check b { display: block; height: 100%; width: var(--v); border-radius: inherit; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, var(--ok))); transform-origin: left; animation: obBar 700ms calc(2.2s + var(--k) * 0.14s) var(--ease-out) both; }
+@keyframes obBar { from { transform: scaleX(0); } }
+.obs-pass { display: flex; align-items: center; gap: 6px; margin-top: 2px; padding: 6px 8px; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font: 700 0.7rem/1.2 var(--font-body); animation: obChipIn 600ms 3.4s var(--spring) both; }
+.obs-pass svg { flex: none; width: 13px; height: 13px; }
+
+@media (max-width: 30rem) {
+    .obs { height: 186px; }
+    .obs-polish { grid-template-columns: 1fr; height: auto; }
+    .obs-polish .obs-draft { display: none; }
+}
+
+/* Calm and reduced motion: every scene shows its finished state, nothing moves */
+@media (prefers-reduced-motion: reduce) {
+    .onboard .obs, .onboard .obs *, .ob-page.ob-in > * { animation: none !important; }
+    .onboard .obs-scene:first-of-type { opacity: 1; }
+    .onboard .obs-router .flag.ok { opacity: 1; }
+}
+:root[data-motion="calm"] :is(.onboard .obs, .onboard .obs *, .ob-page.ob-in > *) { animation: none !important; }
+:root[data-motion="calm"] .onboard .obs-scene:first-of-type { opacity: 1; }
+:root[data-motion="calm"] .onboard .obs-router .flag.ok { opacity: 1; }
+
+/* context scene: 8s loop, each source lands in its priority layer in turn (generated timings) */
+@keyframes obCtxC0 { 0%, 0% { stroke-dashoffset: 14; opacity: 0; } 0.1% { opacity: 1; } 12% { stroke-dashoffset: -100; opacity: 1; } 12.1%, 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes obCtxL0 { 0%, 10% { transform: scaleX(0); opacity: 0; } 15% { transform: scaleX(1); opacity: 1; } 88% { transform: scaleX(1); opacity: 1; } 96%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes obCtxS0 { 0%, 0% { stroke: var(--rule-2, var(--rule)); } 1%, 12% { stroke: var(--accent); } 16%, 100% { stroke: var(--rule-2, var(--rule)); } }
+@keyframes obCtxC1 { 0%, 16% { stroke-dashoffset: 14; opacity: 0; } 16.1% { opacity: 1; } 28% { stroke-dashoffset: -100; opacity: 1; } 28.1%, 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes obCtxL1 { 0%, 26% { transform: scaleX(0); opacity: 0; } 31% { transform: scaleX(1); opacity: 1; } 88% { transform: scaleX(1); opacity: 1; } 96%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes obCtxS1 { 0%, 15% { stroke: var(--rule-2, var(--rule)); } 17%, 28% { stroke: var(--accent); } 32%, 100% { stroke: var(--rule-2, var(--rule)); } }
+@keyframes obCtxC2 { 0%, 32% { stroke-dashoffset: 14; opacity: 0; } 32.1% { opacity: 1; } 44% { stroke-dashoffset: -100; opacity: 1; } 44.1%, 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes obCtxL2 { 0%, 42% { transform: scaleX(0); opacity: 0; } 47% { transform: scaleX(1); opacity: 1; } 88% { transform: scaleX(1); opacity: 1; } 96%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes obCtxS2 { 0%, 31% { stroke: var(--rule-2, var(--rule)); } 33%, 44% { stroke: var(--accent); } 48%, 100% { stroke: var(--rule-2, var(--rule)); } }
+@keyframes obCtxC3 { 0%, 48% { stroke-dashoffset: 14; opacity: 0; } 48.1% { opacity: 1; } 60% { stroke-dashoffset: -100; opacity: 1; } 60.1%, 100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes obCtxL3 { 0%, 58% { transform: scaleX(0); opacity: 0; } 63% { transform: scaleX(1); opacity: 1; } 88% { transform: scaleX(1); opacity: 1; } 96%, 100% { transform: scaleX(1); opacity: 0; } }
+@keyframes obCtxS3 { 0%, 47% { stroke: var(--rule-2, var(--rule)); } 49%, 60% { stroke: var(--accent); } 64%, 100% { stroke: var(--rule-2, var(--rule)); } }
+.obs-ctx .c0 { animation: obCtxC0 8s linear infinite; }
+.obs-ctx .l0 .fill { animation: obCtxL0 8s var(--ease-out) infinite; }
+.obs-ctx .s0 rect { animation: obCtxS0 8s linear infinite; }
+.obs-ctx .c1 { animation: obCtxC1 8s linear infinite; }
+.obs-ctx .l1 .fill { animation: obCtxL1 8s var(--ease-out) infinite; }
+.obs-ctx .s1 rect { animation: obCtxS1 8s linear infinite; }
+.obs-ctx .c2 { animation: obCtxC2 8s linear infinite; }
+.obs-ctx .l2 .fill { animation: obCtxL2 8s var(--ease-out) infinite; }
+.obs-ctx .s2 rect { animation: obCtxS2 8s linear infinite; }
+.obs-ctx .c3 { animation: obCtxC3 8s linear infinite; }
+.obs-ctx .l3 .fill { animation: obCtxL3 8s var(--ease-out) infinite; }
+.obs-ctx .s3 rect { animation: obCtxS3 8s linear infinite; }
