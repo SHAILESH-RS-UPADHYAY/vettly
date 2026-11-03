@@ -52,10 +52,10 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 5 · Live Copilot register
 
-- [ ] Chat threads in the backend (`chats` store + routes), old history migrated
-- [ ] Book UI: page edges, chapters index, archive shelf, page-turn new chat, delete to The Attic
-- [ ] Handwriting streaming with pen nib; chapter clock + answer stopwatch, synced
-- [ ] Chat looks in Atelier
+- [x] Chat threads in the backend: `chapters` doc, `/api/chats` list/new/open/rename/archive/time/delete, old history becomes Chapter 1, torn-out chapters restore whole from The Attic (`backend/test_chapters.py`)
+- [x] Book UI: stacked page edges, ribbon, chapters index (drawer on phones/tablets), archive shelf, page-turn on new/open chapter, tear-out flies to The Attic (`web/register.js`, `web/register.css`)
+- [x] Answers written in ink word by word with a pen nib (Kalam; Devanagari too); chapter clock synced to the chapter; practice stopwatch (T) saved with the message as "spoke for m:ss"
+- [x] Copilot looks in the Atelier: Manuscript, Field notebook, Ledger, Night library, Plain chat; ink effect on/off; N = new chapter
 
 ## Phase 6 · Brain Bento for every field
 

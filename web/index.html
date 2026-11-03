@@ -48,7 +48,7 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.0">
     <link rel="stylesheet" href="./base.css?v=7.0">
     <link rel="stylesheet" href="./styles.css?v=9.0">
@@ -61,6 +61,7 @@
     <link rel="stylesheet" href="./onboard.css?v=2.1">
     <link rel="stylesheet" href="./keyring.css?v=1.1">
     <link rel="stylesheet" href="./daybook.css?v=1.2">
+    <link rel="stylesheet" href="./register.css?v=1.2">
     <link rel="stylesheet" href="./tour.css?v=2.0">
 </head>
 <body data-section="home">
@@ -629,11 +630,47 @@
         <section class="page" id="page-chat">
             <div class="page-inner">
                 <div class="poster-header">
-                    <h1><span class="v-classic">Live <em>AI Copilot</em></span><span class="v-alt">Live <em>Copilot</em></span></h1>
-                    <p>Practice responses and test real-time candidate retrieval</p>
+                    <h1>Live <em>Copilot</em></h1>
+                    <p>Your practice register. Every conversation is a chapter you can keep, shelve or tear out.</p>
                     <h2 class="sr-only">Your practice session</h2>
                 </div>
-                <div class="chat-container">
+                <!-- The register: every conversation is a chapter (register.js). The message list and composer keep their ids -->
+                <div class="register" id="register" data-look="manuscript">
+                    <aside class="reg-index" id="reg-index" aria-label="Chapters">
+                        <div class="reg-index-head">
+                            <h3>Chapters</h3>
+                            <button type="button" class="reg-new" data-reg="new"><svg aria-hidden="true"><use href="#i-plus"/></svg>New chapter</button>
+                        </div>
+                        <label class="reg-search"><svg aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="reg-search" placeholder="Find a chapter" aria-label="Find a chapter" autocomplete="off"></label>
+                        <ol class="reg-list" id="reg-list" aria-label="Your chapters"></ol>
+                        <details class="reg-shelf" id="reg-shelf">
+                            <summary><svg aria-hidden="true"><use href="#i-archive"/></svg>Archive shelf <span class="reg-shelf-n" id="reg-shelf-n">0</span></summary>
+                            <ol class="reg-list" id="reg-archived" aria-label="Archived chapters"></ol>
+                        </details>
+                    </aside>
+                    <div class="reg-scrim" data-reg="close-index" aria-hidden="true"></div>
+                    <div class="reg-book">
+                        <article class="reg-page" id="reg-page" aria-labelledby="reg-title">
+                            <span class="reg-ribbon" aria-hidden="true"></span>
+                            <header class="reg-head">
+                                <button type="button" class="reg-index-btn" data-reg="index" aria-label="Show chapters" aria-controls="reg-index"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
+                                <div class="reg-heading">
+                                    <p class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></p>
+                                    <h3 class="reg-title"><button type="button" id="reg-title" data-reg="rename" title="Rename this chapter">A new chapter</button></h3>
+                                </div>
+                                <div class="reg-clocks">
+                                    <span class="reg-clock" title="Time spent in this chapter"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line class="reg-hand" x1="12" y1="12" x2="12" y2="5"/><circle class="reg-pin" cx="12" cy="12" r="1.4"/></svg><b id="reg-elapsed">0:00</b><span class="sr-only"> in this chapter</span></span>
+                                    <button type="button" class="reg-sw" id="reg-sw" data-reg="sw" aria-pressed="false" title="Practice stopwatch: time yourself answering out loud (T)">
+                                        <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="sw-track" cx="18" cy="18" r="15"/><circle class="sw-fill" cx="18" cy="18" r="15" pathLength="1"/><rect class="sw-crown" x="15.5" y="0" width="5" height="3" rx="1"/></svg>
+                                        <span class="sw-text"><b id="reg-sw-time">0:00</b><small id="reg-sw-label">Stopwatch</small></span>
+                                    </button>
+                                    <button type="button" class="reg-sw-reset" data-reg="sw-reset" aria-label="Reset the stopwatch" hidden><svg aria-hidden="true"><use href="#i-refresh"/></svg></button>
+                                </div>
+                                <div class="reg-tools">
+                                    <button type="button" data-reg="archive" title="Put this chapter on the archive shelf"><svg aria-hidden="true"><use href="#i-archive"/></svg><span>Archive</span></button>
+                                    <button type="button" data-reg="delete" title="Tear this chapter out (it waits in The Attic)"><svg aria-hidden="true"><use href="#i-trash"/></svg><span>Tear out</span></button>
+                                </div>
+                            </header>
                     <div class="chat-messages" id="chat-messages">
                         <div class="chat-welcome">
                             <span class="chat-welcome-badge"><i></i>Copilot ready</span>
@@ -647,8 +684,10 @@
                         </div>
                     </div>
                     <div class="chat-input-area">
-                        <textarea id="chat-input" rows="1" placeholder="Ask an interview question…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
-                        <button class="btn btn-primary chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send">Send <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+                        <textarea id="chat-input" rows="1" placeholder="Write an interview question…" aria-label="Write your question" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+                        <button class="btn btn-primary chat-send" id="chat-send-btn" onclick="sendChatMessage()" aria-label="Send">Ink it <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></button>
+                    </div>
+                        </article>
                     </div>
                 </div>
             </div>
@@ -1067,6 +1106,8 @@
                         </div>
                     </div>
 
+                    <!-- The Copilot's book: register looks and the ink effect (register.js fills it) -->
+                    <div class="toolbelt-card full-width atelier-book" id="atelier-book"></div>
                     <!-- Tabs: which optional tabs show in the side panel (saved per account) -->
                     <div class="toolbelt-card" id="atelier-tabs-card">
                         <div class="toolbelt-card-header">
@@ -1248,12 +1289,13 @@
     <script src="./auth.js?v=9.3"></script>
     <script src="./motion.js?v=8.2"></script>
     <script src="./appearance.js?v=9.0"></script>
-    <script src="./dashboard.js?v=8.7"></script>
+    <script src="./dashboard.js?v=8.9"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.6"></script>
     <script src="./shortcuts.js?v=1.1"></script>
     <script src="./keyring.js?v=1.2"></script>
+    <script src="./register.js?v=1.1"></script>
     <script src="./daybook.js?v=1.2"></script>
     <script src="./tour.js?v=2.1"></script>
     <script src="./onboard-scenes.js?v=2.2"></script>

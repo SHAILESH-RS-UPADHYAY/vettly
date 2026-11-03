@@ -497,7 +497,7 @@ async def upload_custom_context(
     return {"status": "success", "title": title}
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 class GenerateQuestionsRequest(BaseModel):
@@ -1060,8 +1060,10 @@ async def get_assignment():
 # ─── Chat Endpoint (Direct AI Interaction) ────────────────────
 
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(..., max_length=8000)
     history: list[dict] = []  # [{role: "user"/"assistant", content: "..."}]
+    chat_id: Optional[str] = None   # the register chapter this message belongs to
+    think_ms: Optional[int] = Field(None, ge=0, le=1000 * 60 * 60)   # the practice stopwatch, if it was running
 
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
@@ -1072,8 +1074,11 @@ async def api_chat(req: ChatRequest):
 
         full_context = context_engine.get_full_context()
 
-        # Save user message to backend store
-        chat_store.add_message("user", req.message)
+        # the chapter on screen is the one written in, even if another device opened a different one
+        if req.chat_id and req.chat_id != chat_store.chapters()["open"]:
+            chat_store.open_chapter(req.chat_id)
+        started = time.monotonic()
+        chat_store.add_message("user", req.message, think_ms=req.think_ms)
 
         # Include about-me data in context
         about_me_ctx = about_me_store.get_intro_context()
@@ -1138,7 +1143,7 @@ If the user specifies an instruction, preference, correction, or rule about how 
         )
 
         # Update backend store with assistant reply
-        chat_store.add_message("assistant", reply_text)
+        chat_store.add_message("assistant", reply_text, ms=int((time.monotonic() - started) * 1000))
 
         return {"response": reply_text}
     except Exception as e:
@@ -1169,6 +1174,44 @@ async def clear_chat_history():
         recycle_bin_store.trash_chats(current_chats)
     chat_store.clear()
     return {"status": "success", "message": "Chat history moved to Recycle Bin"}
+
+
+# ─── The register: chapters of the Live Copilot ───────────────
+
+@app.get("/api/chats")
+async def list_chapters():
+    """Every chapter (newest first) without messages, and which one is open."""
+    return {**chat_store.chapters(), "stats": chat_store.stats()}
+
+
+@app.post("/api/chats")
+async def new_chapter(request: Request):
+    """Begin a new chapter (an untouched open one is reused)."""
+    data = await request.json() if request.headers.get("content-length", "0") != "0" else {}
+    return {"chapter": chat_store.create(str(data.get("title", "") or "")), **chat_store.chapters()}
+
+
+@app.post("/api/chats/{cid}/open")
+async def open_chapter(cid: str):
+    ch = chat_store.open_chapter(cid)
+    return ch if ch else JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+
+
+@app.patch("/api/chats/{cid}")
+async def update_chapter(cid: str, request: Request):
+    """Rename, archive / unarchive, or record time spent (elapsed_ms only ever grows)."""
+    meta = chat_store.update(cid, await request.json())
+    return meta if meta else JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+
+
+@app.delete("/api/chats/{cid}")
+async def delete_chapter(cid: str):
+    """Tear a chapter out: it waits in The Attic until restored or deleted for good."""
+    ch = chat_store.remove(cid)
+    if not ch:
+        return JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+    recycle_bin_store.trash_chapter(ch)
+    return chat_store.chapters()
 
 
 # ─── Chat Expand (Detailed Technical Breakdown) ───────────────
@@ -1496,12 +1539,15 @@ async def restore_recycle_bin_item(req: RecycleActionRequest):
                 return {"status": "success", "message": "Session restored successfully", "session": restored}
             return JSONResponse(status_code=404, content={"error": "Session not found in Recycle Bin"})
         elif req.item_type == "chat":
-            restored_messages = recycle_bin_store.restore_chat_batch(req.id)
-            if restored_messages is not None:
-                for msg in restored_messages:
-                    chat_store.add_message(msg.get("role", "user"), msg.get("content", ""))
-                return {"status": "success", "message": f"Restored {len(restored_messages)} chat messages"}
-            return JSONResponse(status_code=404, content={"error": "Chat batch not found in Recycle Bin"})
+            item = recycle_bin_store.take_chat_item(req.id)
+            if item is None:
+                return JSONResponse(status_code=404, content={"error": "Chat not found in The Attic"})
+            if item.get("chapter"):   # a whole chapter goes back into the register, opened
+                ch = chat_store.restore(item["chapter"])
+                return {"status": "success", "message": "Chapter restored to your register", "chapter": ch}
+            msgs = item.get("messages", [])   # an older batch of messages becomes a chapter of its own
+            ch = chat_store.restore({"id": item.get("id", "ch_restored"), "title": "Restored conversation", "messages": msgs})
+            return {"status": "success", "message": f"Restored {len(msgs)} messages as a chapter", "chapter": ch}
         return JSONResponse(status_code=400, content={"error": "Invalid item_type"})
     except Exception as e:
         logger.error(f"Recycle restore error: {e}")

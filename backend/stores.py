@@ -168,34 +168,161 @@ class AboutMeStore:
 # ─── Chat History Store ──────────────────────────────────────
 
 class ChatHistoryStore:
-    """Persists chat history between the user and the AI across sessions and devices."""
+    """
+    The Live Copilot's register: chapters, each its own conversation, with archive and time spent.
+    The *open* chapter is what get_history / add_message / set_history / clear act on, so the chat routes
+    work unchanged. One document per user ("chapters"); an older single "chat_history" becomes Chapter 1.
+    """
 
     def __init__(self, user: Optional[str] = None):
         self._user = user or users.user_id()
-        self._history: list[dict] = []
         self.load()
 
+    # ── storage ──
+    @staticmethod
+    def _now() -> str:
+        from datetime import datetime, timezone
+        return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    def _blank(self, messages: Optional[list] = None) -> dict:
+        import time
+        now = self._now()
+        return {"id": f"ch_{int(time.time() * 1000)}", "title": "", "created": now, "updated": now,
+                "archived": False, "elapsed_ms": 0, "messages": list(messages or [])}
+
     def load(self) -> None:
-        self._history = docstore.load(self._user, "chat_history", [])
+        doc = docstore.load(self._user, "chapters", None)
+        fresh = not isinstance(doc, dict) or not isinstance(doc.get("items"), list)
+        if fresh:
+            old = docstore.load(self._user, "chat_history", [])
+            first = self._blank(old if isinstance(old, list) else [])
+            doc = {"open": first["id"], "items": [first]}
+        self._doc = doc
+        if fresh:   # saved at once: every request builds its own store, and they must all see this same first chapter
+            self.save()
+        if not self._find(doc.get("open")):
+            self._doc["open"] = self._doc["items"][0]["id"] if self._doc["items"] else self._new()["id"]
 
     def save(self) -> None:
-        docstore.save(self._user, "chat_history", self._history)
+        docstore.save(self._user, "chapters", self._doc)
 
+    def _find(self, cid) -> Optional[dict]:
+        return next((c for c in self._doc["items"] if c["id"] == cid), None)
+
+    def _new(self, messages: Optional[list] = None) -> dict:
+        ch = self._blank(messages)
+        while self._find(ch["id"]):   # two chapters in one millisecond
+            ch["id"] += "x"
+        self._doc["items"].append(ch)
+        self._doc["open"] = ch["id"]
+        return ch
+
+    def _open(self) -> dict:
+        return self._find(self._doc["open"]) or self._new()
+
+    @staticmethod
+    def meta(ch: dict, number: int) -> dict:
+        msgs = ch.get("messages", [])
+        first_q = next((m.get("content", "") for m in msgs if m.get("role") == "user"), "")
+        return {"id": ch["id"], "number": number, "title": ch.get("title") or "", "auto_title": " ".join(first_q.split()[:7]),
+                "created": ch.get("created"), "updated": ch.get("updated"), "archived": bool(ch.get("archived")),
+                "elapsed_ms": int(ch.get("elapsed_ms") or 0), "count": len(msgs)}
+
+    # ── the open chapter (what the chat routes use) ──
     def get_history(self) -> list[dict]:
-        return self._history
+        return self._open()["messages"]
 
-    def add_message(self, role: str, content: str) -> None:
-        self._history.append({"role": role, "content": content})
+    def add_message(self, role: str, content: str, **extra) -> None:
+        ch = self._open()
+        msg = {"role": role, "content": content, "ts": self._now()}
+        msg.update({k: v for k, v in extra.items() if v is not None})
+        ch["messages"].append(msg)
+        ch["updated"] = msg["ts"]
         self.save()
 
     def set_history(self, history: list[dict]) -> None:
-        self._history = history
+        ch = self._open()
+        ch["messages"] = [m for m in history if isinstance(m, dict) and m.get("role") in ("user", "assistant")]
+        ch["updated"] = self._now()
         self.save()
 
     def clear(self) -> None:
-        self._history = []
+        self._open()["messages"] = []
         self.save()
-        logger.info("🗑️ Chat history cleared")
+        logger.info("🗑️ Chat chapter cleared")
+
+    # ── chapters ──
+    def chapters(self) -> dict:
+        order = {c["id"]: i + 1 for i, c in enumerate(self._doc["items"])}   # numbered in the order they were begun
+        items = sorted(self._doc["items"], key=lambda c: c.get("updated") or "", reverse=True)
+        return {"open": self._doc["open"], "chapters": [self.meta(c, order[c["id"]]) for c in items]}
+
+    def full(self, cid: str) -> Optional[dict]:
+        ch = self._find(cid)
+        if not ch:
+            return None
+        number = self._doc["items"].index(ch) + 1
+        return {**self.meta(ch, number), "messages": ch["messages"]}
+
+    def create(self, title: str = "") -> dict:
+        # an untouched open chapter is reused instead of piling up empty pages
+        cur = self._find(self._doc["open"])
+        ch = cur if cur and not cur["messages"] and not cur.get("archived") else self._new()
+        ch["title"] = title.strip()[:80]
+        self._doc["open"] = ch["id"]
+        self.save()
+        return self.full(ch["id"])
+
+    def open_chapter(self, cid: str) -> Optional[dict]:
+        ch = self._find(cid)
+        if not ch:
+            return None
+        self._doc["open"] = cid
+        self.save()
+        return self.full(cid)
+
+    def update(self, cid: str, data: dict) -> Optional[dict]:
+        ch = self._find(cid)
+        if not ch:
+            return None
+        if isinstance(data.get("title"), str):
+            ch["title"] = data["title"].strip()[:80]
+        if isinstance(data.get("archived"), bool):
+            ch["archived"] = data["archived"]
+        if isinstance(data.get("elapsed_ms"), (int, float)) and data["elapsed_ms"] >= 0:
+            ch["elapsed_ms"] = max(int(ch.get("elapsed_ms") or 0), min(int(data["elapsed_ms"]), 1000 * 60 * 60 * 24 * 30))
+        self.save()
+        return self.meta(ch, self._doc["items"].index(ch) + 1)
+
+    def remove(self, cid: str) -> Optional[dict]:
+        ch = self._find(cid)
+        if not ch:
+            return None
+        self._doc["items"].remove(ch)
+        if self._doc["open"] == cid:
+            live = sorted((c for c in self._doc["items"] if not c.get("archived")), key=lambda c: c.get("updated") or "", reverse=True)
+            if live:
+                self._doc["open"] = live[0]["id"]
+            else:
+                self._new()
+        self.save()
+        return ch
+
+    def restore(self, ch: dict) -> dict:
+        ch = dict(ch)
+        if self._find(ch.get("id")):
+            ch["id"] = f"{ch.get('id', 'ch')}r"
+        ch.setdefault("messages", [])
+        ch["archived"] = False
+        self._doc["items"].append(ch)
+        self._doc["open"] = ch["id"]
+        self.save()
+        return self.full(ch["id"])
+
+    def stats(self) -> dict:
+        items = self._doc["items"]
+        return {"chapters": len(items), "messages": sum(len([m for m in c["messages"] if m.get("role") == "user"]) for c in items),
+                "elapsed_ms": sum(int(c.get("elapsed_ms") or 0) for c in items)}
 
 
 class RecycleBinStore:
@@ -245,6 +372,23 @@ class RecycleBinStore:
         }
         self._data["chats"].insert(0, item)
         self.save()
+        return item
+
+    def trash_chapter(self, chapter: dict) -> dict:
+        from datetime import datetime
+        item = {"id": chapter["id"], "deleted_at": datetime.now().isoformat(), "chapter": chapter,
+                "title": chapter.get("title") or "", "messages": chapter.get("messages", []), "count": len(chapter.get("messages", []))}
+        self._data["chats"] = [c for c in self._data["chats"] if str(c.get("id")) != item["id"]]
+        self._data["chats"].insert(0, item)
+        self.save()
+        return item
+
+    def take_chat_item(self, item_id: str) -> Optional[dict]:
+        """Remove and return one trashed chat item (a whole chapter, or an older batch of messages)."""
+        item = next((c for c in self._data["chats"] if str(c.get("id")) == str(item_id)), None)
+        if item is not None:
+            self._data["chats"] = [c for c in self._data["chats"] if c is not item]
+            self.save()
         return item
 
     def restore_session(self, session_id: str) -> Optional[dict]:
