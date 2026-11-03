@@ -1,6 +1,7 @@
 /**
  * Onboarding scenes, drawn as blueprint plates: what Vettly is (welcome, studio), a live candidate spec while the
- * user answers (badge), and how the backend works (context, router, polish). The backend scenes follow the real code:
+ * user answers (badge), how the backend works (context, router, polish), the user's key ring (keys) and the
+ * Atelier (yours). The backend scenes follow the real code:
  * ai/context_engine.py, the provider router in ai/utils.py, ai/humanizer.py + ai/answer_validator.py.
  *
  * markup(name) returns a scene's HTML. play(name, stage) starts its timeline with the Web Animations API and returns
@@ -216,8 +217,8 @@ const OnboardScenes = (() => {
         return stop(anims, raf);
     }
 
-    /* ── 07 · Failover router: Claude first; a busy provider bounces the request to the next ── */
-    const PROV = [['Claude', 'primary'], ['Gemini', 'fallback 1'], ['OpenAI', 'fallback 2'], ['Groq', 'fallback 3']];
+    /* ── 07 · Failover router: Gemini first; a busy provider bounces the request to the next (Groq, Claude, OpenAI) ── */
+    const PROV = [['Gemini', 'primary · free'], ['Groq', 'fallback 1 · free'], ['Claude', 'fallback 2'], ['OpenAI', 'fallback 3']];
     const PY = [40, 118, 196, 274], HUB = [236, 188];
     const router = () => `
     <div class="sc sc-svg">
@@ -310,8 +311,103 @@ const OnboardScenes = (() => {
         return stop(anims, raf);
     }
 
-    const MARKUP = { welcome, studio, badge, context, router, polish };
-    const PLAY = { welcome: playWelcome, studio: playStudio, context: playContext, router: playRouter, polish: playPolish };
+    /* ── 09 · Key ring: two free keys clip on, two paid ones wait, and a busy key hands over to the next ── */
+    const TAGS = [['G', 'Gemini', 'free'], ['Q', 'Groq', 'free'], ['C', 'Claude', 'paid · optional'], ['O', 'OpenAI', 'paid · optional']];
+    const RING = [240, 84], RR = 32, TX = [28, 140, 252, 364], TW = 88, TY = 176, TH = 132;
+    const hook = k => { const a = ([122, 103, 77, 58][k] * Math.PI) / 180; return [RING[0] + RR * Math.cos(a), RING[1] + RR * Math.sin(a)]; };
+    const keys = () => `
+    <div class="sc sc-svg">
+        <svg viewBox="0 0 480 380" class="krg" aria-hidden="true">
+            <text class="lbl" x="20" y="28">Your key ring</text><text class="lbl" x="460" y="28" text-anchor="end">tried in this order</text>
+            <circle class="loop" cx="${RING[0]}" cy="${RING[1]}" r="${RR}"/><circle class="loop-hi" cx="${RING[0]}" cy="${RING[1]}" r="${RR}" pathLength="1"/>
+            ${TAGS.map(([m, n, sub], k) => { const [ax, ay] = hook(k), cx = TX[k] + TW / 2; return `
+            <g class="sw sw${k}" style="transform-origin:${ax.toFixed(1)}px ${ay.toFixed(1)}px">
+                <path class="cord" pathLength="1" d="M${ax.toFixed(1)} ${ay.toFixed(1)} L${cx} ${TY + 12}"/>
+                <g class="tg${k > 1 ? ' paid' : ''}" style="transform-origin:${cx}px ${TY}px">
+                    <rect class="tagb" x="${TX[k]}" y="${TY}" width="${TW}" height="${TH}" rx="12"/><circle class="hole" cx="${cx}" cy="${TY + 12}" r="4.5"/>
+                    <text class="ord" x="${TX[k] + TW - 9}" y="${TY + 18}" text-anchor="end">${k + 1}</text>
+                    <circle class="mk" cx="${cx}" cy="${TY + 46}" r="17"/><text class="mkt" x="${cx}" y="${TY + 52}" text-anchor="middle">${m}</text>
+                    <text class="nm" x="${cx}" y="${TY + 84}" text-anchor="middle">${n}</text><text class="lbl" x="${cx}" y="${TY + 99}" text-anchor="middle">${sub}</text>
+                    ${k < 2 ? `<rect class="slot" x="${TX[k] + 12}" y="${TY + 108}" width="${TW - 24}" height="14" rx="7"/><text class="dots d${k}" x="${cx}" y="${TY + 119}" text-anchor="middle">••••••</text>
+                    <g transform="translate(${TX[k] + TW - 4} ${TY + TH - 4})"><g class="ck ck${k}"><circle r="10"/><path d="M-4.5 0l3 3 6-6"/></g></g>` : ''}
+                </g>
+            </g>`; }).join('')}
+            <path class="hop" pathLength="1" d="M ${TX[0] + TW / 2} ${TY + TH + 10} C ${TX[0] + TW / 2} ${TY + TH + 44}, ${TX[1] + TW / 2} ${TY + TH + 44}, ${TX[1] + TW / 2} ${TY + TH + 12} m -6 7 l 6 -7 l 6 7"/>
+            <text class="hand" x="462" y="350" text-anchor="end">busy? the next key answers</text>
+        </svg>
+    </div>`;
+    function playKeys(stage) {
+        const anims = [], D = 9000, svg = stage.querySelector('svg');
+        svg.querySelectorAll('.cord').forEach((c, k) => loop(anims, c, kf([0, { strokeDashoffset: 1 }], [0.02 + k * 0.05, { strokeDashoffset: 1 }], [0.07 + k * 0.05, { strokeDashoffset: 0 }], [0.95, { strokeDashoffset: 0 }], [0.99, { strokeDashoffset: 1 }]), D, { easing: ease.out }));
+        svg.querySelectorAll('[class^="tg"]').forEach((t, k) => {
+            const o = k > 1 ? 0.55 : 1;
+            loop(anims, t, kf([0, { opacity: 0, transform: 'scale(.6) rotate(-8deg)' }], [0.06 + k * 0.05, { opacity: 0, transform: 'scale(.6) rotate(-8deg)' }], [0.12 + k * 0.05, { opacity: o, transform: 'none' }], [0.95, { opacity: o, transform: 'none' }], [0.99, { opacity: 0, transform: 'scale(.6)' }]), D, { easing: ease.spring });
+        });
+        [0, 1].forEach(k => {
+            const t = 0.34 + k * 0.14;
+            loop(anims, svg.querySelector(`.d${k}`), kf([0, { opacity: 0 }], [t, { opacity: 0 }], [t + 0.05, { opacity: 1 }], [0.95, { opacity: 1 }], [0.99, { opacity: 0 }]), D);
+            loop(anims, svg.querySelector(`.ck${k}`), kf([0, { opacity: 0, transform: 'scale(2.2)' }], [t + 0.06, { opacity: 0, transform: 'scale(2.2)' }], [t + 0.08, { opacity: 1, transform: 'scale(1)' }], [t + 0.09, { opacity: 1, transform: 'scale(1.12)' }], [t + 0.1, { opacity: 1, transform: 'scale(1)' }], [0.95, { opacity: 1, transform: 'scale(1)' }], [0.99, { opacity: 0, transform: 'scale(1)' }]), D, { easing: ease.slam });
+        });
+        loop(anims, svg.querySelector('.loop-hi'), kf([0, { strokeDashoffset: 1 }], [0.62, { strokeDashoffset: 1 }], [0.72, { strokeDashoffset: 0 }], [0.95, { strokeDashoffset: 0 }], [0.99, { strokeDashoffset: 1 }]), D, { easing: ease.out });
+        loop(anims, svg.querySelector('.hop'), kf([0, { strokeDashoffset: 1 }], [0.66, { strokeDashoffset: 1 }], [0.76, { strokeDashoffset: 0 }], [0.95, { strokeDashoffset: 0 }], [0.99, { strokeDashoffset: 1 }]), D, { easing: ease.out });
+        loop(anims, svg.querySelector('.hand'), kf([0, { opacity: 0 }], [0.74, { opacity: 0 }], [0.8, { opacity: 1 }], [0.95, { opacity: 1 }], [0.99, { opacity: 0 }]), D);
+        return stop(anims);
+    }
+
+    /* ── 10 · The Atelier: the theme flips, ⌘K opens the palette, and The Attic tab tucks itself away ── */
+    const yours = () => `
+    <div class="sc sc-yours">
+        <div class="win yw">
+            <div class="win-bar"><i></i><i></i><i></i><span>vettly · atelier</span></div>
+            <div class="win-body y-body">
+                <nav class="y-side">${[['house', 'Daybook'], ['target', 'Prep Studio'], ['bento', 'Brain Bento'], ['chats', 'Live Copilot']].map(([i, t], k) => `<span class="y-nav${k ? '' : ' on'}">${ic(i)}<b>${t}</b></span>`).join('')}
+                    <span class="y-nav y-attic">${ic('attic')}<b>The Attic</b></span></nav>
+                <div class="y-main">
+                    <p class="v-tag">${ic('palette')}Atelier · looks</p>
+                    <div class="y-swatches">${[['Parchment', '#f4efe4', '#e8590c'], ['Night', '#0d1324', '#38bdf8'], ['Notebook', '#fbfbf7', '#2f7d5b']].map(([n, b, a], k) => `<span class="y-sw s${k}${k ? '' : ' on'}" style="--b:${b};--a:${a}"><i></i><small>${n}</small></span>`).join('')}</div>
+                    <div class="y-row"><span>${ic('attic')}Show The Attic</span><span class="y-tg"><i></i></span></div>
+                    <div class="y-keys"><kbd class="k1">⌘</kbd><kbd class="k2">K</kbd><span>jump anywhere</span></div>
+                </div>
+            </div>
+            <div class="y-night" aria-hidden="true"></div>
+            <div class="y-pal"><p class="y-q">${ic('search')}<span class="y-typed">bento</span></p><p class="y-hit">${ic('bento')}Brain Bento<small>G B</small></p><p>${ic('palette')}Atelier<small>G L</small></p></div>
+            <svg class="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3l14 8-6 1.6L10 19z"/></svg>
+        </div>
+    </div>`;
+    function playYours(stage) {
+        const anims = [], D = 11000, root = stage.querySelector('.sc-yours'), winEl = root.querySelector('.yw');
+        root.classList.add('playing');
+        const pos = el => { let x = 0, y = 0; for (let n = el; n && n !== winEl; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; } return [x + el.offsetWidth * 0.5, y + el.offsetHeight * 0.55]; };
+        const at = el => { const [x, y] = pos(el); return `translate(${x}px, ${y}px)`; };
+        const sw1 = root.querySelector('.s1'), sw0 = root.querySelector('.s0'), tg = root.querySelector('.y-tg');
+        const park = `translate(${winEl.clientWidth * 0.82}px, ${winEl.clientHeight * 0.9}px)`;
+        const C = (t, tr, s = 1) => [t, { transform: tr, scale: s }];
+        loop(anims, root.querySelector('.cursor'), kf(C(0, park), C(0.06, park), C(0.12, at(sw1)), C(0.13, at(sw1), 0.8), C(0.145, at(sw1)), C(0.2, park), C(0.56, park), C(0.64, at(tg)), C(0.65, at(tg), 0.8), C(0.665, at(tg)),
+            C(0.72, park), C(0.84, park), C(0.89, at(sw0)), C(0.9, at(sw0), 0.8), C(0.915, at(sw0)), C(0.97, park)), D, { easing: 'cubic-bezier(.45,0,.2,1)' });
+        // the theme flips from the click, as a circle, then flips back near the end
+        const [cx, cy] = pos(sw1), [bx, by] = pos(sw0), r = (x, y, p) => `circle(${p} at ${x}px ${y}px)`;
+        loop(anims, root.querySelector('.y-night'), kf([0, { clipPath: r(cx, cy, '0%') }], [0.135, { clipPath: r(cx, cy, '0%') }], [0.2, { clipPath: r(cx, cy, '150%') }], [0.9, { clipPath: r(bx, by, '150%') }], [0.96, { clipPath: r(bx, by, '0%') }]), D, { easing: ease.out });
+        const ring = { boxShadow: '0 0 0 0.5cqw var(--accent)' }, none = { boxShadow: '0 0 0 0 transparent' };
+        loop(anims, sw0, kf([0, ring], [0.13, ring], [0.14, none], [0.9, none], [0.91, ring]), D);
+        loop(anims, sw1, kf([0, none], [0.13, none], [0.14, ring], [0.9, ring], [0.91, none]), D);
+        // ⌘ then K, the palette opens, "bento" types itself, the hit lights up, the palette closes
+        const press = (t) => kf([0, { transform: 'none' }], [t, { transform: 'none' }], [t + 0.01, { transform: 'translateY(0.4cqw)' }], [t + 0.05, { transform: 'translateY(0.4cqw)' }], [t + 0.06, { transform: 'none' }]);
+        loop(anims, root.querySelector('.k1'), press(0.27), D); loop(anims, root.querySelector('.k2'), press(0.29), D);
+        loop(anims, root.querySelector('.y-pal'), kf([0, { opacity: 0, transform: 'translate(-50%, -46%) scale(.92)' }], [0.3, { opacity: 0, transform: 'translate(-50%, -46%) scale(.92)' }], [0.33, { opacity: 1, transform: 'translate(-50%, -50%)' }],
+            [0.5, { opacity: 1, transform: 'translate(-50%, -50%)' }], [0.53, { opacity: 0, transform: 'translate(-50%, -50%) scale(.96)' }]), D, { easing: ease.spring });
+        loop(anims, root.querySelector('.y-typed'), kf([0, { clipPath: 'inset(0 100% 0 0)' }], [0.34, { clipPath: 'inset(0 100% 0 0)' }], [0.41, { clipPath: 'inset(0 0% 0 0)' }]), D, { easing: 'steps(5, end)' });
+        loop(anims, root.querySelector('.y-hit'), kf([0, { background: 'transparent' }], [0.42, { background: 'transparent' }], [0.44, { background: 'var(--accent-soft)' }], [0.5, { background: 'var(--accent-soft)' }], [0.52, { background: 'transparent' }]), D);
+        // the switch flips off and The Attic tucks out of the sidebar, then comes back for the next loop
+        loop(anims, tg, kf([0, { background: 'var(--ok)' }], [0.655, { background: 'var(--ok)' }], [0.67, { background: 'var(--st)' }], [0.95, { background: 'var(--st)' }], [0.97, { background: 'var(--ok)' }]), D);
+        loop(anims, tg.querySelector('i'), kf([0, { transform: 'none' }], [0.655, { transform: 'none' }], [0.67, { transform: 'translateX(-2.6cqw)' }], [0.95, { transform: 'translateX(-2.6cqw)' }], [0.97, { transform: 'none' }]), D, { easing: ease.spring });
+        loop(anims, root.querySelector('.y-attic'), kf([0, { opacity: 1, transform: 'none', maxHeight: '8cqw' }], [0.67, { opacity: 1, transform: 'none', maxHeight: '8cqw' }], [0.72, { opacity: 0, transform: 'translateX(-6cqw)', maxHeight: '0cqw' }],
+            [0.95, { opacity: 0, transform: 'translateX(-6cqw)', maxHeight: '0cqw' }], [0.99, { opacity: 1, transform: 'none', maxHeight: '8cqw' }]), D, { easing: ease.out });
+        const halt = stop(anims);
+        return () => { halt(); root.classList.remove('playing'); };
+    }
+
+    const MARKUP = { welcome, studio, badge, context, router, polish, keys, yours };
+    const PLAY = { welcome: playWelcome, studio: playStudio, context: playContext, router: playRouter, polish: playPolish, keys: playKeys, yours: playYours };
     return {
         markup: name => (MARKUP[name] ? MARKUP[name]() : ''),
         play: (name, stage) => { if (still() || !PLAY[name] || !stage.animate) return () => {}; try { return PLAY[name](stage); } catch (e) { return () => {}; } },

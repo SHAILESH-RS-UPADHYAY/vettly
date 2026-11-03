@@ -50,3 +50,4 @@
 }
 :root[data-motion="calm"] .tour-card.tour-in { animation: none; }
 :root[data-motion="calm"] .tour-ring { transition: none; }
+.tour-card #tour-body a { color: var(--accent-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
