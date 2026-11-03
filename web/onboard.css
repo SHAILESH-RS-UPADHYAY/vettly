@@ -220,7 +220,7 @@
 .rtr .lane.l2, .rtr .lane.l3 { stroke-dasharray: 3 5; }
 .rtr .dial { fill: var(--paper-2); stroke: var(--accent); stroke-width: 2; }
 .rtr .tk { stroke: var(--st); stroke-width: 1.5; stroke-linecap: round; }
-.rtr .needle { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; transform-origin: 236px 188px; rotate: -25deg; }   /* at rest it points at Gemini, which answered */
+.rtr .needle { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; transform-origin: 236px 188px; rotate: -25deg; }   /* at rest it points at Groq, which answered */
 .rtr .cap { fill: var(--accent); }
 .rtr .pulse { fill: none; stroke: var(--accent); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
 .rtr .prov rect { fill: var(--paper-2); stroke: var(--rule-2, var(--rule)); stroke-width: 1.2; }
@@ -259,6 +259,91 @@
 .sc-chip { position: absolute; left: 7%; bottom: 8%; display: inline-flex; align-items: center; gap: 1cqw; padding: 1.3cqw 2.4cqw; border-radius: 99px; background: var(--pill); color: var(--on-pill); font: 600 2.1cqw/1 var(--font-body); }
 .sc-chip svg { width: 2.6cqw; height: 2.6cqw; }
 
+/* 09 · Key ring */
+.krg .loop { fill: none; stroke: color-mix(in srgb, var(--ink) 55%, transparent); stroke-width: 6; }
+.krg .loop-hi { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 1; transform-box: fill-box; transform-origin: center; rotate: -90deg; }
+.krg .cord { fill: none; stroke: color-mix(in srgb, var(--ink) 45%, transparent); stroke-width: 1.6; stroke-dasharray: 1; }
+.krg .sw { animation: krSwing 3s var(--ease-in-out) infinite alternate; }
+.krg .sw1 { animation-duration: 3.4s; animation-delay: -1.2s; } .krg .sw2 { animation-duration: 2.8s; animation-delay: -0.6s; } .krg .sw3 { animation-duration: 3.7s; animation-delay: -2s; }
+@keyframes krSwing { from { rotate: -2.4deg; } to { rotate: 2.4deg; } }
+.krg .tagb { fill: var(--paper-2); stroke: var(--accent); stroke-width: 1.6; }
+.krg .paid { opacity: 0.55; } .krg .paid .tagb { stroke: var(--rule-2, var(--rule)); stroke-dasharray: 4 4; }
+.krg .hole { fill: var(--paper-3); stroke: var(--st); stroke-width: 1.2; }
+.krg .ord { font: 800 10px var(--font-mono); fill: var(--muted); }
+.krg .mk { fill: var(--accent-soft); } .krg .paid .mk { fill: var(--paper-3); }
+.krg .mkt { font: 800 16px var(--font-display); fill: var(--accent-ink); } .krg .paid .mkt { fill: var(--ink-2); }
+.krg .nm { font: 800 14px var(--font-display); }
+.krg .slot { fill: var(--paper-3); stroke: var(--st); }
+.krg .dots { font: 700 10px var(--font-mono); letter-spacing: 1.5px; fill: var(--ink-2); }
+.krg .ck circle { fill: var(--ok); } .krg .ck path { fill: none; stroke: var(--paper-2); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.krg .ck { transform-box: fill-box; transform-origin: center; }
+.krg .hop { fill: none; stroke: var(--hand); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+.krg .hand { font: 700 19px 'Caveat', var(--font-body); fill: var(--hand); }
+
+/* 10 · The Atelier */
+.sc-yours { display: grid; place-items: center; padding: 5cqw 5cqw 8cqw; }
+.y-body { grid-template-columns: 27cqw 1fr; }
+.y-side { display: grid; align-content: start; gap: 0.8cqw; padding: 2.4cqw 1.6cqw; border-right: 1px solid var(--rule); background: var(--sidebar, var(--paper-3)); overflow: hidden; }
+.y-nav { display: flex; align-items: center; gap: 1.2cqw; height: 5.4cqw; max-height: 8cqw; padding: 0 1.4cqw; border-radius: 1.4cqw; color: var(--ink-2); font: 600 2.1cqw/1 var(--font-body); white-space: nowrap; overflow: hidden; }
+.y-nav b { font-weight: 600; }
+.y-nav svg { width: 2.8cqw; height: 2.8cqw; flex: none; }
+.y-nav.on { background: var(--pill); color: var(--on-pill); }
+.y-attic { border: 1px dashed var(--rule-2, var(--rule)); }
+.y-main { display: grid; align-content: start; gap: 2.4cqw; padding: 3cqw 3.4cqw; min-width: 0; }
+.y-swatches { position: relative; z-index: 4; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6cqw; }   /* above the flip layer, so each swatch keeps its true colours */
+.y-sw { display: grid; gap: 0.8cqw; padding: 1cqw; border-radius: 1.6cqw; border: 1px solid var(--rule); background: var(--paper-2); }
+.y-sw.on { box-shadow: 0 0 0 0.5cqw var(--accent); }
+.y-sw i { height: 7cqw; border-radius: 1cqw; background: linear-gradient(135deg, var(--b) 0 62%, var(--a) 62% 100%); box-shadow: inset 0 0 0 1px var(--st); }
+.y-sw small { font: 600 1.7cqw/1 var(--font-body); color: var(--ink-2); text-align: center; }
+.y-row { display: flex; align-items: center; justify-content: space-between; gap: 1.4cqw; padding: 1.6cqw 2cqw; border-radius: 1.6cqw; background: var(--paper-3); font: 600 2.1cqw/1 var(--font-body); }
+.y-row > span:first-child { display: inline-flex; align-items: center; gap: 1cqw; }
+.y-row svg { width: 2.6cqw; height: 2.6cqw; color: var(--accent-ink); }
+.y-tg { position: relative; z-index: 4; flex: none; width: 6cqw; height: 3.4cqw; border-radius: 99px; background: var(--ok); }
+.y-tg i { position: absolute; right: 0.4cqw; top: 0.4cqw; width: 2.6cqw; height: 2.6cqw; border-radius: 50%; background: var(--paper-2); box-shadow: 0 0.2cqw 0.4cqw rgba(0, 0, 0, 0.2); }
+.y-keys { display: flex; align-items: center; gap: 1cqw; font: 600 2cqw/1 var(--font-body); color: var(--ink-2); }
+.y-keys kbd { display: grid; place-items: center; min-width: 5cqw; height: 5cqw; padding: 0 1cqw; border: 1px solid var(--rule-2, var(--rule)); border-bottom-width: 0.5cqw; border-radius: 1.2cqw; background: var(--paper-2); font: 700 2.3cqw/1 var(--font-mono); color: var(--ink); }
+.y-keys span { margin-left: 0.8cqw; }
+.y-night { position: absolute; inset: 0; z-index: 3; background: #fff; mix-blend-mode: difference; pointer-events: none; clip-path: circle(0% at 50% 50%); }
+.y-pal { position: absolute; left: 58%; top: 52%; z-index: 4; width: 52%; display: grid; gap: 0.4cqw; padding: 1.2cqw; border: 1px solid var(--rule); border-radius: 2cqw; background: var(--paper-2); box-shadow: 0 3cqw 6cqw -2cqw rgba(20, 14, 4, 0.45); opacity: 0; transform: translate(-50%, -50%); }
+.y-pal p { display: flex; align-items: center; gap: 1.2cqw; padding: 1.2cqw 1.4cqw; border-radius: 1.2cqw; font: 600 2.1cqw/1 var(--font-body); color: var(--ink); }
+.y-pal p small { margin-left: auto; font: 700 1.6cqw/1 var(--font-mono); color: var(--muted); }
+.y-pal svg { width: 2.6cqw; height: 2.6cqw; color: var(--accent-ink); }
+.y-pal .y-q { border-bottom: 1px solid var(--rule); border-radius: 0; padding-bottom: 1.6cqw; margin-bottom: 0.4cqw; }
+.y-typed { display: inline-block; }
+.sc-yours .cursor { z-index: 5; }
+.sc-yours.playing .cursor { opacity: 1; }
+
+/* the keys page: two paste boxes */
+.ob-keys { display: grid; gap: 10px; }
+.ob-key { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 6px 12px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 14px; background: var(--card-bg, var(--paper-2));
+    transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.ob-key-mark { grid-row: span 2; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); font: 800 1.05rem/1 var(--font-display); }
+.ob-key-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.ob-key-head b { font: 700 0.98rem/1.2 var(--font-body); }
+.ob-key-head .kr-badge { font-size: 0.7rem; }
+.ob-key-in { grid-column: 1 / -1; display: flex; gap: 8px; }
+.ob-key-in input { flex: 1; min-width: 0; min-height: 44px; padding: 0 12px; border: 1px solid var(--rule-2, var(--rule)); border-radius: 10px; background: var(--paper-2); color: var(--ink); font: 500 0.92rem/1 var(--font-mono); }
+.ob-key-in input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ob-key-in button { min-height: 44px; }
+.ob-key-links { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 0.86rem; }
+.ob-key-links a, .ob-key-links button { display: inline-flex; align-items: center; gap: 5px; padding: 4px 0; border: 0; background: none; color: var(--accent-ink); font: 600 0.86rem/1.2 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ob-key-links svg { width: 13px; height: 13px; }
+.ob-key-state { grid-column: 1 / -1; font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+.ob-key-state:empty { display: none; }
+.ob-key.is-saved { border-color: var(--ok); background: color-mix(in srgb, var(--ok-bg) 60%, var(--paper-2)); }
+.ob-key.is-saved .ob-key-mark { background: var(--ok); color: var(--paper-2); }
+.ob-key.is-saved .ob-key-state { color: var(--ok); }
+.ob-key.is-bad .ob-key-state { color: var(--bad); }
+.ob-key-note { font-size: 0.84rem; color: var(--muted); line-height: 1.5; }
+.ob-key-note code { font-size: 0.8rem; }
+/* the yours page: the Attic switch and three shortcuts */
+.ob-yours { display: grid; gap: 10px; }
+.ob-yours .tab-switch { padding: 12px 14px; border: 1px solid var(--rule); border-radius: 14px; background: var(--card-bg, var(--paper-2)); }
+.ob-kbd { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.ob-kbd p { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--ink-2); }
+.ob-kbd kbd { min-width: 26px; padding: 3px 7px; border: 1px solid var(--rule-2, var(--rule)); border-bottom-width: 2.5px; border-radius: 7px; background: var(--paper-2); font: 700 0.78rem/1.2 var(--font-mono); color: var(--ink); text-align: center; }
+@media (hover: none) { .ob-kbd { display: none; } }
+
 /* ── Narrow screens: one column, the plate on top ── */
 @media (max-width: 56rem) {
     .ob-page { grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -268,7 +353,9 @@
 @media (max-width: 40rem) {
     .onboard-form { gap: 14px; padding: 16px 16px 14px; }
     .ob-brand { font-size: 0; gap: 0; }
-    .ob-progress { gap: 8px; }
+    .ob-progress { gap: 6px; min-width: 0; }
+    .ob-progress li { width: 7px; height: 7px; }
+    .onboard .theme-switch .ts-label { display: none; }
     .ob-ask .ob-stage { display: none; }   /* the keyboard needs the room */
     .ob-page h2 { font-size: 1.45rem; }
     .ob-num { display: none; }

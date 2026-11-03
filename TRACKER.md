@@ -72,9 +72,15 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 7 · Onboarding and tour
 
-- [ ] "Power it up" page (Gemini + Groq free, fallback), router scene reordered
-- [ ] "Make it yours" page (Atelier, shortcuts, hide The Attic)
-- [ ] Tour stops for the new tabs and the Key Ring (with the AI Studio link)
+- [x] "Power it up" page: a swinging key-ring plate, paste-to-save boxes for the two free keys (Gemini, Groq) with
+      "Get a free key" links and the step-by-step guide; a rejected key reopens its box; local mode explains `.env`
+- [x] Router scene and copy reordered: Gemini first, then Groq, Claude, OpenAI; context page says resume is optional
+- [x] "Make it yours" page: an Atelier plate (theme flips, ⌘K palette, The Attic tucks away), the Attic switch
+      (saved to the account) and three shortcuts (hidden on touch screens)
+- [x] Tour: Daybook, Agent Toolbelt (optional), Prep, Bento, Copilot, The Attic (skipped when hidden), Atelier,
+      Key Ring (with the aistudio.google.com/apikey link) and About me
+- [x] Checked: fresh account through all 10 pages and the tour; key save, bad key, guide round-trip; iPhone 14/SE,
+      iPad, dark; no overflow, no errors
 
 ## Phase 8 · Launch hardening
 
