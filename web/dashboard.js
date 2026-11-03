@@ -2500,18 +2500,5 @@ function showPromptModal(options = {}) {
 }
 
 // ─── Home: today at a glance (Brain Bento progress and the Prep answers waiting for review) ───
-function renderToday() {
-    const el = document.getElementById('today-card');
-    if (!el) return;
-    let bento = {};
-    try { bento = JSON.parse(localStorage.getItem('vettly_bento') || '{}'); } catch (e) { /* storage blocked */ }
-    const eaten = (bento.done?.[new Date().toLocaleDateString('en-CA')] || []).length;
-    const set = (key, text) => { el.querySelector(`[data-today="${key}"]`).textContent = text; };
-    set('eaten', `${eaten} of 5 concepts`);
-    set('streak', bento.streak ? `${bento.streak} day streak` : 'Start a streak today');
-    el.querySelector('.ring-fill').style.strokeDashoffset = 125.66 * (1 - eaten / 5);
-    if (!prep.loaded) return;
-    set('review', `${prep.entries.filter(e => prepStatus(e) === 'review').length} answers to review`);
-    set('bank', `${prep.entries.length} questions in Prep Studio`);
-}
-renderToday();
+// the Daybook (daybook.js) owns the home page; it re-reads everything when called
+function renderToday() { window.Daybook?.refresh?.(); }

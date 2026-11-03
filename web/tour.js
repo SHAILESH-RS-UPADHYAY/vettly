@@ -130,3 +130,6 @@ const Tour = (() => {
 
     return { start, maybeStart, seen };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Tour = Tour;

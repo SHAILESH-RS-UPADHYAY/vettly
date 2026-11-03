@@ -60,6 +60,7 @@
     <link rel="stylesheet" href="./bento.css?v=8.2">
     <link rel="stylesheet" href="./onboard.css?v=2.1">
     <link rel="stylesheet" href="./keyring.css?v=1.1">
+    <link rel="stylesheet" href="./daybook.css?v=1.2">
     <link rel="stylesheet" href="./tour.css?v=2.0">
 </head>
 <body data-section="home">
@@ -289,88 +290,94 @@
 
         <!-- ═══ OVERVIEW / POSTER PAGE ═══ -->
         <section class="page active" id="page-home">
-            <div class="page-inner">
-                
-                <!-- Poster Header -->
-                <div class="poster-header">
+            <div class="page-inner daybook">
+                <!-- Daybook: your day at a glance. daybook.js fills every number from your own data -->
+                <div class="poster-header db-head">
                     <div class="tape-corner" aria-hidden="true"></div>
-                    <div class="tape-corner right" aria-hidden="true"></div>
-                    <span class="handwritten-note" aria-hidden="true">Build smarter. Ship safer!</span>
-                    <h1>Career prep <em>architect</em></h1>
-                    <p>Architect your technical depth, mock sessions & role-specific mastery with precision</p>
-                    <h2 class="sr-only">How Vettly works</h2>
-                </div>
-                <section class="today-card" id="today-card" aria-label="Today">
-                    <div class="today-tile" style="--i:0">
-                        <svg class="bento-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="ring-fill" cx="24" cy="24" r="20" style="stroke-dasharray:125.66;stroke-dashoffset:125.66"/></svg>
-                        <div><b data-today="eaten">0 of 5 concepts</b><span data-today="streak">Start a streak today</span></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('bento', { animate: true })">Open Brain Bento</button>
-                    </div>
-                    <div class="today-tile" style="--i:1">
-                        <span class="today-ico" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
-                        <div><b data-today="review">Your prep bank</b><span data-today="bank">Generate your first question</span></div>
-                        <button type="button" class="btn btn-secondary btn-sm" onclick="switchSection('prep', { animate: true })">Review in Prep Studio</button>
-                    </div>
-                </section>
-
-                <!-- 4 Workflow Cards (Matching Poster Step 1..4) -->
-                <div class="poster-grid-4">
-                    <div class="step-card">
-                        <div class="step-number">1.</div>
-                        <h3>CONTEXT TOOLBELT</h3>
-                        <p>Upload resume, GitHub repos, job specs & STAR stories into vector index.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">2.</div>
-                        <h3>MULTI-MODEL ENGINE</h3>
-                        <p>Claude, Gemini & Llama orchestration for grounded technical synthesis.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">3.</div>
-                        <h3>LIVE MOCK COPILOT</h3>
-                        <p>Interactive technical & behavioral practice grounded in your real codebase.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">4.</div>
-                        <h3>PREP STUDIO HUD</h3>
-                        <p>Synthesize role-specific Q&A streams across 9 engineering categories.</p>
-                    </div>
+                    <span class="handwritten-note left" aria-hidden="true">your day, at a glance</span>
+                    <p class="db-date" data-db="date"></p>
+                    <h1><span data-db="greet">Hello</span>, <em data-db="name">friend</em></h1>
+                    <p data-db="sub">Your interview prep, one page at a time.</p>
+                    <h2 class="sr-only">Today</h2>
                 </div>
 
-                <!-- Embedded Generated Poster Visual Media Cards -->
-                <div class="poster-media-grid">
-                    <div class="poster-media-card">
-                        <img src="./agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>AGENT TOOLKIT PACK</h4>
-                            <p>Modular background skills: Code Generation, Retrieval Guardrails & Evaluation.</p>
+                <div class="db-grid">
+                    <!-- the one thing to do next -->
+                    <article class="db-card db-next" data-db="next" style="--i:0">
+                        <p class="db-kicker">Up next</p>
+                        <h3 data-db="next-title">Getting your day ready…</h3>
+                        <p data-db="next-text"></p>
+                        <div class="db-next-actions" data-db="next-actions"></div>
+                        <svg class="db-next-art" viewBox="0 0 120 120" aria-hidden="true"><path d="M60 8 L72 48 L112 60 L72 72 L60 112 L48 72 L8 60 L48 48Z"/></svg>
+                    </article>
+
+                    <!-- streak: the last seven days -->
+                    <article class="db-card db-streak" style="--i:1">
+                        <p class="db-kicker">Streak</p>
+                        <p class="db-big"><svg class="db-flame" aria-hidden="true"><use href="#i-fire"/></svg><b data-db="streak">0</b><span>days</span></p>
+                        <ol class="db-week" data-db="week" aria-label="The last seven days"></ol>
+                        <p class="db-small" data-db="streak-note">Finish a Brain Bento to start one.</p>
+                    </article>
+
+                    <!-- today's Brain Bento -->
+                    <article class="db-card db-bento" style="--i:2">
+                        <p class="db-kicker">Brain Bento</p>
+                        <div class="db-ring-row">
+                            <svg class="db-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20"/><circle class="db-ring-fill" data-db="ring" cx="24" cy="24" r="20" pathLength="1"/></svg>
+                            <p><b data-db="bento">0 of 5</b><span>ideas today</span></p>
                         </div>
-                    </div>
-                    <div class="poster-media-card">
-                        <img src="./blueprint_architect.webp" alt="Blueprint Architect" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>BLUEPRINT SPECIFICATION</h4>
-                            <p>Precision system design & database optimization stories ready for retrieval.</p>
-                        </div>
-                    </div>
-                    <div class="poster-media-card">
-                        <img src="./copilot_hud_panel.webp" alt="Copilot HUD Panel" width="1200" height="896" loading="lazy" decoding="async">
-                        <div class="poster-media-card-body">
-                            <h4>HUD CONTROL CENTER</h4>
-                            <p>Real-time readiness telemetry and multi-engine practice studio.</p>
-                        </div>
-                    </div>
+                        <button type="button" class="btn btn-secondary btn-sm" data-go="bento">Open today's box</button>
+                    </article>
+
+                    <!-- numbers that are really yours -->
+                    <article class="db-card db-stats" style="--i:3">
+                        <p class="db-kicker">Your practice</p>
+                        <dl>
+                            <div><dt>Questions</dt><dd data-db="q">0</dd></div>
+                            <div><dt>Accepted</dt><dd data-db="acc">0</dd></div>
+                            <div><dt>To review</dt><dd data-db="rev">0</dd></div>
+                            <div><dt>Copilot messages</dt><dd data-db="chat">0</dd></div>
+                        </dl>
+                    </article>
+
+                    <!-- quick actions: each one is a real shortcut from the registry -->
+                    <article class="db-card db-actions" style="--i:4">
+                        <div class="db-card-head"><p class="db-kicker">Quick actions</p><button type="button" class="db-link" data-go="atelier-keys">All shortcuts</button></div>
+                        <div class="db-action-grid" data-db="actions"></div>
+                    </article>
+
+                    <!-- set up your desk -->
+                    <article class="db-card db-setup" style="--i:5">
+                        <div class="db-card-head"><p class="db-kicker">Set up your desk</p><span class="db-pill" data-db="setup-count">0 / 5</span></div>
+                        <ul class="db-checklist" data-db="setup"></ul>
+                    </article>
+
+                    <!-- the fallback chain at a glance -->
+                    <article class="db-card db-keys" style="--i:6">
+                        <div class="db-card-head"><p class="db-kicker">AI keys</p><button type="button" class="db-link" data-go="settings">Key Ring</button></div>
+                        <ol class="db-chain" data-db="chain"></ol>
+                        <p class="db-small" data-db="keys-note"></p>
+                    </article>
                 </div>
 
-                <div style="text-align:center; margin-top:20px;">
-                    <button class="btn btn-primary" onclick="switchSection('setup', { animate: true })" style="padding:14px 28px; font-size:16px;">
-                        <span>Launch Context Toolbelt</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <!-- the rooms, as the poster shows them -->
+                <h2 class="db-section-title">Inside the studio</h2>
+                <div class="poster-media-grid db-rooms">
+                    <button type="button" class="poster-media-card" data-go="setup">
+                        <img src="./agent_toolbelt_case.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Agent Toolbelt</b><span>Everything Vettly knows about you. Resume, job post and GitHub, all optional.</span></span>
+                    </button>
+                    <button type="button" class="poster-media-card" data-go="prep">
+                        <img src="./blueprint_architect.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Prep Studio</b><span>Questions written for your role, with model answers you can refine.</span></span>
+                    </button>
+                    <button type="button" class="poster-media-card" data-go="chat">
+                        <img src="./copilot_hud_panel.webp" alt="" width="1200" height="896" loading="lazy" decoding="async">
+                        <span class="poster-media-card-body"><b>Live Copilot</b><span>Practise out loud. Answers come back in your own voice.</span></span>
                     </button>
                 </div>
             </div>
         </section>
-
         <!-- ═══ SETUP / CONTEXT TOOLBELT ═══ -->
         <section class="page" id="page-setup">
             <div class="page-inner">
@@ -1238,17 +1245,18 @@
     <script src="./vendor/purify-3.4.16.min.js"></script>
     <script src="./vendor/gsap-3.13.0.min.js"></script>
     <script src="./vendor/gsap-flip-3.13.0.min.js"></script>
-    <script src="./auth.js?v=9.2"></script>
-    <script src="./motion.js?v=8.1"></script>
-    <script src="./appearance.js?v=8.9"></script>
-    <script src="./dashboard.js?v=8.6"></script>
+    <script src="./auth.js?v=9.3"></script>
+    <script src="./motion.js?v=8.2"></script>
+    <script src="./appearance.js?v=9.0"></script>
+    <script src="./dashboard.js?v=8.7"></script>
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
-    <script src="./bento.js?v=8.5"></script>
-    <script src="./shortcuts.js?v=1.0"></script>
-    <script src="./keyring.js?v=1.1"></script>
-    <script src="./tour.js?v=2.0"></script>
-    <script src="./onboard-scenes.js?v=2.1"></script>
-    <script src="./onboard.js?v=9.3"></script>
+    <script src="./bento.js?v=8.6"></script>
+    <script src="./shortcuts.js?v=1.1"></script>
+    <script src="./keyring.js?v=1.2"></script>
+    <script src="./daybook.js?v=1.2"></script>
+    <script src="./tour.js?v=2.1"></script>
+    <script src="./onboard-scenes.js?v=2.2"></script>
+    <script src="./onboard.js?v=9.4"></script>
 </body>
 </html>

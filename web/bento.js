@@ -239,3 +239,6 @@ const Bento = (() => {
 
     return { render, useField };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Bento = Bento;
