@@ -9,7 +9,7 @@ const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:8766' 
 // ─── Section Navigation ──────────────────────────────────────
 
 // Sections reached through the More sheet on phones
-const MORE_SECTIONS = ['setup', 'aboutme', 'settings'];
+const MORE_SECTIONS = ['setup', 'attic', 'atelier', 'settings', 'aboutme'];
 const sideNav = document.querySelector('.sidebar-nav');
 
 // User-driven switches animate in a view transition; programmatic ones (Mentor jumps) apply at once
@@ -43,7 +43,9 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'prep') loadPrepQuestions();
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
     if (name === 'home') renderToday();
-    if (name === 'settings') Appearance.renderSettings();
+    if (name === 'atelier') { Appearance.renderSettings(); window.Register?.renderAtelier?.(); }
+    if (name === 'settings' && typeof KeyRing !== 'undefined') { KeyRing.load(); Passport.load(); }
+    if (name === 'attic') loadRecycleBin();
     
     // Auto-scroll chat to bottom when switching to chat section
     if (name === 'chat') {
@@ -92,8 +94,8 @@ addEventListener('hashchange', () => {
 // ─── Hero Mock Typing ────────────────────────────────────────
 
 const mockConversations = [
-    { question: "Tell me about a challenging bug you debugged recently.", filler: "Yeah so actually... during my RADAR project we hit this tricky issue with the scraping pipeline...", answer: "So we were using Puppeteer for job scraping, and the DOM selectors kept breaking because LinkedIn changed class names weekly. I built a 3-layer fallback system — CSS selectors first, then XPath, then AI-based element detection. Reduced scraping failures from 40% to under 2%." },
-    { question: "How do you handle tight deadlines?", filler: "Hmm that's a good one... I actually had a situation just last month...", answer: "I break deadlines into micro-milestones — daily checkpoints. During my SENTINEL project, we had 2 weeks to build an entire log analysis pipeline. I identified the critical path, cut scope on nice-to-haves, and shipped the core in 10 days." },
+    { question: "Tell me about a time you handled a difficult situation at work or college.", filler: "Sure, one that comes to mind is from my final-year project...", answer: "Two weeks before our deadline, a teammate dropped out. I re-split the work by strengths, set a 10-minute daily check-in, and we submitted on time with a result our guide called the best in the batch." },
+    { question: "How do you handle tight deadlines?", filler: "Hmm, good question... I had exactly this last semester...", answer: "I break the work into daily checkpoints and protect the first hour of each day for the hardest task. When something slips, I say so early and agree on what can move." },
 ];
 let mockIdx = 0;
 
@@ -223,6 +225,7 @@ function createAssistantBubble(text, question) {
 
 // Restore chat messages from backend on load
 async function restoreChatMessages() {
+    if (window.Register) return Register.load();   // the register (register.js) owns Live Copilot now
     try {
         const res = await fetch(`${API_BASE}/api/chat/history`);
         const data = await res.json();
@@ -299,10 +302,12 @@ async function sendChatMessage() {
     const welcome = messagesDiv.querySelector('.chat-welcome');
     if (welcome) welcome.remove();
 
-    // Add user bubble
+    // Add user bubble (with the practice stopwatch's time, if it was running)
+    const thinkMs = window.Register?.takeLap?.() || null;
     const userBubble = document.createElement('div');
     userBubble.className = 'chat-bubble user';
     userBubble.textContent = msg;
+    window.Register?.decorateUser?.(userBubble, { think_ms: thinkMs, ts: new Date().toISOString() });
     messagesDiv.appendChild(userBubble);
 
     input.value = '';
@@ -323,14 +328,17 @@ async function sendChatMessage() {
         const res = await fetch(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20) }),
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: window.Register?.openId?.() || null, think_ms: thinkMs }),
         });
         const data = await res.json();
         typingBubble.remove();
 
         const reply = data.response || data.error || 'No response';
         const aiBubble = createAssistantBubble(reply, msg);
+        aiBubble.dataset.time = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         messagesDiv.appendChild(aiBubble);
+        window.Register?.write?.(aiBubble);   // the answer is written in ink, word by word
+        window.Register?.touch?.();
 
         chatHistory.push({ role: 'assistant', content: reply });
         // Server handles persistence now
@@ -839,12 +847,6 @@ async function prepCopy(index, btn) {
         timer = setTimeout(() => { prep.f.q = search.value.trim(); prepRender(); }, 220);
     });
 
-    // "/" jumps to search while Prep Studio is open
-    document.addEventListener('keydown', e => {
-        if (e.key !== '/' || document.body.dataset.section !== 'prep' || e.target.closest('input, textarea, [contenteditable]')) return;
-        e.preventDefault();
-        search.focus();
-    });
 
     // phones and tablets: the dock moves into the Filters sheet while it is open
     const sheetSlot = sheet.querySelector('[data-sheet-slot]');
@@ -1045,33 +1047,6 @@ async function loadHistory(force = false) {
             console.warn('Primary history fetch failed:', e);
         }
 
-        // Resilient cross-sync: If local server has fewer sessions or we are on local dashboard, check cloud backup
-        const cloudUrl = 'https://acemate-backend.onrender.com';
-        if (API_BASE !== cloudUrl) {
-            try {
-                const cloudRes = await fetch(`${cloudUrl}/api/history`, { signal: AbortSignal.timeout ? AbortSignal.timeout(2500) : undefined });
-                if (cloudRes.ok) {
-                    const cloudData = await cloudRes.json();
-                    const cloudSessions = cloudData.sessions || [];
-                    const localIds = new Set(rawSessions.map(s => String(s.id)));
-                    let mergedAny = false;
-                    for (const cs of cloudSessions) {
-                        const cid = String(cs.id);
-                        if (!localIds.has(cid) && cs.entries && cs.entries.length > 0) {
-                            rawSessions.push(cs);
-                            localIds.add(cid);
-                            mergedAny = true;
-                            // Silently persist to local server
-                            fetch(`${API_BASE}/api/history`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(cs)
-                            }).catch(() => {});
-                        }
-                    }
-                }
-            } catch (e) { /* silent timeout */ }
-        }
 
         // Check if data actually changed to eliminate all unnecessary DOM re-renders and blinking
         const currentDataHash = JSON.stringify(rawSessions);
@@ -1199,7 +1174,7 @@ async function copyHistorySession(id, btn) {
             minute: '2-digit'
         }) : 'Recorded Session';
 
-        let copyText = `Acemate Interview Session #${id} (${timeStr})\n`;
+        let copyText = `Vettly Interview Session #${id} (${timeStr})\n`;
         copyText += `Total Questions: ${session.entries.length}\n`;
         copyText += `==================================================\n\n`;
 
@@ -1357,6 +1332,7 @@ async function uploadResume(file) {
         if (data.status === 'success') {
             document.getElementById('resume-status').classList.remove('hidden');
             document.getElementById('resume-filename').textContent = file.name;
+            renderResumeTags(data.parsed_sections);
             uploadZone.classList.add('hidden');
             updateChecklist('check-resume', true);
             document.getElementById('autofill-bar').style.display = '';
@@ -1487,13 +1463,56 @@ document.getElementById('github-import-btn')?.addEventListener('click', async ()
     finally { importBtn.disabled = false; }
 });
 
+
+// ─── Toolbelt helpers: resume sections and the skills a job post asks for ───
+
+const RESUME_SECTION_LABELS = { summary: 'Summary', experience: 'Experience', projects: 'Projects', skills: 'Skills', education: 'Education', achievements: 'Achievements', certifications: 'Certifications' };
+function renderResumeTags(sections) {
+    const box = document.getElementById('resume-meta-tags');
+    if (!box) return;
+    const found = (sections || []).filter(k => RESUME_SECTION_LABELS[k]);
+    box.innerHTML = found.map(k => `<span class="resume-meta-pill"><svg class="i em-i" aria-hidden="true"><use href="#i-check"/></svg>${RESUME_SECTION_LABELS[k]}</span>`).join('');
+}
+
+// Skills recruiters write into job posts, across fields; the first matches become chips
+const JD_SKILLS = ['Python', 'Java', 'JavaScript', 'TypeScript', 'SQL', 'Excel', 'Power BI', 'Tableau', 'React', 'Node.js', 'AWS', 'Azure', 'Docker', 'Kubernetes',
+    'Machine Learning', 'LLMs', 'RAG', 'Data Analysis', 'Statistics', 'APIs', 'Git', 'Figma', 'Photoshop', 'Canva', 'UI/UX', 'User Research', 'Prototyping',
+    'SEO', 'SEM', 'Google Analytics', 'Google Ads', 'Content Marketing', 'Social Media', 'Copywriting', 'Email Marketing', 'Brand Strategy', 'Market Research',
+    'CRM', 'Salesforce', 'HubSpot', 'Lead Generation', 'Negotiation', 'B2B Sales', 'Account Management', 'Customer Success', 'Cold Calling',
+    'Financial Modelling', 'Valuation', 'Accounting', 'Tally', 'GST', 'Audit', 'Budgeting', 'Forecasting', 'Risk Management', 'Compliance', 'Investment Banking',
+    'Project Management', 'Agile', 'Scrum', 'Stakeholder Management', 'Supply Chain', 'Logistics', 'Inventory', 'Procurement', 'Six Sigma', 'Operations',
+    'Patient Care', 'Nursing', 'Triage', 'BLS', 'ACLS', 'EHR', 'Medication Administration', 'Infection Control', 'Clinical Documentation', 'ICU', 'OPD', 'Pharmacology',
+    'Teaching', 'Curriculum', 'Lesson Planning', 'Classroom Management', 'Legal Research', 'Drafting', 'Contracts', 'Litigation', 'Due Diligence',
+    'Hospitality', 'Front Office', 'Guest Relations', 'Food & Beverage', 'Communication', 'Leadership', 'Teamwork', 'Problem Solving', 'Presentation', 'Hindi', 'English'];
+function detectJdSkills(text) {
+    const t = ` ${String(text || '').toLowerCase()} `;
+    const esc = w => w.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return JD_SKILLS.filter(w => new RegExp(`[^a-z0-9]${esc(w)}[^a-z0-9]`).test(t)).slice(0, 14);
+}
+const JD_TONES = ['emerald', 'blue', 'purple', 'orange', 'slate'];
+function renderJdChips(text) {
+    const list = document.getElementById('jd-chips-list');
+    if (!list) return;
+    const found = detectJdSkills(text);
+    list.innerHTML = found.length
+        ? found.map((w, i) => `<span class="badge-pill badge-pill-${JD_TONES[i % JD_TONES.length]}">${escapeHtml(w)}</span>`).join('')
+        : `<span class="jd-chips-empty">${text && text.trim() ? 'No common skills spotted, and that is fine' : 'They appear as you paste'}</span>`;
+}
+// not added yet / unsaved changes / saved
+function setJdState(state) {
+    const badge = document.getElementById('jd-status-badge'), sync = document.getElementById('jd-sync-badge');
+    const look = { empty: ['slate', 'NOT ADDED YET'], dirty: ['orange', 'UNSAVED CHANGES'], saved: ['emerald', 'SAVED'] }[state];
+    if (badge) { badge.className = `badge-pill badge-pill-${look[0]}`; badge.innerHTML = `<span class="badge-dot"></span>${look[1]}`; }
+    if (sync) sync.style.display = state === 'saved' ? 'inline-flex' : 'none';
+}
+
 // ─── Setup: Job Description ──────────────────────────────────
 
 document.getElementById('jd-save-btn')?.addEventListener('click', async () => {
     const title = document.getElementById('jd-title').value.trim();
     const company = document.getElementById('jd-company').value.trim();
     const desc = document.getElementById('jd-content').value.trim();
-    if (!desc) return alert('Paste the job description');
+    if (!desc) { document.getElementById('jd-content').focus(); setJdState('empty'); return; }
 
     const formData = new FormData();
     formData.append('title', title);
@@ -1506,15 +1525,10 @@ document.getElementById('jd-save-btn')?.addEventListener('click', async () => {
         const res = await fetch(`${API_BASE}/context/job-description`, { method: 'POST', body: formData });
         const data = await res.json();
         if (data.status === 'success') {
-            if (syncBadge) syncBadge.style.display = 'inline-flex';
-            const statusBadge = document.getElementById('jd-status-badge');
-            if (statusBadge) {
-                statusBadge.className = 'badge-pill badge-pill-emerald';
-                statusBadge.innerHTML = '<span class="badge-dot"></span>SPEC ACTIVE & SYNCED';
-            }
+            setJdState('saved');
             if (statusEl) {
                 statusEl.classList.remove('hidden');
-                statusEl.innerHTML = `<span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>${data.message || 'Job description spec active & synced to copilot engine'}</span>`;
+                statusEl.innerHTML = `<span class="badge-pill badge-pill-emerald"><span class="badge-dot"></span>${data.message || 'Saved. Questions and answers now follow this job post.'}</span>`;
                 statusEl.style.background = 'transparent';
                 statusEl.style.border = 'none';
                 statusEl.style.padding = '6px 0';
@@ -1543,26 +1557,31 @@ document.getElementById('jd-save-btn')?.addEventListener('click', async () => {
 const jdTextarea = document.getElementById('jd-content');
 const jdCharCount = document.getElementById('jd-char-count');
 if (jdTextarea && jdCharCount) {
+    let chipTimer = 0;
     const updateJdCharCount = () => {
-        jdCharCount.textContent = `${jdTextarea.value.length} characters`;
+        jdCharCount.textContent = `${jdTextarea.value.length.toLocaleString()} characters`;
+        clearTimeout(chipTimer);
+        chipTimer = setTimeout(() => renderJdChips(jdTextarea.value), 200);
     };
-    jdTextarea.addEventListener('input', updateJdCharCount);
+    jdTextarea.addEventListener('input', () => { updateJdCharCount(); setJdState(jdTextarea.value.trim() ? 'dirty' : 'empty'); });
     updateJdCharCount();
 }
 
 document.getElementById('jd-clear-btn')?.addEventListener('click', async () => {
     const confirmed = await showConfirmModal({
-        badge: 'EDITOR BUFFER',
+        badge: 'JOB DESCRIPTION',
         variant: 'warning',
-        title: 'Do you really want to clear the JD buffer?',
-        description: 'This clears the current Job Description text in the editor. Your active server spec remains untouched until you save.',
-        metaText: 'SPEC_REQUIREMENTS.md • Local Editor Buffer',
-        confirmText: 'Yes, Clear Buffer',
+        title: 'Clear the job description?',
+        description: 'This empties the editor. What you saved earlier stays until you save again.',
+        metaText: 'job-post.txt',
+        confirmText: 'Clear it',
         cancelText: 'Cancel',
     });
     if (confirmed && jdTextarea) {
         jdTextarea.value = '';
         if (jdCharCount) jdCharCount.textContent = '0 characters';
+        renderJdChips('');
+        setJdState('dirty');
     }
 });
 
@@ -1988,6 +2007,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (rs) rs.classList.remove('hidden');
                 const rfn = document.getElementById('resume-filename');
                 if (rfn) rfn.textContent = data.resume_file || 'Your resume';
+                renderResumeTags(typeof data.resume === 'object' && data.resume ? Object.keys(data.resume) : []);
                 const uz = document.getElementById('upload-zone');
                 if (uz) uz.classList.add('hidden');
                 updateChecklist('check-resume', true);
@@ -2055,14 +2075,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 if (jdata.description) {
                     document.getElementById('jd-content').value = jdata.description;
                     const charCountEl = document.getElementById('jd-char-count');
-                    if (charCountEl) charCountEl.textContent = `${jdata.description.length} characters`;
-                    const syncBadge = document.getElementById('jd-sync-badge');
-                    if (syncBadge) syncBadge.style.display = 'inline-flex';
-                    const statusBadge = document.getElementById('jd-status-badge');
-                    if (statusBadge) {
-                        statusBadge.className = 'badge-pill badge-pill-emerald';
-                        statusBadge.innerHTML = '<span class="badge-dot"></span>SPEC ACTIVE & SYNCED';
-                    }
+                    if (charCountEl) charCountEl.textContent = `${jdata.description.length.toLocaleString()} characters`;
+                    renderJdChips(jdata.description);
+                    setJdState('saved');
                     updateChecklist('check-overlay', true);
                 }
             }
@@ -2170,8 +2185,8 @@ function renderRecycleBin() {
                     <div class="recycle-item">
                         <div class="recycle-item-header">
                             <div class="recycle-item-title">
-                                <span><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Chat Batch #${batch.id}</span>
-                                <span class="badge-pill badge-pill-blue">${batch.count || messages.length} Messages</span>
+                                <span><svg class="i em-i" aria-hidden="true"><use href="#i-book"/></svg>${escapeHtml(batch.title || (firstUser !== 'No text' ? firstUser.split(/\s+/).slice(0, 7).join(' ') : 'An empty chapter'))}</span>
+                                <span class="badge-pill badge-pill-blue">${batch.count || messages.length} ${(batch.count || messages.length) === 1 ? 'note' : 'notes'}</span>
                             </div>
                             <span class="recycle-item-meta">Cleared: ${deletedDate}</span>
                         </div>
@@ -2179,7 +2194,7 @@ function renderRecycleBin() {
                             <strong>Sample Message:</strong> "${snippet}"
                         </div>
                         <div class="recycle-item-actions">
-                            <button class="recycle-btn-restore" onclick="restoreRecycleItem('chat', '${batch.id}')">↩️ Restore to Copilot</button>
+                            <button class="recycle-btn-restore" onclick="restoreRecycleItem('chat', '${batch.id}')">↩ Back into the register</button>
                             <button class="recycle-btn-purge" onclick="deleteRecycleItem('chat', '${batch.id}')"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Delete permanently</button>
                         </div>
                     </div>
@@ -2491,18 +2506,5 @@ function showPromptModal(options = {}) {
 }
 
 // ─── Home: today at a glance (Brain Bento progress and the Prep answers waiting for review) ───
-function renderToday() {
-    const el = document.getElementById('today-card');
-    if (!el) return;
-    let bento = {};
-    try { bento = JSON.parse(localStorage.getItem('vettly_bento') || '{}'); } catch (e) { /* storage blocked */ }
-    const eaten = (bento.done?.[new Date().toLocaleDateString('en-CA')] || []).length;
-    const set = (key, text) => { el.querySelector(`[data-today="${key}"]`).textContent = text; };
-    set('eaten', `${eaten} of 5 concepts`);
-    set('streak', bento.streak ? `${bento.streak} day streak` : 'Start a streak today');
-    el.querySelector('.ring-fill').style.strokeDashoffset = 125.66 * (1 - eaten / 5);
-    if (!prep.loaded) return;
-    set('review', `${prep.entries.filter(e => prepStatus(e) === 'review').length} answers to review`);
-    set('bank', `${prep.entries.length} questions in Prep Studio`);
-}
-renderToday();
+// the Daybook (daybook.js) owns the home page; it re-reads everything when called
+function renderToday() { window.Daybook?.refresh?.(); }

@@ -115,3 +115,20 @@ def delete_user(user: str) -> None:
     folder = config.CONTEXT_STORE_DIR / "users" / user
     for path in folder.glob("*.json"):
         path.unlink()
+
+
+def export_user(user: str) -> dict:
+    """Every document the user has, by kind (the "export my data" button)."""
+    _check(user, "all")
+    if _sql:
+        # no fetch-all helper on purpose: read the kinds first, then each document
+        kinds = []
+        with _sql._lock:
+            if _sql._conn is None:
+                _sql._conn = _sql._connect()
+                _sql._conn.execute(_TABLE)
+            cur = _sql._conn.execute("SELECT kind FROM user_docs WHERE user_id = {p}".format(p=_sql._p), (user,))
+            kinds = [r[0] for r in cur.fetchall()]
+        return {k: load(user, k, None) for k in kinds}
+    folder = config.CONTEXT_STORE_DIR if user == LOCAL_USER else config.CONTEXT_STORE_DIR / "users" / user
+    return {p.stem: load(user, p.stem, None) for p in sorted(folder.glob("*.json")) if _SAFE_ID.match(p.stem)}

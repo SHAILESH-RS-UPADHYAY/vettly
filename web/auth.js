@@ -148,6 +148,7 @@
         try { cfg = await (await rawFetch('/api/config')).json(); } catch (e) { /* an older server or a plain file server: open as before */ }
         if (cfg.auth === 'unconfigured') { showGate('Vettly is opening soon. Sign-in is still being set up, so please check back shortly.'); return; }
         if (cfg.auth !== 'clerk') { root.classList.remove('auth-checking'); open(); return; }
+        root.classList.add('hosted');   // the hosted site: hide anything that only makes sense on your own machine
         try {
             clerk = await loadClerk(cfg);
             await clerk.load();
@@ -162,5 +163,24 @@
         if (clerk.user) enter(); else showGate();
     })();
 
-    window.Auth = { ready, signOut: () => clerk?.signOut(), enabled: () => !!clerk };
+    // Passport reads the account from here: who you are, how you sign in, and Clerk's own security window
+    function account() {
+        const u = clerk?.user;
+        if (!u) return null;
+        const methods = new Set((u.externalAccounts || []).map(a => String(a.provider || '').replace(/^oauth_/, '')));
+        if (u.passwordEnabled) methods.add('password');
+        if (u.primaryEmailAddress && !methods.size) methods.add('email');
+        return {
+            name: u.fullName || [u.firstName, u.lastName].filter(Boolean).join(' ') || '',
+            email: u.primaryEmailAddress?.emailAddress || '',
+            image: u.hasImage ? u.imageUrl : '',
+            since: u.createdAt ? new Date(u.createdAt) : null,
+            methods: [...methods],
+        };
+    }
+    window.Auth = {
+        ready, enabled: () => !!clerk, account,
+        signOut: () => clerk?.signOut(),
+        openProfile: () => clerk?.openUserProfile({ appearance: appearance() }),
+    };
 })();

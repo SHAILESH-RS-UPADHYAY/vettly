@@ -24,7 +24,7 @@ class GitHubScraper:
         self._headers = {
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "Acemate-AI/1.0",
+            "User-Agent": "Vettly/1.0",
         }
         if GITHUB_TOKEN and GITHUB_TOKEN.strip():
             self._headers["Authorization"] = f"Bearer {GITHUB_TOKEN.strip()}"
@@ -44,7 +44,7 @@ class GitHubScraper:
         """
         req_headers = dict(headers) if headers else dict(self._headers)
         if "User-Agent" not in req_headers:
-            req_headers["User-Agent"] = "Acemate-AI/1.0"
+            req_headers["User-Agent"] = "Vettly/1.0"
 
         response = await client.get(url, headers=req_headers, params=params, **kwargs)
 
