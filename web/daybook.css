@@ -1,0 +1,127 @@
+/* ── Daybook (daybook.js): an asymmetric bento of real numbers and real actions ── */
+.daybook .db-head h1 em { font-style: normal; }
+@media (max-width: 47.99rem) { .daybook .db-head { padding-top: 22px; } }
+.db-date { font: 700 0.76rem/1 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 6px; }
+.daybook .db-head [data-db="sub"] b { color: var(--ink); }
+
+.db-grid {
+    display: grid; gap: 16px; margin-top: 8px;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+        "next next next next next next next streak streak streak streak streak"
+        "next next next next next next next bento bento bento bento bento"
+        "actions actions actions actions actions actions actions setup setup setup setup setup"
+        "stats stats stats stats stats stats stats keys keys keys keys keys";
+}
+.db-next { grid-area: next; } .db-streak { grid-area: streak; } .db-bento { grid-area: bento; } .db-stats { grid-area: stats; }
+.db-actions { grid-area: actions; } .db-setup { grid-area: setup; } .db-keys { grid-area: keys; }
+@media (max-width: 79.99rem) {
+    .db-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas:
+        "next next next next next next" "streak streak streak bento bento bento" "stats stats stats stats stats stats"
+        "actions actions actions actions actions actions" "setup setup setup keys keys keys"; }
+}
+@media (max-width: 47.99rem) {
+    .db-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "next" "streak" "bento" "stats" "actions" "setup" "keys"; gap: 12px; }
+}
+
+.db-card {
+    position: relative; display: grid; align-content: start; gap: 10px; min-width: 0; padding: 20px 20px 18px;
+    border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--card-bg, var(--paper-2)); box-shadow: var(--card-shadow);
+    animation: dbIn 620ms calc(var(--i, 0) * 70ms) var(--spring) both;
+}
+@keyframes dbIn { from { opacity: 0; transform: translateY(16px) scale(.985); } }
+.db-kicker { font: 700 0.72rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); }
+.db-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.db-link { min-height: 32px; padding: 0 4px; border: 0; background: none; color: var(--ink-2); font: 600 0.84rem var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.db-small { color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+.db-small code { font: 600 0.85em var(--font-mono); }
+.db-pill { padding: 3px 10px; border-radius: 99px; background: var(--paper-3); font: 700 0.74rem var(--font-mono); color: var(--ink-2); }
+
+/* up next: the hero */
+.db-next { overflow: hidden; align-content: center; gap: 12px; padding: 26px 26px 24px; min-height: 230px;
+    background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), var(--card-bg, var(--paper-2)); }
+.db-next h3 { max-width: 22ch; font: 800 clamp(1.5rem, 2.8vw, 2.2rem)/1.05 var(--font-display); text-wrap: balance; position: relative; z-index: 1; }
+.db-next > p:not(.db-kicker) { max-width: 52ch; color: var(--ink-2); line-height: 1.55; position: relative; z-index: 1; }
+.db-next-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; position: relative; z-index: 1; }
+.db-next-actions .btn svg { width: 17px; height: 17px; }
+.db-next-art { position: absolute; right: -14px; bottom: -18px; width: 150px; height: 150px; fill: color-mix(in srgb, var(--accent) 14%, transparent); animation: dbSpin 40s linear infinite; }
+@keyframes dbSpin { to { rotate: 360deg; } }
+
+/* streak */
+.db-big { display: flex; align-items: baseline; gap: 8px; font: 700 2.6rem/1 'Space Grotesk', var(--font-body); }
+.db-big span { font: 600 1rem var(--font-body); color: var(--muted); }
+.db-flame { width: 30px; height: 30px; align-self: center; color: var(--muted); }
+.db-flame.lit { color: var(--accent); animation: dbFlicker 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes dbFlicker { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(3deg); } }
+.db-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; padding: 0; list-style: none; }
+.db-week li { display: grid; justify-items: center; gap: 4px; animation: dbIn 500ms calc(200ms + var(--i) * 50ms) var(--spring) both; }
+.db-week i { width: 100%; max-width: 34px; height: 34px; border-radius: 10px; border: 1.5px dashed var(--rule-2, var(--rule)); }
+.db-week li.on i { border: 0; background: var(--accent); box-shadow: inset 0 -4px 0 color-mix(in srgb, #000 15%, transparent); }
+.db-week li.today i { outline: 2px solid var(--accent); outline-offset: 2px; }
+.db-week span { font: 700 0.68rem var(--font-mono); color: var(--muted); }
+
+/* bento ring */
+.db-ring-row { display: flex; align-items: center; gap: 14px; }
+.db-ring { width: 72px; height: 72px; rotate: -90deg; flex: none; }
+.db-ring circle { fill: none; stroke: var(--paper-3); stroke-width: 6; }
+.db-ring .db-ring-fill { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 900ms var(--ease-out); }
+.db-ring-row p { display: grid; gap: 2px; }
+.db-ring-row b { font: 700 1.5rem/1 'Space Grotesk', var(--font-body); }
+.db-ring-row span { color: var(--muted); font-size: 0.86rem; }
+.db-bento .btn { justify-self: start; }
+
+/* stats */
+.db-stats dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.db-stats dl > div { padding: 12px 14px; border-radius: 14px; background: var(--paper-3); }
+.db-stats dt { font: 600 0.8rem var(--font-body); color: var(--muted); }
+.db-stats dd { margin: 4px 0 0; font: 700 clamp(1.6rem, 3vw, 2.2rem)/1 'Space Grotesk', var(--font-body); font-variant-numeric: tabular-nums; }
+@media (max-width: 30rem) { .db-stats dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* quick actions */
+.db-action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 47.99rem) { .db-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.db-action { display: grid; align-content: start; gap: 8px; min-height: 108px; padding: 14px; border: 1.5px solid var(--rule); border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer;
+    animation: dbIn 520ms calc(300ms + var(--i) * 50ms) var(--spring) both;
+    transition: transform var(--dur-short) var(--spring), border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+.db-action b { font: 700 0.95rem/1.25 var(--font-body); }
+.db-action-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: var(--accent-soft); color: var(--accent-ink); }
+.db-action-ico svg { width: 19px; height: 19px; }
+.db-kbd { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 3px; margin-top: auto; }
+.db-kbd kbd { height: 22px; min-width: 22px; padding: 0 5px; font-size: 0.68rem; }
+@media (hover: hover) { .db-action:hover { transform: translateY(-3px) rotate(-0.4deg); border-color: var(--accent); box-shadow: var(--card-shadow); } }
+.db-action:active { transform: scale(.97); }
+.db-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (hover: none) { .db-kbd { display: none; } .db-action { min-height: 92px; } }
+
+/* set up your desk */
+.db-checklist { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.db-checklist li { animation: dbIn 480ms calc(250ms + var(--i) * 45ms) var(--spring) both; }
+.db-checklist button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 10px; border: 0; border-radius: 12px; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.db-checklist button > svg { width: 16px; height: 16px; margin-left: auto; color: var(--muted); }
+.db-checklist button span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
+.db-checklist small { color: var(--muted); font-size: 0.8rem; }
+@media (hover: hover) { .db-checklist button:hover { background: var(--paper-3); } }
+.db-tick { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px dashed var(--rule-2, var(--rule)); color: var(--paper-2); }
+.db-tick svg { width: 14px; height: 14px; }
+.db-checklist li.ok .db-tick { border: 0; background: var(--ok); animation: dbTick 500ms var(--spring) both; }
+.db-checklist li.ok b { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ok) 60%, transparent); }
+@keyframes dbTick { from { transform: scale(.4); } }
+
+/* AI key chain */
+.db-chain { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 4px 0 0; padding: 0; list-style: none; position: relative; }
+.db-chain::before { content: ""; position: absolute; top: 19px; left: 12.5%; right: 12.5%; height: 2px; background: repeating-linear-gradient(90deg, var(--rule-2, var(--rule)) 0 4px, transparent 4px 7px); }
+.db-chain li { position: relative; display: grid; justify-items: center; gap: 6px; }
+.db-dot { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 2px dashed var(--rule-2, var(--rule)); background: var(--paper-2); color: var(--muted); font: 800 0.8rem var(--font-display); }
+.db-chain li.on .db-dot { border: 0; background: var(--tone-bg); color: var(--tone); box-shadow: 0 0 0 2px var(--ok); animation: dbTick 500ms calc(var(--i) * 80ms) var(--spring) both; }
+.db-chain small { font: 600 0.74rem var(--font-body); color: var(--muted); }
+.db-chain li.on small { color: var(--ink); }
+
+/* inside the studio */
+.db-section-title { margin: 34px 0 12px; font: 800 1.2rem var(--font-display); }
+.db-rooms .poster-media-card { display: block; padding: 0; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.db-rooms .poster-media-card-body { display: grid; gap: 4px; }
+.db-rooms .poster-media-card-body b { font: 800 1.05rem var(--font-display); }
+.db-rooms .poster-media-card-body > span { color: var(--ink-2); font-size: 0.9rem; line-height: 1.45; }
+
+@media (prefers-reduced-motion: reduce) { .db-card, .db-week li, .db-action, .db-checklist li, .db-chain li .db-dot, .db-next-art, .db-flame.lit { animation: none !important; } }
+:root[data-motion="calm"] :is(.db-card, .db-week li, .db-action, .db-checklist li, .db-chain li .db-dot, .db-next-art, .db-flame.lit) { animation: none !important; }

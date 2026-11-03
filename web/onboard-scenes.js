@@ -317,3 +317,6 @@ const OnboardScenes = (() => {
         play: (name, stage) => { if (still() || !PLAY[name] || !stage.animate) return () => {}; try { return PLAY[name](stage); } catch (e) { return () => {}; } },
     };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.OnboardScenes = OnboardScenes;

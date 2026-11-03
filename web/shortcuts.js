@@ -199,3 +199,6 @@ const Tabs = (() => {
     })();
     return { set, hidden: t => hiddenTabs.includes(t), apply };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Shortcuts = Shortcuts; window.Palette = Palette; window.Tabs = Tabs;

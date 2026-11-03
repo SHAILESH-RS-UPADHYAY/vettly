@@ -48,7 +48,7 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 4 · Daybook (home)
 
-- [ ] Greeting, streak, today, stats, quick actions (registry), setup checklist, key health
+- [x] Greeting, Up next (picks the most useful step), 7-day streak, Bento ring, real stats, quick actions from the registry, setup checklist, key chain (`web/daybook.js`). Also: every module is now on `window` (a top-level `const` is not), which fixed silent cross-module calls
 
 ## Phase 5 · Live Copilot register
 

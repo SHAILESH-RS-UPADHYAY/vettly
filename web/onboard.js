@@ -228,3 +228,6 @@ const Onboard = (() => {
 
     return { open, role: () => profile.role, field: () => profile.field };
 })();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Onboard = Onboard;

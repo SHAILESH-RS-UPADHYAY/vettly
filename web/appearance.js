@@ -505,3 +505,6 @@ const Appearance = (() => {
 // Global name the markup calls
 function toggleTheme(e) { Appearance.toggle(e); }
 Appearance.boot();
+
+// modules talk to each other through window: a top-level const is not a window property
+window.Appearance = Appearance;
