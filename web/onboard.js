@@ -1,5 +1,6 @@
 /**
- * Onboarding and the user's field: a five-page first-visit dialog (welcome, name, field, role and level, ready) whose answers
+ * Onboarding and the user's field: an eight-page first-visit dialog (two animated pages on what Vettly is, three questions,
+ * three animated pages on how the backend works; scenes in onboard-scenes.js) whose answers
  * shape every prompt, the Prep Studio category tiles and the default role. Uses dashboard.js globals.
  */
 const Onboard = (() => {
@@ -12,46 +13,53 @@ const Onboard = (() => {
     const esc = s => escapeHtml(String(s || ''));
 
     const hasTour = () => typeof Tour !== 'undefined';
-    const PAGES = 5;   // welcome, name, field, role and level, ready
+    const S = typeof OnboardScenes !== 'undefined' ? OnboardScenes : null;
+    const scene = name => (S ? S[name]() : '');
+    // Pages: 0-1 show what Vettly is, 2-4 ask about you (saved on 4), 5-7 show how the backend works
+    const PAGES = 8, SAVE = 4, NAME = 2, ROLE = 4;
+    const KICKER = ['Welcome', 'Inside Vettly', 'About you', 'About you', 'About you', 'How it works · 1 of 3', 'How it works · 2 of 3', 'How it works · 3 of 3'];
 
     function dialogHtml() {
         const other = profile.field && !FIELDS.includes(profile.field);
-        const first = esc((profile.name || '').split(' ')[0]);
         return `
         <form class="onboard-form" id="onboard-form" novalidate>
             <div class="ob-top">
-                <p class="ob-count" aria-live="polite"></p>
-                <div class="ob-progress" aria-hidden="true">${Array.from({ length: PAGES }, () => '<span></span>').join('')}</div>
+                <p class="ob-count"><span class="ob-kicker"></span><span class="ob-step" aria-live="polite"></span></p>
+                <div class="ob-progress" aria-hidden="true" style="--n:${PAGES}">${Array.from({ length: PAGES }, () => '<span></span>').join('')}</div>
             </div>
 
             <section class="ob-page" data-ob-page="0" aria-labelledby="ob-h0">
-                <span class="ob-mark" aria-hidden="true">\u2756</span>
+                ${scene('hero')}
                 <h2 id="ob-h0">Welcome to Vettly</h2>
-                <p class="onboard-lede">Interview prep written for you: your role, your field, your own experience. Three quick questions and you're set.</p>
-                <ul class="ob-points">
-                    <li><svg aria-hidden="true"><use href="#i-target"/></svg>Questions written for the role you want</li>
-                    <li><svg aria-hidden="true"><use href="#i-chats"/></svg>Model answers that sound like you</li>
-                    <li><svg aria-hidden="true"><use href="#i-bento"/></svg>Five fresh ideas from your field every morning</li>
-                </ul>
+                <p class="onboard-lede">Your interview prep studio: questions written for your role, answers in your own voice, and a copilot to practise with.</p>
             </section>
 
             <section class="ob-page" data-ob-page="1" aria-labelledby="ob-h1" hidden>
-                <h2 id="ob-h1">What should we call you?</h2>
+                ${scene('studio')}
+                <h2 id="ob-h1">Everything in one studio</h2>
+                <p class="onboard-lede">Prep Studio writes your questions, Brain Bento packs five ideas every morning, and Live Copilot lets you practise out loud.</p>
+            </section>
+
+            <section class="ob-page ob-ask" data-ob-page="2" aria-labelledby="ob-h2" hidden>
+                <span class="ob-mark" aria-hidden="true"><svg><use href="#i-user"/></svg></span>
+                <h2 id="ob-h2">What should we call you?</h2>
                 <p class="onboard-lede">Vettly uses your name when it writes answers in your voice.</p>
                 <label class="ob-field"><span>Your name</span><input name="name" required maxlength="80" autocomplete="name" value="${esc(profile.name)}" placeholder="Asha Verma"></label>
                 <p class="ob-error" role="alert" hidden>Add your name to continue.</p>
             </section>
 
-            <section class="ob-page" data-ob-page="2" aria-labelledby="ob-h2" hidden>
-                <h2 id="ob-h2">Which field do you work in?</h2>
+            <section class="ob-page ob-ask" data-ob-page="3" aria-labelledby="ob-h3" hidden>
+                <span class="ob-mark" aria-hidden="true"><svg><use href="#i-briefcase"/></svg></span>
+                <h2 id="ob-h3">Which field do you work in?</h2>
                 <p class="onboard-lede">This sets the Prep Studio categories and your daily concepts.</p>
                 <label class="ob-field"><span>Your field</span>
                     <select name="field" required>${FIELDS.map(f => `<option${(profile.field === f || (other && f === 'Other')) ? ' selected' : ''}>${f}</option>`).join('')}</select></label>
                 <label class="ob-field ob-other"${other ? '' : ' hidden'}><span>Which field?</span><input name="field_other" maxlength="60" value="${other ? esc(profile.field) : ''}" placeholder="Aviation, agriculture, journalism..."></label>
             </section>
 
-            <section class="ob-page" data-ob-page="3" aria-labelledby="ob-h3" hidden>
-                <h2 id="ob-h3">What are you preparing for?</h2>
+            <section class="ob-page ob-ask" data-ob-page="4" aria-labelledby="ob-h4" hidden>
+                <span class="ob-mark" aria-hidden="true"><svg><use href="#i-target"/></svg></span>
+                <h2 id="ob-h4">What are you preparing for?</h2>
                 <p class="onboard-lede">Questions and answers are pitched at this role and level.</p>
                 <label class="ob-field"><span>Role you're preparing for</span><input name="role" required maxlength="80" value="${esc(profile.role)}" placeholder="Staff nurse, ICU"></label>
                 <label class="ob-field"><span>Your level</span>
@@ -59,11 +67,22 @@ const Onboard = (() => {
                 <p class="ob-error" role="alert" hidden>Add the role you're preparing for.</p>
             </section>
 
-            <section class="ob-page" data-ob-page="4" aria-labelledby="ob-h4" hidden>
-                <span class="ob-mark ob-mark-ok" aria-hidden="true"><svg><use href="#i-check-bold"/></svg></span>
-                <h2 id="ob-h4">You're set${first ? `, <span data-ob-first>${first}</span>` : ''}</h2>
-                <p class="onboard-lede" data-ob-summary></p>
-                <p class="ob-next">Next, add your resume in <b>Agent Toolbelt</b> so answers draw on your real experience.</p>
+            <section class="ob-page" data-ob-page="5" aria-labelledby="ob-h5" hidden>
+                ${scene('context')}
+                <h2 id="ob-h5">First, it learns you</h2>
+                <p class="onboard-lede">Your resume, GitHub, job description and stories are packed into one context of up to 80,000 characters, most important first, so the key details never get lost.</p>
+            </section>
+
+            <section class="ob-page" data-ob-page="6" aria-labelledby="ob-h6" hidden>
+                ${scene('router')}
+                <h2 id="ob-h6">Then it finds a model that's free</h2>
+                <p class="onboard-lede">Vettly asks Claude first, then Gemini, OpenAI and Groq. If one is busy, the next one answers, so you're never left waiting.</p>
+            </section>
+
+            <section class="ob-page" data-ob-page="7" aria-labelledby="ob-h7" hidden>
+                ${scene('polish')}
+                <h2 id="ob-h7">Finally, it sounds like you</h2>
+                <p class="onboard-lede" data-ob-summary>Robotic phrases are stripped out, then every answer is scored on 7 checks and rewritten until it passes.</p>
             </section>
 
             <div class="onboard-actions">
@@ -81,28 +100,31 @@ const Onboard = (() => {
             dlg = document.createElement('dialog');
             dlg.id = 'onboard';
             dlg.className = 'onboard';
-            dlg.setAttribute('aria-labelledby', 'onboard-title');
             document.body.appendChild(dlg);
         }
         dlg.innerHTML = dialogHtml();
         const form = dlg.querySelector('form');
         const pages = [...form.querySelectorAll('.ob-page')];
         const back = form.querySelector('[data-ob-back]'), next = form.querySelector('[data-ob-next]'), later = form.querySelector('[data-ob-later]');
-        let page = profile.onboarded ? 1 : 0;   // editing skips the welcome page
+        const editing = !!profile.onboarded;   // editing from "Your profile" asks the questions only
+        let page = editing ? NAME : 0;
 
         const show = n => {
             page = n;
             pages.forEach((p, k) => { p.hidden = k !== n; });
             dlg.setAttribute('aria-labelledby', `ob-h${n}`);
-            form.querySelector('.ob-count').textContent = `Step ${n + 1} of ${PAGES}`;
-            form.querySelectorAll('.ob-progress span').forEach((d, k) => { d.classList.toggle('on', k <= n); });
-            back.hidden = n === 0 || n === PAGES - 1;
-            later.hidden = n === PAGES - 1;
-            next.textContent = n === 0 ? 'Get started' : n === 3 ? 'Save and continue' : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing') : 'Next';
+            form.querySelector('.ob-kicker').textContent = KICKER[n];
+            form.querySelector('.ob-step').textContent = `${n + 1} / ${PAGES}`;
+            form.querySelectorAll('.ob-progress span').forEach((d, k) => { d.classList.toggle('on', k <= n); d.classList.toggle('now', k === n); });
+            back.hidden = n === 0 || n === SAVE + 1 || (editing && n === NAME);
+            later.hidden = n > SAVE;
+            next.textContent = n === 0 ? 'Show me around' : n === SAVE ? (editing ? 'Save changes' : 'Save and continue')
+                : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing') : 'Next';
             pages[n].classList.remove('ob-in'); void pages[n].offsetWidth; pages[n].classList.add('ob-in');
-            (pages[n].querySelector('input, select') || pages[n].querySelector('h2')).focus?.({ preventScroll: true });
+            const field = pages[n].querySelector('input, select');
+            (field || next).focus({ preventScroll: true });
         };
-        const need = (input) => {
+        const need = input => {
             const err = input.closest('.ob-page').querySelector('.ob-error');
             const ok = input.value.trim().length > 0;
             if (err) err.hidden = ok;
@@ -111,7 +133,6 @@ const Onboard = (() => {
             return ok;
         };
 
-        pages.forEach(p => p.querySelector('h2').setAttribute('tabindex', '-1'));
         later.addEventListener('click', () => dlg.close());
         back.addEventListener('click', () => show(page - 1));
         form.field.addEventListener('change', () => { form.querySelector('.ob-other').hidden = form.field.value !== 'Other'; });
@@ -120,10 +141,10 @@ const Onboard = (() => {
 
         form.addEventListener('submit', async e => {
             e.preventDefault();
-            if (page === 1 && !need(form.name)) return;
-            if (page === 3 && !need(form.role)) return;
+            if (page === NAME && !need(form.name)) return;
+            if (page === ROLE && !need(form.role)) return;
             if (page === PAGES - 1) { dlg.close(); return; }
-            if (page !== 3) { show(page + 1); return; }
+            if (page !== SAVE) { show(page + 1); return; }
             const f = Object.fromEntries(new FormData(form));
             const body = { name: f.name.trim(), role: f.role.trim(), level: f.level, field: f.field === 'Other' ? (f.field_other.trim() || 'Other') : f.field };
             next.disabled = true;
@@ -131,12 +152,10 @@ const Onboard = (() => {
                 const res = await fetch(`${API_BASE}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 profile = await res.json();
-                const h = pages[4].querySelector('h2');
-                h.textContent = `You're set, ${profile.name.split(' ')[0]}`;
-                pages[4].querySelector('[data-ob-summary]').textContent = `Vettly is tuned for ${profile.role} (${String(profile.level || body.level).toLowerCase()}) in ${profile.field}. You can change this any time from Your profile.`;
                 loadCategories();
                 if (typeof Bento !== 'undefined') Bento.useField();
-                show(PAGES - 1);
+                Motion.toast(`Saved. Vettly is tuned for ${profile.role} in ${profile.field}.`, 'ok');
+                if (editing) dlg.close(); else show(SAVE + 1);
             } catch (err) {
                 Motion.toast(`Could not save your answers: ${err.message}`, 'error');
             } finally {
