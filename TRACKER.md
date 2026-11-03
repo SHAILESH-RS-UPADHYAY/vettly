@@ -23,14 +23,14 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 1 · Launch blockers
 
-- [ ] Remove the unauthenticated history sync from `acemate-backend.onrender.com` (`web/dashboard.js` `loadHistory`)
-- [ ] Remove baked-in personal data: GitHub username, job description (title, company, text, chips, "SPEC ACTIVE"), resume pills, Copilot suggestions, `RADAR`/`WebVory` examples, mock conversations, backend "shailesh"/"radar" matchers, old "Acemate" naming
-- [ ] Empty states for a new account; resume / JD / GitHub clearly optional
-- [ ] Onboarding save: timeout, "Saving…", readable error with Retry (never stuck)
-- [ ] One saved key per provider; router order Gemini → Groq → Claude → OpenAI
-- [ ] CORS from `ALLOWED_ORIGINS`; `vercel.json` time limits for long AI routes
-- [ ] Link previews (Open Graph / Twitter), icons, web manifest
-- [ ] Hide the local "server URL" card on the hosted site
+- [x] Remove the unauthenticated history sync from `acemate-backend.onrender.com` (`web/dashboard.js` `loadHistory`)
+- [x] Remove baked-in personal data: GitHub username, job description (title, company, text, chips, "SPEC ACTIVE"), resume pills, Copilot suggestions, `RADAR`/`WebVory` examples, mock conversations, backend "shailesh"/"radar" matchers, old "Acemate" naming
+- [x] Empty states for a new account; resume / JD / GitHub clearly optional (JD skill chips detected for any field)
+- [x] Onboarding save: 15 s timeout, "Saving…", readable error with Try again (never stuck)
+- [x] One saved key per provider (`ai_keys`, last 4 only ever returned); router order Gemini → Groq → Claude → OpenAI; Mentor, evaluate and analyze use the chain too; `/api/ai-key/test` (no tokens spent); `backend/test_keys.py`
+- [x] CORS from `ALLOWED_ORIGINS` (no credentials cross-site). Function time limit: owner checks it in Vercel (no `vercel.json`, to keep Vercel's zero-config FastAPI routing)
+- [x] Link previews (Open Graph / Twitter) with `%SITE_URL%` filled per domain by `GET /`, share image, icons, web manifest; marked / DOMPurify / GSAP vendored in `web/vendor/`
+- [x] Hide the local "server URL" card on the hosted site (`.hosted .local-only`)
 
 ## Phase 2 · Structure, names, shortcuts
 
@@ -79,4 +79,6 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
 - [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
-- [ ] `ALLOWED_ORIGINS` = your domain(s), once Phase 1 lands
+- [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
+- [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
+- [ ] Personal files are tracked in git (`backend/uploads/*.pdf`, `backend/context_store/*.json`). They never deploy (`.vercelignore`), but before making the **repository** public: back them up, then `git rm --cached` them

@@ -281,3 +281,8 @@
 }
 :root[data-motion="calm"] :is(.onboard[open], .onboard .ob-page.ob-in *, .onboard .v-tag .rec) { animation: none !important; }
 
+
+/* Save in progress: a small spinner rides the button */
+.onboard-actions [data-ob-next].is-busy { cursor: progress; }
+.onboard-actions [data-ob-next].is-busy svg { animation: obSpin 0.9s linear infinite; }
+@keyframes obSpin { to { rotate: 360deg; } }

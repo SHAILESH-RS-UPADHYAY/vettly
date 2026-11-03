@@ -157,10 +157,22 @@ const Onboard = (() => {
             if (page !== SAVE) { show(page + 1); return; }
             const f = Object.fromEntries(new FormData(form));
             const body = { name: f.name.trim(), role: f.role.trim(), level: f.level, field: f.field === 'Other' ? (f.field_other.trim() || 'Other') : f.field };
+            const label = next.querySelector('span');
+            const errBox = pages[SAVE].querySelector('.ob-error');
+            errBox.hidden = true;
             next.disabled = true;
+            next.classList.add('is-busy');
+            label.textContent = 'Saving…';
+            // never leave the button hanging: a cold server or a dropped connection ends in a clear message and a retry
+            const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 15000);
             try {
-                const res = await fetch(`${API_BASE}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const res = await fetch(`${API_BASE}/api/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+                if (!res.ok) {
+                    const detail = await res.json().then(d => d.detail || d.error).catch(() => '');
+                    throw new Error(res.status === 401 ? 'Your session ended. Sign in again, then press Save.'
+                        : res.status === 429 ? (detail || 'Too many requests right now. Wait a moment and try again.')
+                        : detail || `The server answered ${res.status}. Try again in a moment.`);
+                }
                 profile = await res.json();
                 loadCategories();
                 if (typeof Bento !== 'undefined') Bento.useField();
@@ -171,11 +183,17 @@ const Onboard = (() => {
                 saved.hidden = false;
                 show(SAVE + 1);
             } catch (err) {
-                const errBox = pages[SAVE].querySelector('.ob-error');
-                errBox.textContent = `Could not save your answers (${err.message}). Try again.`;
+                errBox.textContent = err.name === 'AbortError'
+                    ? 'Vettly is taking too long to answer (it may be waking up). Press Try again.'
+                    : (navigator.onLine === false ? 'You seem to be offline. Reconnect, then press Try again.' : err.message);
                 errBox.hidden = false;
+                label.textContent = 'Try again';
+                console.warn('Onboarding save failed:', err);
+                return;
             } finally {
+                clearTimeout(timer);
                 next.disabled = false;
+                next.classList.remove('is-busy');
             }
         });
         dlg.showModal();

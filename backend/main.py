@@ -1,10 +1,11 @@
 """
-Acemate — Main FastAPI Server
+Vettly — Main FastAPI Server
 WebSocket-based real-time interview assistant.
 """
 
 import asyncio
 import json
+import os
 import logging
 import sys
 from contextlib import asynccontextmanager
@@ -130,9 +131,10 @@ def auto_detect_context_mode(question: str, current_mode: str, is_locked: bool =
     if is_locked:
         return current_mode
     q_lower = question.lower()
-    if any(kw in q_lower for kw in ["luq", "far lab", "farcana", "dizzaract", "digital twin"]):
+    # any candidate: questions about past roles lean on experience, questions about things they built on projects
+    if any(kw in q_lower for kw in ["your last job", "previous role", "internship", "at your company", "your manager", "work experience"]):
         return "experience"
-    elif any(kw in q_lower for kw in ["radar", "iota", "address parser"]):
+    elif any(kw in q_lower for kw in ["your project", "you built", "you made", "final-year project", "capstone"]):
         return "projects"
     return current_mode
 
@@ -200,13 +202,15 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow web clients
+# CORS: the web app is served from the same origin, so cross-site callers are only allowed from ALLOWED_ORIGINS.
+# Sign-in travels as a bearer token, never a cookie, so no credentials are ever shared cross-site.
+_origins = [o.strip().rstrip("/") for o in os.getenv("ALLOWED_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_origins or ["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["authorization", "content-type"],
 )
 
 # ─── Who is asking ───────────────────────────────────────────
@@ -387,8 +391,19 @@ async def ai_key_save(request: Request):
 
 
 @app.delete("/api/ai-key")
-async def ai_key_remove():
-    return allowance.remove_key()
+async def ai_key_remove(provider: str = ""):
+    """Remove one provider's key (?provider=gemini), or every saved key."""
+    return allowance.remove_key(provider)
+
+
+@app.post("/api/ai-key/test")
+async def ai_key_test(request: Request):
+    """Check a key with the provider without spending tokens: the pasted one, or the saved one."""
+    data = await request.json()
+    try:
+        return await allowance.test_key(str(data.get("provider", "")), str(data.get("key", "") or ""))
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
 
 
 @app.delete("/api/me")
@@ -506,16 +521,10 @@ Candidate's Answer: {req.user_answer}
 Provide constructive feedback on their answer. Point out strengths, weaknesses, and provide a polished, ideal version of the answer. Keep it concise.
 """
     try:
-        from groq import AsyncGroq
-        import config
-        client = AsyncGroq(api_key=config.GROQ_API_KEY)
-        response = await client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=800,
-            temperature=0.7
+        from ai.utils import generate_multi_provider_completion
+        feedback = await generate_multi_provider_completion(
+            system_prompt="You are an expert interview coach.", user_prompt=prompt, max_tokens=800, temperature=0.7,
         )
-        feedback = response.choices[0].message.content.strip()
         return {"status": "success", "feedback": feedback}
     except Exception as e:
         logger.error(f"Failed to evaluate answer: {e}")
@@ -1290,15 +1299,28 @@ Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@
         pointed.append(pinned)
     user_turn = f"{message}\n\n(Reply in {reply_language}.)"
     if pointed:
-        user_turn = "He is pointing at:\n\n" + "\n\n".join(pointed) + f"\n\n---\n{user_turn}"
+        user_turn = "The candidate is pointing at:\n\n" + "\n\n".join(pointed) + f"\n\n---\n{user_turn}"
 
     async def stream():
-        try:
-            async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
-                yield chunk
+        from ai.utils import _usable, generate_multi_provider_completion
+        sent = False
+        if _usable("GEMINI_API_KEY"):
+            try:
+                async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
+                    sent = True
+                    yield chunk
+                if sent:
+                    return
+            except Exception as e:
+                logger.warning(f"Mentor Gemini stream failed ({type(e).__name__}); falling back")
+                if sent:
+                    yield "\n\n*The answer was cut off. Send it again in a moment.*"
+                    return
+        try:   # no Gemini key, or Gemini failed before writing: Groq, Claude or OpenAI answers in one piece
+            yield await generate_multi_provider_completion(system_prompt, user_turn, history=req.history[-20:], max_tokens=1500)
         except Exception as e:
             logger.error(f"Mentor error: {e}")
-            yield f"\n\n*Mentor couldn't reach Gemini ({e}). Send it again in a moment.*"
+            yield f"\n\n*Mentor couldn't reach any AI provider ({e}).*"
 
     return StreamingResponse(stream(), media_type="text/plain; charset=utf-8")
 
@@ -1315,8 +1337,7 @@ async def analyze_chat_history(req: ChatAnalyzeRequest):
         if not req.history or len(req.history) < 2:
             return {"status": "success", "extracted": 0, "message": "Not enough history to analyze."}
 
-        from groq import AsyncGroq
-        client = AsyncGroq(api_key=config.GROQ_API_KEY)
+        from ai.utils import generate_multi_provider_completion
 
         # Build conversation text
         convo_text = "\n".join(
@@ -1341,17 +1362,9 @@ OUTPUT: Return a JSON array of extracted instructions. Each item:
 If no actionable instructions were found, return an empty array: []
 Return ONLY the JSON array."""
 
-        response = await client.chat.completions.create(
-            model=config.GROQ_MODEL,
-            messages=[
-                {"role": "system", "content": analysis_prompt},
-                {"role": "user", "content": f"CONVERSATION:\n{convo_text}"},
-            ],
-            max_tokens=2000,
-            temperature=0.3,
-        )
-
-        content = response.choices[0].message.content.strip()
+        content = (await generate_multi_provider_completion(
+            system_prompt=analysis_prompt, user_prompt=f"CONVERSATION:\n{convo_text}", max_tokens=2000, temperature=0.3,
+        )).strip()
 
         # Parse JSON
         if "```json" in content:
@@ -2468,6 +2481,19 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
         await websocket.send_json({"type": "pong"})
 
 
+
+
+# ─── The app page, with link previews pointing at whichever domain served it ─────
+
+@app.get("/", include_in_schema=False)
+@app.get("/index.html", include_in_schema=False)
+async def app_page(request: Request):
+    """index.html with %SITE_URL% filled in, so Reddit, LinkedIn and X previews get absolute links on any domain."""
+    from fastapi.responses import HTMLResponse
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or "localhost"
+    proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+    html = (web_dir / "index.html").read_text(encoding="utf-8").replace("%SITE_URL%", f"{proto}://{host}")
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
 
 # ─── Static Files (Catch-All) ───────────────────────────────

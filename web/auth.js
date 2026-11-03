@@ -148,6 +148,7 @@
         try { cfg = await (await rawFetch('/api/config')).json(); } catch (e) { /* an older server or a plain file server: open as before */ }
         if (cfg.auth === 'unconfigured') { showGate('Vettly is opening soon. Sign-in is still being set up, so please check back shortly.'); return; }
         if (cfg.auth !== 'clerk') { root.classList.remove('auth-checking'); open(); return; }
+        root.classList.add('hosted');   // the hosted site: hide anything that only makes sense on your own machine
         try {
             clerk = await loadClerk(cfg);
             await clerk.load();
