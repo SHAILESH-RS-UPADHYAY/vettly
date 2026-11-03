@@ -43,7 +43,7 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'prep') loadPrepQuestions();
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
     if (name === 'home') renderToday();
-    if (name === 'atelier') Appearance.renderSettings();
+    if (name === 'atelier') { Appearance.renderSettings(); window.Register?.renderAtelier?.(); }
     if (name === 'settings' && typeof KeyRing !== 'undefined') { KeyRing.load(); Passport.load(); }
     if (name === 'attic') loadRecycleBin();
     
@@ -225,6 +225,7 @@ function createAssistantBubble(text, question) {
 
 // Restore chat messages from backend on load
 async function restoreChatMessages() {
+    if (window.Register) return Register.load();   // the register (register.js) owns Live Copilot now
     try {
         const res = await fetch(`${API_BASE}/api/chat/history`);
         const data = await res.json();
@@ -301,10 +302,12 @@ async function sendChatMessage() {
     const welcome = messagesDiv.querySelector('.chat-welcome');
     if (welcome) welcome.remove();
 
-    // Add user bubble
+    // Add user bubble (with the practice stopwatch's time, if it was running)
+    const thinkMs = window.Register?.takeLap?.() || null;
     const userBubble = document.createElement('div');
     userBubble.className = 'chat-bubble user';
     userBubble.textContent = msg;
+    window.Register?.decorateUser?.(userBubble, { think_ms: thinkMs, ts: new Date().toISOString() });
     messagesDiv.appendChild(userBubble);
 
     input.value = '';
@@ -325,14 +328,17 @@ async function sendChatMessage() {
         const res = await fetch(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20) }),
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: window.Register?.openId?.() || null, think_ms: thinkMs }),
         });
         const data = await res.json();
         typingBubble.remove();
 
         const reply = data.response || data.error || 'No response';
         const aiBubble = createAssistantBubble(reply, msg);
+        aiBubble.dataset.time = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
         messagesDiv.appendChild(aiBubble);
+        window.Register?.write?.(aiBubble);   // the answer is written in ink, word by word
+        window.Register?.touch?.();
 
         chatHistory.push({ role: 'assistant', content: reply });
         // Server handles persistence now
@@ -2179,8 +2185,8 @@ function renderRecycleBin() {
                     <div class="recycle-item">
                         <div class="recycle-item-header">
                             <div class="recycle-item-title">
-                                <span><svg class="i em-i" aria-hidden="true"><use href="#i-chats"/></svg>Chat Batch #${batch.id}</span>
-                                <span class="badge-pill badge-pill-blue">${batch.count || messages.length} Messages</span>
+                                <span><svg class="i em-i" aria-hidden="true"><use href="#i-book"/></svg>${escapeHtml(batch.title || (firstUser !== 'No text' ? firstUser.split(/\s+/).slice(0, 7).join(' ') : 'An empty chapter'))}</span>
+                                <span class="badge-pill badge-pill-blue">${batch.count || messages.length} ${(batch.count || messages.length) === 1 ? 'note' : 'notes'}</span>
                             </div>
                             <span class="recycle-item-meta">Cleared: ${deletedDate}</span>
                         </div>
@@ -2188,7 +2194,7 @@ function renderRecycleBin() {
                             <strong>Sample Message:</strong> "${snippet}"
                         </div>
                         <div class="recycle-item-actions">
-                            <button class="recycle-btn-restore" onclick="restoreRecycleItem('chat', '${batch.id}')">↩️ Restore to Copilot</button>
+                            <button class="recycle-btn-restore" onclick="restoreRecycleItem('chat', '${batch.id}')">↩ Back into the register</button>
                             <button class="recycle-btn-purge" onclick="deleteRecycleItem('chat', '${batch.id}')"><svg class="i em-i" aria-hidden="true"><use href="#i-trash"/></svg>Delete permanently</button>
                         </div>
                     </div>
