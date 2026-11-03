@@ -31,3 +31,7 @@ Thumbs.db
 
 # Private notes and tracking: never pushed or deployed
 .private/
+backend/context_store/chat_history.json
+backend/context_store/context.json
+backend/context_store/profile.json
+
