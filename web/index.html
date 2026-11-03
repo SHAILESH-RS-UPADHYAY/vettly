@@ -38,6 +38,7 @@
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.0">
     <link rel="stylesheet" href="./bento.css?v=8.2">
+    <link rel="stylesheet" href="./tour.css?v=1.0">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -206,6 +207,11 @@
             <button type="button" class="more-item" data-section="settings">
                 <span class="more-ico" data-tone="tech"><svg aria-hidden="true"><use href="#i-gear"/></svg></span>
                 <span><b>Settings</b><small>Appearance, connection and shortcuts</small></span>
+                <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
+            </button>
+            <button type="button" class="more-item" data-tour-start>
+                <span class="more-ico" data-tone="gen"><svg aria-hidden="true"><use href="#i-path"/></svg></span>
+                <span><b>Take the tour</b><small>A one-minute walk through every page</small></span>
                 <svg aria-hidden="true"><use href="#i-caret-right"/></svg>
             </button>
             <button type="button" class="more-item" onclick="toggleTheme(event)">
@@ -1037,6 +1043,18 @@ Nice to Have:
                         <button class="btn btn-primary" id="launch-overlay-btn" onclick="switchSection('prep', { animate: true })" style="width:100%; justify-content:center; padding:12px 18px; font-weight:700;"><span><svg class="i em-i" aria-hidden="true"><use href="#i-target"/></svg>Open Vettly Prep Studio</span></button>
                     </div>
 
+                    <!-- Guided tour: replays the walkthrough from tour.js -->
+                    <div class="toolbelt-card full-width tour-card-settings" id="settings-tour-card">
+                        <div class="toolbelt-card-header">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Guided tour</h3>
+                        </div>
+                        <p class="toolbelt-card-desc">A one-minute walk through every page: what each one does and where to find it.</p>
+                        <div class="tour-settings-actions">
+                            <button type="button" class="btn btn-primary btn-sm" data-tour-start><svg class="i em-i" aria-hidden="true"><use href="#i-path"/></svg>Take the tour</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="Onboard.open()"><svg class="i em-i" aria-hidden="true"><use href="#i-user"/></svg>Redo onboarding</button>
+                        </div>
+                    </div>
+
                     <!-- Workspace Keyboard Shortcuts Card -->
                     <div class="toolbelt-card full-width" id="settings-hotkeys-card">
                         <div class="toolbelt-card-header">
@@ -1281,6 +1299,7 @@ Nice to Have:
     <script src="./mentor.js?v=8.1"></script>
     <script src="./bento-data.js?v=8.1"></script>
     <script src="./bento.js?v=8.5"></script>
-    <script src="./onboard.js?v=8.8"></script>
+    <script src="./tour.js?v=1.0"></script>
+    <script src="./onboard.js?v=9.0"></script>
 </body>
 </html>
