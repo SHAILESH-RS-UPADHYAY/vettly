@@ -32,7 +32,9 @@ const Tour = (() => {
         dlg.innerHTML = `
             <div class="tour-ring" aria-hidden="true"></div>
             <div class="tour-card" role="document">
-                <p class="tour-count" id="tour-count"></p>
+                <i class="tour-tape" aria-hidden="true"></i>
+                <svg class="tour-arrow" viewBox="0 0 44 28" aria-hidden="true"><path d="M42 6 C 30 2, 16 6, 4 20 m 0 0 l 1 -9 m -1 9 l 9 -2"/></svg>
+                <p class="tour-head"><b class="tour-num" aria-hidden="true"></b><span class="tour-count" id="tour-count"></span></p>
                 <h2 id="tour-title" tabindex="-1"></h2>
                 <p id="tour-body"></p>
                 <div class="tour-dots" aria-hidden="true">${STEPS.map(() => '<span></span>').join('')}</div>
@@ -74,11 +76,11 @@ const Tour = (() => {
         Object.assign(ring.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px` });
         const vw = innerWidth, vh = innerHeight, gap = 14;
         if (phone()) {
-            card.style.cssText = `left:16px; right:16px; bottom:${vh - r.top + gap}px; top:auto;`;
+            card.style.cssText = `left:16px; right:16px; bottom:${vh - r.top + gap + 26}px; top:auto; --ax:${Math.max(24, Math.min(r.left + r.width / 2 - 16, vw - 56))}px;`;
         } else {
-            const h = card.offsetHeight, left = Math.min(r.right + gap + 8, vw - card.offsetWidth - 16);
+            const h = card.offsetHeight, left = Math.min(r.right + gap + 34, vw - card.offsetWidth - 16);
             const top = Math.max(16, Math.min(r.top + r.height / 2 - h / 2, vh - h - 16));
-            card.style.cssText = `left:${left}px; top:${top}px;`;
+            card.style.cssText = `left:${left}px; top:${top}px; --ay:${r.top + r.height / 2 - top}px;`;
         }
     }
 
@@ -86,7 +88,8 @@ const Tour = (() => {
         i = Math.max(0, Math.min(STEPS.length - 1, n));
         const step = STEPS[i];
         if (step.section && typeof switchSection === 'function') switchSection(step.section);
-        dlg.querySelector('#tour-count').textContent = i ? `Stop ${i} of ${STEPS.length - 1}` : 'Welcome';
+        dlg.querySelector('#tour-count').textContent = i ? `Stop ${i} of ${STEPS.length - 1}` : 'Welcome · 1 minute';
+        dlg.querySelector('.tour-num').textContent = i ? String(i).padStart(2, '0') : '';
         dlg.querySelector('#tour-title').textContent = step.title;
         dlg.querySelector('#tour-body').textContent = step.body + (step.more && phone() ? ' On your phone it lives under More.' : '');
         dlg.querySelectorAll('.tour-dots span').forEach((d, k) => d.classList.toggle('on', k === i));
