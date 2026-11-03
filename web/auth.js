@@ -40,7 +40,15 @@
                 colorBackground: v('--paper-2'), colorInputBackground: v('--field') || v('--paper'), colorInputText: v('--ink'),
                 borderRadius: '12px', fontFamily: v('--font-body'),
             },
-            elements: { rootBox: { width: '100%' }, cardBox: { width: '100%', boxShadow: 'none' }, card: { boxShadow: 'none', background: 'transparent' }, footerAction: { display: 'none' } },   // the tabs switch between the forms
+            // compact: the tabs already name the form, onboarding asks for the name, so the card drops its header and name row
+            elements: {
+                rootBox: { width: '100%' }, cardBox: { width: '100%', boxShadow: 'none', border: 0 },
+                card: { boxShadow: 'none', background: 'transparent', padding: '14px 18px 10px', gap: '14px' },
+                header: { display: 'none' }, formFieldRow__name: { display: 'none' }, footerAction: { display: 'none' },   // the tabs switch between the forms
+                socialButtonsBlockButton: { minHeight: '40px' }, socialButtons: { gap: '8px' }, dividerRow: { margin: '2px 0' },
+                form: { gap: '12px' }, formFieldInput: { minHeight: '40px', paddingBlock: '8px' }, formButtonPrimary: { minHeight: '42px' },
+                footer: { background: 'transparent', marginTop: '0' },
+            },
         };
     }
 
@@ -101,6 +109,16 @@
         setTimeout(() => swapForm(next), 430);
         flip.finished.catch(() => {}).finally(() => { flipping = false; });
     }
+    // Clerk paints with the colours it was mounted with, so a theme switch remounts the open form and the user buttons
+    let wasDark = root.classList.contains('theme-dark');
+    new MutationObserver(() => {
+        const dark = root.classList.contains('theme-dark');
+        if (dark === wasDark || !clerk) { wasDark = dark; return; }
+        wasDark = dark;
+        if (mounted && !signedIn) swapForm(mounted);
+        if (signedIn) document.querySelectorAll('[data-user-slot] .user-btn').forEach(el => { clerk.unmountUserButton(el); clerk.mountUserButton(el, { appearance: appearance(), showName: el.closest('[data-user-slot]').dataset.userSlot === 'full' }); });
+    }).observe(root, { attributes: true, attributeFilter: ['class'] });
+
     gate().addEventListener('click', e => {
         const b = e.target.closest('[data-auth-mode]');
         if (b && clerk && !signedIn && b.dataset.authMode !== mounted) setMode(b.dataset.authMode, true);

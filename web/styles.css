@@ -2162,8 +2162,8 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 .auth-points li:nth-child(3) { animation-delay: 420ms; }
 .auth-points svg { width: 22px; height: 22px; padding: 7px; box-sizing: content-box; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); flex-shrink: 0; }
 .auth-panel {
-    position: relative; justify-self: center; width: min(100%, 440px);
-    padding: 22px 10px 12px; border-radius: var(--r-card); border: 1px solid var(--rule);
+    position: relative; justify-self: center; width: min(100%, 420px);
+    padding: 20px 8px 10px; border-radius: var(--r-card); border: 1px solid var(--rule);
     background: var(--paper-2); box-shadow: var(--card-shadow);
     animation: authDrop 760ms var(--spring) 160ms both;
 }
@@ -2171,7 +2171,7 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
     content: ""; position: absolute; top: -13px; left: 50%; width: 120px; height: 26px; translate: -50% 0; rotate: -3deg;
     background: var(--tape-1, var(--accent-soft)); opacity: 0.9; border-radius: 2px;
 }
-.auth-card { min-height: 380px; display: grid; place-items: center; }
+.auth-card { min-height: 300px; display: grid; place-items: center; }
 .auth-error { padding: 24px; text-align: center; color: var(--bad); }
 .auth-gate.leaving { animation: gateOut 480ms var(--ease-in-out) forwards; }
 @keyframes gateIn { from { opacity: 0; } }
@@ -2224,8 +2224,23 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 }
 .auth-tabs button[aria-pressed="true"] { background: var(--paper-2); color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(60, 40, 10, 0.18); }
 .auth-tabs button:active { transform: scale(0.97); }
-.auth-card { min-height: 340px; }
+.auth-card { min-height: 300px; }
 .auth-switch { margin: 6px 14px 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink-2); text-align: center; text-wrap: pretty; }
 .auth-switch[hidden] { display: none; }
 .auth-link { display: inline; padding: 10px 2px; border: 0; background: none; color: var(--accent-ink); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 .auth-tabs button:focus-visible, .auth-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── Light/dark switch, on the sign-in screen and in onboarding (calls toggleTheme) ── */
+.theme-switch {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px 0 12px; flex: none;
+    border: 1px solid var(--rule); border-radius: 999px; background: var(--paper); color: var(--ink-2);
+    font: 600 0.82rem/1 var(--font-body); cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out);
+}
+.theme-switch svg { width: 17px; height: 17px; color: var(--accent-ink); transition: rotate var(--dur-long) var(--spring); }
+.theme-switch .ts-sun, .theme-switch .ts-to-light { display: none; }
+.theme-dark .theme-switch .ts-sun, .theme-dark .theme-switch .ts-to-light { display: inline; }
+.theme-dark .theme-switch .ts-moon, .theme-dark .theme-switch .ts-to-dark { display: none; }
+@media (hover: hover) { .theme-switch:hover { border-color: var(--accent); color: var(--ink); } .theme-switch:hover svg { rotate: 20deg; } }
+.theme-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.auth-theme { position: absolute; top: max(16px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); z-index: 2; }
