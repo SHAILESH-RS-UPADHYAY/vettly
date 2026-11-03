@@ -235,6 +235,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["authorization", "content-type"],
 )
+# Text goes out compressed (about 70% smaller on a phone). Live-streamed answers (text/event-stream) are left alone,
+# so they still arrive word by word.
+from starlette.middleware.gzip import GZipMiddleware  # noqa: E402
+app.add_middleware(GZipMiddleware, minimum_size=1024)
 
 # ─── Who is asking ───────────────────────────────────────────
 @app.middleware("http")
@@ -1408,7 +1412,8 @@ Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@
             logger.error(f"Mentor error: {e}")
             yield f"\n\n*Mentor couldn't reach any AI provider ({e}).*"
 
-    return StreamingResponse(stream(), media_type="text/plain; charset=utf-8")
+    # "identity" tells the gzip layer to leave this alone, so the answer still arrives word by word
+    return StreamingResponse(stream(), media_type="text/plain; charset=utf-8", headers={"Content-Encoding": "identity", "Cache-Control": "no-cache"})
 
 
 # ─── Chat Analyze (Extract Preferences from Full History) ─────
@@ -2579,8 +2584,14 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
 async def app_page(request: Request):
     """index.html with %SITE_URL% filled in, so Reddit, LinkedIn and X previews get absolute links on any domain."""
     from fastapi.responses import HTMLResponse
-    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or "localhost"
-    proto = request.headers.get("x-forwarded-proto") or request.url.scheme
+    import re
+    host = (request.headers.get("x-forwarded-host") or request.headers.get("host") or "localhost").split(",")[0].strip()
+    proto = (request.headers.get("x-forwarded-proto") or request.url.scheme).split(",")[0].strip()
+    # only a plain host[:port] and http(s) ever reach the page: a forged header can't break out of the meta tags
+    if not re.fullmatch(r"[A-Za-z0-9.-]{1,253}(:\d{1,5})?", host):
+        host = "localhost"
+    if proto not in ("http", "https"):
+        proto = "https"
     html = (web_dir / "index.html").read_text(encoding="utf-8").replace("%SITE_URL%", f"{proto}://{host}")
     return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 

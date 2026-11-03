@@ -13,7 +13,7 @@
     --field: #ffffff;
     --ink: #1e293b;
     --ink-2: #475569;
-    --muted: #64748b;
+    --muted: #56607a;   /* 5.2:1 on the paper (#64748b was 4.0:1) */
     --rule: rgba(30, 58, 138, 0.12);
     --rule-2: rgba(30, 58, 138, 0.18);
     --grid-line: rgba(30, 58, 138, 0.12);
@@ -276,7 +276,7 @@
 }
 :root[data-sidebar="poster"] .logo-tagline {
     display: block; position: absolute; left: 20px; bottom: 5px;
-    font: 700 8px/1 var(--font-mono); letter-spacing: 1.5px; color: var(--accent);
+    font: 700 8px/1 var(--font-mono); letter-spacing: 1.5px; color: var(--accent-ink);
 }
 :root[data-sidebar="poster"] .logo-icon { color: var(--accent); animation: posterPulse 3s var(--ease-in-out) infinite; }
 /* the icon rail is too narrow for the badge and tagline: just the mark, centred */

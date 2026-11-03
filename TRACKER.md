@@ -84,9 +84,17 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 8 · Launch hardening
 
-- [ ] Security review, accessibility audit, Lighthouse on the Vercel preview
-- [ ] Device matrix: iPhone SE/15, Pixel, iPad portrait/landscape, 13" laptop, 1080p/1440p desktop
-- [ ] Launch kit: share image, public README, privacy note on stored keys
+- [x] Security review of the whole branch: no high-confidence issues; `%SITE_URL%` now only takes a plain host
+- [x] Accessibility (axe-core 4.10, WCAG A/AA + best practice) on all 9 pages, light and dark: 0 violations
+      (Poster orange deepened to #cb4a08 and the classic grey to #56607a for 4.5:1 text; Copilot title tap area 44px)
+- [x] Lighthouse (local, so no HTTP/2 or CDN): Accessibility, Best Practices, SEO 100; Performance desktop 77 → 95,
+      mobile 56 → 66 (gzip on, scripts deferred, the Daybook date line held so nothing jumps; CLS 0.19 → 0.05)
+- [x] Device matrix, every page: iPhone SE/15, Pixel 7, Galaxy S9+, iPad Mini, iPad Pro 11 landscape, 1280, 1080p,
+      1440p: no sideways scroll, no small touch targets, no script errors
+- [x] Launch kit: share image and icons (Phase 1), README "for every student" section and provider order,
+      privacy page covers several keys, export, Key Ring removal and on-device settings
+- [ ] Safari engine (WebKit is not installed here): check the Vercel preview on a real iPhone and Mac
+- [ ] Lighthouse again on the Vercel preview (HTTP/2, CDN) once the owner settings below are in place
 
 ## Settings only the owner can change (Vercel / Clerk)
 

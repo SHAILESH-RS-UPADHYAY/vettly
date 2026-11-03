@@ -83,6 +83,8 @@
 .reg-title button, .reg-title-input { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reg-title button::after { content: " ✎"; font-size: 0.6em; opacity: 0; transition: opacity var(--dur-short); }
 @media (hover: hover) { .reg-title button:hover::after { opacity: 0.55; } }
+@media (pointer: coarse) { .reg-title button { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
+@media (hover: none) { .reg-title button::after { opacity: 0.5; } }   /* no hover on touch: show that it can be renamed */
 .reg-title-input { width: 100%; border-bottom: 1.5px dashed currentColor; outline: none; }
 .reg-clocks { display: flex; align-items: center; gap: 8px; }
 .reg-clock { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 99px; background: color-mix(in srgb, var(--ink-ai) 7%, transparent); font: 700 0.86rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
