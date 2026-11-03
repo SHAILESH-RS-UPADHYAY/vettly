@@ -34,11 +34,11 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 2 · Structure, names, shortcuts
 
-- [ ] Sidebar order and new names; phone More sheet
-- [ ] Atelier tab: Theme Studio, chat looks, shortcuts, tab visibility
-- [ ] The Attic tab with "Hide this tab" (saved per user)
-- [ ] One shortcut registry driving real shortcuts + the list; command palette (Ctrl/⌘ K)
-- [ ] Animated sun/moon theme switch (sign-in, onboarding, sidebar)
+- [x] Sidebar order and new names; phone More sheet (+ Search & commands, tour)
+- [x] Atelier tab: Theme Studio, shortcuts, tab visibility (chat looks come in Phase 5)
+- [x] The Attic tab with "Show this tab" switch, saved per account (`POST /api/prefs`) and cached locally
+- [x] One shortcut registry (`web/shortcuts.js`) driving real shortcuts + the Atelier list; command palette (Ctrl/⌘ K, phone: More → Search & commands)
+- [x] Animated sun/moon theme switch (sign-in, onboarding, sidebar)
 
 ## Phase 3 · Key Ring, Passport, key guide
 

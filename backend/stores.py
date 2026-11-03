@@ -301,6 +301,17 @@ class ProfileStore:
     def get(self) -> dict:
         return self._data
 
+    TABS = ("attic",)   # optional tabs a user may hide
+
+    def set_prefs(self, data: dict) -> dict:
+        """Small per-account preferences (which optional tabs are hidden); unknown keys are ignored."""
+        prefs = dict(self._data.get("prefs") or {})
+        if isinstance(data.get("hidden_tabs"), list):
+            prefs["hidden_tabs"] = [t for t in data["hidden_tabs"] if t in self.TABS]
+        self._data["prefs"] = prefs
+        docstore.save(self._user, "profile", self._data)
+        return prefs
+
     def update(self, data: dict) -> dict:
         for key in self.FIELDS:
             if isinstance(data.get(key), str):
