@@ -1,14 +1,9 @@
 <div align="center">
 
+<img src=".github/logo.svg" width="88" height="88" alt="Vettly logo">
+
 <!-- White-Mode Parchment Blueprint Animated Hero Banner -->
 <img src="./assets/vettly-hero-animated.svg" alt="Vettly Studio White Blueprint Banner" width="100%" />
-
-<br/>
-
-<!-- Animated Typing Subtitle -->
-<a href="https://github.com/SHAILESH-RS-UPADHYAY/vettly">
-  <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=800&size=18&duration=3000&pause=800&color=EA580C&center=true&vCenter=true&width=860&lines=%E2%9D%96+VETTLY+%E2%80%94+AI+Career+Readiness+Architect+%26+Technical+Prep+Studio;1.+80%2C000-Char+Priority+RAG+Toolbelt+%28Resume+%2B+GitHub+%2B+JD+%2B+STAR%29;2.+4-Provider+Auto-Failover+Router+%28Claude+3.5+%E2%86%94+Gemini+2.5+%E2%86%94+OpenAI+%E2%86%94+Groq%29;3.+7-Dimension+RL+Humanizer+Loop+%2B+9-Category+Prep+Studio+HUD" alt="Typing SVG" />
-</a>
 
 <br/>
 
