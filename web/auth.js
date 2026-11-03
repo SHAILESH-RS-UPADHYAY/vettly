@@ -163,5 +163,24 @@
         if (clerk.user) enter(); else showGate();
     })();
 
-    window.Auth = { ready, signOut: () => clerk?.signOut(), enabled: () => !!clerk };
+    // Passport reads the account from here: who you are, how you sign in, and Clerk's own security window
+    function account() {
+        const u = clerk?.user;
+        if (!u) return null;
+        const methods = new Set((u.externalAccounts || []).map(a => String(a.provider || '').replace(/^oauth_/, '')));
+        if (u.passwordEnabled) methods.add('password');
+        if (u.primaryEmailAddress && !methods.size) methods.add('email');
+        return {
+            name: u.fullName || [u.firstName, u.lastName].filter(Boolean).join(' ') || '',
+            email: u.primaryEmailAddress?.emailAddress || '',
+            image: u.hasImage ? u.imageUrl : '',
+            since: u.createdAt ? new Date(u.createdAt) : null,
+            methods: [...methods],
+        };
+    }
+    window.Auth = {
+        ready, enabled: () => !!clerk, account,
+        signOut: () => clerk?.signOut(),
+        openProfile: () => clerk?.openUserProfile({ appearance: appearance() }),
+    };
 })();

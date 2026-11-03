@@ -42,9 +42,9 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 
 ## Phase 3 · Key Ring, Passport, key guide
 
-- [ ] Key Ring: provider cards, masked keys, show/hide, Test, Remove, deep links
-- [ ] Illustrated step-by-step guide modal for Gemini, Groq, Claude, OpenAI
-- [ ] Passport: account card, manage security (Clerk), export my data, delete, sign out
+- [x] Key Ring: provider cards in fallback order, masked keys, show/hide, paste-to-save, Test (no tokens), Replace, two-tap Remove, deep links (`web/keyring.js`)
+- [x] Illustrated step-by-step guide modal for Gemini, Groq, Claude, OpenAI (drawn screens + moving cursor; last step drops you into that provider's box)
+- [x] Passport: account card, manage security (Clerk), export my data (`GET /api/me/export`), delete, sign out. Removed the fake "Studio Readiness" card
 
 ## Phase 4 · Daybook (home)
 

@@ -100,3 +100,12 @@ out = asyncio.run(ai_utils.generate_multi_provider_completion("sys", "hi"))
 assert out == "answer from groq" and calls == ["gemini", "groq"], (out, calls)
 
 print("keys check passed")
+
+# 7. export: everything the user saved, minus keys and counters
+client.post("/api/profile", json={"name": "Asha", "field": "Healthcare", "role": "Staff nurse"}, headers=A)
+exp = client.get("/api/me/export", headers=A)
+assert exp.status_code == 200 and "attachment" in exp.headers["content-disposition"], exp.headers
+docs = exp.json()["documents"]
+assert docs["profile"]["name"] == "Asha" and "ai_keys" not in docs and GEMINI not in exp.text, list(docs)
+assert "profile" not in client.get("/api/me/export", headers=B).json()["documents"], "export leaked across users"
+print("export check passed")

@@ -166,7 +166,8 @@ async def test_key(provider: str, key: str = "") -> dict:
         return {"ok": False, "message": "Couldn't reach the provider just now. Try again in a moment."}
     if r.status_code == 200:
         return {"ok": True, "message": "Key works"}
-    if r.status_code in (401, 403):
+    # Google answers a wrong key with 400 API_KEY_INVALID, the others with 401/403
+    if r.status_code in (401, 403) or (provider == "gemini" and r.status_code == 400 and "API_KEY" in r.text):
         return {"ok": False, "message": "The provider rejected this key. Copy it again from their site, or create a new one."}
     if r.status_code == 429:
         return {"ok": True, "message": "Key works, but it's rate-limited right now"}
