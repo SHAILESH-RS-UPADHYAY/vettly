@@ -138,6 +138,29 @@ def auto_detect_context_mode(question: str, current_mode: str, is_locked: bool =
         return "projects"
     return current_mode
 
+def profile_context() -> str:
+    """The candidate's onboarding answers as a short context block, so Prep and Copilot work with no resume at all."""
+    prof = profile_store.get()
+    rows = [(k, (prof.get(k) or "").strip()) for k in ("name", "field", "role", "level")]
+    rows = [f"{k.title()}: {v}" for k, v in rows if v]
+    return ("=== CANDIDATE PROFILE ===\n" + "\n".join(rows) + "\n(No resume uploaded: keep examples general and true to this field and level, never invent employers or projects.)") if rows else ""
+
+
+def candidate_context(mode: str = "all") -> str:
+    """Everything the AI may know about the candidate: their profile, then resume, notes, GitHub and the rest."""
+    base = context_engine.get_full_context(mode)
+    prof = profile_context()
+    if not prof:
+        return base
+    return prof + ("\n\n" + base if context_engine.has_context() else "")
+
+
+def has_any_context() -> bool:
+    """A resume, notes or a JD, or at least the field and role from onboarding."""
+    prof = profile_store.get()
+    return context_engine.has_context() or bool(prof.get("field") or prof.get("role"))
+
+
 def who() -> str:
     """The candidate's own name and role for prompts, from their profile (set at onboarding)."""
     prof = profile_store.get()
@@ -333,18 +356,21 @@ async def prep_categories():
 
 
 @app.get("/api/bento/field")
-async def bento_for_field():
-    """Brain Bento's concepts for a non-tech field: six a day, written for the user's field and role and cached for
-    the day. Tech fields (and any failure) get None, so the curated pack is used."""
+async def bento_for_field(peek: bool = False):
+    """Brain Bento's "Fresh today": six concepts written for the user's own field and role, cached for the day. The
+    built-in packs (web/bento-fields.js) need no AI; these are extra. `peek` returns today's six only if they were
+    already written, so opening Brain Bento never spends an answer: the user asks for them with a button."""
     prof = profile_store.get()
     field, role = (prof.get("field") or "").strip(), (prof.get("role") or "").strip()
-    if field.lower() in TECH_FIELDS:
+    if not field and not role:
         return {"lessons": None}
     today = datetime.now().strftime("%Y-%m-%d")
     uid = users.user_id()
     cached = docstore.load(uid, "bento_field", {})
     if cached.get("day") == today and cached.get("for") == f"{field}|{role}" and cached.get("lessons"):
-        return {"lessons": cached["lessons"], "field": field}
+        return {"lessons": cached["lessons"], "field": field or role}
+    if peek:
+        return {"lessons": None}
     from ai.utils import generate_multi_provider_completion
     try:
         allowance.begin_ai_call()
@@ -357,13 +383,15 @@ async def bento_for_field():
                 '"diagram": {"type": "flow", "nodes": ["3 to 5 short steps"]}}]} with exactly 6 lessons. '
                 "Use the field's real concepts, standards and situations, at the given level. Simple words."
             ),
-            user_prompt=f"Field: {field}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
+            user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
             max_tokens=3500, temperature=0.7, json_mode=True,
         )
         items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
+    except allowance.LimitReached as e:
+        return {"lessons": None, "error": str(e)}
     except Exception as e:
         logger.warning(f"Field concepts unavailable: {e}")
-        return {"lessons": None}
+        return {"lessons": None, "error": "Couldn't write fresh ones just now. Today's box still has plenty."}
     lessons = []
     for i, l in enumerate(items[:6]):
         if not isinstance(l, dict) or not l.get("title") or not l.get("body"):
@@ -371,14 +399,14 @@ async def bento_for_field():
         nodes = [str(n)[:40] for n in (l.get("diagram") or {}).get("nodes", [])][:5]
         lessons.append({
             "id": f"f{i}-" + "".join(ch for ch in str(l.get("id", "")).lower() if ch.isalnum() or ch == "-")[:40],
-            "track": "field", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
+            "track": "fresh", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
             "diagram": {"type": "flow", "nodes": nodes} if len(nodes) >= 3 else None,
             "en": {k: (l.get(k) if k == "follow" else str(l.get(k, ""))[:900]) for k in ("title", "hook", "body", "analogy", "q", "a", "follow")},
         })
     if not lessons:
         return {"lessons": None}
     docstore.save(uid, "bento_field", {"day": today, "for": f"{field}|{role}", "lessons": lessons})
-    return {"lessons": lessons, "field": field}
+    return {"lessons": lessons, "field": field or role}
 
 
 @app.get("/api/ai-key")
@@ -585,7 +613,7 @@ async def get_context():
         "resume_file": context_engine._resume.get("file_name"),
         "github": context_engine._github,
         "custom": context_engine.get_custom_contexts(),
-        "full_context_length": len(context_engine.get_full_context()),
+        "full_context_length": len(candidate_context()),
     }
 
 
@@ -709,10 +737,10 @@ async def prepare_qa(
     count: int = Form(default=60),
 ):
     """Generate pre-interview Q&A pairs from loaded context."""
-    if not context_engine.has_context():
+    if not has_any_context():
         return JSONResponse(
             status_code=400,
-            content={"error": "No context loaded. Upload resume or add context first."},
+            content={"error": "Tell Vettly your field and role first (Settings → Edit profile), or add a resume in Agent Toolbelt."},
         )
 
     if qa_cache.status.get("running"):
@@ -745,7 +773,7 @@ async def _run_preparation(
     )
 
     try:
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         # Step 1: Generate questions
         logger.info("📝 Step 1/2: Generating interview questions...")
@@ -871,7 +899,7 @@ async def refine_answer(request: Request):
             return JSONResponse(status_code=404, content={"error": "Invalid Q&A index"})
 
         entry = entries[index]
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         from ai.prompts import REFINE_SYSTEM_PROMPT, REFINE_USER_TEMPLATE
         from ai.utils import generate_multi_provider_completion
@@ -953,13 +981,13 @@ async def prepare_single_question(request: Request):
         if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,39}", category):
             return JSONResponse(status_code=400, content={"error": "Invalid category name."})
 
-        if not context_engine.has_context():
+        if not has_any_context():
             return JSONResponse(
                 status_code=400,
-                content={"error": "No context loaded. Upload resume or add context first."},
+                content={"error": "Tell Vettly your field and role first (Settings → Edit profile), or add a resume in Agent Toolbelt."},
             )
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         # Get existing questions to avoid duplicates
         existing = [e["question"] for e in qa_cache.get_all()]
@@ -1072,7 +1100,7 @@ async def api_chat(req: ChatRequest):
         import time
         from ai.utils import generate_multi_provider_completion
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
 
         # the chapter on screen is the one written in, even if another device opened a different one
         if req.chat_id and req.chat_id != chat_store.chapters()["open"]:
@@ -1232,7 +1260,7 @@ async def api_chat_expand(req: ChatExpandRequest):
         if not question:
             return JSONResponse(status_code=400, content={"error": "Question is required"})
 
-        full_context = context_engine.get_full_context()
+        full_context = candidate_context()
         about_me_ctx = about_me_store.get_intro_context()
         if about_me_ctx:
             full_context += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
@@ -1297,7 +1325,7 @@ async def api_mentor(req: MentorRequest):
         return JSONResponse(status_code=400, content={"error": "Message is required"})
 
     entries = qa_cache.get_all()
-    background = context_engine.get_full_context()
+    background = candidate_context()
     about_me_ctx = about_me_store.get_intro_context()
     if about_me_ctx:
         background += f"\n\n=== PERSONAL INFO ===\n{about_me_ctx}"
@@ -1777,7 +1805,7 @@ async def interview_session(websocket: WebSocket):
         else:
             logger.info(f"🧠 Generating fresh answer [R{round_num}-Q{q_index}, mode={mode}, lang={lang}]")
             c_mode = active_sessions[session_id].get("context_mode", "all")
-            full_context = context_engine.get_full_context(c_mode)
+            full_context = candidate_context(c_mode)
             vision_ctx = active_sessions[session_id].get("vision_context", "")
             if vision_ctx:
                 full_context += f"\n\n=== SCREEN CONTENT (Screenshot Analysis) ===\n{vision_ctx}"
@@ -2192,7 +2220,7 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
         q_index = data.get("question_index", 1)
         question = data.get("question", "")
         c_mode = active_sessions[session_id].get("context_mode", "all")
-        full_context = context_engine.get_full_context(c_mode)
+        full_context = candidate_context(c_mode)
         history = active_sessions[session_id]["transcript_history"]
         mode = "detailed"
         lang = active_sessions[session_id].get("language", "en")
@@ -2369,7 +2397,7 @@ async def handle_control_message(websocket: WebSocket, session_id: str, data: di
             lang = active_sessions[session_id].get("language", "en")
             prev_answer_opener = active_sessions[session_id].get("last_answer_opener", "")
             c_mode = active_sessions[session_id].get("context_mode", "all")
-            full_context = context_engine.get_full_context(c_mode)
+            full_context = candidate_context(c_mode)
             vision_ctx = active_sessions[session_id].get("vision_context", "")
             if vision_ctx:
                 full_context += f"\n\n=== SCREEN CONTENT (Screenshot Analysis) ===\n{vision_ctx}"
