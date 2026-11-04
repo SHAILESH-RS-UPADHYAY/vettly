@@ -12,6 +12,23 @@ const API_BASE = window.location.protocol === 'file:' ? 'http://127.0.0.1:8766' 
 const MORE_SECTIONS = ['setup', 'attic', 'atelier', 'settings', 'aboutme'];
 const sideNav = document.querySelector('.sidebar-nav');
 
+// Where an animated switch grows from: the destination's tab (sidebar, phone tab bar or More), and which way it travels
+const NAV_ORDER = ['home', 'setup', 'prep', 'bento', 'chat', 'attic', 'atelier', 'settings', 'aboutme'];
+function transitionFrom(name) {
+    const root = document.documentElement, main = document.getElementById('main-content');
+    if (!main) return;
+    const from = NAV_ORDER.indexOf(document.body.dataset.section), to = NAV_ORDER.indexOf(name);
+    root.style.setProperty('--vt-dir', to >= from ? '1' : '-1');
+    const tab = [document.getElementById(`nav-${name}`), MORE_SECTIONS.includes(name) ? document.getElementById('nav-more') : null]
+        .find(el => el && !el.hidden && el.getClientRects().length && getComputedStyle(el).display !== 'none');
+    const m = main.getBoundingClientRect();
+    let x = m.width / 2, y = 0;
+    if (tab) { const r = tab.getBoundingClientRect(); x = r.left + r.width / 2 - m.left; y = r.top + r.height / 2 - m.top; }
+    root.style.setProperty('--vt-x', `${Math.round(x)}px`);
+    root.style.setProperty('--vt-y', `${Math.round(y)}px`);
+    root.dataset.vtTo = name;
+}
+
 // User-driven switches animate in a view transition; programmatic ones (Mentor jumps) apply at once
 function switchSection(name, { animate = false } = {}) {
     const page = document.getElementById(`page-${name}`);
@@ -35,7 +52,7 @@ function switchSection(name, { animate = false } = {}) {
         Motion.pill(sideNav);
         Motion.thumbs(page);
     };
-    if (animate && changing) Motion.page(apply); else apply();
+    if (animate && changing) { transitionFrom(name); Motion.page(apply); } else apply();
     if (location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
     // Load data for specific sections

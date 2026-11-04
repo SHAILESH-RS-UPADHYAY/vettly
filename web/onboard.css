@@ -373,3 +373,14 @@
 .onboard-actions [data-ob-next].is-busy { cursor: progress; }
 .onboard-actions [data-ob-next].is-busy svg { animation: obSpin 0.9s linear infinite; }
 @keyframes obSpin { to { rotate: 360deg; } }
+
+/* the role page: chips for the chosen field, and dropdowns that match the inputs */
+.ob-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: -2px; }
+.ob-roles:empty { display: none; }
+.ob-roles-k { flex-basis: 100%; font: 600 0.78rem/1.3 var(--font-body); color: var(--muted); }
+.ob-role { min-height: 34px; padding: 4px 12px; font-size: 0.84rem; }
+.ob-role[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-ink); border-color: var(--accent); }
+.ob-page.ob-in .ob-role { animation: obChip 420ms var(--spring) both; animation-delay: calc(300ms + var(--i, 0) * 45ms); }
+@keyframes obChip { from { opacity: 0; transform: translateY(6px) scale(.9); } }
+@media (pointer: coarse) { .ob-role { min-height: 40px; } }
+.ob-field .pk-btn { min-height: 46px; border-radius: var(--r-ctl); background: var(--field, var(--paper)); }

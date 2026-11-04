@@ -30,7 +30,14 @@ const Motion = (() => {
     // Swap page content inside a view transition when the browser has them
     function page(update) {
         const root = document.documentElement;
-        if (!document.startViewTransition || calm()) { update(); return; }
+        if (calm()) { update(); return; }
+        if (!document.startViewTransition) {   // no view transitions: the new page still grows out of its tab
+            update();
+            const pg = document.querySelector('.page.active'), cs = getComputedStyle(root);
+            const at = `${cs.getPropertyValue('--vt-x').trim() || '50%'} ${cs.getPropertyValue('--vt-y').trim() || '0%'}`;
+            pg?.animate([{ clipPath: `circle(0% at ${at})`, opacity: 0.6 }, { clipPath: `circle(200% at ${at})`, opacity: 1 }], { duration: 560, easing: EASE_OUT });
+            return;
+        }
         root.classList.add('vt-page');
         const t = document.startViewTransition(update);
         t.ready.catch(() => {});   // skipped by a resize or rotation: the update still ran

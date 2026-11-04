@@ -96,6 +96,23 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] Safari engine (WebKit is not installed here): check the Vercel preview on a real iPhone and Mac
 - [ ] Lighthouse again on the Vercel preview (HTTP/2, CDN) once the owner settings below are in place
 
+## Phase 9 · Polish after launch (requested 4 Nov)
+
+- [x] "Redo onboarding" (Settings, ⌘K) runs all 10 pages with your answers filled in; "Your profile" stays a quick edit
+- [x] Pretty, animated dropdowns everywhere (`web/picker.js`): icons, hints, check mark; mouse, touch and keyboard;
+      opens in the top layer so dialogs never clip it; Esc closes only the menu
+- [x] Role box types out roles (developer → MBA → AI → …) with tap-to-fill role chips for the chosen field
+- [x] Live Copilot: chapter clock beside "Chapter I", stopwatch in the title row; writing area on a 1536×864 laptop
+      ~320 → 571 px; phones fold into two slim rows (head 147 → 91 px); handwriting 1.14 → 1.27rem
+- [x] Side panel: hover moves the icon and label, not the box (no more cut-off edge); gap before The Attic 13 px
+- [x] Daybook leads with "Feed your Agent Toolbelt" (skippable), Toolbelt first in quick actions and the checklist
+- [x] Animated tab changes: the new page grows as a circle out of its tab (sidebar, tab bar or More) while the old one
+      sinks back and blurs, drifting the way you travel; still under reduced or calm motion
+- [x] Key Ring: your own provider (OpenRouter, Together, DeepSeek, Mistral or any OpenAI-compatible API): base URL,
+      model, key, "try it first"; https and public hosts only (checked on save and before every call, no redirects)
+- [x] Checked: `backend/test_custom.py` plus the four older suites; browser: onboarding, dropdowns, Copilot sizes,
+      Daybook order, transitions, Key Ring; device matrix and axe (0 issues on 9 pages, light and dark)
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
