@@ -230,7 +230,25 @@ async def _via_groq(system_prompt, user_prompt, history, max_tokens, temperature
     return res.choices[0].message.content.strip()
 
 
-_CALLERS = {"gemini": _via_gemini, "groq": _via_groq, "claude": _via_claude, "openai": _via_openai}
+async def _via_custom(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+    """The user's own OpenAI-compatible provider (OpenRouter, Together, DeepSeek, Mistral…), from Settings → Key Ring.
+    Its host is checked again before every call, and redirects are never followed."""
+    from allowance import own_custom, public_host
+    c = own_custom.get()
+    if not c or not await public_host(c["base_url"]):
+        return None
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in (history or [])[-10:]:
+        messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+    messages.append({"role": "user", "content": user_prompt})
+    async with httpx.AsyncClient(timeout=60.0, follow_redirects=False) as client:
+        resp = await client.post(f"{c['base_url']}/chat/completions", headers={"Authorization": f"Bearer {c['key']}", "X-Title": "Vettly"},
+                                 json={"model": c["model"], "messages": messages, "max_tokens": max_tokens, "temperature": temperature})
+        resp.raise_for_status()
+        return (resp.json()["choices"][0]["message"].get("content") or "").strip()
+
+
+_CALLERS = {"gemini": _via_gemini, "groq": _via_groq, "claude": _via_claude, "openai": _via_openai, "custom": _via_custom}
 
 
 async def generate_multi_provider_completion(
@@ -245,17 +263,23 @@ async def generate_multi_provider_completion(
     Unified multi-provider router for Vettly: Gemini → Groq → Claude → OpenAI (PROVIDER_ORDER).
     Providers without a key are skipped; a failing provider hands over to the next one.
     """
+    from allowance import own_custom
+    custom = own_custom.get()   # the user's own provider: first or last, as they chose
+    order = list(PROVIDER_ORDER)
+    if custom:
+        order = ["custom", *order] if custom.get("first") else [*order, "custom"]
     attempted: list[str] = []   # providers that had a key, so a failure is not reported as a missing key
-    for name in PROVIDER_ORDER:
-        if not _usable(PROVIDER_KEYS[name]):
+    for name in order:
+        if name != "custom" and not _usable(PROVIDER_KEYS[name]):
             continue
-        attempted.append(PROVIDER_LABELS[name])
+        label = custom.get("label", "Your provider") if name == "custom" else PROVIDER_LABELS[name]
+        attempted.append(label)
         try:
             out = await _CALLERS[name](system_prompt, user_prompt, history, max_tokens, temperature, json_mode)
             if out:
                 return out
         except Exception as e:
-            logger.warning(f"{PROVIDER_LABELS[name]} failed ({type(e).__name__}: {str(e)[:160]}); trying the next provider...")
+            logger.warning(f"{label} failed ({type(e).__name__}: {str(e)[:160]}); trying the next provider...")
 
     if attempted:
         raise RuntimeError(

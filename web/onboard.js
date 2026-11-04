@@ -8,9 +8,41 @@ const Onboard = (() => {
     const FIELDS = ['Technology', 'Business & management (MBA)', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing',
         'Design', 'Education', 'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
     const LEVELS = ['Student or fresher', 'Early career', 'Mid-level', 'Senior', 'Lead or manager'];
+    // [icon, hint] for each option in the pretty dropdowns (picker.js)
+    const FIELD_META = {
+        'Technology': ['code', 'Software, data, AI, IT'], 'Business & management (MBA)': ['briefcase', 'Strategy, product, consulting'],
+        'Healthcare': ['shield', 'Nursing, medicine, pharmacy'], 'Finance & accounting': ['list-checks', 'CA, banking, audit, analysis'],
+        'Sales': ['lightning', 'Business development, accounts'], 'Marketing': ['target', 'Brand, digital, SEO, content'],
+        'Design': ['palette', 'UX, UI, graphic, product'], 'Education': ['books', 'Teaching, training, tutoring'],
+        'Operations & supply chain': ['path', 'Logistics, procurement, planning'], 'Law': ['scroll', 'Corporate, litigation, compliance'],
+        'Hospitality': ['star', 'Hotels, food, travel, aviation'], 'Government & public service': ['cap', 'UPSC, policy, NGOs'],
+        'Other': ['sparkle', 'Type your own field'],
+    };
+    const LEVEL_META = { 'Student or fresher': ['cap', 'Final year, or under a year of work'], 'Early career': ['path', '1 to 3 years'],
+        'Mid-level': ['briefcase', '3 to 7 years'], 'Senior': ['star', '7 years or more'], 'Lead or manager': ['user', 'You lead a team or people'] };
+    const opt = (v, meta, on) => `<option${on ? ' selected' : ''}${meta ? ` data-icon="${meta[0]}" data-hint="${meta[1]}"` : ''}>${v}</option>`;
+    // roles to tap, by field; and the roles the empty box types out, always in this order
+    const FIELD_ROLES = {
+        'Technology': ['Software developer', 'Backend developer', 'Frontend developer', 'AI/ML engineer', 'Data analyst', 'DevOps engineer'],
+        'Business & management (MBA)': ['Product manager', 'Business analyst', 'Management consultant', 'Marketing manager', 'Operations manager', 'Strategy associate'],
+        'Healthcare': ['Staff nurse, ICU', 'Staff nurse, ward', 'Junior resident (MBBS)', 'Medical officer', 'Pharmacist', 'Clinical research associate'],
+        'Finance & accounting': ['Financial analyst', 'Chartered accountant', 'Audit associate', 'Investment banking analyst', 'Credit analyst', 'Tax consultant'],
+        'Sales': ['Business development executive', 'Inside sales representative', 'Account manager', 'Sales manager', 'Customer success manager', 'Pre-sales consultant'],
+        'Marketing': ['Digital marketing executive', 'SEO specialist', 'Content strategist', 'Brand manager', 'Performance marketer', 'Social media manager'],
+        'Design': ['UX designer', 'UI designer', 'Product designer', 'Graphic designer', 'UX researcher', 'Motion designer'],
+        'Education': ['Primary school teacher', 'High school teacher', 'Lecturer', 'Instructional designer', 'Corporate trainer', 'Academic counsellor'],
+        'Operations & supply chain': ['Operations executive', 'Supply chain analyst', 'Procurement specialist', 'Logistics coordinator', 'Warehouse manager', 'Planning analyst'],
+        'Law': ['Legal associate', 'Corporate lawyer', 'Litigation associate', 'Compliance officer', 'Legal counsel', 'Paralegal'],
+        'Hospitality': ['Front office executive', 'Guest relations executive', 'Food and beverage manager', 'Hotel management trainee', 'Cabin crew', 'Event coordinator'],
+        'Government & public service': ['Civil services (UPSC)', 'Policy analyst', 'Programme officer (NGO)', 'Public health officer', 'Research associate', 'Bank PO'],
+    };
+    const ROLE_CYCLE = ['Software developer', 'Full-stack developer', 'Product manager (MBA)', 'Business analyst (MBA)', 'Management consultant',
+        'AI/ML engineer', 'Generative AI engineer', 'Prompt engineer', 'Data scientist', 'Staff nurse, ICU', 'Digital marketing executive',
+        'SEO specialist', 'Financial analyst', 'UX designer'];
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
     const ICONS = ['sparkle', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
-    let profile = {}, current = null;
+    let profile = {}, current = null, typer = null;
+    const stopTyping = () => { typer?.(); typer = null; };
     const esc = s => escapeHtml(String(s || ''));
 
     const hasTour = () => typeof Tour !== 'undefined';
@@ -52,11 +84,12 @@ const Onboard = (() => {
         if (n === 2) return `<label class="ob-field"><span>Your name</span><input name="name" required maxlength="80" autocomplete="name" value="${esc(profile.name)}" placeholder="Asha Verma"></label>
             <p class="ob-error" role="alert" hidden>Add your name to continue.</p>`;
         if (n === 3) return `<label class="ob-field"><span>Your field</span>
-                <select name="field" required>${FIELDS.map(f => `<option${(profile.field === f || (other && f === 'Other')) ? ' selected' : ''}>${f}</option>`).join('')}</select></label>
+                <select name="field" required>${FIELDS.map(f => opt(f, FIELD_META[f], profile.field === f || (other && f === 'Other'))).join('')}</select></label>
             <label class="ob-field ob-other"${other ? '' : ' hidden'}><span>Which field?</span><input name="field_other" maxlength="60" value="${other ? esc(profile.field) : ''}" placeholder="Aviation, agriculture, journalism..."></label>`;
-        if (n === 4) return `<label class="ob-field"><span>Role you're preparing for</span><input name="role" required maxlength="80" value="${esc(profile.role)}" placeholder="Staff nurse, ICU"></label>
+        if (n === 4) return `<label class="ob-field"><span>Role you're preparing for</span><input name="role" required maxlength="80" autocomplete="organization-title" value="${esc(profile.role)}" placeholder="${ROLE_CYCLE[0]}"></label>
+            <div class="ob-roles" role="group" aria-label="Roles you can pick"></div>
             <label class="ob-field"><span>Your level</span>
-                <select name="level">${LEVELS.map(l => `<option${profile.level === l ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+                <select name="level">${LEVELS.map(l => opt(l, LEVEL_META[l], profile.level === l)).join('')}</select></label>
             <p class="ob-error" role="alert" hidden>Add the role you're preparing for.</p>`;
         if (n === KEYS) {
             if (!window.Auth?.enabled?.() || typeof KEY_PROVIDERS === 'undefined') return `<p class="ob-key-note">Running on your own computer: Vettly uses the keys in <code>backend/.env</code> (<code>GEMINI_API_KEY</code>, <code>GROQ_API_KEY</code>).</p>`;
@@ -125,7 +158,8 @@ const Onboard = (() => {
         });
     }
 
-    function open() {
+    // open() asks the three questions only ("Your profile"); open({ full: true }) replays all ten pages, answers kept
+    function open({ full = false } = {}) {
         let dlg = document.getElementById('onboard');
         if (!dlg) {
             dlg = document.createElement('dialog');
@@ -137,11 +171,12 @@ const Onboard = (() => {
         const form = dlg.querySelector('form');
         const pages = [...form.querySelectorAll('.ob-page')];
         const back = form.querySelector('[data-ob-back]'), next = form.querySelector('[data-ob-next]'), later = form.querySelector('[data-ob-later]');
-        const editing = !!profile.onboarded;   // editing from "Your profile" asks the questions only
+        const editing = !!profile.onboarded && !full;   // a quick edit from "Your profile"; Redo onboarding shows every page
         let page = editing ? NAME : 0, stopScene = () => {};
 
         const show = n => {
             stopScene();
+            stopTyping();
             page = n;
             pages.forEach((p, k) => { p.hidden = k !== n; });
             dlg.setAttribute('aria-labelledby', `ob-h${n}`);
@@ -153,6 +188,7 @@ const Onboard = (() => {
                 : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing')
                 : n === KEYS && form.querySelector('.ob-key') && !form.querySelector('.ob-key.is-saved') ? 'Skip for now' : 'Next';
             if (n === KEYS) loadKeys();
+            if (n === ROLE) { roleChips(); typeRoles(); }
             pages[n].classList.remove('ob-in'); void pages[n].offsetWidth; pages[n].classList.add('ob-in');
             const stage = pages[n].querySelector('.ob-stage');
             if (S && stage) requestAnimationFrame(() => { if (page === n) stopScene = S.play(stage.dataset.scene, stage); });
@@ -230,7 +266,51 @@ const Onboard = (() => {
         form.addEventListener('change', () => syncBadge(form));
         syncBadge(form);
         // a fresh visitor who leaves early still gets the tour once
-        dlg.addEventListener('close', () => { stopScene(); if (hasTour()) Tour.maybeStart(); }, { once: true });
+        dlg.addEventListener('close', () => { stopScene(); stopTyping(); window.Picker?.close?.(); if (hasTour()) Tour.maybeStart(); }, { once: true });
+
+        // ── the role box: an empty box types out roles (developer, MBA, AI…); chips for this field fill it in one tap ──
+        const fieldNow = () => (form.field.value === 'Other' ? (form.field_other.value.trim() || 'Other') : form.field.value);
+        function roleChips() {
+            const box = form.querySelector('.ob-roles');
+            if (!box) return;
+            const list = FIELD_ROLES[fieldNow()] || ROLE_CYCLE.slice(0, 6);
+            box.innerHTML = `<span class="ob-roles-k">Tap one, or type your own</span>${list.map((r, i) => `<button type="button" class="chip ob-role" style="--i:${i}" aria-pressed="${form.role.value.trim().toLowerCase() === r.toLowerCase()}">${esc(r)}</button>`).join('')}`;
+        }
+        form.addEventListener('click', e => {
+            const chip = e.target.closest('.ob-role');
+            if (!chip) return;
+            form.role.value = chip.textContent;
+            form.querySelectorAll('.ob-role').forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
+            const err = pages[ROLE].querySelector('.ob-error'); if (err) err.hidden = true;
+            form.role.removeAttribute('aria-invalid');
+            syncBadge(form);
+            form.role.focus({ preventScroll: true });
+            if (!Motion.calm()) chip.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+        });
+        form.role.addEventListener('input', () => form.querySelectorAll('.ob-role').forEach(c => c.setAttribute('aria-pressed', String(c.textContent.toLowerCase() === form.role.value.trim().toLowerCase()))));
+        function typeRoles() {
+            const input = form.role;
+            if (Motion.calm()) { input.placeholder = ROLE_CYCLE[0]; return; }
+            let i = 0, n = 0, back = false, t = 0;
+            const tick = () => {
+                if (!input.isConnected) return;
+                const word = ROLE_CYCLE[i % ROLE_CYCLE.length];
+                if (!back) {
+                    n = Math.min(word.length, n + 1);
+                    input.placeholder = `${word.slice(0, n)}▏`;
+                    if (n === word.length) { back = true; t = setTimeout(tick, 1500); return; }
+                    t = setTimeout(tick, 55 + Math.random() * 45);
+                } else {
+                    n = Math.max(0, n - 1);
+                    input.placeholder = n ? `${word.slice(0, n)}▏` : '▏';
+                    if (!n) { back = false; i++; t = setTimeout(tick, 320); return; }
+                    t = setTimeout(tick, 28);
+                }
+            };
+            input.placeholder = '▏';
+            t = setTimeout(tick, 450);
+            typer = () => { clearTimeout(t); input.placeholder = ROLE_CYCLE[i % ROLE_CYCLE.length]; };
+        }
 
         form.addEventListener('submit', async e => {
             e.preventDefault();

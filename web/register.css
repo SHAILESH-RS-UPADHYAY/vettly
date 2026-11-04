@@ -2,7 +2,7 @@
    Each look sets the paper, the ruling, two inks and the page edges; everything else reads those variables. */
 .register {
     --ink-font: 'Kalam', 'Caveat', var(--font-body);
-    --line: 34px;   /* the ruling; handwriting sits on it */
+    --line: 38px;   /* the ruling; handwriting sits on it */
     --pg: #f4e9d0; --pg-index: #efe2c4; --rule-line: rgba(120, 80, 40, 0.13); --margin: rgba(170, 40, 40, 0.38);
     --ink-ai: #3a2614; --ink-me: #23378a; --cap: #9c2b1b; --edge: #e2d0aa; --edge-2: #d6c193; --ribbon: #a3261a; --head: #3a2614;
     --vignette: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(120, 72, 20, 0.16));
@@ -12,7 +12,7 @@
     --ink-ai: #efe2c4; --ink-me: #a9bcff; --cap: #e3a64e; --edge: #3a2e20; --edge-2: #30261a; --ribbon: #c0392b; --head: #f3e6c8; --vignette: radial-gradient(120% 90% at 50% 40%, transparent 50%, rgba(0, 0, 0, 0.35)); }
 .register[data-look="notebook"] { --pg: #fbfaf4; --pg-index: #c9a27a; --rule-line: rgba(60, 110, 200, 0.13); --margin: rgba(220, 80, 80, 0.3); --ink-ai: #3f4246; --ink-me: #1f4fb5; --cap: #1f4fb5; --edge: #e9e5d8; --edge-2: #ddd7c4; --ribbon: #2c6e49; --head: #2b2e33; --vignette: none; }
 .theme-dark .register[data-look="notebook"] { --pg: #1d2126; --pg-index: #5a4632; --rule-line: rgba(140, 180, 255, 0.08); --ink-ai: #d8dde6; --ink-me: #8fb3ff; --cap: #8fb3ff; --edge: #2a3038; --edge-2: #232830; --head: #e6eaf0; }
-.register[data-look="ledger"] { --ink-font: var(--font-body); --line: 32px; --pg: #f2f6ee; --pg-index: #e4ecdf; --rule-line: rgba(40, 120, 70, 0.22); --margin: rgba(190, 40, 40, 0.45); --ink-ai: #1e2b22; --ink-me: #8a1c1c; --cap: #1f6b3d; --edge: #dbe6d4; --edge-2: #cddcc4; --ribbon: #1f6b3d; --head: #1e2b22; --vignette: none; }
+.register[data-look="ledger"] { --ink-font: var(--font-body); --line: 34px; --pg: #f2f6ee; --pg-index: #e4ecdf; --rule-line: rgba(40, 120, 70, 0.22); --margin: rgba(190, 40, 40, 0.45); --ink-ai: #1e2b22; --ink-me: #8a1c1c; --cap: #1f6b3d; --edge: #dbe6d4; --edge-2: #cddcc4; --ribbon: #1f6b3d; --head: #1e2b22; --vignette: none; }
 .theme-dark .register[data-look="ledger"] { --pg: #16211a; --pg-index: #131c16; --rule-line: rgba(120, 220, 160, 0.10); --ink-ai: #d6eadc; --ink-me: #ff9e9e; --cap: #7fd6a2; --edge: #223127; --edge-2: #1b281f; --head: #e3f2e7; }
 .register[data-look="night"], .theme-dark .register[data-look="night"] { --pg: #1b1410; --pg-index: #160f0b; --rule-line: rgba(232, 198, 106, 0.09); --margin: rgba(232, 198, 106, 0.3); --ink-ai: #ecca72; --ink-me: #cfd8ea; --cap: #ecca72; --edge: #3b2a1b; --edge-2: #2e2115; --ribbon: #8f2a1d; --head: #f1d38a;
     --vignette: radial-gradient(70% 60% at 82% 6%, rgba(255, 190, 90, 0.16), transparent 70%), radial-gradient(120% 90% at 50% 40%, transparent 50%, rgba(0, 0, 0, 0.45)); }
@@ -68,18 +68,14 @@
 
 /* head: chapter, date, clocks, tools. Two rows whenever the page itself is narrow (Mentor open, small laptops) */
 .reg-page { container-type: inline-size; container-name: regpage; }
-@container regpage (max-width: 900px) {
-    .reg-head { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "btn heading tools" "clocks clocks clocks"; row-gap: 10px; }
-    .reg-index-btn { grid-area: btn; } .reg-heading { grid-area: heading; } .reg-tools { grid-area: tools; } .reg-clocks { grid-area: clocks; }
-}
-@container regpage (max-width: 620px) { .reg-tools span { display: none; } }
-.reg-head { position: relative; z-index: 3; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 14px; padding: 16px 26px 12px 40px;
+.reg-head { position: relative; z-index: 3; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 20px 8px 40px;
     border-bottom: 3px double color-mix(in srgb, var(--ink-ai) 28%, transparent); color: var(--head); }
 .reg-index-btn { display: none; place-items: center; width: 40px; height: 40px; border: 1.5px solid color-mix(in srgb, currentColor 35%, transparent); border-radius: 12px; background: none; color: inherit; cursor: pointer; }
 .reg-index-btn svg { width: 20px; height: 20px; }
 .reg-heading { min-width: 0; }
+.reg-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: 0; }
 .reg-chno { font: italic 400 0.98rem 'Instrument Serif', Georgia, serif; color: var(--cap); letter-spacing: 0.02em; }
-.reg-title { margin: 2px 0 0; font: 400 clamp(1.3rem, 2.4vw, 1.75rem)/1.1 'Instrument Serif', Georgia, serif; }
+.reg-title { margin: 1px 0 0; font: 400 clamp(1.25rem, 2.2vw, 1.6rem)/1.1 'Instrument Serif', Georgia, serif; }
 .reg-title button, .reg-title-input { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .reg-title button::after { content: " ✎"; font-size: 0.6em; opacity: 0; transition: opacity var(--dur-short); }
 @media (hover: hover) { .reg-title button:hover::after { opacity: 0.55; } }
@@ -87,15 +83,15 @@
 @media (hover: none) { .reg-title button::after { opacity: 0.5; } }   /* no hover on touch: show that it can be renamed */
 .reg-title-input { width: 100%; border-bottom: 1.5px dashed currentColor; outline: none; }
 .reg-clocks { display: flex; align-items: center; gap: 8px; }
-.reg-clock { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: 99px; background: color-mix(in srgb, var(--ink-ai) 7%, transparent); font: 700 0.86rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
-.reg-clock svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.reg-clock { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 9px 0 6px; border-radius: 99px; background: color-mix(in srgb, var(--ink-ai) 8%, transparent); font: 700 0.76rem/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--head); }
+.reg-clock svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 .reg-clock .reg-hand { stroke-linecap: round; transform-origin: 12px 12px; }
 .reg-clock .reg-pin { fill: currentColor; stroke: none; }
 .reg-page.clock-on .reg-hand { animation: regHand 60s steps(60) infinite; }
 @keyframes regHand { to { rotate: 360deg; } }
-.reg-sw { --sw: 0; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 6px; border: 1.5px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 99px; background: none; color: inherit; cursor: pointer;
+.reg-sw { --sw: 0; display: inline-flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 14px 0 5px; border: 1.5px solid color-mix(in srgb, currentColor 30%, transparent); border-radius: 99px; background: none; color: inherit; cursor: pointer;
     transition: border-color var(--dur-short), background-color var(--dur-short); }
-.reg-sw svg { width: 32px; height: 32px; rotate: -90deg; overflow: visible; }
+.reg-sw svg { width: 30px; height: 30px; rotate: -90deg; overflow: visible; }
 .reg-sw .sw-track { fill: none; stroke: color-mix(in srgb, currentColor 16%, transparent); stroke-width: 3; }
 .reg-sw .sw-fill { fill: none; stroke: var(--ok); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--sw)); transition: stroke-dashoffset 900ms linear, stroke 300ms; }
 .reg-sw[data-zone="warn"] .sw-fill { stroke: #d99a1a; } .reg-sw[data-zone="bad"] .sw-fill { stroke: var(--bad); }
@@ -129,10 +125,10 @@
 .register[data-look="plain"] .chat-messages { padding: 20px 28px; background: none; }
 .register:not([data-look="plain"]) .chat-bubble {
     position: relative; max-width: 100%; align-self: stretch; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
-    color: var(--ink-ai); font: 400 1.14rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) both;
+    color: var(--ink-ai); font: 400 1.27rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) both;
 }
 @keyframes regInk { from { opacity: 0; transform: translateY(4px); } }
-.register[data-look="ledger"] .chat-bubble { font-size: 1rem; }
+.register[data-look="ledger"] .chat-bubble { font-size: 1.08rem; }
 .register:not([data-look="plain"]) .chat-bubble.user { color: var(--ink-me); font-weight: 700; margin-top: 6px; }
 .register:not([data-look="plain"]) .chat-bubble.user::before { content: "Q."; position: absolute; left: -46px; top: 0; font: italic 400 1.35rem/var(--line) 'Instrument Serif', Georgia, serif; color: var(--cap); }
 .register:not([data-look="plain"]) .chat-bubble[data-time]::after { content: attr(data-time); position: absolute; left: -96px; top: calc(var(--line) - 2px); width: 60px; text-align: right; font: 600 0.62rem/1.2 var(--font-mono); color: color-mix(in srgb, var(--ink-ai) 55%, transparent); }
@@ -144,6 +140,8 @@
 .reg-spoke { display: inline-flex; align-items: center; gap: 5px; margin-left: 10px; padding: 0 9px; border-radius: 99px; background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); font: 700 0.7rem/22px var(--font-mono); vertical-align: middle; }
 .reg-spoke svg { width: 12px; height: 12px; }
 .register:not([data-look="plain"]) .chat-bubble-actions { margin-top: 2px; }
+.register .chat-bubble-actions { flex-wrap: wrap; }
+.register .chat-bubble-actions button { flex: none; white-space: nowrap; }   /* wrap whole buttons, never squash their words */
 .register:not([data-look="plain"]) .chat-expand-btn { border-color: color-mix(in srgb, var(--ink-ai) 25%, transparent); background: none; color: var(--ink-ai); font-family: var(--font-body); }
 .register:not([data-look="plain"]) .chat-bubble.typing { font-family: var(--font-body); }
 .register:not([data-look="plain"]) .chat-welcome { color: var(--ink-ai); }
@@ -180,15 +178,13 @@
 }
 @media (max-width: 47.99rem) {
     .register { gap: 0; padding: 0 4px 6px 0; }
-    .reg-head { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "btn heading tools" "clocks clocks clocks"; gap: 8px 10px; padding: 12px 14px 10px 22px; }
-    .reg-index-btn { grid-area: btn; } .reg-heading { grid-area: heading; } .reg-tools { grid-area: tools; } .reg-clocks { grid-area: clocks; }
     .reg-tools span { display: none; }
     .reg-ribbon { left: 4px; width: 12px; height: 52px; }
     .register .chat-messages { padding: 12px 16px 16px 56px; background-size: auto; }
     .register:not([data-look="plain"]) .chat-messages { background-image: linear-gradient(90deg, transparent 40px, var(--margin) 40px, var(--margin) 41.5px, transparent 41.5px), repeating-linear-gradient(transparent 0 calc(var(--line) - 1px), var(--rule-line) calc(var(--line) - 1px) var(--line)); }
     .register:not([data-look="plain"]) .chat-bubble.user::before { left: -36px; font-size: 1.1rem; }
     .register:not([data-look="plain"]) .chat-bubble[data-time]::after { display: none; }
-    .register:not([data-look="plain"]) .chat-bubble { font-size: 1.05rem; }
+    .register:not([data-look="plain"]) .chat-bubble { font-size: 1.12rem; }
     .register:not([data-look="plain"]) .chat-input-area { padding: 10px 12px 12px 18px; }
     .reg-book::before { inset: 6px -4px -4px 6px; box-shadow: 2px 2px 0 var(--edge-2), 3px 3px 0 var(--edge); }
 }
@@ -212,3 +208,20 @@
 
 @media (prefers-reduced-motion: reduce) { .register *, .reg-index { animation: none !important; transition: none !important; } }
 :root[data-motion="calm"] .register * { animation: none !important; }
+
+/* one slim row: chapter (with its clock) | stopwatch | tools; phones fold into two slim rows */
+@container regpage (max-width: 780px) { .reg-tools span { display: none; } .reg-tools button { padding: 0 8px; } }
+@container regpage (max-width: 560px) {
+    .reg-head { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "btn title tools" "meta meta clocks"; gap: 4px 10px; padding: 8px 12px 8px 22px; }
+    .reg-heading { display: contents; }
+    .reg-index-btn { grid-area: btn; } .reg-title { grid-area: title; margin: 0; } .reg-meta { grid-area: meta; } .reg-tools { grid-area: tools; } .reg-clocks { grid-area: clocks; justify-self: end; }
+    .reg-meta { flex-wrap: nowrap; }
+    .reg-meta time, .reg-meta .reg-chno > span[aria-hidden] { display: none; }
+    .reg-sw { min-height: 32px; gap: 5px; padding: 0 10px 0 3px; }
+    .reg-sw svg { width: 24px; height: 24px; }
+    .reg-sw .sw-text b { font-size: 0.86rem; }
+    .reg-sw-reset { width: 30px; height: 30px; }
+    .reg-index-btn { width: 36px; height: 36px; }
+    .reg-tools button { min-height: 36px; padding: 0 7px; }
+}
+@container regpage (max-width: 780px) { .reg-sw .sw-text small { display: none; } .reg-sw { padding-right: 12px; } }
