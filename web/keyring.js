@@ -16,9 +16,53 @@ const KEY_PROVIDERS = [
         open: 'Open OpenAI Platform', blurb: 'Paid, with prepaid credits (usually from $5). The last fallback.' },
 ];
 
+// Key Ring's "your own provider": any OpenAI-compatible API. The server checks the URL (https, public host) itself.
+const OWN_PRESETS = [
+    { id: 'openrouter', name: 'OpenRouter', icon: 'planet', hint: 'Hundreds of models behind one key', base: 'https://openrouter.ai/api/v1', model: 'openrouter/auto', keys: 'https://openrouter.ai/settings/keys' },
+    { id: 'together', name: 'Together AI', icon: 'lightning', hint: 'Open models, fast', base: 'https://api.together.xyz/v1', model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', keys: 'https://api.together.ai/settings/api-keys' },
+    { id: 'deepseek', name: 'DeepSeek', icon: 'brain', hint: 'Low cost, strong reasoning', base: 'https://api.deepseek.com/v1', model: 'deepseek-chat', keys: 'https://platform.deepseek.com/api_keys' },
+    { id: 'mistral', name: 'Mistral', icon: 'wand', hint: 'European models', base: 'https://api.mistral.ai/v1', model: 'mistral-small-latest', keys: 'https://console.mistral.ai/api-keys' },
+    { id: 'other', name: 'Other (OpenAI-compatible)', icon: 'plug', hint: 'Any API with /chat/completions', base: '', model: '', keys: '' },
+];
+
 const KeyRing = (() => {
-    let status = null;
+    let status = null, ownEditing = false;
     const icon = (n, cls = '') => `<svg class="${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+    const presetOf = c => OWN_PRESETS.find(p => p.base && c?.base_url?.startsWith(p.base)) || OWN_PRESETS.at(-1);
+
+    // your own provider: a folded section under the four; saved, it shows what it uses and where it sits in the order
+    function own(s) {
+        const c = s.keys?.custom || {}, locked = !s.own_keys_enabled, editing = ownEditing || !c.saved;
+        const pre = c.saved ? presetOf(c) : OWN_PRESETS[0];
+        const body = editing ? `
+            <form class="kr-own-form" data-kr="own-form" autocomplete="off">
+                <label class="kr-field"><span>Provider</span><select name="preset">${OWN_PRESETS.map(p => `<option value="${p.id}" data-icon="${p.icon}" data-hint="${escapeHtml(p.hint)}"${p.id === pre.id ? ' selected' : ''}>${p.name}</option>`).join('')}</select></label>
+                <label class="kr-field"><span>Base URL</span><input name="base_url" type="url" inputmode="url" spellcheck="false" placeholder="https://…/v1" value="${escapeHtml(c.base_url || pre.base)}"${locked ? ' disabled' : ''}></label>
+                <label class="kr-field"><span>Model</span><input name="model" spellcheck="false" placeholder="provider/model-name" value="${escapeHtml(c.model || pre.model)}"${locked ? ' disabled' : ''}></label>
+                <label class="kr-field kr-field-key"><span>API key</span><span class="kr-input"><input name="key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${c.saved ? `Leave empty to keep ••••${escapeHtml(c.last4)}` : 'Paste your key'}"${locked ? ' disabled' : ''}>
+                    <button type="button" class="kr-eye" data-kr="eye" aria-label="Show the key" aria-pressed="false">${icon('eye')}</button></span></label>
+                <label class="tab-switch kr-first"><input type="checkbox" name="first"${c.saved ? (c.first ? ' checked' : '') : ' checked'}><span class="tab-switch-ui" aria-hidden="true"></span><span><b>Try it first</b><small>Before Gemini; off puts it last, as a backup</small></span></label>
+                <div class="kr-actions">
+                    <button type="submit" class="btn btn-primary btn-sm"${locked ? ' disabled' : ''}>Save provider</button>
+                    ${c.saved ? '<button type="button" class="btn btn-ghost btn-sm" data-kr="own-cancel">Cancel</button>' : ''}
+                    <a class="kr-own-get" href="${pre.keys || '#'}" target="_blank" rel="noopener noreferrer"${pre.keys ? '' : ' hidden'}>Get a ${escapeHtml(pre.name)} key${icon('external')}</a>
+                </div>
+            </form>` : `
+            <div class="kr-saved">${icon('check-bold')}<span>${escapeHtml(c.label || 'Your provider')}</span><code>${escapeHtml(c.model)}</code><code>••••${escapeHtml(c.last4)}</code></div>
+            <label class="tab-switch kr-first"><input type="checkbox" data-kr="own-first"${c.first ? ' checked' : ''}><span class="tab-switch-ui" aria-hidden="true"></span><span><b>Try it first</b><small>${c.first ? 'Asked before Gemini, Groq, Claude and OpenAI' : 'Asked last, as a backup'}</small></span></label>
+            <div class="kr-actions">
+                <button type="button" class="btn btn-secondary btn-sm" data-kr="test">${icon('lightning')}Test</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-kr="own-edit">Edit</button>
+                <button type="button" class="btn btn-ghost btn-sm kr-remove" data-kr="remove">Remove</button>
+            </div>`;
+        return `
+            <details class="kr-card kr-own${c.saved ? ' is-saved' : ''}" data-p="custom"${c.saved || ownEditing ? ' open' : ''}>
+                <summary><span class="kr-mark kr-own-mark" aria-hidden="true">${icon('plug')}</span><span class="kr-name"><b>Your own provider</b><small>OpenRouter, Together, DeepSeek, Mistral or any OpenAI-compatible API</small></span>
+                    <span class="kr-badge ${c.saved ? 'free' : 'paid'}">${c.saved ? (c.first ? 'Tried first' : 'Tried last') : 'Optional'}</span>${icon('caret-down', 'kr-own-caret')}</summary>
+                ${body}
+                <p class="kr-msg" role="status" aria-live="polite"></p>
+            </details>`;
+    }
     const api = async (method, path, body) => {
         const res = await fetch(`${API_BASE}${path}`, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body && JSON.stringify(body) });
         const data = await res.json().catch(() => ({}));
@@ -81,6 +125,7 @@ const KeyRing = (() => {
             <p class="toolbelt-card-desc">Bring your own AI key and Vettly has no daily limit. <b>Gemini and Groq are free.</b> Add both: if one is busy, the next one answers, in this order.</p>
             ${s.own_keys_enabled ? '' : `<p class="kr-locked">${icon('shield')}Saving your own keys isn't switched on for this site yet${window.Auth?.enabled?.() ? '' : ' (on your own computer, put keys in <code>backend/.env</code>)'}.</p>`}
             <ol class="kr-chain" aria-label="Your AI keys, in the order Vettly tries them">${KEY_PROVIDERS.map((p, i) => card(p, i, s)).join('')}</ol>
+            ${own(s)}
             <p class="kr-note">${icon('shield')}Keys are encrypted before they are stored, used only for your own requests, and never shown again in full.</p>`;
         const saved = KEY_PROVIDERS.map(p => !!s.keys?.[p.id]?.saved);
         box.querySelectorAll('.kr-card').forEach((li, i) => li.classList.toggle('chain-lit', saved[i] && saved.slice(i + 1).some(Boolean)));
@@ -105,6 +150,25 @@ const KeyRing = (() => {
         }
     }
 
+    async function saveOwn(f) {
+        const li = f.closest('.kr-card'), btn = f.querySelector('[type=submit]');
+        const p = OWN_PRESETS.find(x => x.id === f.preset.value);
+        btn.disabled = true; btn.textContent = 'Checking…';
+        try {
+            render(await api('POST', '/api/ai-key', { provider: 'custom', label: p.id === 'other' ? '' : p.name, base_url: f.base_url.value.trim(), model: f.model.value.trim(), key: f.key.value.trim(), first: f.first.checked }));
+            ownEditing = false;
+            render(status);
+            const fresh = document.querySelector('.kr-own');
+            fresh.classList.add('just-saved');
+            test(fresh);
+            window.Daybook?.refresh?.();
+        } catch (e) { btn.disabled = false; btn.textContent = 'Save provider'; msg(li, e.message, 'bad'); }
+    }
+    async function saveOwnOrder(li, first, c) {
+        try { render(await api('POST', '/api/ai-key', { provider: 'custom', label: c.label, base_url: c.base_url, model: c.model, key: '', first })); }
+        catch (e) { msg(li, e.message, 'bad'); }
+    }
+
     async function test(li) {
         msg(li, 'Checking with the provider…');
         try {
@@ -127,17 +191,34 @@ const KeyRing = (() => {
         const box = document.getElementById('keyring-card');
         if (!box || box.dataset.wired) return;
         box.dataset.wired = '1';
-        box.addEventListener('submit', e => { const f = e.target.closest('[data-kr="form"]'); if (!f) return; e.preventDefault(); save(f.closest('.kr-card'), f.key); });
+        box.addEventListener('submit', e => {
+            const o = e.target.closest('[data-kr="own-form"]'); if (o) { e.preventDefault(); saveOwn(o); return; }
+            const f = e.target.closest('[data-kr="form"]'); if (!f) return; e.preventDefault(); save(f.closest('.kr-card'), f.key);
+        });
+        // picking a preset fills in its base URL and model
+        box.addEventListener('change', e => {
+            const sel = e.target.closest('.kr-own-form select[name="preset"]');
+            if (sel) {
+                const f = sel.form, p = OWN_PRESETS.find(x => x.id === sel.value);
+                if (p.base) { f.base_url.value = p.base; f.model.value = p.model; }
+                const a = f.querySelector('.kr-own-get'); a.hidden = !p.keys; a.href = p.keys || '#'; a.firstChild.textContent = `Get a ${p.name} key`;
+                [f.base_url, f.model].forEach(i => window.Motion?.calm?.() || i.animate([{ backgroundColor: 'var(--accent-soft)' }, { backgroundColor: 'var(--field)' }], { duration: 700 }));
+            }
+            const first = e.target.closest('[data-kr="own-first"]');
+            if (first) { const c = status.keys.custom; saveOwnOrder(first.closest('.kr-card'), first.checked, c); }
+        });
         box.addEventListener('click', e => {
             const b = e.target.closest('[data-kr]'); if (!b) return;
             const li = b.closest('.kr-card');
             if (b.dataset.kr === 'eye') {
-                const input = li.querySelector('input'), show = input.type === 'password';
+                const input = b.closest('.kr-input').querySelector('input'), show = input.type === 'password';
                 input.type = show ? 'text' : 'password';
                 b.setAttribute('aria-pressed', String(show)); b.setAttribute('aria-label', show ? 'Hide the key' : 'Show the key');
                 b.querySelector('use').setAttribute('href', show ? '#i-eye-off' : '#i-eye');
             }
             if (b.dataset.kr === 'test') test(li);
+            if (b.dataset.kr === 'own-edit') { ownEditing = true; render(status); document.querySelector('.kr-own-form input[name="base_url"]')?.focus(); }
+            if (b.dataset.kr === 'own-cancel') { ownEditing = false; render(status); }
             if (b.dataset.kr === 'remove') remove(li, b);
             if (b.dataset.kr === 'replace') {   // show the paste box again; the saved key stays until a new one is saved
                 const real = status, id = li.dataset.p;
