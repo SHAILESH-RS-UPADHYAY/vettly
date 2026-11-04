@@ -57,9 +57,11 @@
 :root[data-look="classic"] .poster-header h1 { font: 800 clamp(30px, 6.4vw, 46px)/1.05 var(--font-display); letter-spacing: -1.5px; text-transform: uppercase; }
 :root[data-look="classic"] .poster-header h1 em { color: var(--accent); }
 :root[data-look="classic"] .poster-header p { font: 500 16px/1.4 'Space Grotesk', var(--font-body); text-transform: uppercase; letter-spacing: 1px; color: var(--ink-2); }
-:root[data-look="classic"] #page-chat .poster-header { margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 2px; border-bottom-style: solid; }
-:root[data-look="classic"] #page-chat .poster-header h1 { font-size: 32px; letter-spacing: -0.5px; }
-:root[data-look="classic"] #page-chat .poster-header p { font-size: 13px; }
+:root[data-look="classic"] #page-chat .poster-header { margin-bottom: 10px; padding-bottom: 6px; border-bottom-width: 2px; border-bottom-style: solid; }
+:root[data-look="classic"] #page-chat .poster-header h1 { font-size: 26px; letter-spacing: -0.5px; }
+:root[data-look="classic"] #page-chat .poster-header p { font-size: 12px; }
+/* Live Copilot gives its height to the page: on shorter screens the one-line subtitle steps aside */
+@media (max-height: 860px) { #page-chat .poster-header p { display: none; } }
 
 /* tape corners and the handwritten note: only the classic look shows them */
 .tape-corner, .handwritten-note { display: none; }
@@ -290,9 +292,12 @@
 :root[data-sidebar="poster"] .server-indicator { font-family: var(--font-mono); font-size: 12px; }
 @media (hover: hover) {
     :root[data-sidebar="poster"] .nav-item:not(.active):hover {
-        background: rgba(var(--accent-rgb), 0.08); color: var(--accent);
-        box-shadow: inset 0 0 0 1px var(--accent); transform: translateX(5px);
+        background: rgba(var(--accent-rgb), 0.08); color: var(--accent-ink);
+        box-shadow: inset 0 0 0 1px var(--accent);
     }
+    /* the contents step in, not the box: a moving box was cut off by the panel's edge */
+    :root[data-sidebar="poster"] .nav-item > :is(.nav-icon, .nav-label) { transition: translate var(--dur-long) var(--spring), transform var(--dur-long) var(--spring); }
+    @media (min-width: 64rem) { :root[data-sidebar="poster"] .nav-item:not(.active):hover > :is(.nav-icon, .nav-label) { translate: 4px 0; } }   /* not on the icon rail, whose labels are tooltips */
 }
 :root[data-sidebar="poster"] .nav-item { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), transform var(--dur-long) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
 

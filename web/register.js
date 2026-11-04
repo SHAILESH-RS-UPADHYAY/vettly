@@ -356,6 +356,13 @@ const Register = (() => {
     }
     wire();
 
+    // the composer's hint fits on one line: a shorter one on narrow pages
+    (() => {
+        const input = document.getElementById('chat-input');
+        if (!input || !window.ResizeObserver) return;
+        new ResizeObserver(() => { if (input.clientWidth) input.placeholder = input.clientWidth < 250 ? 'Write a question…' : 'Write an interview question…'; }).observe(input);
+    })();
+
     return {
         load, newChapter, write, decorateUser, touch, renderAtelier,
         openId: () => openId,

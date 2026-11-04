@@ -246,6 +246,7 @@ async def who_is_asking(request: Request, call_next):
     """Each request starts with nobody signed in; anything that reads or writes data needs a verified session."""
     users.begin_request()
     allowance.own_keys.set(None)
+    allowance.own_custom.set(None)
     if request.method != "OPTIONS" and users.is_protected(request.url.path):
         try:
             users.authenticate(request.headers.get("authorization", ""))
@@ -423,6 +424,8 @@ async def ai_key_status():
 async def ai_key_save(request: Request):
     data = await request.json()
     try:
+        if data.get("provider") == "custom":   # the user's own OpenAI-compatible provider
+            return await allowance.save_custom(data)
         return allowance.save_key(str(data.get("provider", "")), str(data.get("key", "")))
     except ValueError as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
@@ -1394,7 +1397,7 @@ Below is his background, every Prep Studio question (numbered Q1, Q2, … — "@
     async def stream():
         from ai.utils import _usable, generate_multi_provider_completion
         sent = False
-        if _usable("GEMINI_API_KEY"):
+        if _usable("GEMINI_API_KEY") and not (allowance.own_custom.get() or {}).get("first"):   # their own provider first, when they asked
             try:
                 async for chunk in stream_gemini_chat(system_prompt, req.history[-40:] + [{"role": "user", "content": user_turn}]):
                     sent = True

@@ -32,6 +32,11 @@ const Daybook = (() => {
         const anyKey = Object.values(d.keys?.keys || {}).some(k => k.saved);
         if (!d.profile?.onboarded) return { t: 'Tell Vettly who you are', x: 'Four quick answers, and every question and answer is written for your field and role.', a: [['Start', 'user', () => window.Onboard?.open()]] };
         if (hosted && !anyKey && (d.keys?.free_left ?? 99) <= 5) return { t: 'Add a free AI key', x: `${d.keys?.free_left ?? 0} free answers left today. A free Gemini key takes two minutes and has no daily limit here.`, a: [['Show me how', 'key', () => KeyGuide.open('gemini')], ['Key Ring', 'gear', () => switchSection('settings', { animate: true })]] };
+        // the Toolbelt first: whatever it holds makes every later answer yours (optional, so it can be skipped)
+        const fed = !!(d.ctx?.resume || Object.keys(d.ctx?.github || {}).length || d.ctx?.custom?.length || d.jd?.description);   // an empty GitHub comes back as {}
+        let skipped = false; try { skipped = localStorage.getItem('vettly_toolbelt_skip') === '1'; } catch (e) { /* storage blocked */ }
+        if (!fed && !skipped && !d.q) return { t: 'Feed your Agent Toolbelt', x: 'Add your resume, a job post, GitHub or a few stories, so every question and answer is about you. All optional, and it takes a minute.',
+            a: [['Open Agent Toolbelt', 'toolbox', () => switchSection('setup', { animate: true })], ['Skip for now', 'caret-right', () => { try { localStorage.setItem('vettly_toolbelt_skip', '1'); } catch (e) { /* */ } refresh(); }]] };
         if (!d.q) return { t: 'Generate your first question', x: `Pick a category in Prep Studio and Vettly writes a question for ${d.profile?.role ? escapeHtml(d.profile.role) : 'your role'}, with a model answer.`, a: [['Open Prep Studio', 'target', () => switchSection('prep', { animate: true })]] };
         if (d.rev) return { t: `Review ${d.rev} ${d.rev === 1 ? 'answer' : 'answers'}`, x: 'Accept the ones that sound like you, or refine them. Reviewed answers teach Vettly your voice.', a: [['Review now', 'list-checks', () => { switchSection('prep', { animate: true }); if (typeof prep !== 'undefined') { prep.f.st = 'review'; window.prepRender?.(); } }]] };
         if (d.bento < 5) return { t: d.bento ? `${5 - d.bento} more ideas in today's box` : "Today's Brain Bento is waiting", x: 'Five bite-sized ideas from your field. About five minutes.', a: [['Open the box', 'bento', () => switchSection('bento', { animate: true })]] };
@@ -61,10 +66,10 @@ const Daybook = (() => {
     }
 
     function renderActions() {
-        const want = ['new-chapter', 'go-chat', 'go-prep', 'go-bento', 'prep-search', 'palette', 'theme'];
+        const want = ['go-setup', 'go-prep', 'go-bento', 'new-chapter', 'go-chat', 'prep-search', 'palette', 'theme'];
         const reg = window.Shortcuts ? Shortcuts.list() : [];
         const pick = want.map(id => reg.find(x => x.id === id)).filter(Boolean).filter((x, i, all) => !(x.id === 'go-chat' && all.some(y => y.id === 'new-chapter'))).slice(0, 6);
-        const LABEL = { 'go-chat': 'Practise in Copilot', 'go-prep': 'Generate a question', 'go-bento': "Today's Bento", 'prep-search': 'Search my questions', palette: 'Search & commands', theme: 'Light / dark', 'new-chapter': 'New Copilot chapter' };
+        const LABEL = { 'go-setup': 'Feed your Toolbelt', 'go-chat': 'Practise in Copilot', 'go-prep': 'Generate a question', 'go-bento': "Today's Bento", 'prep-search': 'Search my questions', palette: 'Search & commands', theme: 'Light / dark', 'new-chapter': 'New Copilot chapter' };
         const box = $('actions');
         box.innerHTML = pick.map((x, i) => `<button type="button" class="db-action" data-act="${x.id}" style="--i:${i}"><span class="db-action-ico">${icon(x.icon || 'sparkle')}</span><b>${LABEL[x.id] || x.label}</b><span class="db-kbd">${Shortcuts.kbd(x)}</span></button>`).join('');
         box.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => reg.find(x => x.id === b.dataset.act)?.run()));
@@ -75,9 +80,9 @@ const Daybook = (() => {
         const anyKey = Object.values(d.keys?.keys || {}).some(k => k.saved);
         const items = [
             ['Your profile', d.profile?.onboarded, d.profile?.role ? `Preparing for ${escapeHtml(d.profile.role)}` : 'Name, field and role', () => window.Onboard?.open()],
+            ['Your resume', !!d.ctx?.resume, 'Agent Toolbelt · optional: answers cite your real experience', () => switchSection('setup', { animate: true })],
+            ['A job post', !!d.jd?.description, 'Agent Toolbelt · optional: questions follow its requirements', () => switchSection('setup', { animate: true })],
             ...(hosted ? [['A free AI key', anyKey, anyKey ? 'Connected' : 'Gemini or Groq, two minutes', () => KeyGuide.open('gemini')]] : []),
-            ['Your resume', !!d.ctx?.resume, 'Optional: answers cite your real experience', () => switchSection('setup', { animate: true })],
-            ['A job post', !!d.jd?.description, 'Optional: questions follow its requirements', () => switchSection('setup', { animate: true })],
             ['The guided tour', !!window.Tour?.seen?.(), 'One minute, every page', () => window.Tour?.start()],
         ];
         const done = items.filter(i => i[1]).length;

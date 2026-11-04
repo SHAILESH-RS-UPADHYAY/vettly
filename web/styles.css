@@ -587,7 +587,7 @@ body[data-section="chat"] { height: 100dvh; overflow: hidden; }
     width: 100%;
     height: 100%;
     margin: 0 auto;
-    padding: 16px var(--gutter) 16px;
+    padding: 12px var(--gutter) 12px;
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
@@ -2265,7 +2265,7 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 :root[data-motion="calm"] .sunmoon, :root[data-motion="calm"] .sunmoon * { transition: none !important; }
 
 /* ── Side panel: a quiet rule between the daily rooms and the house-keeping tabs; scrolls on short screens ── */
-.nav-rule { display: block; height: 1px; margin: 6px 12px; background: var(--rule); }
+.nav-rule { display: block; height: 1px; margin: 2px 14px; background: var(--rule); }
 .nav-item[hidden], .more-item[hidden] { display: none !important; }
 @media (min-width: 48rem) {
     .sidebar-nav { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; min-height: 0; }

@@ -198,3 +198,33 @@
 .pp-actions .i { width: 15px; height: 15px; }
 @media (max-width: 40rem) { .pp-page { grid-template-columns: minmax(0, 1fr); justify-items: start; } .pp-photo { width: 88px; height: 108px; } }
 @media (prefers-reduced-motion: reduce) { .pp-stamp { animation: none; } }
+
+/* ── Your own provider: a folded card under the four ── */
+[data-p="custom"] { --tone: var(--c-beh, #5b3fa8); --tone-bg: var(--c-beh-bg, #efe9fb); }
+.kr-own { margin-top: 18px; padding: 0; animation-delay: 300ms; }
+.kr-own::after { display: none; }
+.kr-own > summary { display: flex; align-items: center; gap: 10px; padding: 14px 16px; cursor: pointer; list-style: none; border-radius: 18px; }
+.kr-own > summary::-webkit-details-marker { display: none; }
+.kr-own > summary:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+@media (hover: hover) { .kr-own > summary:hover { background: color-mix(in srgb, var(--tone) 6%, transparent); } }
+.kr-own-mark svg { width: 20px; height: 20px; }
+.kr-own .kr-name { flex: 1; min-width: 0; }
+.kr-own-caret { flex: none; width: 16px; height: 16px; color: var(--muted); transition: transform var(--dur-long) var(--spring); }
+.kr-own[open] .kr-own-caret { transform: rotate(180deg); }
+.kr-own[open] > summary { border-bottom: 1px dashed var(--rule-2, var(--rule)); border-radius: 18px 18px 0 0; }
+.kr-own > :not(summary) { margin-inline: 16px; }
+.kr-own > :last-child { margin-bottom: 14px; }
+.kr-own[open] > :not(summary) { animation: krOwnIn 420ms var(--ease-out) both; }
+@keyframes krOwnIn { from { opacity: 0; transform: translateY(-6px); } }
+.kr-own .kr-saved, .kr-own .kr-first { margin-top: 12px; }
+.kr-own-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 14px; }
+.kr-own-form .kr-input { display: flex; }
+@container (min-width: 620px) { .kr-own-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kr-own-form .kr-first, .kr-own-form .kr-actions { grid-column: 1 / -1; } }
+.kr-field { display: grid; gap: 6px; min-width: 0; font: 600 0.85rem/1.2 var(--font-body); color: var(--ink-2); }
+.kr-field input { min-height: 44px; font-family: var(--font-mono); font-size: 0.86rem; }
+.kr-own .kr-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.kr-own-form .kr-actions { margin-top: 0; }
+.kr-own-get { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--accent-ink); font: 600 0.84rem var(--font-body); }
+.kr-own-get svg { width: 13px; height: 13px; }
+.kr-own .kr-saved code { font-size: 0.78rem; }
+@media (pointer: coarse) { .kr-own-get { min-height: 44px; padding: 0 4px; } }
