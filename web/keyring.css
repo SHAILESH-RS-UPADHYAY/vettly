@@ -213,6 +213,12 @@
 .kr-own[open] .kr-own-caret { transform: rotate(180deg); }
 .kr-own[open] > summary { border-bottom: 1px dashed var(--rule-2, var(--rule)); border-radius: 18px 18px 0 0; }
 .kr-own > :not(summary) { margin-inline: 16px; }
+.kr-own { grid-template-columns: minmax(0, 1fr); }
+@container (max-width: 300px) {   /* small phones, and the account window on them: the badge goes, the row fits */
+    .kr-own > summary { gap: 8px; padding: 12px; }
+    .kr-own > summary .kr-badge { display: none; }
+    .kr-own > :not(summary) { margin-inline: 12px; }
+}
 .kr-own > :last-child { margin-bottom: 14px; }
 .kr-own[open] > :not(summary) { animation: krOwnIn 420ms var(--ease-out) both; }
 @keyframes krOwnIn { from { opacity: 0; transform: translateY(-6px); } }
