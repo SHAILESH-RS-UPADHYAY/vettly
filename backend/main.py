@@ -1226,6 +1226,13 @@ async def new_chapter(request: Request):
     return {"chapter": chat_store.create(str(data.get("title", "") or "")), **chat_store.chapters()}
 
 
+@app.get("/api/chats/{cid}")
+async def read_chapter(cid: str):
+    """One chapter with its notes, without opening it: the page prefetches chapters so opening one is instant."""
+    ch = chat_store.full(cid)
+    return ch if ch else JSONResponse(status_code=404, content={"error": "That chapter isn't in your register"})
+
+
 @app.post("/api/chats/{cid}/open")
 async def open_chapter(cid: str):
     ch = chat_store.open_chapter(cid)

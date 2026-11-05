@@ -61,9 +61,10 @@
     <link rel="stylesheet" href="./onboard.css?v=2.3">
     <link rel="stylesheet" href="./keyring.css?v=1.3">
     <link rel="stylesheet" href="./daybook.css?v=1.3">
-    <link rel="stylesheet" href="./register.css?v=1.6">
+    <link rel="stylesheet" href="./register.css?v=1.10">
     <link rel="stylesheet" href="./tour.css?v=2.1">
     <link rel="stylesheet" href="./picker.css?v=1.1">
+    <link rel="stylesheet" href="./lookbook.css?v=1.7">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -634,6 +635,18 @@
                     <h1>Live <em>Copilot</em></h1>
                     <p>Your practice register. Every conversation is a chapter you can keep, shelve or tear out.</p>
                     <h2 class="sr-only">Your practice session</h2>
+                    <!-- top right: the time now, and the practice stopwatch (register.js) -->
+                    <div class="reg-timebar" id="reg-timebar" role="group" aria-label="Clock and practice stopwatch">
+                        <span class="reg-now" title="The time now">
+                            <svg class="reg-face" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line class="hh" x1="12" y1="12" x2="12" y2="7"/><line class="mm" x1="12" y1="12" x2="12" y2="4.2"/><line class="ss" x1="12" y1="13.5" x2="12" y2="3.4"/><circle class="pin" cx="12" cy="12" r="1.2"/></svg>
+                            <span class="reg-now-text"><time id="reg-now">--:--</time><small id="reg-today"></small></span>
+                        </span>
+                        <button type="button" class="reg-sw" id="reg-sw" data-reg="sw" aria-pressed="false" title="Practice stopwatch: time yourself answering out loud (T)">
+                            <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="sw-track" cx="18" cy="18" r="15"/><circle class="sw-fill" cx="18" cy="18" r="15" pathLength="1"/><rect class="sw-crown" x="15.5" y="0" width="5" height="3" rx="1"/></svg>
+                            <span class="sw-text"><b id="reg-sw-time">0:00</b><small id="reg-sw-label">Stopwatch</small></span>
+                        </button>
+                        <button type="button" class="reg-sw-reset" data-reg="sw-reset" aria-label="Reset the stopwatch" hidden><svg aria-hidden="true"><use href="#i-refresh"/></svg></button>
+                    </div>
                 </div>
                 <!-- The register: every conversation is a chapter (register.js). The message list and composer keep their ids -->
                 <div class="register" id="register" data-look="manuscript">
@@ -656,16 +669,8 @@
                             <header class="reg-head">
                                 <button type="button" class="reg-index-btn" data-reg="index" aria-label="Show chapters" aria-controls="reg-index"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
                                 <div class="reg-heading">
-                                    <p class="reg-meta"><span class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></span>
-                                        <span class="reg-clock" title="Time spent in this chapter"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line class="reg-hand" x1="12" y1="12" x2="12" y2="5"/><circle class="reg-pin" cx="12" cy="12" r="1.4"/></svg><b id="reg-elapsed">0:00</b><span class="sr-only"> in this chapter</span></span></p>
+                                    <p class="reg-meta"><span class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></span></p>
                                     <h3 class="reg-title"><button type="button" id="reg-title" data-reg="rename" title="Rename this chapter">A new chapter</button></h3>
-                                </div>
-                                <div class="reg-clocks">
-                                    <button type="button" class="reg-sw" id="reg-sw" data-reg="sw" aria-pressed="false" title="Practice stopwatch: time yourself answering out loud (T)">
-                                        <svg viewBox="0 0 36 36" aria-hidden="true"><circle class="sw-track" cx="18" cy="18" r="15"/><circle class="sw-fill" cx="18" cy="18" r="15" pathLength="1"/><rect class="sw-crown" x="15.5" y="0" width="5" height="3" rx="1"/></svg>
-                                        <span class="sw-text"><b id="reg-sw-time">0:00</b><small id="reg-sw-label">Stopwatch</small></span>
-                                    </button>
-                                    <button type="button" class="reg-sw-reset" data-reg="sw-reset" aria-label="Reset the stopwatch" hidden><svg aria-hidden="true"><use href="#i-refresh"/></svg></button>
                                 </div>
                                 <div class="reg-tools">
                                     <button type="button" data-reg="archive" title="Put this chapter on the archive shelf"><svg aria-hidden="true"><use href="#i-archive"/></svg><span>Archive</span></button>
@@ -1013,7 +1018,8 @@
                     <div class="toolbelt-card full-width appearance-card" id="appearance-card">
                         <div class="toolbelt-card-header">
                             <h3><svg class="h-ico" aria-hidden="true"><use href="#i-wand"/></svg>Theme Studio</h3>
-                            <button type="button" class="btn btn-sm btn-ghost" id="appearance-reset"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Reset to default</button>
+                            <span class="ap-head-actions"><button type="button" class="btn btn-sm btn-secondary" onclick="LookBook.open()"><svg class="i" aria-hidden="true"><use href="#i-palette"/></svg>Open the Look Book</button>
+                            <button type="button" class="btn btn-sm btn-ghost" id="appearance-reset"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg>Reset to default</button></span>
                         </div>
                         <div class="studio-head">
                             <div class="ap-row">
@@ -1291,21 +1297,23 @@
     <script defer src="./vendor/purify-3.4.16.min.js"></script>
     <script defer src="./vendor/gsap-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
+    <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
     <script defer src="./auth.js?v=9.3"></script>
     <script defer src="./motion.js?v=8.3"></script>
-    <script defer src="./appearance.js?v=9.0"></script>
-    <script defer src="./dashboard.js?v=9.0"></script>
+    <script defer src="./appearance.js?v=9.1"></script>
+    <script defer src="./dashboard.js?v=9.1"></script>
     <script defer src="./mentor.js?v=8.1"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
-    <script defer src="./shortcuts.js?v=1.2"></script>
+    <script defer src="./shortcuts.js?v=1.3"></script>
     <script defer src="./keyring.js?v=1.3"></script>
-    <script defer src="./register.js?v=1.2"></script>
+    <script defer src="./register.js?v=1.4"></script>
     <script defer src="./daybook.js?v=1.3"></script>
     <script defer src="./tour.js?v=2.2"></script>
     <script defer src="./onboard-scenes.js?v=2.3"></script>
-    <script defer src="./onboard.js?v=9.7"></script>
+    <script defer src="./lookbook.js?v=1.5"></script>
+    <script defer src="./onboard.js?v=9.8"></script>
     <script defer src="./picker.js?v=1.1"></script>
 </body>
 </html>
