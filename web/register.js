@@ -41,6 +41,7 @@ const Register = (() => {
     const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200));
 
     /* ── the index ── */
+    const NIB = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 18.2 9.4 13.6 19.6 12 21.6 10.4 19.6 5.8 9.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 21.4V12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="10.2" r="1.5" fill="currentColor"/></svg>';
     function title(c) { return c.title || c.auto_title || 'A blank page'; }
     function when(iso) {
         if (!iso) return '';
@@ -51,7 +52,7 @@ const Register = (() => {
     function item(c, i) {
         return `<li style="--i:${i}"><button type="button" class="reg-item${c.id === openId ? ' is-open' : ''}" data-open="${c.id}" aria-current="${c.id === openId}">
             <span class="reg-item-no">${roman(c.number)}</span>
-            <span class="reg-item-text"><b>${escapeHtml(title(c))}</b><small>${when(c.updated)} · ${c.count} ${c.count === 1 ? 'note' : 'notes'}${c.elapsed_ms > 59000 ? ` · ${clock(c.elapsed_ms)}` : ''}</small></span></button></li>`;
+            <span class="reg-item-text"><b>${escapeHtml(title(c))}</b><small>${when(c.updated)} · ${c.count} ${c.count === 1 ? 'note' : 'notes'}${c.elapsed_ms > 59000 ? ` · ${clock(c.elapsed_ms)}` : ''}</small></span></button>${c.id ? `<button type="button" class="reg-item-ink" data-rename-id="${c.id}" aria-label="Rename ${escapeHtml(title(c))}" title="Rename">${NIB}</button>` : ''}</li>`;
     }
     function renderIndex() {
         const q = query.toLowerCase();
@@ -403,24 +404,56 @@ const Register = (() => {
         } catch (e) { Motion.toast(`Could not tear it out: ${e.message}`, 'error'); load(); }
         await flight;
     }
+    // Rename: the old name blots away, you write the new one on a dashed rule, and the nib inks it in
     function rename() {
-        const btn = $('reg-title'); if (!current || !btn) return;
+        const btn = $('reg-title'); if (!current || !btn || !current.id) return;
+        const head = btn.closest('.reg-head'), calm = Motion.calm();
+        const box = document.createElement('span'); box.className = 'reg-rename';
         const input = document.createElement('input');
         input.className = 'reg-title-input'; input.value = current.title || ''; input.placeholder = current.auto_title || 'Name this chapter';
-        input.setAttribute('aria-label', 'Chapter name'); input.maxLength = 80;
-        btn.replaceWith(input); input.focus(); input.select();
+        input.setAttribute('aria-label', 'Chapter name'); input.setAttribute('aria-describedby', 'reg-rename-hint'); input.maxLength = 80; input.enterKeyHint = 'done';
+        box.append(input, Object.assign(document.createElement('span'), { className: 'reg-rename-line' }));
+        const swap = () => { btn.replaceWith(box); head.classList.add('is-renaming'); input.focus(); input.select(); };
+        if (calm) swap();
+        else btn.animate([{ opacity: 1, filter: 'blur(0)' }, { opacity: 0, filter: 'blur(4px)', transform: 'translateY(2px)' }], { duration: 170, easing: 'ease-in' }).onfinish = swap;
         let done = false;
         const finish = async save => {
             if (done) return; done = true;
-            input.replaceWith(btn);
-            if (save && input.value.trim() !== (current.title || '')) {
+            const next = input.value.trim(), changed = save && next !== (current.title || '');
+            box.replaceWith(btn); head.classList.remove('is-renaming');
+            if (changed) {
                 try { const m = await api('PATCH', `/api/chats/${current.id}`, { title: input.value }); current.title = m.title; const row = list.find(c => c.id === current.id); if (row) row.title = m.title; }
                 catch (e) { Motion.toast(e.message, 'error'); }
             }
             renderHead(); renderIndex();
+            if (changed) inkIn(btn); else if (!calm) btn.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200 });
         };
-        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); finish(false); } });
         input.addEventListener('blur', () => finish(true));
+    }
+    // the new name is written in from left to right, the nib riding the edge of the ink, then a few drops spatter
+    function inkIn(btn) {
+        if (Motion.calm()) return;
+        const w = btn.offsetWidth, dur = Math.min(1200, Math.max(460, btn.textContent.length * 48));
+        btn.animate([{ clipPath: 'inset(-30% 100% -30% 0)' }, { clipPath: 'inset(-30% 0 -30% 0)' }], { duration: dur, easing: 'cubic-bezier(0.45, 0.05, 0.3, 1)' });
+        const nib = btn.parentElement.querySelector('.reg-title-nib');
+        nib?.animate([
+            { opacity: 0, transform: 'translate(0, 4px) rotate(0deg)' },
+            { opacity: 1, transform: 'translate(0, 0) rotate(-6deg)', offset: 0.08 },
+            { opacity: 1, transform: `translate(${w * 0.5}px, -2px) rotate(4deg)`, offset: 0.5 },
+            { opacity: 1, transform: `translate(${w}px, 0) rotate(-4deg)`, offset: 0.92 },
+            { opacity: 0, transform: `translate(${w + 10}px, -10px) rotate(-20deg)` },
+        ], { duration: dur + 160, easing: 'cubic-bezier(0.45, 0.05, 0.3, 1)' });
+        setTimeout(() => {
+            const r = btn.getBoundingClientRect();
+            for (let i = 0; i < 6; i++) {
+                const d = document.createElement('i'); d.className = 'reg-ink-drop';
+                Object.assign(d.style, { left: `${r.right - 2}px`, top: `${r.top + r.height * 0.55}px` });
+                document.body.appendChild(d);
+                const a = -Math.PI / 2 + (Math.random() - 0.5) * 2.4, dist = 10 + Math.random() * 18, s = 0.5 + Math.random() * 0.8;
+                d.animate([{ transform: 'translate(0, 0) scale(1)', opacity: 0.9 }, { transform: `translate(${Math.cos(a) * dist}px, ${Math.sin(a) * dist + 8}px) scale(${s})`, opacity: 0 }], { duration: 520 + Math.random() * 240, easing: 'cubic-bezier(0.2, 0.8, 0.4, 1)' }).onfinish = () => d.remove();
+            }
+        }, dur * 0.92);
     }
     // after a message lands: counts, first-question titles and order refresh without reloading the page
     async function touch() {
@@ -458,6 +491,8 @@ const Register = (() => {
     function wire() {
         const reg = $('register'); if (!reg) return;
         reg.addEventListener('click', e => {
+            const rn = e.target.closest('[data-rename-id]');
+            if (rn) { const id = rn.dataset.renameId; (current?.id === id ? Promise.resolve() : openChapter(id)).then(() => { closeIndex?.(); setTimeout(rename, Motion.calm() ? 0 : 260); }); return; }
             const o = e.target.closest('[data-open]'); if (o) { openChapter(o.dataset.open); return; }
             const b = e.target.closest('[data-reg]'); if (!b) return;
             ({ new: newChapter, archive, delete: () => tearOut(b), rename, sw: () => sw.toggle(), 'sw-reset': () => sw.reset(), index: openIndex, 'close-index': closeIndex })[b.dataset.reg]?.();
