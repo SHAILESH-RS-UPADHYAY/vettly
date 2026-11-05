@@ -36,6 +36,7 @@
 @keyframes regIn { from { opacity: 0; transform: translateX(-8px); } }
 .reg-item { position: relative; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: start; width: 100%; padding: 9px 8px; border: 0; border-radius: 10px; background: none; color: inherit; text-align: left; cursor: pointer; }
 .reg-item-no { font: italic 400 1.15rem/1.2 'Instrument Serif', Georgia, serif; color: var(--cap); text-align: right; }
+.reg-item-no .reg-shelf-mark { width: 15px; height: 15px; margin-top: 3px; opacity: 0.7; }   /* on the shelf: no numeral until it is back in the book */
 .reg-item-text { display: grid; gap: 2px; min-width: 0; }
 .reg-item-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 0.92rem var(--font-body); }
 .reg-item-text small { opacity: 0.7; font-size: 0.76rem; }
@@ -77,8 +78,8 @@
 .reg-chno { font: italic 400 0.98rem 'Instrument Serif', Georgia, serif; color: var(--cap); letter-spacing: 0.02em; }
 .reg-title { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; margin: 1px 0 0; font: 400 clamp(1.25rem, 2.2vw, 1.6rem)/1.1 'Instrument Serif', Georgia, serif; }
 .reg-tools { justify-self: end; }   /* always the far right, beside the title or not */
-#reg-title, .reg-title-input { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (pointer: coarse) { #reg-title { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
+#reg-title, .reg-title > button:first-child, .reg-title-input { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (pointer: coarse) { :is(#reg-title, .reg-title > button:first-child) { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
 
 /* Rename: a fountain-pen nib beside the title; the old name blots away, the new one is written in by the nib */
 .reg-ink-btn { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--cap); opacity: 0.45; cursor: pointer;
@@ -196,6 +197,18 @@
     box-shadow: inset -40px 0 50px -30px rgba(60, 35, 10, calc(0.25 + var(--shade) * 0.3)), 0 10px 30px -10px rgba(0, 0, 0, calc(var(--shade) * 0.35)); }
 .reg-leaf::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(transparent 0 calc(var(--line) - 1px), var(--rule-line) calc(var(--line) - 1px) var(--line)); border-radius: inherit; }
 .reg-ghost { border-radius: 6px 18px 18px 6px; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .5); }
+/* the real turn (New chapter): the leaf carries the written page on its face and paper on its back */
+.reg-leaf.is-real { background: none; box-shadow: none; transform-style: preserve-3d; backface-visibility: visible; will-change: transform; }
+.reg-leaf.is-real::before { display: none; }
+.reg-leaf-face, .reg-leaf-back { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; backface-visibility: hidden; }
+.reg-leaf-face { background: var(--pg); box-shadow: inset -50px 0 60px -40px rgba(60, 35, 10, calc(0.12 + var(--shade) * 0.4)), 0 18px 40px -16px rgba(0, 0, 0, calc(var(--shade) * 0.45)); }
+.reg-leaf-copy { position: absolute !important; inset: 0 !important; margin: 0 !important; pointer-events: none; animation: none !important; }
+.reg-leaf-copy *, .reg-leaf-copy *::before, .reg-leaf-copy *::after { animation: none !important; transition: none !important; }   /* the copy shows the page as it was, its ink already dry */
+.reg-leaf-back { transform: rotateY(180deg); background: linear-gradient(90deg, transparent 55%, rgba(60, 35, 10, 0.14)), var(--vignette), var(--pg); }
+.reg-leaf-back::before { content: ""; position: absolute; inset: 0; opacity: 0.45; background: repeating-linear-gradient(transparent 0 calc(var(--line) - 1px), var(--rule-line) calc(var(--line) - 1px) var(--line)); }
+.reg-leaf-back::after { content: ""; position: absolute; inset: 12% 10% 30% 18%; opacity: 0.06; filter: blur(1.5px); transform: scaleX(-1);   /* the ink showing through, mirrored */
+    background: repeating-linear-gradient(transparent 0 calc(var(--line) - 8px), var(--ink-ai, currentColor) calc(var(--line) - 8px) calc(var(--line) - 5px)); }
+.reg-turn-shade { position: absolute; inset: 0; z-index: 5; opacity: 0; pointer-events: none; border-radius: 6px 18px 18px 6px; background: linear-gradient(90deg, rgba(40, 25, 10, 0.26), rgba(40, 25, 10, 0.08) 35%, transparent 60%); }
 
 /* phones and tablets: the index is a drawer */
 .reg-scrim { display: none; }
