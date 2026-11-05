@@ -262,7 +262,7 @@ const KeyRing = (() => {
         const input = document.getElementById(`kr-${id}`);
         if (!input) return;
         input.closest('.kr-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setTimeout(() => input.focus({ preventScroll: true }), 450);
+        setTimeout(() => Motion.focusField(input), 450);
     }
 
     document.addEventListener('click', e => { const g = e.target.closest('[data-guide]'); if (g) KeyGuide.open(g.dataset.guide); });

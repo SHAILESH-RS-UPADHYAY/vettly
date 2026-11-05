@@ -193,7 +193,7 @@ const Onboard = (() => {
             const stage = pages[n].querySelector('.ob-stage');
             if (S && stage) requestAnimationFrame(() => { if (page === n) stopScene = S.play(stage.dataset.scene, stage); });
             const field = pages[n].querySelector('input, select');
-            (field || next).focus({ preventScroll: true });
+            if (!Motion.focusField(field)) next.focus({ preventScroll: true });   // touch: no keyboard until they tap a field
         };
         const need = input => {
             const err = input.closest('.ob-page').querySelector('.ob-error');
@@ -284,7 +284,7 @@ const Onboard = (() => {
             const err = pages[ROLE].querySelector('.ob-error'); if (err) err.hidden = true;
             form.role.removeAttribute('aria-invalid');
             syncBadge(form);
-            form.role.focus({ preventScroll: true });
+            Motion.focusField(form.role);
             if (!Motion.calm()) chip.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
         });
         form.role.addEventListener('input', () => form.querySelectorAll('.ob-role').forEach(c => c.setAttribute('aria-pressed', String(c.textContent.toLowerCase() === form.role.value.trim().toLowerCase()))));

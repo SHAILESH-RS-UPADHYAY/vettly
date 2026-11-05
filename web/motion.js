@@ -135,7 +135,16 @@ const Motion = (() => {
         }
     }
 
-    return { calm, glide, page, thumb, thumbs, watchSeg, pill, count, burst, stagger, toast };
+    // A type-in field takes focus on its own only where the main pointer is a mouse or trackpad. On phones and tablets
+    // a keyboard that pops up uninvited covers half the screen, so the field waits for a tap. Returns whether it focused.
+    const coarse = matchMedia('(pointer: coarse)');
+    function focusField(el, opts = { preventScroll: true }) {
+        if (!el) return false;
+        if (coarse.matches && el.matches('input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), textarea, [contenteditable="true"]')) return false;
+        el.focus(opts); return true;
+    }
+
+    return { calm, glide, page, thumb, thumbs, watchSeg, pill, count, burst, stagger, toast, focusField };
 })();
 
 // modules talk to each other through window: a top-level const is not a window property

@@ -93,6 +93,7 @@ const Palette = (() => {
         { id: 'tour', label: 'Take the guided tour', group: 'Help', icon: 'path', run: () => window.Tour?.start() },
         { id: 'onboarding', label: 'Redo onboarding', group: 'Help', icon: 'user', run: () => window.Onboard?.open({ full: true }) },
         { id: 'lookbook', label: 'Change the look (Look Book)', group: 'Help', icon: 'palette', run: () => window.LookBook?.open() },
+        { id: 'mentor-new', label: 'Mentor: start a new page', group: 'Help', icon: 'sparkle', run: () => { window.mentorToggle?.(true); setTimeout(() => window.mentorNewPage?.(), 120); } },
         { id: 'attic-toggle', label: Tabs.hidden('attic') ? 'Show The Attic tab' : 'Hide The Attic tab', group: 'Tabs', icon: 'attic', run: () => Tabs.set('attic', Tabs.hidden('attic')) },
         ...(window.Auth?.enabled?.() ? [{ id: 'signout', label: 'Sign out', group: 'Account', icon: 'sign-out', run: () => window.Auth.signOut() }] : []),
     ];

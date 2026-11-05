@@ -26,6 +26,7 @@ const mentor = {
 
 const MENTOR_KEYS = {
     history: 'vettly_mentor_history',
+    sheet: 'vettly_mentor_page',
     lang: 'vettly_mentor_lang',
     open: 'vettly_mentor_open',
     geom: 'vettly_mentor_geom',
@@ -62,15 +63,17 @@ const mentorOrbit = (angle, extra = '') => ['m-ring', `m-run ${extra}`, `m-run m
 const MENTOR_EMBLEM = `
     <span class="m-orb-aura"></span>
     <span class="m-orb-sphere"></span>
-    <svg class="m-orb-art" viewBox="0 0 48 48" aria-hidden="true">
-        <circle class="m-bezel" cx="24" cy="24" r="21"/>
-        <g class="m-orbits">${mentorOrbit(-35)}${mentorOrbit(35, 'm-run-2')}</g>
-        <g class="m-star-group">
+    <span class="m-orb-art" aria-hidden="true">
+        <svg class="m-layer m-layer-bezel" viewBox="0 0 48 48"><circle class="m-bezel" cx="24" cy="24" r="21"/></svg>
+        <svg class="m-layer m-layer-orbits" viewBox="0 0 48 48"><g class="m-orbits">${mentorOrbit(-35)}${mentorOrbit(35, 'm-run-2')}</g></svg>
+        <svg class="m-layer m-layer-star" viewBox="0 0 48 48"><g class="m-star-group">
             <path class="m-halo" d="${MENTOR_HALO_48}"/>
             <path class="m-halo-trace" d="${MENTOR_HALO_48}" pathLength="100"/>
             <path class="m-star" d="${MENTOR_STAR_48}"/>
-        </g>
-    </svg>`;
+        </g></svg>
+    </span>`;
+// Each turning part is its own <svg>, turned as a whole: the compositor turns it, where turning a part inside one
+// SVG would make the browser re-lay out and repaint the emblem on every frame. Same parts, same order, same look.
 
 const MENTOR_STAR = '<svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg>';
 
@@ -94,7 +97,6 @@ function mentorEmptyHtml() {
         : n ? [[n, 'Explain it step by step'], [n, 'Likely follow-up questions'], [n, 'Give me a simple analogy']] : [];
     return `
         <div class="mentor-empty">
-            <span class="m-orb mentor-empty-orb">${MENTOR_EMBLEM}</span>
             <h4>${onCopilot ? 'Ask about any answer in this chat.' : 'Ask about any question you\'ve prepped.'}</h4>
             <p>${onCopilot
                 ? 'Pin an answer with Ask Doubt. The chat stays where it is while we dig in.'
@@ -122,6 +124,7 @@ function mentorAddTurn(userText, botText) {
         </div>`;
     msgs.appendChild(turn);
     mentorSnap();
+    document.getElementById('mentor-new').hidden = false;
     return turn;
 }
 
@@ -137,11 +140,13 @@ function mentorRenderAll() {
     mentorSnap();
 }
 
-// Notebook skin: the register's header strip shows today's date and the page (one per question asked)
+// Notebook skin: the register's header strip shows today's date and the page (a new one each time you start one)
 function mentorStampPage() {
     const head = document.querySelector('.mentor-head');
     head.dataset.date = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-    head.dataset.page = String(Math.max(1, Math.ceil(mentor.history.length / 2)));
+    head.dataset.page = String(mentor.sheet || 1);
+    const btn = document.getElementById('mentor-new');
+    if (btn) btn.hidden = !mentor.history.length;   // nothing to turn over on an empty page
 }
 
 // Notebook skin: keep the answers on the ruled lines by rounding every block that is not plain text
@@ -171,12 +176,15 @@ function mentorToggle(open = document.getElementById('mentor').dataset.state !==
     const root = document.getElementById('mentor');
     const opening = open && root.dataset.state !== 'open';
     root.dataset.state = open ? 'open' : 'closed';
+    clearTimeout(mentor.restTimer);
+    if (open) root.classList.remove('at-rest');
+    else mentor.restTimer = setTimeout(() => { if (root.dataset.state === 'closed') root.classList.add('at-rest'); }, 800);   // after the close animation
     document.getElementById('mentor-orb').setAttribute('aria-expanded', open);
     document.body.classList.toggle('mentor-open', open);
     mentorStore.set(MENTOR_KEYS.open, open);
     if (open) {
         if (!mentor.rendered) mentorRenderAll();
-        if (focus) setTimeout(() => document.getElementById('mentor-input').focus(), 200);
+        if (focus) setTimeout(() => Motion.focusField(document.getElementById('mentor-input')), 200);
         if (opening && focus) mentorBurstFrom(document.getElementById('mentor-orb'), 12);
     } else {
         mentorCloseMention();
@@ -200,6 +208,70 @@ function mentorReset() {
     mentorRenderAll();
 }
 
+// ─── A new page: the written one turns over like a notepad leaf; Undo brings it back for a few seconds ───
+function mentorNewPage() {
+    if (mentor.busy || !mentor.history.length) return;
+    const msgs = document.getElementById('mentor-msgs');
+    mentor.lastPage = { history: mentor.history, sheet: mentor.sheet };
+    mentorLeaf(msgs);                                   // a copy of the written page, to turn over
+    mentor.history = [];
+    mentor.sheet = (mentor.sheet || 1) + 1;
+    mentorStore.set(MENTOR_KEYS.history, []);
+    mentorStore.set(MENTOR_KEYS.sheet, mentor.sheet);
+    mentorRenderAll();                                  // the fresh page underneath
+    mentorUndoOffer(true);
+    Motion.focusField(document.getElementById('mentor-input'));
+}
+function mentorUndoPage() {
+    const last = mentor.lastPage;
+    if (!last || mentor.busy) return;
+    mentor.lastPage = null;
+    mentor.history = last.history;
+    mentor.sheet = last.sheet;
+    mentorStore.set(MENTOR_KEYS.history, mentor.history);
+    mentorStore.set(MENTOR_KEYS.sheet, mentor.sheet);
+    mentorRenderAll();
+    mentorUndoOffer(false);
+    const msgs = document.getElementById('mentor-msgs');
+    if (!mentorCalm()) msgs.animate([
+        { transform: 'perspective(1600px) rotateX(96deg)', opacity: 0, transformOrigin: '50% 0%' },
+        { transform: 'perspective(1600px) rotateX(-6deg)', opacity: 1, transformOrigin: '50% 0%', offset: 0.7 },
+        { transform: 'perspective(1600px) rotateX(0deg)', opacity: 1, transformOrigin: '50% 0%' },
+    ], { duration: 640, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+}
+// the turning leaf: lifts from the bottom edge and flips up over the binding, catching a little light as it goes
+function mentorLeaf(msgs) {
+    if (mentorCalm()) return;
+    const core = msgs.parentElement, cs = getComputedStyle(msgs);
+    const leaf = msgs.cloneNode(true);
+    leaf.removeAttribute('id');
+    leaf.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    leaf.classList.add('mentor-leaf');
+    leaf.setAttribute('aria-hidden', 'true');
+    leaf.inert = true;
+    const plain = cs.backgroundColor === 'rgba(0, 0, 0, 0)' && cs.backgroundImage === 'none';
+    Object.assign(leaf.style, {
+        left: `${msgs.offsetLeft}px`, top: `${msgs.offsetTop}px`, width: `${msgs.offsetWidth}px`, height: `${msgs.offsetHeight}px`,
+        background: plain ? getComputedStyle(core).background : '',
+    });
+    core.appendChild(leaf);
+    leaf.scrollTop = msgs.scrollTop;
+    leaf.animate([
+        { transform: 'perspective(1600px) rotateX(0deg)', opacity: 1, filter: 'brightness(1)' },
+        { transform: 'perspective(1600px) rotateX(58deg) translateY(-2%)', opacity: 1, filter: 'brightness(1.06)', offset: 0.55 },
+        { transform: 'perspective(1600px) rotateX(104deg) translateY(-6%)', opacity: 0, filter: 'brightness(0.9)' },
+    ], { duration: 760, easing: 'cubic-bezier(0.45, 0, 0.2, 1)' }).onfinish = () => leaf.remove();
+}
+let mentorUndoTimer = 0;
+function mentorUndoOffer(on) {
+    const box = document.getElementById('mentor-undo');
+    clearTimeout(mentorUndoTimer);
+    box.classList.toggle('is-shown', on);
+    box.querySelector('button').tabIndex = on ? 0 : -1;
+    document.getElementById('mentor-undo-msg').textContent = on ? `Page ${mentor.sheet} started.` : '';
+    if (on) mentorUndoTimer = setTimeout(() => { mentor.lastPage = null; mentorUndoOffer(false); }, 7000);
+}
+
 function mentorAsk(n) {
     mentorToggle(true);
     document.getElementById('mentor-input').value = `@${n} `;
@@ -216,6 +288,7 @@ async function mentorSend(preset) {
     mentorAutosize();
     mentorCloseMention();
     mentorBurstFrom(document.getElementById('mentor-send'), 8);
+    if (mentor.lastPage) { mentor.lastPage = null; mentorUndoOffer(false); }   // writing on the new page keeps it
     mentorSetBusy(true);
 
     const turn = mentorAddTurn(text);
@@ -626,10 +699,14 @@ function mentorFlow() {
     const on = Boolean(el) && document.getElementById('mentor').classList.contains('split')
         && document.body.classList.contains('mentor-open') && !mentorDeskStacked();
     svg.classList.toggle('on', on);
+    clearTimeout(mentor.flowRest);
     if (!on) {
         mentor.flowing = false;
+        // after the fade-out, the beam stops drawing: CSS animations pause and so do its SMIL ones
+        mentor.flowRest = setTimeout(() => { if (svg.classList.contains('on')) return; svg.classList.add('at-rest'); svg.pauseAnimations(); mentor.flowPaused = true; }, 450);
         return;
     }
+    if (svg.classList.contains('at-rest')) { svg.classList.remove('at-rest'); mentor.flowPaused = null; }   // let the calm check below decide
     if (mentor.flowPaused !== mentorCalm()) {   // SVG (SMIL) animations ignore CSS, so pause them by hand
         mentor.flowPaused = mentorCalm();
         if (mentor.flowPaused) svg.pauseAnimations(); else svg.unpauseAnimations();
@@ -739,7 +816,8 @@ function mentorFillSheet(el) {
     document.getElementById('sheet-from').textContent = { prep: 'Pinned from Prep Studio', bento: 'Pinned from Brain Bento', chat: 'Pinned from Live Copilot' }[from];
     document.getElementById('sheet-q').textContent = el._question || 'Copilot answer';
     const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
-    document.getElementById('sheet-a').innerHTML = answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    document.getElementById('sheet-a').innerHTML = typeof prepAnswerHtml === 'function' && from === 'prep' ? prepAnswerHtml(answer)   // the same lists and bold as the card
+        : answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
     document.getElementById('sheet-label').textContent = { prep: 'Model answer', bento: 'Interview answer', chat: 'Copilot said' }[from];
     sheet.querySelector('.sheet-body').scrollTop = 0;
 }
@@ -1001,6 +1079,7 @@ function mentorSpotlight(e) {
 (function mentorBoot() {
     document.querySelectorAll('.m-orb[data-emblem]').forEach(el => { el.innerHTML = MENTOR_EMBLEM; });
     mentor.history = mentorStore.get(MENTOR_KEYS.history, []);
+    mentor.sheet = Number(mentorStore.get(MENTOR_KEYS.sheet, 1)) || 1;
     mentorSetLang(mentorStore.get(MENTOR_KEYS.lang, 'english'));
     mentor.split = { ...MENTOR_SPLIT, ...mentorStore.get(MENTOR_KEYS.split, {}) };
     mentorApplySplit();
@@ -1014,4 +1093,6 @@ function mentorSpotlight(e) {
     new MutationObserver(mentorSnap).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mentor-skin'] });
     mentorStampPage();
     if (mentorStore.get(MENTOR_KEYS.open, false)) mentorToggle(true, false);
+    else document.getElementById('mentor').classList.add('at-rest');
+    mentorFlowKick();   // settles the beam: off and at rest until a card is pinned
 })();

@@ -21,7 +21,7 @@
 .kr-card {
     position: relative; display: grid; align-content: start; gap: 10px; padding: 18px 16px 14px;
     border: 1.5px solid var(--rule); border-radius: 18px; background: var(--paper-2); box-shadow: var(--card-shadow);
-    animation: krIn 560ms calc(var(--i) * 70ms) var(--spring) both;
+    animation: krIn 560ms calc(var(--i) * 70ms) var(--spring) backwards;
     transition: border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out), transform var(--dur-long) var(--spring);
 }
 @keyframes krIn { from { opacity: 0; transform: translateY(14px) scale(.98); } }
@@ -39,7 +39,7 @@
 .kr-ring { position: absolute; inset: -5px; width: 52px; height: 52px; rotate: -90deg; }
 .kr-ring circle { fill: none; stroke: var(--ok); stroke-width: 2.5; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .kr-card.is-saved .kr-ring circle { stroke-dashoffset: 0; }
-.kr-card.just-saved .kr-ring circle { animation: krRing 900ms var(--ease-out) both; }
+.kr-card.just-saved .kr-ring circle { animation: krRing 900ms var(--ease-out) backwards; }
 .kr-card.just-saved { animation: krLock 700ms var(--spring); }
 @keyframes krRing { from { stroke-dashoffset: 1; } }
 @keyframes krLock { 40% { transform: scale(1.03); } }
@@ -88,7 +88,7 @@
 /* ── KeyGuide ── */
 .kguide { width: min(96vw, 940px); max-height: calc(100dvh - 24px); margin: auto; padding: 0; border: 1px solid var(--rule); border-radius: 22px; background: var(--paper-2); color: var(--ink); box-shadow: 0 30px 80px -24px rgba(20, 14, 4, .5); overflow: auto; overscroll-behavior: contain; }
 .kguide::backdrop { background: color-mix(in srgb, var(--ink) 46%, transparent); }
-.kguide[open] { animation: kgIn 520ms var(--spring) both; }
+.kguide[open] { animation: kgIn 520ms var(--spring) backwards; }
 @keyframes kgIn { from { opacity: 0; transform: translateY(16px) scale(.98); } }
 .kg-sheet { display: grid; gap: 18px; padding: 20px clamp(16px, 3vw, 28px); }
 .kg-head { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
@@ -126,7 +126,7 @@
 .kg-url { margin: 0 auto; padding: 3px 14px; border-radius: 99px; background: var(--paper-2); color: var(--muted); font: 600 0.74rem var(--font-mono); }
 .kg-view { position: relative; display: grid; place-items: center; min-height: 260px; padding: 22px; overflow: hidden;
     background: linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0 / 20px 20px, linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0 / 20px 20px; }
-.kg-dialog, .kg-vettly { display: grid; justify-items: center; gap: 10px; width: min(100%, 300px); padding: 20px; border: 1px solid var(--rule); border-radius: 16px; background: var(--paper-2); box-shadow: var(--card-shadow); text-align: center; animation: kgPop 500ms var(--spring) both; }
+.kg-dialog, .kg-vettly { display: grid; justify-items: center; gap: 10px; width: min(100%, 300px); padding: 20px; border: 1px solid var(--rule); border-radius: 16px; background: var(--paper-2); box-shadow: var(--card-shadow); text-align: center; animation: kgPop 500ms var(--spring) backwards; }
 @keyframes kgPop { from { opacity: 0; transform: translateY(10px) scale(.96); } }
 .kg-dialog b, .kg-vettly b { font: 800 1.05rem var(--font-display); }
 .kg-dialog small { color: var(--muted); font-size: 0.8rem; }
@@ -143,7 +143,7 @@
 .kg-done .kg-check { color: var(--ok); }
 .kg-lines { display: grid; gap: 6px; width: 100%; }
 .kg-lines i, .kg-table i, .kg-side i { display: block; height: 7px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 10%, transparent); }
-.kg-page { display: grid; grid-template-columns: 70px 1fr; width: 100%; min-height: 200px; border: 1px solid var(--rule); border-radius: 14px; background: var(--paper-2); overflow: hidden; animation: kgPop 500ms var(--spring) both; }
+.kg-page { display: grid; grid-template-columns: 70px 1fr; width: 100%; min-height: 200px; border: 1px solid var(--rule); border-radius: 14px; background: var(--paper-2); overflow: hidden; animation: kgPop 500ms var(--spring) backwards; }
 .kg-side { display: grid; align-content: start; gap: 10px; padding: 16px 12px; background: var(--paper-3); }
 .kg-side i.on { background: var(--tone, var(--accent)); opacity: .6; }
 .kg-main { display: grid; align-content: start; gap: 14px; padding: 16px; }
@@ -185,7 +185,7 @@
 .pp-photo { position: relative; display: grid; place-items: center; width: 104px; height: 128px; border-radius: 12px; background: var(--paper-3); overflow: visible; }
 .pp-photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; filter: saturate(.85) contrast(1.05); }
 .pp-photo span { font: 800 2.2rem var(--font-display); color: var(--accent-ink); }
-.pp-stamp { position: absolute; right: -18px; bottom: -10px; padding: 3px 9px; border: 2.5px double var(--ok); border-radius: 6px; color: var(--ok); font: 800 0.72rem/1.2 var(--font-mono); letter-spacing: 0.14em; rotate: -12deg; background: color-mix(in srgb, var(--paper-2) 70%, transparent); animation: ppStamp 700ms 300ms var(--spring) both; }
+.pp-stamp { position: absolute; right: -18px; bottom: -10px; padding: 3px 9px; border: 2.5px double var(--ok); border-radius: 6px; color: var(--ok); font: 800 0.72rem/1.2 var(--font-mono); letter-spacing: 0.14em; rotate: -12deg; background: color-mix(in srgb, var(--paper-2) 70%, transparent); animation: ppStamp 700ms 300ms var(--spring) backwards; }
 @keyframes ppStamp { from { opacity: 0; transform: scale(2.2) rotate(8deg); } }
 .pp-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px 22px; margin: 0; align-content: center; }
 .pp-fields dt { font: 700 0.68rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -220,7 +220,7 @@
     .kr-own > :not(summary) { margin-inline: 12px; }
 }
 .kr-own > :last-child { margin-bottom: 14px; }
-.kr-own[open] > :not(summary) { animation: krOwnIn 420ms var(--ease-out) both; }
+.kr-own[open] > :not(summary) { animation: krOwnIn 420ms var(--ease-out) backwards; }
 @keyframes krOwnIn { from { opacity: 0; transform: translateY(-6px); } }
 .kr-own .kr-saved, .kr-own .kr-first { margin-top: 12px; }
 .kr-own-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-top: 14px; }
@@ -234,3 +234,7 @@
 .kr-own-get svg { width: 13px; height: 13px; }
 .kr-own .kr-saved code { font-size: 0.78rem; }
 @media (pointer: coarse) { .kr-own-get { min-height: 44px; padding: 0 4px; } }
+
+/* narrow cards: the title row and its guide button wrap instead of running off the card */
+.kr-top { flex-wrap: wrap; min-width: 0; }
+.keyring-card .toolbelt-card-header .btn { white-space: normal; text-align: left; }

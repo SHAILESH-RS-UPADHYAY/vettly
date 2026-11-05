@@ -32,7 +32,7 @@
 .reg-search input { flex: 1; min-width: 0; min-height: 38px; border: 0; background: none; color: inherit; font: 500 0.9rem var(--font-body); outline: none; }
 .reg-list { display: grid; align-content: start; gap: 2px; margin: 0; padding: 0; list-style: none; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
 .reg-index > .reg-list { flex: 1; }
-.reg-list li { animation: regIn 420ms calc(var(--i, 0) * 35ms) var(--spring) both; }
+.reg-list li { animation: regIn 420ms calc(var(--i, 0) * 35ms) var(--spring) backwards; }
 @keyframes regIn { from { opacity: 0; transform: translateX(-8px); } }
 .reg-item { position: relative; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: start; width: 100%; padding: 9px 8px; border: 0; border-radius: 10px; background: none; color: inherit; text-align: left; cursor: pointer; }
 .reg-item-no { font: italic 400 1.15rem/1.2 'Instrument Serif', Georgia, serif; color: var(--cap); text-align: right; }
@@ -68,20 +68,51 @@
 
 /* head: chapter, date, clocks, tools. Two rows whenever the page itself is narrow (Mentor open, small laptops) */
 .reg-page { container-type: inline-size; container-name: regpage; }
-.reg-head { position: relative; z-index: 3; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 10px 20px 8px 40px;
+.reg-head { position: relative; z-index: 3; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 20px 8px 40px;
     border-bottom: 3px double color-mix(in srgb, var(--ink-ai) 28%, transparent); color: var(--head); }
 .reg-index-btn { display: none; place-items: center; width: 40px; height: 40px; border: 1.5px solid color-mix(in srgb, currentColor 35%, transparent); border-radius: 12px; background: none; color: inherit; cursor: pointer; }
 .reg-index-btn svg { width: 20px; height: 20px; }
 .reg-heading { min-width: 0; }
 .reg-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: 0; }
 .reg-chno { font: italic 400 0.98rem 'Instrument Serif', Georgia, serif; color: var(--cap); letter-spacing: 0.02em; }
-.reg-title { margin: 1px 0 0; font: 400 clamp(1.25rem, 2.2vw, 1.6rem)/1.1 'Instrument Serif', Georgia, serif; }
-.reg-title button, .reg-title-input { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.reg-title button::after { content: " ✎"; font-size: 0.6em; opacity: 0; transition: opacity var(--dur-short); }
-@media (hover: hover) { .reg-title button:hover::after { opacity: 0.55; } }
-@media (pointer: coarse) { .reg-title button { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
-@media (hover: none) { .reg-title button::after { opacity: 0.5; } }   /* no hover on touch: show that it can be renamed */
-.reg-title-input { width: 100%; border-bottom: 1.5px dashed currentColor; outline: none; }
+.reg-title { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; margin: 1px 0 0; font: 400 clamp(1.25rem, 2.2vw, 1.6rem)/1.1 'Instrument Serif', Georgia, serif; }
+.reg-tools { justify-self: end; }   /* always the far right, beside the title or not */
+#reg-title, .reg-title-input { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (pointer: coarse) { #reg-title { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
+
+/* Rename: a fountain-pen nib beside the title; the old name blots away, the new one is written in by the nib */
+.reg-ink-btn { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--cap); opacity: 0.45; cursor: pointer;
+    transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-long) var(--spring), background-color var(--dur-short) var(--ease-out); }
+.reg-ink-btn svg { width: 17px; height: 17px; }
+@media (hover: hover) { .reg-head:hover .reg-ink-btn { opacity: 0.75; } .reg-ink-btn:hover { opacity: 1; transform: rotate(-14deg) translateY(-1px); background: color-mix(in srgb, var(--ink-ai) 8%, transparent); } }
+@media (hover: none) { .reg-ink-btn { opacity: 0.7; } }
+@media (pointer: coarse) { .reg-ink-btn { width: 40px; height: 40px; margin-block: -5px; } }
+.reg-ink-btn:focus-visible { outline: 2px solid var(--focus, var(--ribbon)); outline-offset: 2px; opacity: 1; }
+.reg-head.is-renaming .reg-ink-btn { opacity: 0; pointer-events: none; }
+.reg-rename { position: relative; flex: 1 1 auto; min-width: 0; }
+.reg-title .reg-title-input, .reg-title .reg-title-input:focus, .reg-title .reg-title-input:focus-visible {   /* beats the app's form-field look: it is the title, in ink */
+    width: 100%; min-height: 0; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none;
+    color: inherit; font: inherit; letter-spacing: inherit; caret-color: var(--ribbon); }
+.reg-title-input::placeholder { color: inherit; opacity: 0.35; }
+.reg-rename-line { position: absolute; left: 0; right: 0; bottom: -4px; border-bottom: 1.5px dashed currentColor; opacity: 0.5; transform-origin: left center; animation: regInkLine 460ms var(--ease-out) backwards; pointer-events: none; }
+@keyframes regInkLine { from { transform: scaleX(0); opacity: 0; } }
+.reg-rename-hint { display: none; font: italic 400 0.92rem 'Instrument Serif', Georgia, serif; color: var(--cap); }
+.reg-head.is-renaming .reg-chno { display: none; }
+.reg-head.is-renaming .reg-rename-hint { display: inline; animation: regIn 360ms var(--ease-out) backwards; }
+.reg-title-nib { position: absolute; left: 0; top: 50%; z-index: 2; width: 20px; height: 20px; margin: -19px 0 0 -4px; color: var(--ribbon); opacity: 0; pointer-events: none; }
+.reg-title-nib svg { width: 100%; height: 100%; rotate: 32deg; }
+.reg-ink-drop { position: fixed; z-index: 50; width: 5px; height: 5px; border-radius: 50%; background: var(--ribbon); pointer-events: none; }
+
+/* the chapter list: each chapter has its own nib, shown on hover or focus */
+.reg-list li { position: relative; }
+.reg-item-ink { position: absolute; right: 6px; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: var(--pg); color: var(--cap); opacity: 0; cursor: pointer;
+    transition: opacity var(--dur-short) var(--ease-out), transform var(--dur-long) var(--spring); }
+.reg-item-ink svg { width: 15px; height: 15px; }
+.reg-list li:hover .reg-item-ink, .reg-item-ink:focus-visible, .reg-list li:focus-within .reg-item-ink { opacity: 0.85; }
+@media (hover: hover) { .reg-item-ink:hover { opacity: 1; transform: rotate(-14deg); } }
+@media (hover: none) { .reg-item-ink { opacity: 0.55; } }
+.reg-item-ink:focus-visible { outline: 2px solid var(--focus, var(--ribbon)); outline-offset: 1px; }
+.reg-list li:hover .reg-item-text b, .reg-list li:focus-within .reg-item-text b { padding-right: 30px; }
 .reg-clocks { display: flex; align-items: center; gap: 8px; }
 .reg-clock { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 9px 0 6px; border-radius: 99px; background: color-mix(in srgb, var(--ink-ai) 8%, transparent); font: 700 0.76rem/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--head); }
 .reg-clock svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; }
@@ -125,7 +156,7 @@
 .register[data-look="plain"] .chat-messages { padding: 20px 28px; background: none; }
 .register:not([data-look="plain"]) .chat-bubble {
     position: relative; max-width: 100%; align-self: stretch; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
-    color: var(--ink-ai); font: 400 1.27rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) both;
+    color: var(--ink-ai); font: 400 1.27rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) backwards;
 }
 @keyframes regInk { from { opacity: 0; transform: translateY(4px); } }
 .register[data-look="ledger"] .chat-bubble { font-size: 1.08rem; }
@@ -169,6 +200,7 @@
 /* phones and tablets: the index is a drawer */
 .reg-scrim { display: none; }
 @media (max-width: 63.99rem) {
+    .reg-head { grid-template-columns: auto minmax(0, 1fr) auto; }   /* the index button joins on the left */
     .register { grid-template-columns: minmax(0, 1fr); padding-right: 6px; }
     .reg-index { position: fixed; inset: 0 auto 0 0; z-index: 1001; width: min(86vw, 340px); border-radius: 0 20px 20px 0; transform: translateX(-104%); transition: transform 420ms var(--spring); padding-top: max(18px, env(safe-area-inset-top)); }
     .register.index-open .reg-index { transform: none; }
@@ -237,7 +269,7 @@
     --ink-ai: var(--ink);   /* the stopwatch's styles read the book's ink; out here it is the page's ink */
     display: inline-flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid var(--rule); border-radius: 999px;
     background: color-mix(in srgb, var(--card-bg, var(--paper-2)) 88%, transparent); box-shadow: var(--card-shadow); color: var(--ink);
-    animation: timebarIn 520ms var(--spring) both 120ms;
+    animation: timebarIn 520ms var(--spring) backwards 120ms;
 }
 @keyframes timebarIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 .reg-now { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 6px; border-radius: 999px; background: var(--paper-3); }
@@ -257,6 +289,10 @@
 #page-chat .poster-header > h1 { grid-column: 2; grid-row: 1; }
 #page-chat .poster-header > p { grid-column: 1 / -1; }
 #page-chat .reg-timebar { grid-column: 3; grid-row: 1; justify-self: end; }
+/* Blueprint dresses page headers in mono with extra air below; Live Copilot keeps the same slim header as every other look,
+   so the book is the same height in all nine */
+:root[data-look="blueprint"] #page-chat .poster-header { padding-bottom: 6px; margin-bottom: 10px; }
+:root[data-look="blueprint"] #page-chat .poster-header > p { font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 @media (max-width: 1180px) {
     #page-chat .poster-header { grid-template-columns: minmax(0, 1fr) auto; }
     #page-chat .poster-header > h1 { grid-column: 1; justify-self: start; text-align: left; }
@@ -282,3 +318,13 @@
 }
 @media (prefers-reduced-motion: reduce) { .reg-face line { transition: none; } .reg-timebar { animation: none; } }
 :root[data-motion="calm"] :is(.reg-face line, .reg-timebar) { transition: none; animation: none; }
+
+/* touch: every control in Live Copilot is at least 40px */
+@media (pointer: coarse) {
+    .reg-item-ink { width: 40px; height: 40px; }
+    .reg-list li:hover .reg-item-text b, .reg-list li:focus-within .reg-item-text b { padding-right: 40px; }
+    .reg-timebar .reg-sw, .reg-sw { min-height: 40px; }
+    .reg-sw-reset, .reg-timebar .reg-sw-reset { width: 40px; height: 40px; }
+    .reg-index-btn { width: 40px; height: 40px; }
+    .reg-tools button { min-height: 40px; min-width: 40px; }
+}
