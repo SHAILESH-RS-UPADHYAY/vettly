@@ -816,7 +816,8 @@ function mentorFillSheet(el) {
     document.getElementById('sheet-from').textContent = { prep: 'Pinned from Prep Studio', bento: 'Pinned from Brain Bento', chat: 'Pinned from Live Copilot' }[from];
     document.getElementById('sheet-q').textContent = el._question || 'Copilot answer';
     const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
-    document.getElementById('sheet-a').innerHTML = answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    document.getElementById('sheet-a').innerHTML = typeof prepAnswerHtml === 'function' && from === 'prep' ? prepAnswerHtml(answer)   // the same lists and bold as the card
+        : answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
     document.getElementById('sheet-label').textContent = { prep: 'Model answer', bento: 'Interview answer', chat: 'Copilot said' }[from];
     sheet.querySelector('.sheet-body').scrollTop = 0;
 }
