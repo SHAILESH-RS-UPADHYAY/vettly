@@ -77,7 +77,7 @@ const KeyRing = (() => {
         return `${icon('lightning')}<span><b>${s.free_left} of ${s.free_limit}</b> free answers left today. Add a free key for unlimited answers.</span>`;
     }
 
-    function card(p, i, s) {
+    function card(p, i, s, pre = '') {
         const k = s.keys?.[p.id] || {};
         const locked = !s.own_keys_enabled;
         const first = i === 0 && !KEY_PROVIDERS.some(x => s.keys?.[x.id]?.saved);
@@ -99,8 +99,8 @@ const KeyRing = (() => {
                 <button type="button" class="btn btn-ghost btn-sm kr-remove" data-kr="remove">Remove</button>
             </div>` : `
             <form class="kr-form" data-kr="form">
-                <label class="sr-only" for="kr-${p.id}">${p.name} API key</label>
-                <span class="kr-input"><input id="kr-${p.id}" name="key" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (${p.prefix}…)"${locked ? ' disabled' : ''}>
+                <label class="sr-only" for="${pre}kr-${p.id}">${p.name} API key</label>
+                <span class="kr-input"><input id="${pre}kr-${p.id}" name="key" type="password" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste your key (${p.prefix}…)"${locked ? ' disabled' : ''}>
                     <button type="button" class="kr-eye" data-kr="eye" aria-label="Show the key" aria-pressed="false">${icon('eye')}</button></span>
                 <button type="submit" class="btn btn-primary btn-sm"${locked ? ' disabled' : ''}>Save</button>
             </form>`}
@@ -112,10 +112,17 @@ const KeyRing = (() => {
         </li>`;
     }
 
+    // where the Key Ring is drawn: Settings, plus any host mounted later (the account window's Key Ring tab)
+    const hosts = new Set();
+    const hostsNow = () => [document.getElementById('keyring-card'), ...hosts].filter(h => h && h.isConnected);
+    const hostOf = el => el.closest('[data-kr-host]');
     function render(s) {
-        const box = document.getElementById('keyring-card');
-        if (!box) return;
         status = s;
+        hostsNow().forEach(box => drawInto(box, s));
+    }
+    function drawInto(box, s) {
+        const pre = box.dataset.krPrefix || '';
+        box.dataset.krHost = '1';
         box.innerHTML = `
             <div class="toolbelt-card-header">
                 <h3>${icon('key', 'h-ico')}Key Ring</h3>
@@ -124,11 +131,11 @@ const KeyRing = (() => {
             <p class="kr-summary">${summary(s)}</p>
             <p class="toolbelt-card-desc">Bring your own AI key and Vettly has no daily limit. <b>Gemini and Groq are free.</b> Add both: if one is busy, the next one answers, in this order.</p>
             ${s.own_keys_enabled ? '' : `<p class="kr-locked">${icon('shield')}Saving your own keys isn't switched on for this site yet${window.Auth?.enabled?.() ? '' : ' (on your own computer, put keys in <code>backend/.env</code>)'}.</p>`}
-            <ol class="kr-chain" aria-label="Your AI keys, in the order Vettly tries them">${KEY_PROVIDERS.map((p, i) => card(p, i, s)).join('')}</ol>
+            <ol class="kr-chain" aria-label="Your AI keys, in the order Vettly tries them">${KEY_PROVIDERS.map((p, i) => card(p, i, s, pre)).join('')}</ol>
             ${own(s)}
             <p class="kr-note">${icon('shield')}Keys are encrypted before they are stored, used only for your own requests, and never shown again in full.</p>`;
         const saved = KEY_PROVIDERS.map(p => !!s.keys?.[p.id]?.saved);
-        box.querySelectorAll('.kr-card').forEach((li, i) => li.classList.toggle('chain-lit', saved[i] && saved.slice(i + 1).some(Boolean)));
+        box.querySelectorAll('.kr-chain > .kr-card').forEach((li, i) => li.classList.toggle('chain-lit', saved[i] && saved.slice(i + 1).some(Boolean)));
     }
 
     function msg(li, text, tone = '') { const m = li.querySelector('.kr-msg'); m.textContent = text; m.dataset.tone = tone; }
@@ -136,11 +143,11 @@ const KeyRing = (() => {
     async function save(li, input) {
         const provider = li.dataset.p, key = input.value.trim();
         if (!key) { input.focus(); msg(li, 'Paste the key first.', 'bad'); return; }
-        const btn = li.querySelector('.kr-form [type=submit]');
+        const btn = li.querySelector('.kr-form [type=submit]'), box = hostOf(li);
         btn.disabled = true; btn.textContent = 'Saving…';
         try {
             render(await api('POST', '/api/ai-key', { provider, key }));
-            const fresh = document.querySelector(`.kr-card[data-p="${provider}"]`);
+            const fresh = box.querySelector(`.kr-card[data-p="${provider}"]`);
             fresh.classList.add('just-saved');
             test(fresh);
             window.Daybook?.refresh?.();
@@ -151,14 +158,14 @@ const KeyRing = (() => {
     }
 
     async function saveOwn(f) {
-        const li = f.closest('.kr-card'), btn = f.querySelector('[type=submit]');
+        const li = f.closest('.kr-card'), btn = f.querySelector('[type=submit]'), box = hostOf(f);
         const p = OWN_PRESETS.find(x => x.id === f.preset.value);
         btn.disabled = true; btn.textContent = 'Checking…';
         try {
             render(await api('POST', '/api/ai-key', { provider: 'custom', label: p.id === 'other' ? '' : p.name, base_url: f.base_url.value.trim(), model: f.model.value.trim(), key: f.key.value.trim(), first: f.first.checked }));
             ownEditing = false;
             render(status);
-            const fresh = document.querySelector('.kr-own');
+            const fresh = box.querySelector('.kr-own');
             fresh.classList.add('just-saved');
             test(fresh);
             window.Daybook?.refresh?.();
@@ -187,8 +194,7 @@ const KeyRing = (() => {
         catch (e) { msg(li, e.message, 'bad'); }
     }
 
-    function wire() {
-        const box = document.getElementById('keyring-card');
+    function wire(box = document.getElementById('keyring-card')) {
         if (!box || box.dataset.wired) return;
         box.dataset.wired = '1';
         box.addEventListener('submit', e => {
@@ -217,14 +223,14 @@ const KeyRing = (() => {
                 b.querySelector('use').setAttribute('href', show ? '#i-eye-off' : '#i-eye');
             }
             if (b.dataset.kr === 'test') test(li);
-            if (b.dataset.kr === 'own-edit') { ownEditing = true; render(status); document.querySelector('.kr-own-form input[name="base_url"]')?.focus(); }
+            if (b.dataset.kr === 'own-edit') { const box = hostOf(b); ownEditing = true; render(status); box.querySelector('.kr-own-form input[name="base_url"]')?.focus(); }
             if (b.dataset.kr === 'own-cancel') { ownEditing = false; render(status); }
             if (b.dataset.kr === 'remove') remove(li, b);
             if (b.dataset.kr === 'replace') {   // show the paste box again; the saved key stays until a new one is saved
-                const real = status, id = li.dataset.p;
+                const real = status, id = li.dataset.p, box = hostOf(li);
                 render({ ...real, keys: { ...real.keys, [id]: { saved: false } } });
                 status = real;
-                document.getElementById(`kr-${id}`)?.focus();
+                box.querySelector(`.kr-card[data-p="${id}"] input`)?.focus();
             }
         });
         // pasting a key saves it straight away; it is what nearly everyone means
@@ -235,12 +241,21 @@ const KeyRing = (() => {
     }
 
     async function load() {
-        const box = document.getElementById('keyring-card');
-        if (!box) return;
-        wire();
+        const boxes = hostsNow();
+        if (!boxes.length) return;
+        boxes.forEach(b => wire(b));
         try { render(await api('GET', '/api/ai-key')); }
-        catch (e) { box.innerHTML = `<div class="toolbelt-card-header"><h3>${icon('key', 'h-ico')}Key Ring</h3></div><p class="kr-locked">Couldn't load your keys (${escapeHtml(e.message)}). <button type="button" class="btn btn-sm btn-secondary" onclick="KeyRing.load()">Try again</button></p>`; }
+        catch (e) { boxes.forEach(box => { box.innerHTML = `<div class="toolbelt-card-header"><h3>${icon('key', 'h-ico')}Key Ring</h3></div><p class="kr-locked">Couldn't load your keys (${escapeHtml(e.message)}). <button type="button" class="btn btn-sm btn-secondary" onclick="KeyRing.load()">Try again</button></p>`; }); }
     }
+    // draw the Key Ring somewhere else too (the account window), with its own ids; unmount when that place closes
+    function mount(el, prefix = 'acct-') {
+        el.dataset.krPrefix = prefix;
+        hosts.add(el);
+        wire(el);
+        if (status) drawInto(el, status);
+        load();
+    }
+    const unmount = el => { hosts.delete(el); };
 
     // focus a provider's input (after the guide's last step, or from the tour)
     function focusProvider(id) {
@@ -251,7 +266,7 @@ const KeyRing = (() => {
     }
 
     document.addEventListener('click', e => { const g = e.target.closest('[data-guide]'); if (g) KeyGuide.open(g.dataset.guide); });
-    return { load, status: () => status, focusProvider, api };
+    return { load, mount, unmount, status: () => status, focusProvider, api };
 })();
 
 /* ── KeyGuide: how to get each key, as illustrated steps with a moving cursor ── */
@@ -454,35 +469,38 @@ const Passport = (() => {
         }
     }
 
+    async function exportData(btn) {
+        if (btn) btn.disabled = true;
+        try {
+            const res = await fetch(`${API_BASE}/api/me/export`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const url = URL.createObjectURL(await res.blob());
+            Object.assign(document.createElement('a'), { href: url, download: `vettly-export-${new Date().toISOString().slice(0, 10)}.json` }).click();
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+            Motion.toast('Your data is downloading as a JSON file.', 'ok');
+        } catch (e) { Motion.toast(`Could not export your data: ${e.message}`, 'error'); }
+        if (btn) btn.disabled = false;
+    }
+    async function deleteData(btn) {
+        if (!btn.dataset.armed) {   // two taps instead of a browser dialog
+            const was = btn.innerHTML;   // keeps the button's icon for when it disarms
+            btn.dataset.armed = '1'; btn.textContent = 'Tap again to delete everything';
+            setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.innerHTML = was; } }, 5000);
+            return;
+        }
+        btn.disabled = true;
+        const res = await fetch(`${API_BASE}/api/me`, { method: 'DELETE' });
+        if (res.ok) { Motion.toast('Everything you saved in Vettly is deleted.', 'ok'); setTimeout(() => location.reload(), 1200); }
+        else { btn.disabled = false; Motion.toast('Could not delete your data. Try again.', 'error'); }
+    }
     async function act(what, btn) {
         if (what === 'security') window.Auth?.openProfile?.();
         if (what === 'profile') window.Onboard?.open?.();
         if (what === 'signout') window.Auth?.signOut?.();
-        if (what === 'export') {
-            btn.disabled = true;
-            try {
-                const res = await fetch(`${API_BASE}/api/me/export`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const url = URL.createObjectURL(await res.blob());
-                Object.assign(document.createElement('a'), { href: url, download: `vettly-export-${new Date().toISOString().slice(0, 10)}.json` }).click();
-                setTimeout(() => URL.revokeObjectURL(url), 2000);
-                Motion.toast('Your data is downloading as a JSON file.', 'ok');
-            } catch (e) { Motion.toast(`Could not export your data: ${e.message}`, 'error'); }
-            btn.disabled = false;
-        }
-        if (what === 'delete') {
-            if (!btn.dataset.armed) {
-                btn.dataset.armed = '1'; btn.textContent = 'Tap again to delete everything';
-                setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = 'Delete my data'; } }, 5000);
-                return;
-            }
-            btn.disabled = true;
-            const res = await fetch(`${API_BASE}/api/me`, { method: 'DELETE' });
-            if (res.ok) { Motion.toast('Everything you saved in Vettly is deleted.', 'ok'); setTimeout(() => location.reload(), 1200); }
-            else { btn.disabled = false; Motion.toast('Could not delete your data. Try again.', 'error'); }
-        }
+        if (what === 'export') exportData(btn);
+        if (what === 'delete') deleteData(btn);
     }
-    return { load };
+    return { load, exportData, deleteData };
 })();
 
 // modules talk to each other through window: a top-level const is not a window property

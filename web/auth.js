@@ -52,6 +52,31 @@
         };
     }
 
+    // the account window and the avatar menu: the look's own colours and type; account.css does the rest on cl-* classes.
+    // Where the browser has color-mix (every current one), Clerk takes live CSS variables, so a look change recolours
+    // even an open window; older browsers get today's values and a remount on change.
+    const liveVars = !!window.CSS?.supports?.('color', 'color-mix(in srgb, red 50%, blue)');
+    function accountAppearance() {
+        const cs = getComputedStyle(root), v = name => (liveVars ? `var(${name})` : cs.getPropertyValue(name).trim());
+        return {
+            variables: {
+                colorPrimary: v('--accent'), colorText: v('--ink'), colorTextSecondary: v('--muted'), colorNeutral: v('--ink'),
+                colorBackground: v('--paper-2'), colorInputBackground: v('--field') || v('--paper'), colorInputText: v('--ink'),
+                colorDanger: v('--bad') || '#b42318', colorSuccess: v('--ok') || '#1d7a4b',
+                fontFamily: v('--font-body'), fontFamilyButtons: v('--font-body'), borderRadius: '12px',
+            },
+        };
+    }
+    // Profile · Security · Key Ring · Your look · Your data; Clerk's developer "API keys" tab stays hidden
+    const profileProps = () => ({ appearance: accountAppearance(), customPages: window.AccountPages?.pages() || [], apiKeysProps: { hide: true } });
+    const buttonProps = el => ({
+        appearance: accountAppearance(), showName: el.closest('[data-user-slot]').dataset.userSlot === 'full',
+        customMenuItems: window.AccountPages?.menu(), userProfileProps: profileProps(),
+    });
+    function mountButtons() {
+        document.querySelectorAll('[data-user-slot] .user-btn').forEach(el => { try { clerk.unmountUserButton(el); } catch (e) { /* first mount */ } clerk.mountUserButton(el, buttonProps(el)); });
+    }
+
     function loadClerk(cfg) {
         return new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -109,15 +134,21 @@
         setTimeout(() => swapForm(next), 430);
         flip.finished.catch(() => {}).finally(() => { flipping = false; });
     }
-    // Clerk paints with the colours it was mounted with, so a theme switch remounts the open form and the user buttons
-    let wasDark = root.classList.contains('theme-dark');
+    // Clerk paints with the colours it was mounted with, so a theme or look change remounts the open form and the user buttons
+    let wasDark = root.classList.contains('theme-dark'), wasLook = '', refit = 0;
+    const lookKey = () => ['data-look', 'data-accent', 'data-accent-dark'].map(a => root.getAttribute(a)).join('|');
+    wasLook = lookKey();
     new MutationObserver(() => {
-        const dark = root.classList.contains('theme-dark');
-        if (dark === wasDark || !clerk) { wasDark = dark; return; }
-        wasDark = dark;
-        if (mounted && !signedIn) swapForm(mounted);
-        if (signedIn) document.querySelectorAll('[data-user-slot] .user-btn').forEach(el => { clerk.unmountUserButton(el); clerk.mountUserButton(el, { appearance: appearance(), showName: el.closest('[data-user-slot]').dataset.userSlot === 'full' }); });
-    }).observe(root, { attributes: true, attributeFilter: ['class'] });
+        const dark = root.classList.contains('theme-dark'), lk = lookKey();
+        if ((dark === wasDark && lk === wasLook) || !clerk) { wasDark = dark; wasLook = lk; return; }
+        const darkChanged = dark !== wasDark;
+        wasDark = dark; wasLook = lk;
+        clearTimeout(refit);
+        refit = setTimeout(() => {   // after the look's own transition has painted, so the colours read are the new ones
+            if (mounted && !signedIn && darkChanged) swapForm(mounted);
+            if (signedIn && !liveVars) mountButtons();   // live variables recolour Clerk by themselves
+        }, 160);
+    }).observe(root, { attributes: true, attributeFilter: ['class', 'data-look', 'data-accent', 'data-accent-dark'] });
 
     gate().addEventListener('click', e => {
         const b = e.target.closest('[data-auth-mode]');
@@ -135,10 +166,8 @@
             g.classList.add('leaving');
             setTimeout(() => { g.hidden = true; g.classList.remove('leaving'); }, 480);
         }
-        document.querySelectorAll('[data-user-slot]').forEach(el => {
-            el.hidden = false;
-            clerk.mountUserButton(el.querySelector('.user-btn'), { appearance: appearance(), showName: el.dataset.userSlot === 'full' });
-        });
+        document.querySelectorAll('[data-user-slot]').forEach(el => { el.hidden = false; });
+        mountButtons();
         root.classList.remove('auth-checking');
         open();
     }
@@ -181,6 +210,6 @@
     window.Auth = {
         ready, enabled: () => !!clerk, account,
         signOut: () => clerk?.signOut(),
-        openProfile: () => clerk?.openUserProfile({ appearance: appearance() }),
+        openProfile: () => clerk?.openUserProfile(profileProps()),
     };
 })();
