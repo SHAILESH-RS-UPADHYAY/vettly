@@ -397,14 +397,16 @@ const Onboard = (() => {
             if (!res.ok) return;   // an error is not "no profile yet": never open onboarding on one
             profile = await res.json();
         } catch (e) { return; }
-        if (!profile.onboarded) open(); else { loadCategories(); if (hasTour()) Tour.maybeStart(); }
+        // a new account dresses the studio first (the Look Book), then meets Vettly (onboarding)
+        if (!profile.onboarded) { if (window.LookBook && !LookBook.seen()) LookBook.open({ then: () => open() }); else open(); }
+        else { loadCategories(); if (hasTour()) Tour.maybeStart(); }
     }
     start();
 
     // KeyGuide's last step lands back here when it was opened from the keys page
     const isOpen = () => !!(current?.dlg?.open);
     const focusKey = id => { if (isOpen()) current.focusKey(id); };
-    return { open, isOpen, focusKey, role: () => profile.role, field: () => profile.field };
+    return { open, isOpen, focusKey, name: () => profile.name, role: () => profile.role, field: () => profile.field };
 })();
 
 // modules talk to each other through window: a top-level const is not a window property

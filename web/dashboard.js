@@ -342,10 +342,12 @@ async function sendChatMessage() {
     chatHistory.push({ role: 'user', content: msg });
 
     try {
+        // a chapter begun a moment ago may still be on its way to the server: wait for its id
+        const chatId = window.Register?.whenOpen ? await Register.whenOpen() : (window.Register?.openId?.() || null);
         const res = await fetch(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: window.Register?.openId?.() || null, think_ms: thinkMs }),
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: chatId || null, think_ms: thinkMs }),
         });
         const data = await res.json();
         typingBubble.remove();

@@ -104,7 +104,15 @@ listed = client.get("/api/chats", headers=C).json()
 assert client.post(f"/api/chats/{listed['open']}/open", headers=C).status_code == 200, "a new account could not open its first chapter"
 assert client.get("/api/chats", headers=C).json()["open"] == listed["open"], "the first chapter changed between requests"
 
-# 9. the old chat routes still act on the open chapter
+# 9. reading a chapter does not open it, and someone else's chapter is not found
+open_before = client.get("/api/chats", headers=A).json()["open"]
+other = next(c["id"] for c in client.get("/api/chats", headers=A).json()["chapters"] if c["id"] != open_before)
+peek = client.get(f"/api/chats/{other}", headers=A)
+assert peek.status_code == 200 and "messages" in peek.json(), peek.text
+assert client.get("/api/chats", headers=A).json()["open"] == open_before, "a read opened the chapter"
+assert client.get(f"/api/chats/{other}", headers=B).status_code == 404, "B read A's chapter"
+
+# 10. the old chat routes still act on the open chapter
 assert client.get("/api/chat/history", headers=A).json()["history"][0]["content"] == "Why this role?"
 
 ai_utils.generate_multi_provider_completion = main_router

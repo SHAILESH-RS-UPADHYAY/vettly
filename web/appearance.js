@@ -205,7 +205,7 @@ const Appearance = (() => {
     darkQuery.addEventListener('change', () => { if (themeMode() === 'device') applyDark(darkQuery.matches, null); });
 
     // Several attributes change at once inside one view transition, so a new look cross-fades in
-    function apply(changes, { transition = false } = {}) {
+    function apply(changes, { transition = false, origin = null } = {}) {
         const write = () => {
             Object.entries(changes).forEach(([k, v]) => { prefs[k] = v; root.setAttribute(attr(k), v); });
             save();
@@ -217,13 +217,22 @@ const Appearance = (() => {
             Motion.pill(document.querySelector('.sidebar-nav'));
             if (typeof mentorFlowKick === 'function') mentorFlowKick();
         };
-        if (transition && document.startViewTransition && !calm()) document.startViewTransition(write).ready.catch(() => {});
-        else write();
+        if (transition && document.startViewTransition && !calm()) {
+            if (!origin) { document.startViewTransition(write).ready.catch(() => {}); return; }
+            // from a tapped card: the new look spreads out of it as a circle (the Look Book)
+            const r = origin.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+            const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+            root.classList.add('vt-theme');
+            const t = document.startViewTransition(write);
+            t.ready.then(() => root.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+                { duration: 700, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
+            t.finished.finally(() => root.classList.remove('vt-theme')).catch(() => {});
+        } else write();
     }
     const set = (key, value) => apply({ [key]: value }, { transition: key === 'look' || key === 'sidebar' });
-    function applyLook(id) {
+    function applyLook(id, origin = null) {
         const look = LOOKS.find(l => l[0] === id);
-        if (look) apply({ look: id, ...look[3] }, { transition: true });
+        if (look) apply({ look: id, ...look[3] }, { transition: true, origin });
     }
     function applyPreset(id) {
         const p = PRESETS.find(x => x[0] === id);
@@ -499,7 +508,8 @@ const Appearance = (() => {
         bindSettings();
     }
 
-    return { boot, toggle, setThemeMode, set, applyLook, applyPreset, reset, isDark, renderSettings };
+    return { boot, toggle, setThemeMode, set, applyLook, applyPreset, reset, isDark, renderSettings,
+        looks: () => LOOKS.map(([id, name, desc]) => ({ id, name, desc })), look: () => prefs.look, themeMode, defaultLook: DEFAULTS.look };
 })();
 
 // Global name the markup calls

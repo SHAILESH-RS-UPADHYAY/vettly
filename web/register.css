@@ -225,3 +225,60 @@
     .reg-tools button { min-height: 36px; padding: 0 7px; }
 }
 @container regpage (max-width: 780px) { .reg-sw .sw-text small { display: none; } .reg-sw { padding-right: 12px; } }
+
+/* a chapter on its way: pencil lines where the notes will be */
+.reg-pending { display: grid; gap: calc(var(--line) - 14px); padding-top: 18px; }
+.reg-pending i { display: block; height: 14px; border-radius: 7px; background: linear-gradient(90deg, color-mix(in srgb, var(--ink-ai) 8%, transparent) 0%, color-mix(in srgb, var(--ink-ai) 16%, transparent) 40%, color-mix(in srgb, var(--ink-ai) 8%, transparent) 80%) 0 0 / 300% 100%; animation: regPencil 1.1s linear infinite; }
+.reg-pending i:nth-child(1) { width: 62%; } .reg-pending i:nth-child(2) { width: 88%; } .reg-pending i:nth-child(3) { width: 76%; } .reg-pending i:nth-child(4) { width: 92%; } .reg-pending i:nth-child(5) { width: 40%; }
+@keyframes regPencil { to { background-position: -300% 0; } }
+
+/* ── Top right of Live Copilot: the time now, and the practice stopwatch ── */
+.reg-timebar {
+    --ink-ai: var(--ink);   /* the stopwatch's styles read the book's ink; out here it is the page's ink */
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid var(--rule); border-radius: 999px;
+    background: color-mix(in srgb, var(--card-bg, var(--paper-2)) 88%, transparent); box-shadow: var(--card-shadow); color: var(--ink);
+    animation: timebarIn 520ms var(--spring) both 120ms;
+}
+@keyframes timebarIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.reg-now { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 6px; border-radius: 999px; background: var(--paper-3); }
+.reg-face { width: 26px; height: 26px; flex: none; }
+.reg-face circle:first-child { fill: var(--card-bg, var(--paper-2)); stroke: currentColor; stroke-width: 1.4; }
+.reg-face line { stroke: currentColor; stroke-linecap: round; transform-origin: 12px 12px; transition: transform 300ms cubic-bezier(.34, 1.56, .64, 1); }
+.reg-face .hh { stroke-width: 2; } .reg-face .mm { stroke-width: 1.5; } .reg-face .ss { stroke: var(--accent); stroke-width: 1; }
+.reg-face .pin { fill: var(--accent); }
+.reg-now-text { display: grid; line-height: 1.05; text-align: left; }
+.reg-now-text time { font: 700 0.95rem var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.reg-now-text small { font: 600 0.68rem var(--font-body); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.reg-timebar .reg-sw { min-height: 40px; }
+.reg-timebar .reg-sw-reset { width: 34px; height: 34px; }
+
+/* the header: title in the middle, the bar in the top-right corner; narrower screens put the title on the left */
+#page-chat .poster-header { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: 16px; }
+#page-chat .poster-header > h1 { grid-column: 2; grid-row: 1; }
+#page-chat .poster-header > p { grid-column: 1 / -1; }
+#page-chat .reg-timebar { grid-column: 3; grid-row: 1; justify-self: end; }
+@media (max-width: 1180px) {
+    #page-chat .poster-header { grid-template-columns: minmax(0, 1fr) auto; }
+    #page-chat .poster-header > h1 { grid-column: 1; justify-self: start; text-align: left; }
+    #page-chat .poster-header > p { justify-self: start; text-align: left; }
+    #page-chat .reg-timebar { grid-column: 2; }
+}
+@media (max-width: 47.99rem) {
+    #page-chat .poster-header { margin-bottom: 6px !important; padding-bottom: 6px !important; }
+    #page-chat .poster-header > h1 { font-size: 18px !important; white-space: nowrap; }
+    .reg-timebar { gap: 4px; padding: 3px; }
+    .reg-now { gap: 6px; padding: 0 8px 0 4px; min-height: 34px; } .reg-face { width: 20px; height: 20px; }
+    .reg-now-text time { font-size: 0.8rem; }
+    .reg-now-text small, .reg-timebar .sw-text small { display: none; }
+    .reg-timebar .reg-sw { min-height: 34px; gap: 5px; padding: 0 9px 0 3px; } .reg-timebar .reg-sw svg { width: 24px; height: 24px; }
+    .reg-timebar .sw-text b { font-size: 0.8rem; }
+    .reg-timebar .reg-sw-reset { width: 30px; height: 30px; }
+}
+@media (max-width: 26rem) { .reg-face { display: none; } }
+/* the smallest phones: the bar takes its own row, still on the right */
+@media (max-width: 26rem) {
+    #page-chat .poster-header { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+    #page-chat .reg-timebar { grid-column: 1; grid-row: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .reg-face line { transition: none; } .reg-timebar { animation: none; } }
+:root[data-motion="calm"] :is(.reg-face line, .reg-timebar) { transition: none; animation: none; }

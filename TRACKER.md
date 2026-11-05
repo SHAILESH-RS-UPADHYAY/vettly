@@ -113,6 +113,25 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] Checked: `backend/test_custom.py` plus the four older suites; browser: onboarding, dropdowns, Copilot sizes,
       Daybook order, transitions, Key Ring; device matrix and axe (0 issues on 9 pages, light and dark)
 
+## Phase 10 · Speed, clocks and a look book (requested 5 Nov)
+
+- [x] Live Copilot chapter actions feel instant. Tap → page responds, at 350 ms latency and a 4x slower CPU:
+      new chapter 0.82 → 0.13–0.2 s, open a chapter 0.84 → 0.13 s, archive 2.14 → 0.08 s, open from the shelf
+      0.78 → 0.05 s. How: chapters cached and prefetched on hover/touch (`GET /api/chats/{id}`, read-only), the clock
+      saved in the background, new chapters appear before the server confirms, the page turn starts at once and draws
+      under the leaf, pages already seen come back as they were, long chapters draw the visible end first, the flying
+      copy carries only what is on screen; the server skips a write when a chapter is already open
+- [x] Top right of Live Copilot: a live clock (the time now, with moving hands) and the practice stopwatch; the chapter
+      timer is no longer shown (still counted for the chapter list); phones get a slim second row
+- [x] The Look Book (`web/lookbook.js`): right after sign-up, before onboarding. A live miniature of the app built from
+      the real components, nine looks drawn in their own colours, the whole app restyling from the tapped card as a
+      circle, Day / Night / Match device, arrows/Enter/Esc, rail arrows and drag-with-momentum on desktop, swipe on
+      phones; Skip or Esc puts everything back; again any time from the Atelier or ⌘K ("Change the look")
+- [x] Research: live, reversible preview on tap; mini-UI cards over swatches; whole-word labels; sensible default
+      and skip. GSAP SplitText vendored (3.13.0, free licence); Draggable was tried and dropped (it rewraps the rail)
+- [x] Checked: design critique applied (rail arrows, 44 px mode buttons); axe 0 issues on the Look Book and all 9 pages,
+      light and dark; device matrix clean; all browser suites and the five backend suites pass
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
