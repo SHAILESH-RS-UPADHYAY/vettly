@@ -465,7 +465,38 @@
 .mentor-icon-btn svg { width: 16px; height: 16px; transition: transform 0.6s var(--m-spring); }
 .mentor-icon-btn:hover { color: var(--m-text-strong); background: var(--m-btn-hover); border-color: var(--m-line-strong); transform: translateY(-1px); }
 .mentor-icon-btn:active { transform: scale(0.94); }
-.mentor-new-btn:hover svg { transform: rotate(-220deg); }
+/* New page: a pill with a page icon, its label shown when the panel has room; only once something is written */
+.mentor-new-btn { width: auto; min-width: 34px; padding: 0 9px; grid-auto-flow: column; gap: 6px; border-radius: 999px; font: 600 12.5px/1 var(--font); white-space: nowrap; }
+.mentor-new-btn[hidden] { display: none; }
+.mentor-new-btn:not([hidden]) { animation: mPop 0.55s var(--m-spring); }
+.mentor-new-label { display: none; }
+@container mentorpanel (min-width: 380px) { .mentor-new-label { display: inline; } .mentor-new-btn { padding: 0 12px 0 10px; } }
+.mentor-new-btn:hover svg { transform: rotate(-10deg) translateY(-1px); }
+.mentor-new-btn:focus-visible, .mentor-undo button:focus-visible { outline: 2px solid var(--m-accent); outline-offset: 2px; }
+
+/* the leaf: a copy of the written page that turns over the top binding (mentor.js animates it) */
+.mentor-msgs.mentor-leaf {   /* also a .mentor-msgs (it is a copy): this must win over that rule */
+    position: absolute; z-index: 3; flex: none; margin: 0; pointer-events: none; overflow: hidden;
+    transform-origin: 50% 0%; backface-visibility: hidden; will-change: transform, opacity;
+    box-shadow: 0 22px 34px -22px rgba(var(--m-shadow-rgb), 0.55), 0 1px 0 var(--m-line);
+}
+
+/* Undo, for a few seconds after a new page: a small slip just above the input */
+.mentor-undo {
+    position: absolute; z-index: 4; left: 50%; bottom: calc(100% + 10px); display: flex; align-items: center; gap: 4px;
+    padding: 5px 5px 5px 14px; border-radius: 999px; white-space: nowrap;
+    background: var(--m-text-strong); color: var(--m-surface, #fff); font: 600 12.5px/1 var(--font);
+    box-shadow: 0 12px 26px -12px rgba(var(--m-shadow-rgb), 0.6);
+    opacity: 0; visibility: hidden; transform: translate(-50%, 10px) scale(0.96);
+    transition: opacity 0.3s var(--m-ease), transform 0.5s var(--m-spring), visibility 0s linear 0.3s;
+}
+.mentor-undo.is-shown { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition-delay: 0.25s, 0.25s, 0s; }
+.mentor-undo button {
+    min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--m-accent); color: var(--m-on-accent); font: 700 12.5px/1 var(--font);
+    transition: transform 0.4s var(--m-spring), filter 0.3s var(--m-ease);
+}
+.mentor-undo button:hover { transform: translateY(-1px); filter: brightness(1.06); }
 .mentor-fit-btn { display: none; color: var(--m-accent-ink); border-color: rgba(var(--m-accent-rgb), 0.4); }
 .mentor.custom .mentor-fit-btn { display: grid; animation: mPop 0.55s var(--m-spring); }
 .mentor-fit-btn:hover { color: var(--m-accent-ink); border-color: rgba(var(--m-accent-rgb), 0.7); }
@@ -1001,6 +1032,9 @@
 :root[data-mentor-skin="paper"] .mentor-meta { color: var(--nb-pencil); }
 :root[data-mentor-skin="paper"] .mentor-icon-btn { background: transparent; border-color: transparent; color: var(--nb-pencil); }
 :root[data-mentor-skin="paper"] .mentor-icon-btn:hover { background: var(--m-soft); border-color: var(--m-line); color: var(--nb-ink); }
+:root[data-mentor-skin="paper"] .mentor-new-btn { font: 600 15px/1 var(--nb-hand); color: var(--nb-pencil); }   /* pencilled, like the date and page */
+:root[data-mentor-skin="paper"] .mentor-msgs.mentor-leaf { box-shadow: 0 26px 30px -24px rgba(60, 40, 10, 0.5), inset 0 -1px 0 var(--nb-head, var(--m-line)); }
+:root[data-mentor-skin="paper"] .mentor-undo { font-family: var(--font); }
 
 
 /* the conversation rides the ruled lines; the rules scroll with it */
