@@ -132,9 +132,30 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] Checked: design critique applied (rail arrows, 44 px mode buttons); axe 0 issues on the Look Book and all 9 pages,
       light and dark; device matrix clean; all browser suites and the five backend suites pass
 
+## Phase 11 · Manage account, dressed for every look (requested 5 Nov)
+
+- [x] The account window has Vettly's own tabs after Clerk's Profile and Security: **Key Ring** (the real one, same
+      keys as Settings, kept in sync), **Your look** (Day / Night / Match device, the nine looks, the Look Book) and
+      **Your data** (download a copy; delete everything with a two-tap confirm)
+- [x] Clerk's own "API keys" tab is hidden (`apiKeysProps.hide`): those are developer keys, not your AI keys
+- [x] The avatar menu: Manage account · Key Ring · Change the look · Sign out
+- [x] `web/account.css`: the window and the menu follow the active look, day and night, from tokens only, with each
+      look's signature (tape, ruled paper and a red margin, frosted glass, a drafting grid with corner ticks, sticker
+      outlines, a blossom, dream glass, a scalloped trim, a pearl edge). Motion: the backdrop fades, the window rises,
+      tabs and rows arrive one after another, the current tab's bar springs in, each page slides in on a tab switch;
+      all of it stops under Calm or reduced motion
+- [x] Clerk takes live CSS variables (`var(--accent)`…) where the browser has color-mix, so changing the look or
+      Day / Night recolours even an open account window; older browsers get the values of the moment and a remount
+- [x] Checked with the real clerk-js 5.128.1 run locally (its network answered by a test stand-in, sessions signed
+      with a test key): menu items, tabs (API keys hidden), all five tabs in 9 looks × day/night, the phone drawer
+      solid in every look and closing on a tab, live recolour, axe 0 issues on the real window (9 looks × 4 tabs);
+      phones from 320 px and iPad fit with no sideways scroll; the regression suites and five backend suites pass.
+      A last look on the Vercel preview with the real sign-in is still worth doing
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
+- [ ] Clerk dashboard → API keys: switch off user API keys. Vettly hides the tab, but only the dashboard stops them being made
 - [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
