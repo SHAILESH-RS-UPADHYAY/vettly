@@ -184,7 +184,7 @@ function mentorToggle(open = document.getElementById('mentor').dataset.state !==
     mentorStore.set(MENTOR_KEYS.open, open);
     if (open) {
         if (!mentor.rendered) mentorRenderAll();
-        if (focus) setTimeout(() => document.getElementById('mentor-input').focus(), 200);
+        if (focus) setTimeout(() => Motion.focusField(document.getElementById('mentor-input')), 200);
         if (opening && focus) mentorBurstFrom(document.getElementById('mentor-orb'), 12);
     } else {
         mentorCloseMention();
@@ -220,7 +220,7 @@ function mentorNewPage() {
     mentorStore.set(MENTOR_KEYS.sheet, mentor.sheet);
     mentorRenderAll();                                  // the fresh page underneath
     mentorUndoOffer(true);
-    document.getElementById('mentor-input').focus({ preventScroll: true });
+    Motion.focusField(document.getElementById('mentor-input'));
 }
 function mentorUndoPage() {
     const last = mentor.lastPage;

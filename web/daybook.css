@@ -18,7 +18,7 @@
 @media (max-width: 79.99rem) {
     .db-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas:
         "next next next next next next" "streak streak streak bento bento bento" "stats stats stats stats stats stats"
-        "actions actions actions actions actions actions" "setup setup setup keys keys keys"; }
+        "actions actions actions actions actions actions" "setup setup setup setup setup setup" "keys keys keys keys keys keys"; }   /* a row each: side by side, the short keys card stretched to the long checklist */
 }
 @media (max-width: 47.99rem) {
     .db-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "next" "streak" "bento" "stats" "actions" "setup" "keys"; gap: 12px; }

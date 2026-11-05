@@ -74,7 +74,37 @@
         customMenuItems: window.AccountPages?.menu(), userProfileProps: profileProps(),
     });
     function mountButtons() {
-        document.querySelectorAll('[data-user-slot] .user-btn').forEach(el => { try { clerk.unmountUserButton(el); } catch (e) { /* first mount */ } clerk.mountUserButton(el, buttonProps(el)); });
+        document.querySelectorAll('[data-user-slot] .user-btn').forEach(el => {
+            if (el.closest('.user-slot-sheet')) { sheetCard(el); return; }
+            try { clerk.unmountUserButton(el); } catch (e) { /* first mount */ } clerk.mountUserButton(el, buttonProps(el));
+        });
+    }
+    // Phones: the account lives in the More sheet, a modal dialog. Clerk's own menu and window would open behind it and
+    // could not be reached, so the sheet gets Vettly's own account card; each choice closes the sheet, then opens.
+    function sheetCard(el) {
+        const u = clerk.user; if (!u) return;
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+        const name = u.fullName || u.firstName || u.username || 'Your account', mail = u.primaryEmailAddress?.emailAddress || '';
+        const ico = n => `<svg aria-hidden="true"><use href="#i-${n}"/></svg>`;
+        el.innerHTML = `<div class="acct-card">
+                <span class="acct-avatar">${u.imageUrl ? `<img src="${esc(u.imageUrl)}" alt="" width="44" height="44">` : esc(name[0])}</span>
+                <span class="acct-id"><b>${esc(name)}</b>${mail ? `<small>${esc(mail)}</small>` : ''}</span>
+            </div>
+            <div class="acct-actions" role="group" aria-label="Your account">
+                <button type="button" data-acct="manage">${ico('user')}<span>Manage account</span></button>
+                <button type="button" data-acct="keys">${ico('key')}<span>Key Ring</span></button>
+                <button type="button" data-acct="look">${ico('palette')}<span>Change the look</span></button>
+                <button type="button" data-acct="out">${ico('sign-out')}<span>Sign out</span></button>
+            </div>`;
+        if (el.dataset.wired) return;
+        el.dataset.wired = '1';
+        el.addEventListener('click', e => {
+            const b = e.target.closest('[data-acct]'); if (!b) return;
+            window.closeMoreSheet?.();
+            const go = { manage: () => clerk.openUserProfile(profileProps()), keys: () => window.AccountPages?.menu?.().find(m => m.label === 'Key Ring')?.onClick?.(),
+                look: () => window.LookBook?.open(), out: () => clerk.signOut() }[b.dataset.acct];
+            setTimeout(go, 280);   // after the sheet has slid away
+        });
     }
 
     function loadClerk(cfg) {
@@ -186,6 +216,7 @@
             return;
         }
         clerk.addListener(({ user }) => {
+            if (user && signedIn) document.querySelectorAll('.user-slot-sheet .user-btn').forEach(sheetCard);   // a new name or photo
             if (user && !signedIn) enter();
             else if (!user && signedIn) location.reload();   // signed out: start clean
         });
