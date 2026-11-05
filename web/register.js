@@ -334,7 +334,7 @@ const Register = (() => {
     async function newChapter() {
         if (document.body.dataset.section !== 'chat') switchSection('chat', { animate: true });
         const blankNow = !$('chat-messages')?.querySelector('.chat-bubble');   // what is on the page, not what was loaded
-        if (current && blankNow && !current.archived && !creating) { closeIndex(); setTimeout(() => $('chat-input')?.focus(), 60); return; }   // already a fresh page
+        if (current && blankNow && !current.archived && !creating) { closeIndex(); setTimeout(() => Motion.focusField($('chat-input')), 60); return; }   // already a fresh page
         persist();
         stash();
         closeIndex();
@@ -346,7 +346,7 @@ const Register = (() => {
             return ch.id;
         }).catch(e => { Motion.toast(`Could not begin a new chapter: ${e.message}`, 'error'); return openId; }).finally(() => { creating = null; });
         await turn(() => { renderHead(); renderMessages([], current?.id || null); renderIndex(); startClock(0); });
-        setTimeout(() => $('chat-input')?.focus(), 60);
+        setTimeout(() => Motion.focusField($('chat-input')), 60);
     }
     async function archive() {
         if (!current?.id) return;
@@ -462,7 +462,7 @@ const Register = (() => {
     }
 
     // phones: the index is a drawer
-    function openIndex() { $('register').classList.add('index-open'); $('reg-search')?.focus({ preventScroll: true }); }
+    function openIndex() { $('register').classList.add('index-open'); if (!Motion.focusField($('reg-search'))) $('reg-list')?.querySelector('button')?.focus({ preventScroll: true }); }
     function closeIndex() { $('register')?.classList.remove('index-open'); }
 
     /* ── looks (chosen in the Atelier) ── */

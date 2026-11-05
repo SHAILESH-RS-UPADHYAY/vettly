@@ -128,6 +128,13 @@
     .theme-toggle-btn .theme-text, .server-indicator .status-label { display: none; }
     .server-indicator { padding: 6px; }
     #main-content { margin-left: var(--rail-w); }
+    /* the footer spans the whole rail in every side-panel style (Poster's padding was made for the wide panel and
+       pushed it 17px right); its pieces sit centred under the icons, the theme switch as borderless as they are */
+    :root #sidebar .sidebar-footer { width: calc(100% + 20px); margin-inline: -10px; padding-inline: 0; justify-items: center; }
+    :root #sidebar .theme-toggle-btn { width: 52px; height: 52px; border-color: transparent; background: transparent; border-radius: var(--r-ctl); }
+    @media (hover: hover) { :root #sidebar .theme-toggle-btn:hover { background: var(--paper-3); border-color: transparent; } }
+    #sidebar .profile-btn { width: 52px; height: 52px; justify-content: center; padding: 0; }
+    #sidebar .user-slot { justify-content: center; padding: 4px 0; }
 }
 
 /* tab bar */
@@ -2177,7 +2184,20 @@ html.auth-checking body > :not(.auth-gate) { visibility: hidden; }
 @keyframes authDrop { from { opacity: 0; transform: translateY(-22px) rotate(-1.5deg); } 65% { opacity: 1; transform: translateY(3px) rotate(0.4deg); } }
 .user-slot { display: flex; align-items: center; min-height: 44px; padding: 4px 6px; }
 .user-slot[hidden] { display: none; }
-.user-slot-sheet { margin: 2px 0 10px; padding: 6px 10px; border-radius: var(--r-ctl); background: var(--paper-3); }
+.user-slot-sheet { display: block; margin: 2px 0 12px; padding: 12px; border-radius: var(--r-card); background: var(--paper-3); }
+.user-slot-sheet .user-btn { display: grid; gap: 12px; }
+.acct-card { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.acct-avatar { display: grid; place-items: center; flex: none; width: 44px; height: 44px; overflow: hidden; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 700 1.1rem var(--font-body); box-shadow: 0 0 0 2px var(--paper-2), 0 0 0 4px color-mix(in srgb, var(--accent) 40%, transparent); }
+.acct-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.acct-id { display: grid; gap: 2px; min-width: 0; }
+.acct-id b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 1rem/1.25 var(--font-body); color: var(--ink); }
+.acct-id small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.82rem; color: var(--muted); }
+.acct-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.acct-actions button { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 48px; padding: 0 12px; border: 1px solid var(--rule); border-radius: var(--r-ctl); background: var(--paper-2); color: var(--ink); font: 600 0.88rem/1.15 var(--font-body); text-align: left; cursor: pointer; transition: transform var(--dur-micro) var(--ease-out), border-color var(--dur-short) var(--ease-out); }
+.acct-actions button svg { width: 18px; height: 18px; flex: none; color: var(--accent-ink); }
+.acct-actions button span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.acct-actions button:active { transform: scale(0.97); }
+.acct-actions button[data-acct="out"] svg { color: var(--bad); }
 @media (min-width: 48rem) and (max-width: 63.99rem) { #sidebar .cl-userButtonOuterIdentifier { display: none; } }
 @media (prefers-reduced-motion: reduce) { .auth-gate, .auth-gate.leaving, .auth-copy, .auth-points li, .auth-panel { animation: none !important; } }
 :root[data-motion="calm"] :is(.auth-gate, .auth-copy, .auth-points li, .auth-panel) { animation: none !important; }
