@@ -315,7 +315,10 @@ class ChatHistoryStore:
             ch["id"] = f"{ch.get('id', 'ch')}r"
         ch.setdefault("messages", [])
         ch["archived"] = False
-        self._doc["items"].append(ch)
+        # back in its own place, by the day it was begun, so the chapters keep their order (and their numerals)
+        when = ch.get("created") or ""
+        at = next((i for i, c in enumerate(self._doc["items"]) if when and (c.get("created") or "") > when), len(self._doc["items"]))
+        self._doc["items"].insert(at, ch)
         self._doc["open"] = ch["id"]
         self.save()
         return self.full(ch["id"])
