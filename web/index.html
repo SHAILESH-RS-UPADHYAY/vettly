@@ -52,7 +52,7 @@
     <link rel="stylesheet" href="./tokens.css?v=7.1">
     <link rel="stylesheet" href="./base.css?v=7.2">
     <link rel="stylesheet" href="./styles.css?v=9.2">
-    <link rel="stylesheet" href="./prep.css?v=7.4">
+    <link rel="stylesheet" href="./prep.css?v=7.5">
     <link rel="stylesheet" href="./mentor.css?v=8.1">
     <link rel="stylesheet" href="./looks.css?v=7.8">
     <link rel="stylesheet" href="./paper.css?v=8.1">
@@ -743,44 +743,6 @@
                     </div>
                 </div>
                 <div class="prep-layout">
-                    <!-- Filter Dock: a sticky column on wide screens, the Filters sheet on phones and tablets -->
-                    <aside class="prep-deck" aria-label="Filters">
-                        <div class="prep-dock-slot" id="prep-dock-slot">
-                            <div class="toolbelt-card prep-dock" id="prep-dock">
-                                <div class="dock-head">
-                                    <h3><svg class="h-ico" aria-hidden="true"><use href="#i-funnel"/></svg><span class="v-classic">Filter matrix</span><span class="v-alt">Filter your bank</span></h3>
-                                    <button type="button" class="dock-clear" data-f-clear hidden>Clear all</button>
-                                </div>
-                                <div class="dock-block">
-                                    <span class="dock-label">Status</span>
-                                    <div class="st-grid" data-f-status role="group" aria-label="Status"></div>
-                                </div>
-                                <div class="dock-block">
-                                    <span class="dock-label">Categories <small>pick one or more</small></span>
-                                    <div class="pill-grid" data-f-cats role="group" aria-label="Categories"></div>
-                                </div>
-                                <div class="dock-block">
-                                    <span class="dock-label">Difficulty</span>
-                                    <div class="pill-grid" data-f-diffs role="group" aria-label="Difficulty"></div>
-                                </div>
-                                <div class="dock-block">
-                                    <span class="dock-label">Order</span>
-                                    <div class="seg seg-fill" data-f-sort role="group" aria-label="Order">
-                                        <button type="button" data-v="new" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sort"/></svg>Newest</button>
-                                        <button type="button" data-v="old" aria-pressed="false">Oldest</button>
-                                        <button type="button" data-v="shuffle" aria-pressed="false"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle</button>
-                                    </div>
-                                </div>
-                                <div class="dock-block">
-                                    <span class="dock-label">Answers</span>
-                                    <div class="seg seg-fill" data-f-view role="group" aria-label="Answers">
-                                        <button type="button" data-v="answers" aria-pressed="true">Show answers</button>
-                                        <button type="button" data-v="cards" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Flashcards</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
                     <div class="prep-stream" id="prep-list-toolbar">
                         <div class="stream-bar">
                             <label class="stream-search">
@@ -788,11 +750,53 @@
                                 <input type="search" id="prep-search" placeholder="Search questions and answers" aria-label="Search your questions" autocomplete="off">
                                 <kbd class="search-key">/</kbd>
                             </label>
-                            <button type="button" class="btn btn-sm filters-open" data-f-open aria-haspopup="dialog"><svg aria-hidden="true"><use href="#i-funnel"/></svg>Filters<span class="f-badge num" data-f-badge hidden>0</span></button>
+                            <button type="button" class="btn btn-sm filters-open" data-f-open aria-controls="prep-dock"><svg aria-hidden="true"><use href="#i-funnel"/></svg>Filters<span class="f-badge num" data-f-badge hidden>0</span></button>
                             <div class="stream-meter" aria-live="polite">
                                 <span class="meter-text"><b class="num" id="prep-total-count" data-shown>0</b> <span data-of>of 0 questions</span></span>
                                 <span class="meter-track" aria-hidden="true"><i class="meter-fill" data-fill></i></span>
                             </div>
+                        </div>
+                        <!-- Filter Deck: a strip above the questions on tablets and up (so the answers get the full width),
+                             the Filters sheet on phones. Categories and difficulty fold away; the choice is remembered. -->
+                        <div class="prep-dock-slot" id="prep-dock-slot">
+                            <section class="toolbelt-card prep-dock" id="prep-dock" aria-label="Filters">
+                                <div class="dock-head">
+                                    <h3><svg class="h-ico" aria-hidden="true"><use href="#i-funnel"/></svg><span class="v-classic">Filter matrix</span><span class="v-alt">Filter your bank</span></h3>
+                                    <button type="button" class="dock-clear" data-f-clear hidden>Clear all</button>
+                                    <button type="button" class="dock-fold" data-f-fold aria-expanded="true" aria-controls="prep-dock-more"><span data-fold-label>Fewer filters</span><svg aria-hidden="true"><use href="#i-caret-down"/></svg></button>
+                                </div>
+                                <div class="dock-block dock-status">
+                                    <span class="dock-label">Status</span>
+                                    <div class="st-grid" data-f-status role="group" aria-label="Status"></div>
+                                </div>
+                                <div class="dock-block dock-sort">
+                                    <span class="dock-label">Order</span>
+                                    <div class="seg seg-fill" data-f-sort role="group" aria-label="Order">
+                                        <button type="button" data-v="new" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sort"/></svg>Newest</button>
+                                        <button type="button" data-v="old" aria-pressed="false">Oldest</button>
+                                        <button type="button" data-v="shuffle" aria-pressed="false"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle</button>
+                                    </div>
+                                </div>
+                                <div class="dock-block dock-view">
+                                    <span class="dock-label">Answers</span>
+                                    <div class="seg seg-fill" data-f-view role="group" aria-label="Answers">
+                                        <button type="button" data-v="answers" aria-pressed="true">Show answers</button>
+                                        <button type="button" data-v="cards" aria-pressed="false"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Flashcards</button>
+                                    </div>
+                                </div>
+                                <div class="dock-more" id="prep-dock-more">
+                                    <div class="dock-more-inner">
+                                        <div class="dock-block dock-cats">
+                                            <span class="dock-label">Categories <small>pick one or more</small></span>
+                                            <div class="pill-grid" data-f-cats role="group" aria-label="Categories"></div>
+                                        </div>
+                                        <div class="dock-block dock-diffs">
+                                            <span class="dock-label">Difficulty</span>
+                                            <div class="pill-grid" data-f-diffs role="group" aria-label="Difficulty"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                         <div class="f-ribbon" data-f-ribbon hidden></div>
                         <div class="prep-list" id="prep-list">
@@ -1302,8 +1306,8 @@
     <script defer src="./auth.js?v=9.4"></script>
     <script defer src="./motion.js?v=8.3"></script>
     <script defer src="./appearance.js?v=9.1"></script>
-    <script defer src="./dashboard.js?v=9.1"></script>
-    <script defer src="./mentor.js?v=8.1"></script>
+    <script defer src="./dashboard.js?v=9.2"></script>
+    <script defer src="./mentor.js?v=8.2"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>

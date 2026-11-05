@@ -152,6 +152,23 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       phones from 320 px and iPad fit with no sideways scroll; the regression suites and five backend suites pass.
       A last look on the Vercel preview with the real sign-in is still worth doing
 
+## Phase 12 · Prep Studio: filters above, answers full width (requested 6 Nov)
+
+- [x] The filters moved from a column beside the questions to a strip above them (tablets and up), so the questions
+      and answers get the whole width: two columns of ~600 px on a 1536 px laptop, where there was one of 856 px.
+      First row: Status (four tiles with live counts), Order, Answers; below: Categories and Difficulty, which fold
+      away ("Fewer filters", remembered). The strip lays itself out by its own width (wide, middling, narrow)
+- [x] The Filters button: on phones the same sheet as before; on larger screens it folds the strip when it is in
+      view, and brings it back, unfolded, when you have scrolled down the answers
+- [x] Beside the Mentor: with its panel on the right and room to spare, Prep Studio reflows into the space next to
+      it instead of hiding under it. Questions left in view on a 1536 px laptop: Mentor open 446 → all of them;
+      Ask Mentor desk 20 px → a full column; on 1920 px both stay two columns. The reflow happens once, after the
+      panel has opened, and the page slides into place on the compositor (same frame cost as no reflow, measured
+      with 80 questions). A panel dragged elsewhere, phones and small windows keep the overlay
+- [x] Checked: filtering, fold (remembered, folded pills out of the Tab order), Filters button on desktop / iPad /
+      phones, the phone sheet; all 9 looks day and night; axe 0 issues on Prep Studio; device matrix and the
+      regression suites pass
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
