@@ -127,3 +127,5 @@
 :root[data-motion="calm"] :is(.db-card, .db-week li, .db-action, .db-checklist li, .db-chain li .db-dot, .db-next-art, .db-flame.lit) { animation: none !important; }
 
 .db-date:empty::before { content: "\00a0"; }   /* hold the line until the date is filled in, so nothing below jumps */
+
+@media (pointer: coarse) { .db-link { min-height: 44px; padding: 0 8px; } }   /* text links are thumb-sized on touch */

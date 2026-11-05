@@ -216,3 +216,5 @@
 }
 :root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .pb-bob, .pb-face) { animation: none !important; }
 :root[data-motion="calm"] .dg-packet { display: none; }
+
+@media (pointer: coarse) { .bento-menu summary { min-height: 44px; } }
