@@ -53,7 +53,7 @@
     <link rel="stylesheet" href="./base.css?v=7.3">
     <link rel="stylesheet" href="./styles.css?v=9.3">
     <link rel="stylesheet" href="./prep.css?v=7.6">
-    <link rel="stylesheet" href="./mentor.css?v=9.0">
+    <link rel="stylesheet" href="./mentor.css?v=9.2">
     <link rel="stylesheet" href="./looks.css?v=7.9">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.1">
@@ -1257,8 +1257,9 @@
                     <button type="button" class="mentor-icon-btn mentor-fit-btn" onclick="mentorResetLayout()" title="Reset size and position" aria-label="Reset size and position">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg>
                     </button>
-                    <button type="button" class="mentor-icon-btn mentor-new-btn" onclick="mentorReset()" title="New chat" aria-label="New chat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                    <button type="button" class="mentor-icon-btn mentor-new-btn" id="mentor-new" onclick="mentorNewPage()" title="Start a new page" aria-label="Start a new page" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11.5v6M9 14.5h6"/></svg>
+                        <span class="mentor-new-label">New page</span>
                     </button>
                     <button type="button" class="mentor-icon-btn" onclick="mentorToggle(false)" title="Collapse" aria-label="Collapse Mentor">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -1266,6 +1267,8 @@
                 </header>
                 <div class="mentor-msgs" id="mentor-msgs"></div>
                 <form class="mentor-input" onsubmit="event.preventDefault(); mentorSend();">
+                    <!-- after a new page: the last one can come back for a few seconds -->
+                    <div class="mentor-undo" id="mentor-undo"><span id="mentor-undo-msg" role="status"></span><button type="button" onclick="mentorUndoPage()" tabindex="-1">Undo</button></div>
                     <div class="mentor-mention hidden" id="mentor-mention" role="listbox" aria-label="Prep Studio questions"></div>
                     <div class="mentor-pills">
                         <div class="mentor-lang" role="group" aria-label="Answer language" data-lang="english">
@@ -1307,11 +1310,11 @@
     <script defer src="./motion.js?v=8.3"></script>
     <script defer src="./appearance.js?v=9.1"></script>
     <script defer src="./dashboard.js?v=9.2"></script>
-    <script defer src="./mentor.js?v=8.3"></script>
+    <script defer src="./mentor.js?v=8.4"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
-    <script defer src="./shortcuts.js?v=1.3"></script>
+    <script defer src="./shortcuts.js?v=1.4"></script>
     <script defer src="./keyring.js?v=1.4"></script>
     <script defer src="./account.js?v=1.0"></script>
     <script defer src="./register.js?v=1.4"></script>

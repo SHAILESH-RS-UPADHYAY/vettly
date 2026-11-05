@@ -26,6 +26,7 @@ const mentor = {
 
 const MENTOR_KEYS = {
     history: 'vettly_mentor_history',
+    sheet: 'vettly_mentor_page',
     lang: 'vettly_mentor_lang',
     open: 'vettly_mentor_open',
     geom: 'vettly_mentor_geom',
@@ -123,6 +124,7 @@ function mentorAddTurn(userText, botText) {
         </div>`;
     msgs.appendChild(turn);
     mentorSnap();
+    document.getElementById('mentor-new').hidden = false;
     return turn;
 }
 
@@ -138,11 +140,13 @@ function mentorRenderAll() {
     mentorSnap();
 }
 
-// Notebook skin: the register's header strip shows today's date and the page (one per question asked)
+// Notebook skin: the register's header strip shows today's date and the page (a new one each time you start one)
 function mentorStampPage() {
     const head = document.querySelector('.mentor-head');
     head.dataset.date = new Date().toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-    head.dataset.page = String(Math.max(1, Math.ceil(mentor.history.length / 2)));
+    head.dataset.page = String(mentor.sheet || 1);
+    const btn = document.getElementById('mentor-new');
+    if (btn) btn.hidden = !mentor.history.length;   // nothing to turn over on an empty page
 }
 
 // Notebook skin: keep the answers on the ruled lines by rounding every block that is not plain text
@@ -204,6 +208,70 @@ function mentorReset() {
     mentorRenderAll();
 }
 
+// ─── A new page: the written one turns over like a notepad leaf; Undo brings it back for a few seconds ───
+function mentorNewPage() {
+    if (mentor.busy || !mentor.history.length) return;
+    const msgs = document.getElementById('mentor-msgs');
+    mentor.lastPage = { history: mentor.history, sheet: mentor.sheet };
+    mentorLeaf(msgs);                                   // a copy of the written page, to turn over
+    mentor.history = [];
+    mentor.sheet = (mentor.sheet || 1) + 1;
+    mentorStore.set(MENTOR_KEYS.history, []);
+    mentorStore.set(MENTOR_KEYS.sheet, mentor.sheet);
+    mentorRenderAll();                                  // the fresh page underneath
+    mentorUndoOffer(true);
+    document.getElementById('mentor-input').focus({ preventScroll: true });
+}
+function mentorUndoPage() {
+    const last = mentor.lastPage;
+    if (!last || mentor.busy) return;
+    mentor.lastPage = null;
+    mentor.history = last.history;
+    mentor.sheet = last.sheet;
+    mentorStore.set(MENTOR_KEYS.history, mentor.history);
+    mentorStore.set(MENTOR_KEYS.sheet, mentor.sheet);
+    mentorRenderAll();
+    mentorUndoOffer(false);
+    const msgs = document.getElementById('mentor-msgs');
+    if (!mentorCalm()) msgs.animate([
+        { transform: 'perspective(1600px) rotateX(96deg)', opacity: 0, transformOrigin: '50% 0%' },
+        { transform: 'perspective(1600px) rotateX(-6deg)', opacity: 1, transformOrigin: '50% 0%', offset: 0.7 },
+        { transform: 'perspective(1600px) rotateX(0deg)', opacity: 1, transformOrigin: '50% 0%' },
+    ], { duration: 640, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+}
+// the turning leaf: lifts from the bottom edge and flips up over the binding, catching a little light as it goes
+function mentorLeaf(msgs) {
+    if (mentorCalm()) return;
+    const core = msgs.parentElement, cs = getComputedStyle(msgs);
+    const leaf = msgs.cloneNode(true);
+    leaf.removeAttribute('id');
+    leaf.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+    leaf.classList.add('mentor-leaf');
+    leaf.setAttribute('aria-hidden', 'true');
+    leaf.inert = true;
+    const plain = cs.backgroundColor === 'rgba(0, 0, 0, 0)' && cs.backgroundImage === 'none';
+    Object.assign(leaf.style, {
+        left: `${msgs.offsetLeft}px`, top: `${msgs.offsetTop}px`, width: `${msgs.offsetWidth}px`, height: `${msgs.offsetHeight}px`,
+        background: plain ? getComputedStyle(core).background : '',
+    });
+    core.appendChild(leaf);
+    leaf.scrollTop = msgs.scrollTop;
+    leaf.animate([
+        { transform: 'perspective(1600px) rotateX(0deg)', opacity: 1, filter: 'brightness(1)' },
+        { transform: 'perspective(1600px) rotateX(58deg) translateY(-2%)', opacity: 1, filter: 'brightness(1.06)', offset: 0.55 },
+        { transform: 'perspective(1600px) rotateX(104deg) translateY(-6%)', opacity: 0, filter: 'brightness(0.9)' },
+    ], { duration: 760, easing: 'cubic-bezier(0.45, 0, 0.2, 1)' }).onfinish = () => leaf.remove();
+}
+let mentorUndoTimer = 0;
+function mentorUndoOffer(on) {
+    const box = document.getElementById('mentor-undo');
+    clearTimeout(mentorUndoTimer);
+    box.classList.toggle('is-shown', on);
+    box.querySelector('button').tabIndex = on ? 0 : -1;
+    document.getElementById('mentor-undo-msg').textContent = on ? `Page ${mentor.sheet} started.` : '';
+    if (on) mentorUndoTimer = setTimeout(() => { mentor.lastPage = null; mentorUndoOffer(false); }, 7000);
+}
+
 function mentorAsk(n) {
     mentorToggle(true);
     document.getElementById('mentor-input').value = `@${n} `;
@@ -220,6 +288,7 @@ async function mentorSend(preset) {
     mentorAutosize();
     mentorCloseMention();
     mentorBurstFrom(document.getElementById('mentor-send'), 8);
+    if (mentor.lastPage) { mentor.lastPage = null; mentorUndoOffer(false); }   // writing on the new page keeps it
     mentorSetBusy(true);
 
     const turn = mentorAddTurn(text);
@@ -1009,6 +1078,7 @@ function mentorSpotlight(e) {
 (function mentorBoot() {
     document.querySelectorAll('.m-orb[data-emblem]').forEach(el => { el.innerHTML = MENTOR_EMBLEM; });
     mentor.history = mentorStore.get(MENTOR_KEYS.history, []);
+    mentor.sheet = Number(mentorStore.get(MENTOR_KEYS.sheet, 1)) || 1;
     mentorSetLang(mentorStore.get(MENTOR_KEYS.lang, 'english'));
     mentor.split = { ...MENTOR_SPLIT, ...mentorStore.get(MENTOR_KEYS.split, {}) };
     mentorApplySplit();
