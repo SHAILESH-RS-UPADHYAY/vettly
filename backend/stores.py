@@ -277,8 +277,9 @@ class ChatHistoryStore:
         ch = self._find(cid)
         if not ch:
             return None
-        self._doc["open"] = cid
-        self.save()
+        if self._doc["open"] != cid:   # already open: nothing to write
+            self._doc["open"] = cid
+            self.save()
         return self.full(cid)
 
     def update(self, cid: str, data: dict) -> Optional[dict]:

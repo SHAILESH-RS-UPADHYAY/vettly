@@ -2,7 +2,8 @@
  * The register: Live Copilot as an old, well-kept book. Every conversation is a chapter (server: /api/chats).
  * New chapter = the page turns. Archive = the page slides onto the shelf. Tear out = it flies to The Attic.
  * Answers are written in ink, word by word, with a pen nib leading the line. A chapter clock counts the time you
- * spend (synced to the chapter), and a practice stopwatch times your own spoken answers (saved with your message).
+ * spend (synced to the chapter, shown in the index). Top right of the page: the time now, and a practice stopwatch
+ * that times your own spoken answers (saved with your message).
  * Uses chatHistory / createAssistantBubble / formatChatMessage / switchSection from dashboard.js; GSAP if loaded.
  */
 const Register = (() => {
@@ -27,6 +28,17 @@ const Register = (() => {
     };
 
     let list = [], openId = null, current = null, query = '', stats = {};
+    // speed: chapters already fetched (data), and pages already drawn (their nodes, kept aside), so opening is instant
+    const cache = new Map(), inflight = new Map(), drawn = new Map();
+    let creating = null, loading = null;
+    function fetchFull(id) {
+        if (inflight.has(id)) return inflight.get(id);
+        const p = api('GET', `/api/chats/${id}`).then(ch => { cache.set(id, ch); return ch; }).finally(() => inflight.delete(id));
+        inflight.set(id, p);
+        return p;
+    }
+    const prefetch = id => { if (id && !cache.has(id)) fetchFull(id).catch(() => { /* fetched when opened */ }); };
+    const idle = fn => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200));
 
     /* ── the index ── */
     function title(c) { return c.title || c.auto_title || 'A blank page'; }
@@ -76,27 +88,62 @@ const Register = (() => {
         if (msg?.think_ms) bubble.insertAdjacentHTML('beforeend', `<span class="reg-spoke" title="Your practice stopwatch">${icon('clock')}spoke for ${clock(msg.think_ms)}</span>`);
         if (msg?.ts) bubble.dataset.time = new Date(msg.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
     }
-    function renderMessages(messages) {
+    function bubbleFor(m, lastQ) {
+        if (m.role === 'user') {
+            const b = document.createElement('div');
+            b.className = 'chat-bubble user';
+            b.textContent = m.content;
+            decorateUser(b, m);
+            return b;
+        }
+        const b = createAssistantBubble(m.content, lastQ);
+        if (m.ts) b.dataset.time = new Date(m.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        return b;
+    }
+    // keep the page we are leaving: its nodes (with their buttons) go aside, ready to come straight back
+    function stash() {
+        const box = $('chat-messages');
+        if (!current?.id || !box || box.querySelector('.reg-welcome, .reg-pending')) return;
+        const keep = document.createElement('div');
+        keep.append(...box.childNodes);
+        drawn.set(current.id, { keep, count: keep.querySelectorAll(':scope > .chat-bubble').length });
+    }
+    function renderMessages(messages, id = current?.id) {
         const box = $('chat-messages');
         chatHistory = messages.map(m => ({ role: m.role, content: m.content }));
+        const kept = id && drawn.get(id);
+        drawn.delete(id);
+        if (kept && kept.count === messages.length && messages.length) {   // drawn before and unchanged: put it back
+            box.replaceChildren(...kept.keep.childNodes);
+            box.scrollTop = box.scrollHeight;
+            return;
+        }
         if (!messages.length) { box.innerHTML = welcome(); return; }
-        box.innerHTML = '';
+        const qs = [];   // each answer's question, for the Expand button
         let lastQ = '';
-        messages.forEach(m => {
-            if (m.role === 'user') {
-                lastQ = m.content;
-                const b = document.createElement('div');
-                b.className = 'chat-bubble user';
-                b.textContent = m.content;
-                decorateUser(b, m);
-                box.appendChild(b);
-            } else {
-                const b = createAssistantBubble(m.content, lastQ);
-                if (m.ts) b.dataset.time = new Date(m.ts).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-                box.appendChild(b);
-            }
-        });
-        requestAnimationFrame(() => { box.scrollTop = box.scrollHeight; });
+        messages.forEach(m => { if (m.role === 'user') lastQ = m.content; qs.push(lastQ); });
+        // the end of the chapter is what shows: draw it now, the earlier notes above it while the page is idle
+        const split = Math.max(0, messages.length - 14);
+        const tail = document.createDocumentFragment();
+        messages.slice(split).forEach((m, i) => tail.appendChild(bubbleFor(m, qs[split + i])));
+        box.replaceChildren(tail);
+        box.scrollTop = box.scrollHeight;
+        let end = split;
+        const more = () => {
+            if (!end || !box.isConnected || current?.id !== id) return;
+            const start = Math.max(0, end - 10), frag = document.createDocumentFragment();
+            messages.slice(start, end).forEach((m, i) => frag.appendChild(bubbleFor(m, qs[start + i])));
+            const fromBottom = box.scrollHeight - box.scrollTop;
+            box.prepend(frag);
+            box.scrollTop = box.scrollHeight - fromBottom;   // the reader's place does not move
+            end = start;
+            if (end) idle(more);
+        };
+        if (end) idle(more);
+    }
+    // while a chapter we have never fetched is on its way: its name at once, and pencil lines where the notes will be
+    function pending() {
+        $('chat-messages').innerHTML = `<div class="reg-pending" aria-label="Opening the chapter">${'<i></i>'.repeat(5)}</div>`;
     }
 
     /* ── page movements ── */
@@ -108,17 +155,22 @@ const Register = (() => {
         leaf.className = 'reg-leaf';
         leaf.style.transformOrigin = dir > 0 ? 'left center' : 'right center';
         p.appendChild(leaf);
-        swap();
         const from = 0, to = dir > 0 ? -178 : 178;
+        // the leaf starts flat over the page, so the next page is drawn underneath it after the first frames show
+        requestAnimationFrame(() => requestAnimationFrame(swap));
         if (window.gsap) {
-            return new Promise(res => gsap.fromTo(leaf, { rotateY: from, '--shade': 0 }, { rotateY: to, '--shade': 1, duration: 0.95, ease: 'power2.inOut', onComplete: () => { leaf.remove(); res(); } }));
+            return new Promise(res => gsap.fromTo(leaf, { rotateY: from, '--shade': 0 }, { rotateY: to, '--shade': 1, duration: 0.7, ease: 'power2.inOut', onComplete: () => { leaf.remove(); res(); } }));
         }
-        return leaf.animate([{ transform: `perspective(1800px) rotateY(${from}deg)` }, { transform: `perspective(1800px) rotateY(${to}deg)` }], { duration: 950, easing: 'cubic-bezier(.65,0,.35,1)' }).finished.then(() => leaf.remove());
+        return leaf.animate([{ transform: `perspective(1800px) rotateY(${from}deg)` }, { transform: `perspective(1800px) rotateY(${to}deg)` }], { duration: 700, easing: 'cubic-bezier(.65,0,.35,1)' }).finished.then(() => leaf.remove());
     }
     // a copy of the page flies somewhere (The Attic, the shelf) while the real page shows the next chapter
     function fly(kind, target) {
         if (calm()) return Promise.resolve();
-        const p = page(), r = p.getBoundingClientRect(), ghost = p.cloneNode(true);
+        const p = page(), r = p.getBoundingClientRect(), ghost = p.cloneNode(false);
+        // a light copy: the ribbon, the head and only the notes on screen, never the whole chapter
+        const box = $('chat-messages'), shown = box.cloneNode(false), br = box.getBoundingClientRect();
+        [...box.children].filter(n => { const b = n.getBoundingClientRect(); return b.bottom > br.top && b.top < br.bottom; }).slice(-8).forEach(n => shown.appendChild(n.cloneNode(true)));
+        ghost.append(...[p.querySelector('.reg-ribbon'), p.querySelector('.reg-head')].filter(Boolean).map(n => n.cloneNode(true)), shown);
         ghost.removeAttribute('id'); ghost.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
         ghost.className += ` reg-ghost reg-ghost-${kind}`;
         Object.assign(ghost.style, { position: 'fixed', left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: 0, zIndex: 900, pointerEvents: 'none' });
@@ -131,7 +183,7 @@ const Register = (() => {
                { transform: `translate(${dx}px, ${dy}px) rotate(${dx < 0 ? -28 : 28}deg) scale(0.06)`, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 3% 90%, 0 80%, 4% 70%, 0 60%, 3% 50%, 0 40%, 4% 30%, 0 20%, 3% 10%)', opacity: 0.4 }]
             : [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-10px) scale(0.96) rotate(-1deg)', opacity: 1, offset: 0.2 },
                { transform: `translate(${dx}px, ${dy}px) scale(0.05) rotate(-6deg)`, opacity: 0.3 }];
-        return ghost.animate(frames, { duration: kind === 'tear' ? 1100 : 900, easing: 'cubic-bezier(.55,0,.25,1)' }).finished.then(() => {
+        return ghost.animate(frames, { duration: kind === 'tear' ? 900 : 720, easing: 'cubic-bezier(.55,0,.25,1)' }).finished.then(() => {
             ghost.remove();
             target?.animate?.([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(.34,1.56,.64,1)' });
         });
@@ -184,8 +236,8 @@ const Register = (() => {
         const on = running();
         if (on && !since) since = Date.now();
         if (!on && since) { base += Date.now() - since; since = 0; persist(); }
-        $('reg-elapsed').textContent = clock(elapsed());
-        page()?.classList.toggle('clock-on', on);
+        const el = $('reg-elapsed'); if (el) el.textContent = clock(elapsed());   // the chapter's time is kept for the index
+        nowTick();
         if (on && Date.now() - lastSaved > 20000) persist();
         sw.paint();
     }
@@ -199,6 +251,20 @@ const Register = (() => {
         try { await api('PATCH', `/api/chats/${current.id}`, { elapsed_ms: ms }); } catch (e) { /* next tick tries again */ }
     }
     function startClock(ms) { base = ms || 0; since = 0; clockTick(); }
+    // the time now, with a little face whose hands move
+    function nowTick() {
+        const d = new Date(), t = $('reg-now'); if (!t) return;
+        t.textContent = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+        t.dateTime = d.toISOString();
+        const today = $('reg-today'); if (today) today.textContent = d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+        const face = document.querySelector('.reg-face');
+        if (face) {
+            const sec = d.getSeconds(), min = d.getMinutes() + sec / 60, hr = (d.getHours() % 12) + min / 60;
+            face.querySelector('.hh').style.transform = `rotate(${hr * 30}deg)`;
+            face.querySelector('.mm').style.transform = `rotate(${min * 6}deg)`;
+            face.querySelector('.ss').style.transform = `rotate(${sec * 6}deg)`;
+        }
+    }
 
     /* ── the practice stopwatch: time yourself answering out loud; the time is saved with your next message ── */
     const sw = (() => {
@@ -221,48 +287,94 @@ const Register = (() => {
         };
     })();
 
-    /* ── actions ── */
-    async function load() {
-        try {
-            const r = await api('GET', '/api/chats');
-            list = r.chapters; openId = r.open; stats = r.stats || {};
-            current = await api('POST', `/api/chats/${openId}/open`);
-            renderIndex(); renderHead(); renderMessages(current.messages || []); startClock(current.elapsed_ms);
-        } catch (e) { console.warn('Register could not load:', e); }
+    /* ── actions: everything moves at once; the server catches up in the background ── */
+    function show(next) {
+        // what we remembered of a chapter + its latest name, shelf state and time from the list
+        const row = list.find(c => c.id === next.id);
+        if (row) next = { ...next, title: row.title, archived: row.archived, elapsed_ms: Math.max(row.elapsed_ms || 0, next.elapsed_ms || 0), number: row.number || next.number };
+        current = next; openId = next.id;
+        renderHead(); renderMessages(next.messages || [], next.id); renderIndex(); startClock(next.elapsed_ms);
+    }
+    function load() {
+        if (loading) return loading;   // boot asks twice: one load serves both
+        loading = (async () => {
+            try {
+                const r = await api('GET', '/api/chats');
+                list = r.chapters; openId = r.open; stats = r.stats || {};
+                const first = await api('POST', `/api/chats/${openId}/open`);
+                cache.set(first.id, first);
+                show(first);
+                // the chapters you are most likely to open next, fetched while nothing else is happening
+                idle(() => list.filter(c => c.id !== openId).slice(0, 4).forEach(c => prefetch(c.id)));
+            } catch (e) { console.warn('Register could not load:', e); }
+            finally { setTimeout(() => { loading = null; }, 0); }
+        })();
+        return loading;
     }
     async function openChapter(id, dir = 1) {
         if (id === openId) { closeIndex(); return; }
-        await persist();
-        let next;
-        try { next = await api('POST', `/api/chats/${id}/open`); } catch (e) { Motion.toast(e.message, 'error'); return; }
+        persist();   // the clock is saved in the background, never waited for
+        stash();
         closeIndex();
-        await turn(() => { current = next; openId = id; renderHead(); renderMessages(next.messages || []); renderIndex(); startClock(next.elapsed_ms); }, dir);
+        const row = list.find(c => c.id === id) || { id, number: 0, title: '', auto_title: '' };
+        let next = cache.get(id);
+        const wanted = next ? null : fetchFull(id);
+        await turn(() => { if (next) show(next); else { current = { ...row, messages: [] }; openId = id; renderHead(); renderIndex(); pending(); startClock(row.elapsed_ms); } }, dir);
+        if (!next) {
+            try { next = await wanted; } catch (e) { Motion.toast(e.message, 'error'); return; }
+            if (openId === id) show(next);
+        } else {   // shown from memory: check quietly for notes written elsewhere since
+            fetchFull(id).then(fresh => { if (openId === id && (fresh.messages || []).length !== (current.messages || []).length) show(fresh); }).catch(() => {});
+        }
+        api('POST', `/api/chats/${id}/open`).catch(() => { /* other devices learn next time */ });
     }
+    // the chapter the next message belongs to: a brand-new one may still be on its way to the server
+    const whenOpen = () => (creating || Promise.resolve(openId));
     async function newChapter() {
         if (document.body.dataset.section !== 'chat') switchSection('chat', { animate: true });
-        await persist();
-        try {
-            const r = await api('POST', '/api/chats', {});
-            list = r.chapters; const next = r.chapter;
-            closeIndex();
-            await turn(() => { current = next; openId = next.id; renderHead(); renderMessages([]); renderIndex(); startClock(0); });
-            setTimeout(() => $('chat-input')?.focus(), 80);
-        } catch (e) { Motion.toast(`Could not begin a new chapter: ${e.message}`, 'error'); }
+        const blankNow = !$('chat-messages')?.querySelector('.chat-bubble');   // what is on the page, not what was loaded
+        if (current && blankNow && !current.archived && !creating) { closeIndex(); setTimeout(() => $('chat-input')?.focus(), 60); return; }   // already a fresh page
+        persist();
+        stash();
+        closeIndex();
+        const blank = { id: null, number: (list.length || 0) + 1, title: '', auto_title: '', created: new Date().toISOString(), archived: false, elapsed_ms: 0, messages: [] };
+        current = blank; openId = null;   // the state moves now; the page is drawn under the turning leaf
+        creating = api('POST', '/api/chats', {}).then(r => {
+            list = r.chapters; const ch = r.chapter; cache.set(ch.id, ch);
+            if (current === blank) { current = { ...ch, messages: [] }; openId = ch.id; renderHead(); renderIndex(); }
+            return ch.id;
+        }).catch(e => { Motion.toast(`Could not begin a new chapter: ${e.message}`, 'error'); return openId; }).finally(() => { creating = null; });
+        await turn(() => { renderHead(); renderMessages([], current?.id || null); renderIndex(); startClock(0); });
+        setTimeout(() => $('chat-input')?.focus(), 60);
     }
     async function archive() {
-        if (!current) return;
-        const shelve = !current.archived;
-        try { await api('PATCH', `/api/chats/${current.id}`, { archived: shelve }); } catch (e) { Motion.toast(e.message, 'error'); return; }
-        const row = list.find(c => c.id === current.id); if (row) row.archived = shelve;
+        if (!current?.id) return;
+        const shelve = !current.archived, id = current.id;
+        const row = list.find(c => c.id === id); if (row) row.archived = shelve;
         current.archived = shelve;
-        if (shelve) {
-            const shelf = matchMedia('(max-width: 63.99rem)').matches ? $('reg-title') : document.querySelector('#reg-shelf summary');
-            const flight = fly('shelf', shelf);
-            const nextLive = list.find(c => !c.archived);
-            Motion.toast('On the archive shelf. Find it under Chapters → Archive shelf.', 'ok');
-            await flight;
-            if (nextLive) await openChapter(nextLive.id); else await newChapter();
-        } else { renderHead(); renderIndex(); Motion.toast('Back on the desk.', 'ok'); }
+        api('PATCH', `/api/chats/${id}`, { archived: shelve }).catch(e => {   // put it back if the server says no
+            if (row) row.archived = !shelve; Motion.toast(e.message, 'error'); renderIndex();
+        });
+        if (!shelve) { renderHead(); renderIndex(); Motion.toast('Back on the desk.', 'ok'); return; }
+        const shelf = matchMedia('(max-width: 63.99rem)').matches ? $('reg-title') : document.querySelector('#reg-shelf summary');
+        const flight = fly('shelf', shelf);   // the copy flies to the shelf while the real page shows the next chapter
+        Motion.toast('On the archive shelf. Find it under Chapters → Archive shelf.', 'ok');
+        const nextLive = list.find(c => !c.archived && c.id !== id);
+        persist(); stash();
+        if (nextLive) await showNow(nextLive.id); else await newChapterUnder();
+        await flight;
+    }
+    // open a chapter without a page turn (the flying copy is the movement)
+    async function showNow(id) {
+        const row = list.find(c => c.id === id) || { id };
+        let next = cache.get(id);
+        if (next) show(next); else { current = { ...row, messages: [] }; openId = id; renderHead(); renderIndex(); pending(); startClock(row.elapsed_ms); }
+        if (!next) { try { next = await fetchFull(id); if (openId === id) show(next); } catch (e) { Motion.toast(e.message, 'error'); } }
+        api('POST', `/api/chats/${id}/open`).catch(() => {});
+    }
+    async function newChapterUnder() {
+        const r = await api('POST', '/api/chats', {});
+        list = r.chapters; cache.set(r.chapter.id, r.chapter); show(r.chapter);
     }
     let armed = 0;
     async function tearOut(btn) {
@@ -274,17 +386,22 @@ const Register = (() => {
         }
         clearTimeout(armed); armed = 0; btn.querySelector('span').textContent = 'Tear out';
         const gone = current;
+        if (!gone.id) return;
         const attic = window.Tabs?.hidden?.('attic') ? null : (matchMedia('(max-width: 47.99rem)').matches ? $('nav-more') : $('nav-attic'));
         const flight = fly('tear', attic);
+        cache.delete(gone.id); drawn.delete(gone.id);
+        list = list.filter(c => c.id !== gone.id);
+        const nextLive = list.find(c => !c.archived);
+        const told = api('DELETE', `/api/chats/${gone.id}`);
+        if (nextLive) await showNow(nextLive.id);
         try {
-            const r = await api('DELETE', `/api/chats/${gone.id}`);
-            list = r.chapters; openId = r.open;
-            const next = await api('POST', `/api/chats/${openId}/open`);
-            await flight;
-            current = next; renderHead(); renderMessages(next.messages || []); renderIndex(); startClock(next.elapsed_ms);
+            const r = await told;
+            list = r.chapters; renderIndex();
+            if (!nextLive) await showNow(r.open);
             Motion.toast(`“${title(gone)}” is waiting in The Attic.`, 'ok');
             window.loadRecycleBin?.();
-        } catch (e) { Motion.toast(`Could not tear it out: ${e.message}`, 'error'); }
+        } catch (e) { Motion.toast(`Could not tear it out: ${e.message}`, 'error'); load(); }
+        await flight;
     }
     function rename() {
         const btn = $('reg-title'); if (!current || !btn) return;
@@ -307,6 +424,7 @@ const Register = (() => {
     }
     // after a message lands: counts, first-question titles and order refresh without reloading the page
     async function touch() {
+        if (current?.id) { cache.delete(current.id); idle(() => prefetch(current?.id)); }
         try { const r = await api('GET', '/api/chats'); list = r.chapters; stats = r.stats || {}; current = { ...current, ...(list.find(c => c.id === current.id) || {}) }; renderIndex(); renderHead(); } catch (e) { /* the next action refreshes */ }
     }
 
@@ -344,7 +462,10 @@ const Register = (() => {
             const b = e.target.closest('[data-reg]'); if (!b) return;
             ({ new: newChapter, archive, delete: () => tearOut(b), rename, sw: () => sw.toggle(), 'sw-reset': () => sw.reset(), index: openIndex, 'close-index': closeIndex })[b.dataset.reg]?.();
         });
+        // a hover, a touch or a keyboard focus on a chapter fetches it, so the click finds it ready
+        ['pointerenter', 'focusin', 'touchstart'].forEach(ev => reg.addEventListener(ev, e => { const o = e.target.closest?.('[data-open]'); if (o) prefetch(o.dataset.open); }, { passive: true, capture: ev === 'pointerenter' }));
         $('reg-search')?.addEventListener('input', e => { query = e.target.value.trim(); renderIndex(); });
+        $('reg-timebar')?.addEventListener('click', e => { const b = e.target.closest('[data-reg]'); if (b?.dataset.reg === 'sw') sw.toggle(); if (b?.dataset.reg === 'sw-reset') sw.reset(); });
         document.addEventListener('visibilitychange', clockTick);
         addEventListener('pagehide', persist);
         tick = setInterval(clockTick, 1000);
@@ -366,6 +487,7 @@ const Register = (() => {
     return {
         load, newChapter, write, decorateUser, touch, renderAtelier,
         openId: () => openId,
+        whenOpen,
         takeLap: () => sw.take(),
         stats: () => ({ messages: stats.messages ?? 0, minutes: Math.round((stats.elapsed_ms || 0) / 60000), chapters: stats.chapters ?? list.length }),
     };
