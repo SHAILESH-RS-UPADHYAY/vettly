@@ -30,7 +30,7 @@
     background: radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--cfg) 14%, transparent), transparent 60%), var(--card-bg);
     box-shadow: var(--card-shadow); color: var(--ink);
     transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
-    animation: cellIn 620ms var(--spring) both; animation-delay: calc(var(--i, 0) * 70ms);
+    animation: cellIn 620ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 70ms);
 }
 .bento-cell:first-child { min-height: 200px; }
 .bento-cell:first-child .cell-title { font-size: 1.45rem; }
@@ -62,7 +62,7 @@
 @keyframes cellIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } }
 
 /* ── The lesson ── */
-.bento-lesson { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: var(--gap-stack); scroll-margin-top: 16px; container: lesson / inline-size; animation: lessonIn 600ms var(--spring) both; }
+.bento-lesson { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: var(--gap-stack); scroll-margin-top: 16px; container: lesson / inline-size; animation: lessonIn 600ms var(--spring) backwards; }
 .bento-lesson[hidden] { display: none; }
 @keyframes lessonIn { from { opacity: 0; transform: translateY(-12px) scale(0.985); } }
 .lesson-head { display: grid; gap: 8px; padding-right: 48px; }
@@ -100,7 +100,7 @@
 .dg-layers { max-width: 520px; margin: 0 auto; }
 .dg-node rect { fill: var(--card-bg); stroke: var(--cfg); stroke-width: 2; }
 .dg-node text { fill: var(--ink); font: 600 13px/1 var(--font-body); }
-.dg-node { transform-box: fill-box; transform-origin: center; animation: dgPop 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 140ms + 120ms); }
+.dg-node { transform-box: fill-box; transform-origin: center; animation: dgPop 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 140ms + 120ms); }
 .dg-layer rect { fill: color-mix(in srgb, var(--cbg) 70%, var(--card-bg)); }
 .dg-layer { animation-name: dgSlide; }
 .dg-link { fill: none; stroke: var(--cfg); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 5 6; animation: dgFlow 1s linear infinite, dgFade 400ms ease-out both; animation-delay: 0s, calc(var(--i, 0) * 140ms + 300ms); }
@@ -110,11 +110,11 @@
 .dg-packet-loop { animation: dgPacket 5s linear infinite 1s; }
 .dg-compare { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 12px; }
 @container lesson (max-width: 479px) { .dg-compare { grid-template-columns: minmax(0, 1fr); } .dg-vs { justify-self: center; } }
-.dg-col { padding: 14px 16px; border-radius: 14px; background: var(--card-bg); border: 2px solid var(--cfg); animation: dgPop 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 160ms + 100ms); }
+.dg-col { padding: 14px 16px; border-radius: 14px; background: var(--card-bg); border: 2px solid var(--cfg); animation: dgPop 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 160ms + 100ms); }
 .dg-col:last-of-type { border-style: dashed; }
 .dg-col h4 { font: 700 1.05rem/1.2 var(--font-body); color: var(--cfg); margin-bottom: 8px; }
 .dg-col ul { list-style: none; display: grid; gap: 7px; }
-.dg-col li { position: relative; padding-left: 18px; font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); animation: dgFade 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 110ms + 360ms); }
+.dg-col li { position: relative; padding-left: 18px; font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); animation: dgFade 420ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 110ms + 360ms); }
 .dg-col li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 7px; height: 7px; border-radius: 50%; background: var(--cfg); }
 .dg-vs { align-self: center; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 800 0.85rem/1 var(--font-body); animation: vsPulse 2.4s var(--ease-in-out) infinite; }
 @keyframes dgPop { from { opacity: 0; transform: scale(0.6); } }
@@ -161,7 +161,7 @@
     box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--cfg) 55%, transparent), 0 1px 0 color-mix(in srgb, var(--card-bg) 60%, transparent) inset;
     font: 600 0.88rem/1.25 var(--font-body); text-align: left; text-wrap: balance;
     transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
-    animation: pbIn 560ms var(--spring) both; animation-delay: calc(var(--i, 0) * 45ms + 80ms);
+    animation: pbIn 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 45ms + 80ms);
 }
 .pb-face svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--cfg); }
 .pond-bubble.is-today .pb-face { border-width: 2px; border-color: var(--cfg); font-weight: 700; }

@@ -293,7 +293,7 @@ kbd {
     display: flex; align-items: center; gap: 10px; padding: 12px 10px 12px 14px;
     border-radius: var(--r-ctl); background: var(--pill); color: var(--on-pill);
     box-shadow: var(--pop-shadow); font: 500 0.9rem/1.4 var(--font-body); pointer-events: auto;
-    animation: toastIn var(--dur-long) var(--ease-out) both;
+    animation: toastIn var(--dur-long) var(--ease-out) backwards;
 }
 .toast span { flex: 1; }
 .toast button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; color: inherit; opacity: 0.75; }
