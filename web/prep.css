@@ -95,22 +95,18 @@
     .lab-go .prep-generate { width: auto; min-width: 320px; }
 }
 
-/* ── Filters beside the stream ── */
-.prep-layout { display: grid; gap: var(--gap-stack); align-items: start; }
-.prep-deck { display: none; min-width: 0; }
+/* ── The stream: filters sit above it, so the questions and answers get the whole width ── */
+.prep-layout { display: block; }
 .prep-stream { container: stream / inline-size; min-width: 0; }
-@media (min-width: 80rem) {
-    .prep-layout { grid-template-columns: 340px minmax(0, 1fr); }
-    .prep-deck {
-        display: block; position: sticky; top: 16px; max-height: calc(100dvh - 32px);
-        overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
-        padding: var(--space-md) 6px var(--space-3xs) var(--space-3xs); margin: calc(-1 * var(--space-md)) -6px calc(-1 * var(--space-3xs)) calc(-1 * var(--space-3xs));
-    }
-}
 
-/* ── Filter Dock ── */
+/* beside the Mentor: when its panel sits on the right and there is room, the page reflows into the space
+   left of it instead of hiding under it (mentor.js sets --mentor-room, once, then slides the page into place) */
+body.mentor-room #page-prep { padding-right: var(--mentor-room); }
+
+/* ── Filter Deck: stacked in the phone sheet, a strip above the stream from tablets up ── */
 .prep-dock { display: grid; gap: 18px; }
-.dock-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.dock-head { display: flex; align-items: center; gap: 10px; }
+.dock-head h3 { margin-right: auto; }
 .dock-head h3 { display: flex; align-items: center; gap: var(--space-xs); font: 700 1.02rem/1.25 var(--font-body); color: var(--ink); }
 .dock-clear { border: 0; background: none; padding: 6px var(--space-2xs); font: 600 0.84rem/1 var(--font-body); color: var(--accent-ink); }
 .dock-clear:not([hidden]) { animation: popIn var(--dur-long) var(--spring) both; }
@@ -118,6 +114,23 @@
 .dock-block:has(> .pill-grid:empty) { display: none; }
 .dock-label { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-xs); font: 600 0.8rem/1.3 var(--font-body); color: var(--muted); }
 .dock-label small { font-weight: 500; font-size: 0.72rem; opacity: 0.85; }
+
+/* the fold: categories and difficulty tuck away under the strip's first row */
+.dock-more { display: grid; grid-template-rows: 1fr; min-width: 0; transition: grid-template-rows 480ms var(--ease-out); }
+.dock-more-inner { display: grid; gap: 18px; min-height: 0; min-width: 0; overflow: hidden; padding: 3px; margin: -3px; }   /* room for focus rings */
+.dock-fold {
+    display: none; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px 0 12px; border: 1px solid var(--rule); border-radius: 999px;
+    background: var(--paper-2); color: var(--ink-2); font: 600 0.8rem/1 var(--font-body); cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.dock-fold svg { width: 14px; height: 14px; transform: rotate(180deg); transition: transform var(--dur-long) var(--spring); }
+.dock-fold[aria-expanded="false"] svg { transform: none; }
+@media (hover: hover) { .dock-fold:hover { border-color: var(--accent); color: var(--accent-ink); } }
+.dock-fold:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@keyframes deckRise { from { opacity: 0; transform: translateY(-6px); } }
+.prep-dock.is-called { animation: deckCall 900ms var(--ease-out); }
+@keyframes deckCall { 0%, 100% { box-shadow: var(--card-shadow); } 30% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent), var(--card-shadow); } }
 
 /* status tiles: a big ticking count with its label */
 .st-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-xs); }
@@ -192,6 +205,48 @@
 .seg.seg-fill { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; }
 .seg.seg-fill > button { justify-content: center; padding: 0 var(--space-xs); }
 
+/* tablets and up: the deck is a strip. Its own width decides the layout, so it also fits beside the Mentor */
+.prep-dock-slot { display: none; container: deck / inline-size; margin-bottom: var(--space-sm); }
+@media (min-width: 48rem) { .prep-dock-slot { display: block; } }
+@container deck (min-width: 0px) {
+    .prep-dock { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "status status" "sort view" "more more"; gap: 14px 18px; padding: 16px 18px; }
+    .dock-head { grid-area: head; } .dock-status { grid-area: status; } .dock-sort { grid-area: sort; } .dock-view { grid-area: view; } .dock-more { grid-area: more; }
+    .dock-fold { display: inline-flex; }
+    .dock-head h3 { font-size: 0.98rem; }
+    .dock-block { align-content: start; }
+    .dock-block > .seg { align-self: start; }
+    .st-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .st-tile { min-height: 56px; padding: 8px 12px; }
+    .st-tile b { font-size: 1.3rem; }
+    .dock-more-inner { gap: 12px; padding-top: 14px; border-top: 1px dashed var(--rule-2); margin-top: 0; }
+    .dock-more-inner .dock-block { grid-template-columns: 116px minmax(0, 1fr); align-items: start; column-gap: 12px; }
+    .dock-more-inner .dock-label { display: grid; gap: 2px; justify-content: start; padding-top: 11px; }
+    .dock-more-inner .pill-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dock-more-inner .f-pill { flex: 0 1 auto; min-width: 132px; max-width: 240px; padding: 0 12px; }
+    .prep-dock[data-fold="closed"] .dock-more { grid-template-rows: 0fr; }
+    .prep-dock[data-fold="closed"] .dock-more-inner { visibility: hidden; transition: visibility 0s linear 480ms; }
+    .prep-dock[data-fold="open"] .dock-more-inner > * { animation: deckRise 460ms var(--ease-out) both; }
+    .prep-dock[data-fold="open"] .dock-more-inner > :nth-child(2) { animation-delay: 70ms; }
+}
+/* middling strip (beside the Mentor on a laptop): pills take their labels' width, the labels sit above them */
+@container deck (max-width: 759px) {
+    .dock-more-inner .dock-block { grid-template-columns: minmax(0, 1fr); }
+    .dock-more-inner .dock-label { padding-top: 0; display: flex; }
+}
+/* wide strip: status, order and answers share the first row */
+@container deck (min-width: 1000px) {
+    .prep-dock { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.9fr); grid-template-areas: "head head head" "status sort view" "more more more"; column-gap: 24px; }
+}
+/* narrow strip (beside the big Ask Mentor desk): one column, the labels above their pills */
+@container deck (max-width: 459px) {
+    .prep-dock { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "status" "sort" "view" "more"; padding: 14px; }
+    .st-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dock-more-inner .dock-block { grid-template-columns: minmax(0, 1fr); }
+    .dock-more-inner .dock-label { padding-top: 0; display: flex; }
+    .dock-more-inner .f-pill { min-width: 0; flex: 1 1 140px; }
+    .dock-fold span { display: none; }
+    .dock-fold { padding: 0 10px; }
+}
 /* ── The stream ── */
 .stream-bar {
     position: sticky; top: max(10px, env(safe-area-inset-top, 0px)); z-index: var(--z-raised);
@@ -215,7 +270,6 @@
 .search-key { flex-shrink: 0; }
 @media (pointer: coarse) { .search-key { display: none; } }
 .filters-open { display: inline-flex; position: relative; }
-@media (min-width: 80rem) { .filters-open { display: none; } }
 .f-badge { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font: 700 0.72rem/1 var(--font-body); }
 .f-badge:not([hidden]) { animation: popIn var(--dur-long) var(--spring) both; }
 .stream-meter { display: grid; gap: 5px; flex: 1 1 120px; min-width: 0; max-width: 220px; }
@@ -328,7 +382,11 @@
 .prep-sheet-done { width: 100%; min-height: 48px; }
 html:root .prep-sheet .toolbelt-card.prep-dock { box-shadow: none; border: 0; padding: 0; background: transparent; }
 /* the dock's panels are controls, not links: they keep still on hover (a lift would clip inside the scrolling deck) */
-html:root :is(.prep-deck, .prep-sheet) .toolbelt-card:hover { transform: none; }
+html:root :is(.prep-dock-slot, .prep-sheet) .toolbelt-card:hover { transform: none; }
 
-@media (prefers-reduced-motion: reduce) { .cat-tile, .cat-tile svg, .st-tile b, .lab-steps li { animation: none !important; } }
-:root[data-motion="calm"] :is(.cat-tile, .cat-tile svg, .st-tile b) { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+    .cat-tile, .cat-tile svg, .st-tile b, .lab-steps li, .dock-more-inner > *, .prep-dock.is-called { animation: none !important; }
+    .dock-more, .dock-fold svg { transition: none !important; }
+}
+:root[data-motion="calm"] :is(.cat-tile, .cat-tile svg, .st-tile b, .dock-more-inner > *, .prep-dock.is-called) { animation: none !important; }
+:root[data-motion="calm"] .dock-more { transition: none !important; }
