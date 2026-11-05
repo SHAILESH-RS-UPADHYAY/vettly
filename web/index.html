@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f6f1e7">
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23ea580c'%3E%3Cpath d='M16 2l5 5-5 5-5-5z'/%3E%3Cpath d='M16 20l5 5-5 5-5-5z'/%3E%3Cpath d='M7 11l5 5-5 5-5-5z'/%3E%3Cpath d='M25 11l5 5-5 5-5-5z'/%3E%3C/g%3E%3C/svg%3E">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3CradialGradient%20id%3D%22g%22%20cx%3D%2238%25%22%20cy%3D%2230%25%22%20r%3D%2278%25%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23fff%22%20stop-opacity%3D%22.75%22%2F%3E%3Cstop%20offset%3D%22.28%22%20stop-color%3D%22%23f06a20%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23a83a08%22%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%2215%22%20fill%3D%22url(%23g)%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2216%22%20rx%3D%2212.6%22%20ry%3D%224.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.6%22%20stroke-width%3D%221.1%22%20transform%3D%22rotate(-35%2016%2016)%22%2F%3E%3Cellipse%20cx%3D%2216%22%20cy%3D%2216%22%20rx%3D%2212.6%22%20ry%3D%224.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-opacity%3D%22.35%22%20stroke-width%3D%221%22%20transform%3D%22rotate(35%2016%2016)%22%2F%3E%3Cpath%20d%3D%22M16%207.2C16.7%2013%2019%2015.3%2024.8%2016C19%2016.7%2016.7%2019%2016%2024.8C15.3%2019%2013%2016.7%207.2%2016C13%2015.3%2015.3%2013%2016%207.2Z%22%20fill%3D%22%23fff9ee%22%2F%3E%3C%2Fsvg%3E">
     <title>Vettly · Interview prep for every field</title>
     <meta name="description" content="Free interview prep for every student and every field: questions written for your role, model answers in your own voice, a daily five-idea Brain Bento and a Copilot to practise with. Bring a free Gemini or Groq key.">
     <link rel="canonical" href="%SITE_URL%/">
@@ -54,7 +54,7 @@
     <link rel="stylesheet" href="./styles.css?v=9.5">
     <link rel="stylesheet" href="./prep.css?v=7.7">
     <link rel="stylesheet" href="./mentor.css?v=9.3">
-    <link rel="stylesheet" href="./looks.css?v=7.9">
+    <link rel="stylesheet" href="./looks.css?v=7.10">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.1">
     <link rel="stylesheet" href="./bento.css?v=9.2">
@@ -67,6 +67,7 @@
     <link rel="stylesheet" href="./lookbook.css?v=1.8">
     <link rel="stylesheet" href="./account.css?v=1.1">
     <link rel="stylesheet" href="./tooltip.css?v=1.0">
+    <link rel="stylesheet" href="./brand.css?v=1.1">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -165,7 +166,7 @@
         </button>
         <div class="auth-inner">
             <div class="auth-copy">
-                <p class="auth-brand"><span class="logo-icon" aria-hidden="true">❖</span>Vettly</p>
+                <p class="auth-brand"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span>Vettly</p>
                 <h1 class="auth-title">Walk into every interview <em>ready</em></h1>
                 <p class="auth-lede">Vettly turns your resume and the role you want into practice questions, model answers and a mentor who explains each one. For every field, from nursing to finance to code.</p>
                 <ul class="auth-points">
@@ -189,7 +190,7 @@
 
     <nav id="sidebar" aria-label="Main">
         <div class="sidebar-logo">
-            <span class="logo-icon" aria-hidden="true">❖</span>
+            <span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span>
             <span class="logo-text">Vettly</span>
             <span class="logo-badge">POSTER V2</span>
             <span class="logo-tagline" aria-hidden="true">POSTER SPEC // ARCHITECT</span>
@@ -1313,6 +1314,7 @@
     <script defer src="./appearance.js?v=9.1"></script>
     <script defer src="./dashboard.js?v=9.4"></script>
     <script defer src="./mentor.js?v=8.6"></script>
+    <script defer src="./brand.js?v=1.0"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
@@ -1324,7 +1326,7 @@
     <script defer src="./tour.js?v=2.2"></script>
     <script defer src="./onboard-scenes.js?v=2.3"></script>
     <script defer src="./lookbook.js?v=1.5"></script>
-    <script defer src="./onboard.js?v=9.9"></script>
+    <script defer src="./onboard.js?v=9.10"></script>
     <script defer src="./picker.js?v=1.1"></script>
 </body>
 </html>

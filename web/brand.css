@@ -1,0 +1,23 @@
+/* Vettly's logo, the Mentor's orb (brand.js). Its colours are registered so that, as the logo travels through the
+   nine looks, one look's colours blend into the next instead of jumping. */
+@property --orb-core { syntax: '<color>'; inherits: true; initial-value: #f06a20; }
+@property --orb-deep { syntax: '<color>'; inherits: true; initial-value: #a83a08; }
+@property --orb-aura { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-ripple { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-star { syntax: '<color>'; inherits: true; initial-value: #fff9ee; }
+
+.brand-orb { --s: 30px; transition: --orb-core 1.6s var(--ease-in-out, ease-in-out), --orb-deep 1.6s var(--ease-in-out, ease-in-out), --orb-aura 1.6s var(--ease-in-out, ease-in-out), --orb-ripple 1.6s var(--ease-in-out, ease-in-out), --orb-star 1.6s var(--ease-in-out, ease-in-out); }
+.brand-orb .m-orb-art { transition: rotate 0.8s var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1)); }
+
+/* where it stands */
+.sidebar-logo .brand-orb { --s: 28px; }   /* fits beside the name and the Poster badge on one line */
+@media (hover: hover) { .sidebar-logo:hover .brand-orb .m-orb-art { rotate: 45deg; } }
+@media (min-width: 48rem) and (max-width: 63.99rem) { .sidebar-logo .brand-orb { --s: 38px; } }   /* the icon rail: the logo alone */
+.auth-brand .brand-orb { --s: 46px; }
+.ob-brand .brand-orb { --s: 28px; }
+
+/* rests under reduced motion and Calm, like every other orb */
+@media (prefers-reduced-motion: reduce) {
+    .brand-orb, .brand-orb *, .brand-orb *::before, .brand-orb *::after { animation: none !important; transition: none !important; }
+}
+:root[data-motion="calm"] .brand-orb, :root[data-motion="calm"] .brand-orb *, :root[data-motion="calm"] .brand-orb *::before, :root[data-motion="calm"] .brand-orb *::after { animation: none !important; transition: none !important; }
