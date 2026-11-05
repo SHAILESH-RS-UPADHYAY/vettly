@@ -1,0 +1,370 @@
+/* The account window and the avatar menu, dressed by the active look.
+   Clerk draws them (UserProfile modal, UserButton popover); account.js adds our tabs (vt-ck-*).
+   Every colour, edge and font here is a token, so all nine looks, day and night, carry through on their own.
+   The per-look blocks further down only add each look's signature: tape, ruled paper, a drafting grid,
+   sticker outlines, petals, dream glass, a scalloped trim, a pearl shell.
+
+   Map (Clerk part → token):
+     backdrop          → --ink at 32% + blur          (same scrim as the Look Book)
+     window (cardBox)  → --paper-2, --rule, --r-sheet, --pop-shadow
+     tab rail (navbar) → --sidebar, --rule           (the app's own side panel)
+     tab               → --ink-2; hover --accent 10%; current --accent-soft / --accent-ink + an --accent bar
+     page              → --paper-2; titles --font-display / --ink; lines --ink-2
+     sections          → --rule dividers; primary actions --accent-ink
+     buttons           → --accent / --on-accent, --r-ctl; reset --ink-2
+     inputs            → --field, --rule-2, --r-input, focus --accent
+     badges            → --accent-soft / --accent-ink
+     avatar menu       → --paper-2, --rule, --r-card, --pop-shadow; rows 44px, icon tiles --paper-3
+   Specificity: Clerk's own styles are single classes put first in <head>, so ":root .cl-x" (two) always wins.
+   Motion stops under Calm or reduced motion (bottom of the file). */
+
+/* ═══ The avatar menu ═══ */
+:root .cl-userButtonPopoverCard {
+    width: min(340px, calc(100vw - 24px)); border: 1px solid var(--rule); border-radius: var(--r-card); overflow: hidden;
+    background: radial-gradient(120% 70% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%), var(--paper-2);
+    box-shadow: var(--pop-shadow); color: var(--ink);
+    transform-origin: var(--vt-ck-origin, 0% 100%);
+    animation: vtCkPop 340ms var(--spring) both;
+}
+:root .cl-userButtonPopoverMain { background: transparent; box-shadow: none; border: 0; border-radius: 0; }
+:root .cl-userButtonPopoverCard .cl-userPreview { gap: 12px; padding: 16px 16px 12px; }
+:root .cl-userButtonPopoverCard .cl-userPreviewMainIdentifier { font: 700 1rem/1.25 var(--font-display); color: var(--ink); letter-spacing: -0.01em; }
+:root .cl-userButtonPopoverCard .cl-userPreviewSecondaryIdentifier { font: 500 0.8rem/1.3 var(--font-body); color: var(--muted); }
+:root .cl-userButtonPopoverCard .cl-avatarBox { width: 44px; height: 44px; box-shadow: 0 0 0 2px var(--paper-2), 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); }
+:root .cl-userButtonPopoverActions { gap: 2px; padding: 6px 8px 8px; border-top: 1px solid var(--rule); }
+:root :is(.cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton) {
+    min-height: 44px; gap: 12px; padding: 6px 10px; border: 0; border-radius: var(--r-ctl);
+    background: transparent; color: var(--ink); font: 600 0.9rem/1.2 var(--font-body);
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
+    animation: vtCkRise 380ms var(--ease-out) both;
+}
+:root .cl-userButtonPopoverActions > :nth-child(2) { animation-delay: 40ms; }
+:root .cl-userButtonPopoverActions > :nth-child(3) { animation-delay: 80ms; }
+:root .cl-userButtonPopoverActions > :nth-child(4) { animation-delay: 120ms; }
+:root .cl-userButtonPopoverActions > :nth-child(n+5) { animation-delay: 160ms; }
+:root :is(.cl-userButtonPopoverActionButtonIcon, .cl-userButtonPopoverCustomItemButtonIconBox) {
+    display: grid; place-items: center; flex-shrink: 0; width: 30px; height: 30px; padding: 7px; box-sizing: border-box;
+    border-radius: min(calc(var(--r-ctl) * 0.75), 10px); background: var(--paper-3); color: var(--ink-2);
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
+}
+:root .cl-userButtonPopoverCustomItemButtonIconBox .vt-ck-icon, :root .cl-userButtonPopoverCustomItemButtonIconBox svg { width: 16px; height: 16px; }
+@media (hover: hover) {
+    :root :is(.cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton):hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--ink); transform: translateX(2px); }
+    :root :is(.cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton):hover :is(.cl-userButtonPopoverActionButtonIcon, .cl-userButtonPopoverCustomItemButtonIconBox) { background: var(--accent); color: var(--on-accent); transform: rotate(-6deg) scale(1.06); }
+}
+/* sign out last, set apart, in the danger colour on hover */
+:root .cl-userButtonPopoverActionButton__signOut { margin-top: 4px; position: relative; }
+:root .cl-userButtonPopoverActionButton__signOut::before { content: ""; position: absolute; left: 10px; right: 10px; top: -3px; border-top: 1px dashed var(--rule-2); pointer-events: none; }
+@media (hover: hover) {
+    :root .cl-userButtonPopoverActionButton__signOut:hover { background: color-mix(in srgb, var(--bad) 10%, transparent); color: var(--bad); }
+    :root .cl-userButtonPopoverActionButton__signOut:hover .cl-userButtonPopoverActionButtonIcon { background: var(--bad); color: #fff; }
+}
+:root .cl-userButtonPopoverFooter { background: color-mix(in srgb, var(--paper-3) 70%, transparent); border-top: 1px solid var(--rule); }
+:root .cl-userButtonPopoverFooter :is(p, a, span) { color: var(--muted); }
+:root .cl-userButtonTrigger { border-radius: 999px; transition: box-shadow var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring); }
+:root .cl-userButtonTrigger:focus-visible { box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus, var(--accent)) 45%, transparent); outline: none; }
+@media (hover: hover) { :root .cl-userButtonTrigger:hover { transform: scale(1.04); } }
+
+/* ═══ The account window ═══ */
+:root .cl-modalBackdrop {
+    background: color-mix(in srgb, var(--ink) 32%, transparent);
+    -webkit-backdrop-filter: blur(6px) saturate(120%); backdrop-filter: blur(6px) saturate(120%);
+    animation: vtCkFade 260ms var(--ease-out) both;
+}
+:root .cl-modalContent { animation: vtCkIn 560ms cubic-bezier(.22, 1, .36, 1) both; }
+@media (max-width: 40rem) { :root .cl-modalContent { margin: 12px 0; } }
+:root .cl-modalContent .cl-cardBox {
+    max-width: calc(100vw - 24px); border: 1px solid var(--rule); border-radius: var(--r-sheet, 24px);
+    background: radial-gradient(90% 60% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%), var(--paper-2);
+    box-shadow: 0 40px 90px -30px rgba(20, 14, 4, 0.5), var(--pop-shadow); color: var(--ink);
+}
+:root .cl-modalCloseButton {
+    width: 40px; height: 40px; border-radius: 999px; color: var(--ink-2); background: color-mix(in srgb, var(--paper-3) 80%, transparent);
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-long) var(--spring);
+}
+@media (hover: hover) { :root .cl-modalCloseButton:hover { background: var(--pill); color: var(--on-pill); transform: rotate(90deg); } }
+:root .cl-modalCloseButton:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+
+/* the tab rail: the app's own side panel */
+:root .cl-navbar {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, transparent), transparent 40%), var(--sidebar, var(--paper-3));
+    border-right: 1px solid var(--rule); padding: 22px 14px;
+}
+:root .cl-navbar h1 { font: 800 1.25rem/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); word-break: normal; overflow-wrap: normal; hyphens: none; }
+:root .cl-navbar h1 + p { font: 500 0.82rem/1.4 var(--font-body); color: var(--ink-2); }
+:root .cl-navbarButtons { gap: 4px; margin-top: 14px; }
+:root .cl-navbarButton {
+    position: relative; min-height: 44px; gap: 10px; padding: 8px 12px; border: 0; border-radius: var(--r-ctl);
+    background: transparent; color: var(--ink-2); font: 600 0.9rem/1.2 var(--font-body); opacity: 1;
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
+    animation: vtCkRise 420ms var(--ease-out) both;
+}
+:root .cl-navbarButtons > :nth-child(2) { animation-delay: 45ms; }
+:root .cl-navbarButtons > :nth-child(3) { animation-delay: 90ms; }
+:root .cl-navbarButtons > :nth-child(4) { animation-delay: 135ms; }
+:root .cl-navbarButtons > :nth-child(5) { animation-delay: 180ms; }
+:root .cl-navbarButtons > :nth-child(n+6) { animation-delay: 225ms; }
+:root .cl-navbarButton::before {   /* the current tab's bar */
+    content: ""; position: absolute; left: 3px; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--accent);
+    transform: scaleY(0); transition: transform var(--dur-long) var(--spring);
+}
+:root :is(.cl-navbarButtonIcon, .cl-navbarButton .vt-ck-icon) { width: 16px; height: 16px; flex-shrink: 0; color: var(--muted); opacity: 1; transition: color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring); }
+@media (hover: hover) {
+    :root .cl-navbarButton:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--ink); }
+    :root .cl-navbarButton:hover :is(.cl-navbarButtonIcon, .vt-ck-icon) { color: var(--accent-ink); transform: scale(1.12) rotate(-6deg); }
+}
+:root .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) { background: var(--accent-soft); color: var(--accent-ink); }
+:root .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"])::before { transform: scaleY(1); }
+:root .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) :is(.cl-navbarButtonIcon, .vt-ck-icon) { color: var(--accent-ink); }
+:root .cl-navbarButton:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+:root .cl-navbar .cl-footer { opacity: 0.85; }
+:root .cl-navbar .cl-footer :is(p, a, span) { color: var(--muted); }
+
+/* on phones Clerk folds the rail into a menu row */
+:root .cl-navbarMobileMenuRow { padding: 10px 14px; background: var(--sidebar, var(--paper-3)); border-bottom: 1px solid var(--rule); }
+:root .cl-navbarMobileMenuButton {
+    min-height: 44px; padding: 0 16px; border: 1px solid var(--rule-2); border-radius: 999px;
+    background: var(--paper-2); color: var(--ink); font: 600 0.9rem var(--font-body);
+}
+
+/* the page beside the rail */
+:root .cl-modalContent .cl-scrollBox { background: transparent; box-shadow: none; border: 0; border-radius: 0; }
+:root .cl-pageScrollBox { padding: 28px 30px 34px; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
+@media (max-width: 40rem) { :root .cl-pageScrollBox { padding: 20px 16px 26px; } }
+:root .cl-pageScrollBox > * { animation: vtCkPage 440ms cubic-bezier(.22, 1, .36, 1) both; }
+:root .cl-page { gap: 22px; }
+:root :is(.cl-page, .cl-profilePage) > * { animation: vtCkRise 460ms var(--ease-out) both; }
+:root :is(.cl-page, .cl-profilePage) > :nth-child(2) { animation-delay: 50ms; }
+:root :is(.cl-page, .cl-profilePage) > :nth-child(3) { animation-delay: 100ms; }
+:root :is(.cl-page, .cl-profilePage) > :nth-child(4) { animation-delay: 150ms; }
+:root :is(.cl-page, .cl-profilePage) > :nth-child(n+5) { animation-delay: 200ms; }
+:root :is(.cl-page .cl-headerTitle, .vt-ck-head h1) { margin: 0; font: 800 clamp(1.3rem, 1.1rem + 0.8vw, 1.6rem)/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); }
+:root :is(.cl-page .cl-headerSubtitle, .vt-ck-head p) { margin: 4px 0 0; font: 400 0.9rem/1.5 var(--font-body); color: var(--ink-2); text-wrap: pretty; }
+:root .cl-profileSection { padding-top: 18px; border-top: 1px solid var(--rule); }
+:root .cl-profileSectionTitleText { font: 700 0.86rem/1.3 var(--font-body); color: var(--ink); }
+:root .cl-profileSectionContent { color: var(--ink-2); }
+:root .cl-profileSectionItem { border-radius: var(--r-ctl); }
+:root .cl-profileSectionPrimaryButton {
+    min-height: 40px; border: 0; background: transparent; border-radius: var(--r-ctl); color: var(--accent-ink); font: 600 0.86rem var(--font-body);
+    transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
+}
+@media (hover: hover) { :root .cl-profileSectionPrimaryButton:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); transform: translateX(2px); } }
+:root .cl-profileSectionPrimaryButton__danger, :root .cl-profileSectionPrimaryButton[data-color="danger"] { color: var(--bad); }
+
+/* Clerk's buttons, inputs and badges in Vettly's own dress */
+:root .cl-modalContent .cl-formButtonPrimary {
+    min-height: 40px; padding: 0 18px; border: 0; border-radius: var(--r-ctl);
+    background: var(--accent); background-image: none; color: var(--on-accent);
+    font: 700 0.88rem var(--font-body); text-transform: none; letter-spacing: 0;
+    box-shadow: 0 8px 18px -10px rgba(var(--accent-rgb), 0.75);
+    transition: transform var(--dur-short) var(--spring), box-shadow var(--dur-short) var(--ease-out), filter var(--dur-short) var(--ease-out);
+}
+@media (hover: hover) { :root .cl-modalContent .cl-formButtonPrimary:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 12px 24px -10px rgba(var(--accent-rgb), 0.8); } }
+:root .cl-modalContent .cl-formButtonReset { min-height: 40px; padding: 0 16px; border: 0; background: transparent; border-radius: var(--r-ctl); color: var(--ink-2); font: 600 0.88rem var(--font-body); }
+@media (hover: hover) { :root .cl-modalContent .cl-formButtonReset:hover { background: var(--paper-3); color: var(--ink); } }
+:root .cl-modalContent .cl-formFieldInput {
+    min-height: 40px; border-radius: var(--r-input); background: var(--field); color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--rule-2); transition: box-shadow var(--dur-short) var(--ease-out);
+}
+:root .cl-modalContent .cl-formFieldInput:focus { box-shadow: inset 0 0 0 1.5px var(--accent), 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); outline: none; }
+:root .cl-modalContent .cl-badge { border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); box-shadow: none; font: 700 0.7rem/1 var(--font-body); padding: 4px 9px; }
+:root .cl-modalContent :is(.cl-menuList, .cl-selectOptionsContainer) { border: 1px solid var(--rule); border-radius: var(--r-ctl); background: var(--paper-2); box-shadow: var(--pop-shadow); }
+
+/* ═══ Our tabs: Key Ring · Your look · Your data ═══ */
+.vt-ck-page { display: grid; gap: 22px; min-width: 0; color: var(--ink); font: 400 0.95rem/1.5 var(--font-body); container-type: inline-size; }
+.vt-ck-page > * { animation: vtCkRise 460ms var(--ease-out) both; }
+.vt-ck-page > :nth-child(2) { animation-delay: 60ms; }
+.vt-ck-page > :nth-child(3) { animation-delay: 120ms; }
+.vt-ck-page > :nth-child(n+4) { animation-delay: 180ms; }
+.vt-ck-head { display: grid; gap: 0; }
+.vt-ck-section { display: grid; gap: 12px; padding-top: 18px; border-top: 1px solid var(--rule); min-width: 0; }
+.vt-ck-section h2 { margin: 0; font: 700 0.86rem/1.3 var(--font-body); color: var(--ink); }
+.vt-ck-row { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; }
+.vt-ck-row > p { display: grid; gap: 3px; margin: 0; flex: 1 1 240px; min-width: 0; }
+.vt-ck-row > p b { font: 700 0.92rem/1.3 var(--font-body); color: var(--ink); }
+.vt-ck-row > p span { font-size: 0.86rem; line-height: 1.5; color: var(--ink-2); text-wrap: pretty; }
+.vt-ck-icon { display: inline-grid; place-items: center; color: inherit; }
+.vt-ck-icon svg { width: 16px; height: 16px; }
+
+/* buttons: quiet by default, the danger one in red, armed in solid red */
+.vt-ck-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px;
+    border: 1px solid var(--rule-2); border-radius: var(--r-ctl); background: var(--paper); color: var(--ink);
+    font: 600 0.88rem/1.1 var(--font-body); cursor: pointer; white-space: nowrap;
+    transition: border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring), box-shadow var(--dur-short) var(--ease-out);
+}
+.vt-ck-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+@media (hover: hover) { .vt-ck-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent-ink); transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(var(--accent-rgb), 0.6); } }
+.vt-ck-btn:active:not(:disabled) { transform: translateY(1px) scale(0.98); }
+.vt-ck-btn:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+.vt-ck-btn:disabled { opacity: 0.6; cursor: progress; }
+.vt-ck-btn-danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+@media (hover: hover) { .vt-ck-btn-danger:hover:not(:disabled) { border-color: var(--bad); color: var(--bad); background: var(--bad-bg, color-mix(in srgb, var(--bad) 10%, transparent)); box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--bad) 70%, transparent); } }
+.vt-ck-btn-danger[data-armed], .vt-ck-btn-danger[data-armed]:hover:not(:disabled) { background: var(--bad); border-color: var(--bad); color: #fff; animation: vtCkNudge 420ms var(--spring); }
+.vt-ck-danger { padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--bad) 28%, transparent); border-radius: var(--r-card); background: color-mix(in srgb, var(--bad) 6%, transparent); }
+
+/* Day / Night: the same segmented switch as the Look Book */
+.vt-ck-modes { display: inline-flex; flex-wrap: wrap; gap: 4px; width: fit-content; max-width: 100%; padding: 4px; border: 1px solid var(--rule); border-radius: 999px; background: var(--paper-3); }
+.vt-ck-modes button {
+    display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 16px; border: 0; border-radius: 999px;
+    background: none; color: var(--ink-2); font: 600 0.86rem var(--font-body); cursor: pointer;
+    transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
+}
+.vt-ck-modes button svg { width: 15px; height: 15px; }
+.vt-ck-modes button[aria-checked="true"] { background: var(--pill); color: var(--on-pill); box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.45); }
+@media (hover: hover) { .vt-ck-modes button:not([aria-checked="true"]):hover { background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--ink); } }
+.vt-ck-modes button:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+@container (max-width: 340px) {   /* small phones: three equal segments, words only */
+    .vt-ck-modes { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; box-sizing: border-box; }
+    .vt-ck-modes button { justify-content: center; padding: 0 6px; font-size: 0.8rem; }
+    .vt-ck-modes button svg { display: none; }
+}
+
+/* the nine looks: a grid of little pages, the chosen one ticked */
+.vt-ck-looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(124px, 1fr)); gap: 10px; }
+.vt-ck-look {
+    position: relative; display: grid; gap: 6px; padding: 7px 7px 9px; min-height: 44px; text-align: left;
+    border: 1px solid var(--rule); border-radius: min(calc(var(--r-ctl) + 4px), 18px); background: var(--paper); color: var(--ink); cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring), box-shadow var(--dur-short) var(--ease-out);
+    animation: vtCkRise 420ms var(--ease-out) both;
+}
+.vt-ck-look:nth-child(2) { animation-delay: 30ms; } .vt-ck-look:nth-child(3) { animation-delay: 60ms; }
+.vt-ck-look:nth-child(4) { animation-delay: 90ms; } .vt-ck-look:nth-child(5) { animation-delay: 120ms; }
+.vt-ck-look:nth-child(6) { animation-delay: 150ms; } .vt-ck-look:nth-child(7) { animation-delay: 180ms; }
+.vt-ck-look:nth-child(8) { animation-delay: 210ms; } .vt-ck-look:nth-child(n+9) { animation-delay: 240ms; }
+.vt-ck-look .look-thumb { height: 70px; margin: 0; border-radius: min(calc(var(--r-ctl) * 0.7), 12px); padding: 6px; gap: 5px; }
+.vt-ck-look .look-thumb .s { gap: 4px; padding: 5px 4px; }
+.vt-ck-look .look-thumb .h { height: 9px; }
+.vt-ck-look b { padding: 0 3px; font: 600 0.8rem/1.25 var(--font-body); }
+.vt-ck-look[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 10px 22px -14px rgba(var(--accent-rgb), 0.7); }
+.vt-ck-look[aria-checked="true"]::after {   /* the tick */
+    content: ""; position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 13px no-repeat;
+    box-shadow: 0 0 0 2px var(--paper-2); animation: vtCkTick 420ms var(--spring) both;
+}
+@media (hover: hover) {
+    .vt-ck-look:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--rule)); transform: translateY(-3px); box-shadow: var(--card-shadow-hover, var(--card-shadow)); }
+    .vt-ck-look:hover .look-thumb .c:first-child { transform: translateY(-2px) rotate(-2deg); }
+    .vt-ck-look:hover .look-thumb .c:last-child { transform: translateY(-1px) rotate(2deg); }
+}
+.vt-ck-look:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 3px; }
+
+/* the Key Ring inside the window: no second card, no second title (the page head says it) */
+.vt-ck-kr { min-width: 0; }
+:root .vt-ck-kr > .toolbelt-card-header { justify-content: flex-start; margin: 0 0 12px; padding: 0; border: 0; }
+:root .vt-ck-kr > .toolbelt-card-header h3, :root .vt-ck-kr > .toolbelt-card-desc { display: none; }
+
+/* ═══ Each look's signature ═══ */
+/* Poster Classic: a strip of tape on the window, poster type, grid paper on the rail */
+:root[data-look="classic"] .cl-modalContent::before {
+    content: ""; position: absolute; z-index: 3; top: -11px; left: 50%; width: 92px; height: 24px; margin-left: -46px; pointer-events: none;
+    background: var(--tape); transform: rotate(-3deg); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); border-left: 2px dashed rgba(0, 0, 0, 0.1);
+    animation: vtCkTape 700ms var(--spring) 240ms both;
+}
+:root[data-look="classic"] .cl-modalContent .cl-cardBox { border: 2px solid var(--rule-2); }
+:root[data-look="classic"] .cl-navbar { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 20px 20px; }
+:root[data-look="classic"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { text-transform: uppercase; letter-spacing: -0.03em; }
+:root[data-look="classic"] :is(.cl-modalContent .cl-formButtonPrimary, .vt-ck-btn) { font-family: var(--font-grotesk, var(--font-body)); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.8rem; }
+
+/* Register: ruled paper on the rail, a red margin by the page, a highlighter on the current tab */
+:root[data-look="register"] .cl-navbar { background-image: repeating-linear-gradient(180deg, transparent 0 31px, var(--grid-line) 31px 32px); }
+:root[data-look="register"] .cl-scrollBox { background-image: linear-gradient(90deg, transparent 14px, var(--pg-margin) 14px 15.5px, transparent 15.5px); }
+:root[data-look="register"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { font-weight: 700; font-size: 1.9rem; letter-spacing: 0; color: var(--reg-title, var(--ink)); }
+:root[data-look="register"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) { background: linear-gradient(transparent 52%, var(--reg-marker, color-mix(in srgb, var(--accent) 30%, transparent)) 52% 88%, transparent 88%); color: var(--ink); }
+:root[data-look="register"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"])::before { transform: scaleY(0); }
+:root.theme-dark[data-look="register"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) { background: linear-gradient(transparent 62%, color-mix(in srgb, var(--reg-title) 30%, transparent) 62% 90%, transparent 90%); color: var(--reg-title); }
+
+/* Studio Lab (default): frosted glass */
+:root[data-look="studio"] .cl-modalContent .cl-cardBox { background-color: color-mix(in srgb, var(--paper-2) 88%, transparent); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
+
+/* Blueprint: a drafting grid, corner ticks, mono labels, a dashed current tab */
+:root[data-look="blueprint"] .cl-modalContent .cl-cardBox {
+    border-color: var(--rule-2);
+    background-image: linear-gradient(var(--grid-line-2) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line-2) 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+:root[data-look="blueprint"] .cl-modalContent::after {   /* corner ticks */
+    content: ""; position: absolute; inset: -5px; pointer-events: none; z-index: 3;
+    background-image: linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)),
+        linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent)), linear-gradient(var(--accent), var(--accent));
+    background-size: 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px, 14px 2px, 2px 14px;
+    background-position: left top, left top, right top, right top, left bottom, left bottom, right bottom, right bottom;
+    background-repeat: no-repeat;
+}
+:root[data-look="blueprint"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; letter-spacing: 0.01em; font-size: 1.2rem; }
+:root[data-look="blueprint"] :is(.cl-navbarButton, .cl-modalContent .cl-formButtonPrimary, .vt-ck-btn, .vt-ck-section h2, .cl-profileSectionTitleText) { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.76rem; }
+:root[data-look="blueprint"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) { background: color-mix(in srgb, var(--accent) 8%, transparent); box-shadow: inset 0 0 0 1px var(--accent); outline: 1px dashed var(--rule-2); outline-offset: 3px; }
+:root[data-look="blueprint"] .cl-userButtonPopoverCard { border-color: var(--rule-2); }
+
+/* Bubblegum: sticker outlines and hard offset shadows */
+:root[data-look="bubblegum"] :is(.cl-modalContent .cl-cardBox, .cl-userButtonPopoverCard) { border: 2px solid var(--sticker); box-shadow: 8px 8px 0 var(--sticker); }
+:root[data-look="bubblegum"] .cl-navbar { border-right: 2px solid var(--sticker); }
+:root[data-look="bubblegum"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"]) { box-shadow: inset 0 0 0 2px var(--sticker), 3px 3px 0 var(--sticker); }
+:root[data-look="bubblegum"] .cl-navbarButton:is([data-active], .cl-active, [aria-current="page"])::before { transform: scaleY(0); }
+:root[data-look="bubblegum"] :is(.cl-modalContent .cl-formButtonPrimary, .vt-ck-btn) { border: 2px solid var(--sticker); box-shadow: 3px 3px 0 var(--sticker); }
+:root[data-look="bubblegum"] .vt-ck-look { border: 1.5px solid color-mix(in srgb, var(--sticker) 55%, transparent); }
+:root[data-look="bubblegum"] :is(.cl-modalContent .cl-formButtonPrimary, .vt-ck-btn):active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--sticker); }
+:root[data-look="bubblegum"] .vt-ck-look[aria-checked="true"] { box-shadow: 0 0 0 2px var(--accent), 4px 4px 0 var(--sticker); }
+:root[data-look="bubblegum"] .vt-ck-modes { border: 2px solid var(--sticker); }
+:root[data-look="bubblegum"] .cl-modalCloseButton { border: 2px solid var(--sticker); }
+
+/* Sakura: italic serif titles, round tabs, washi fibres on the rail */
+:root[data-look="sakura"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { font-family: var(--sk-head, var(--font-display)); font-style: italic; font-weight: 400; font-size: 1.85rem; letter-spacing: -0.01em; }
+:root[data-look="sakura"] .cl-navbar { background-image: repeating-linear-gradient(83deg, var(--grid-line) 0 1px, transparent 1px 17px), repeating-linear-gradient(-7deg, var(--grid-line) 0 1px, transparent 1px 23px); }
+:root[data-look="sakura"] .cl-modalContent::before {   /* a blossom on the window's corner */
+    content: ""; position: absolute; z-index: 3; top: -20px; right: 18px; width: 120px; height: 56px; pointer-events: none; transform-origin: 100% 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 70'%3E%3Cpath d='M150 8C110 14 80 30 40 62' stroke='%238a5a4a' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M100 22c-6 10-4 18 6 22' stroke='%238a5a4a' stroke-width='2' fill='none'/%3E%3Cg fill='%23f6a5bd'%3E%3Ccircle cx='60' cy='48' r='7'/%3E%3Ccircle cx='96' cy='26' r='8'/%3E%3Ccircle cx='128' cy='14' r='6'/%3E%3Ccircle cx='106' cy='46' r='6'/%3E%3C/g%3E%3Cg fill='%23ffd9e4'%3E%3Ccircle cx='60' cy='48' r='3'/%3E%3Ccircle cx='96' cy='26' r='3.5'/%3E%3Ccircle cx='128' cy='14' r='2.5'/%3E%3Ccircle cx='106' cy='46' r='2.5'/%3E%3C/g%3E%3C/svg%3E") right top / contain no-repeat;
+    animation: vtCkSway 6s var(--ease-in-out) infinite alternate;
+}
+:root:is([data-look="sakura"], [data-look="lavender"], [data-look="strawberry"], [data-look="mermaid"]) :is(.cl-navbarButton, .cl-modalContent .cl-formButtonPrimary, .vt-ck-btn) { border-radius: 999px; }
+:root:is([data-look="sakura"], [data-look="lavender"], [data-look="strawberry"], [data-look="mermaid"]) .cl-navbarButton::before { left: 6px; }
+
+/* Lavender Dream: dream glass over lilac skies */
+:root[data-look="lavender"] .cl-modalContent .cl-cardBox {
+    border-color: var(--card-border, var(--rule));
+    background: radial-gradient(50% 45% at 0% 0%, var(--dream-a), transparent 70%), radial-gradient(45% 45% at 100% 10%, var(--dream-b), transparent 70%), radial-gradient(60% 50% at 50% 110%, var(--dream-c), transparent 70%), color-mix(in srgb, var(--paper-2) 82%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(160%); backdrop-filter: blur(20px) saturate(160%);
+}
+:root[data-look="lavender"] .cl-navbar {   /* solid: on phones this rail slides over the page as a drawer */
+    background: radial-gradient(90% 45% at 0% 0%, var(--dream-a), transparent 70%), radial-gradient(80% 40% at 40% 105%, var(--dream-c), transparent 70%), var(--paper-2);
+}
+:root[data-look="lavender"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { background: linear-gradient(90deg, var(--ink), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-look="lavender"] .cl-modalContent .cl-formButtonPrimary { background-image: linear-gradient(120deg, var(--accent), var(--accent-2, var(--accent))); }
+
+/* Strawberry Milk: cream window, a scalloped trim under the rail's title */
+:root[data-look="strawberry"] .cl-modalContent .cl-cardBox { border-color: var(--card-border, var(--rule)); background: var(--card-bg, var(--paper-2)); }
+:root[data-look="strawberry"] .cl-navbar { background-image: linear-gradient(90deg, var(--grid-line) 50%, transparent 50%), linear-gradient(var(--grid-line) 50%, transparent 50%); background-size: 30px 30px; }
+:root[data-look="strawberry"] .cl-navbarButtons { position: relative; padding-top: 14px; }
+:root[data-look="strawberry"] .cl-navbarButtons::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; pointer-events: none;
+    background: radial-gradient(circle at 6px 0, var(--rule-2) 0 5.5px, transparent 6px) 0 0 / 12px 8px repeat-x;
+}
+:root[data-look="strawberry"] .cl-modalContent .cl-formButtonPrimary { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 10px 20px -10px rgba(var(--accent-rgb), 0.7); }
+
+/* Mermaid Pearl: a pearl-shell edge that slowly turns */
+:root[data-look="mermaid"] .cl-modalContent .cl-cardBox {
+    border: 2px solid transparent;
+    background: radial-gradient(90% 60% at 100% 0%, color-mix(in srgb, var(--shell-a) 14%, transparent), transparent 60%) padding-box, linear-gradient(var(--paper-2), var(--paper-2)) padding-box,
+        conic-gradient(from var(--mp-angle, 0deg), var(--shell-a), var(--shell-b), var(--shell-c), var(--shell-d), var(--shell-a)) border-box;
+    animation: shellTurn 9s linear infinite;
+}
+:root[data-look="mermaid"] :is(.cl-navbar h1, .cl-page .cl-headerTitle, .vt-ck-head h1) { background: linear-gradient(90deg, var(--ink) 35%, color-mix(in srgb, var(--shell-b) 55%, var(--ink))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-look="mermaid"] .cl-modalContent .cl-formButtonPrimary { background-image: linear-gradient(120deg, rgba(255, 255, 255, 0.28), transparent 45%); }
+
+/* ═══ Motion ═══ */
+@keyframes vtCkFade { from { opacity: 0; } }
+@keyframes vtCkIn { from { opacity: 0; transform: translateY(22px) scale(0.97); } }
+@keyframes vtCkPop { from { opacity: 0; transform: translateY(6px) scale(0.94); } }
+@keyframes vtCkRise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes vtCkPage { from { opacity: 0; transform: translateX(10px); } }
+@keyframes vtCkTick { from { opacity: 0; transform: scale(0.3) rotate(-30deg); } }
+@keyframes vtCkNudge { 25% { transform: translateX(-3px); } 50% { transform: translateX(3px); } 75% { transform: translateX(-2px); } }
+@keyframes vtCkTape { from { opacity: 0; transform: translateY(-8px) rotate(-12deg) scale(0.8); } }
+@keyframes vtCkSway { to { transform: rotate(-3deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    :root :is(.cl-userButtonPopoverCard, .cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton, .cl-modalBackdrop, .cl-modalContent, .cl-modalContent .cl-cardBox, .cl-navbarButton, .cl-pageScrollBox > *, .cl-page > *, .cl-profilePage > *, .vt-ck-page > *, .vt-ck-look, .vt-ck-look::after, .vt-ck-btn-danger[data-armed], .cl-modalContent::before) { animation: none !important; }
+    :root :is(.cl-navbarButton, .cl-navbarButton::before, .cl-modalCloseButton, .vt-ck-btn, .vt-ck-look, .cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton) { transition: none !important; transform: none !important; }
+}
+:root[data-motion="calm"] :is(.cl-userButtonPopoverCard, .cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton, .cl-modalBackdrop, .cl-modalContent, .cl-modalContent .cl-cardBox, .cl-navbarButton, .cl-pageScrollBox > *, .cl-page > *, .cl-profilePage > *, .vt-ck-page > *, .vt-ck-look, .vt-ck-look::after, .vt-ck-btn-danger[data-armed], .cl-modalContent::before) { animation: none !important; }
+:root[data-motion="calm"] :is(.cl-modalCloseButton, .vt-ck-btn, .vt-ck-look, .cl-userButtonPopoverActionButton, .cl-userButtonPopoverCustomItemButton):hover { transform: none !important; }
