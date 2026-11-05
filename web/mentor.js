@@ -62,15 +62,17 @@ const mentorOrbit = (angle, extra = '') => ['m-ring', `m-run ${extra}`, `m-run m
 const MENTOR_EMBLEM = `
     <span class="m-orb-aura"></span>
     <span class="m-orb-sphere"></span>
-    <svg class="m-orb-art" viewBox="0 0 48 48" aria-hidden="true">
-        <circle class="m-bezel" cx="24" cy="24" r="21"/>
-        <g class="m-orbits">${mentorOrbit(-35)}${mentorOrbit(35, 'm-run-2')}</g>
-        <g class="m-star-group">
+    <span class="m-orb-art" aria-hidden="true">
+        <svg class="m-layer m-layer-bezel" viewBox="0 0 48 48"><circle class="m-bezel" cx="24" cy="24" r="21"/></svg>
+        <svg class="m-layer m-layer-orbits" viewBox="0 0 48 48"><g class="m-orbits">${mentorOrbit(-35)}${mentorOrbit(35, 'm-run-2')}</g></svg>
+        <svg class="m-layer m-layer-star" viewBox="0 0 48 48"><g class="m-star-group">
             <path class="m-halo" d="${MENTOR_HALO_48}"/>
             <path class="m-halo-trace" d="${MENTOR_HALO_48}" pathLength="100"/>
             <path class="m-star" d="${MENTOR_STAR_48}"/>
-        </g>
-    </svg>`;
+        </g></svg>
+    </span>`;
+// Each turning part is its own <svg>, turned as a whole: the compositor turns it, where turning a part inside one
+// SVG would make the browser re-lay out and repaint the emblem on every frame. Same parts, same order, same look.
 
 const MENTOR_STAR = '<svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg>';
 
@@ -94,7 +96,6 @@ function mentorEmptyHtml() {
         : n ? [[n, 'Explain it step by step'], [n, 'Likely follow-up questions'], [n, 'Give me a simple analogy']] : [];
     return `
         <div class="mentor-empty">
-            <span class="m-orb mentor-empty-orb">${MENTOR_EMBLEM}</span>
             <h4>${onCopilot ? 'Ask about any answer in this chat.' : 'Ask about any question you\'ve prepped.'}</h4>
             <p>${onCopilot
                 ? 'Pin an answer with Ask Doubt. The chat stays where it is while we dig in.'
@@ -171,6 +172,9 @@ function mentorToggle(open = document.getElementById('mentor').dataset.state !==
     const root = document.getElementById('mentor');
     const opening = open && root.dataset.state !== 'open';
     root.dataset.state = open ? 'open' : 'closed';
+    clearTimeout(mentor.restTimer);
+    if (open) root.classList.remove('at-rest');
+    else mentor.restTimer = setTimeout(() => { if (root.dataset.state === 'closed') root.classList.add('at-rest'); }, 800);   // after the close animation
     document.getElementById('mentor-orb').setAttribute('aria-expanded', open);
     document.body.classList.toggle('mentor-open', open);
     mentorStore.set(MENTOR_KEYS.open, open);
@@ -626,10 +630,14 @@ function mentorFlow() {
     const on = Boolean(el) && document.getElementById('mentor').classList.contains('split')
         && document.body.classList.contains('mentor-open') && !mentorDeskStacked();
     svg.classList.toggle('on', on);
+    clearTimeout(mentor.flowRest);
     if (!on) {
         mentor.flowing = false;
+        // after the fade-out, the beam stops drawing: CSS animations pause and so do its SMIL ones
+        mentor.flowRest = setTimeout(() => { if (svg.classList.contains('on')) return; svg.classList.add('at-rest'); svg.pauseAnimations(); mentor.flowPaused = true; }, 450);
         return;
     }
+    if (svg.classList.contains('at-rest')) { svg.classList.remove('at-rest'); mentor.flowPaused = null; }   // let the calm check below decide
     if (mentor.flowPaused !== mentorCalm()) {   // SVG (SMIL) animations ignore CSS, so pause them by hand
         mentor.flowPaused = mentorCalm();
         if (mentor.flowPaused) svg.pauseAnimations(); else svg.unpauseAnimations();
@@ -1014,4 +1022,6 @@ function mentorSpotlight(e) {
     new MutationObserver(mentorSnap).observe(document.documentElement, { attributes: true, attributeFilter: ['data-mentor-skin'] });
     mentorStampPage();
     if (mentorStore.get(MENTOR_KEYS.open, false)) mentorToggle(true, false);
+    else document.getElementById('mentor').classList.add('at-rest');
+    mentorFlowKick();   // settles the beam: off and at rest until a card is pinned
 })();

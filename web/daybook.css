@@ -27,7 +27,7 @@
 .db-card {
     position: relative; display: grid; align-content: start; gap: 10px; min-width: 0; padding: 20px 20px 18px;
     border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--card-bg, var(--paper-2)); box-shadow: var(--card-shadow);
-    animation: dbIn 620ms calc(var(--i, 0) * 70ms) var(--spring) both;
+    animation: dbIn 620ms calc(var(--i, 0) * 70ms) var(--spring) backwards;
 }
 @keyframes dbIn { from { opacity: 0; transform: translateY(16px) scale(.985); } }
 .db-kicker { font: 700 0.72rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-ink); }
@@ -54,7 +54,7 @@
 .db-flame.lit { color: var(--accent); animation: dbFlicker 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
 @keyframes dbFlicker { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(3deg); } }
 .db-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; padding: 0; list-style: none; }
-.db-week li { display: grid; justify-items: center; gap: 4px; animation: dbIn 500ms calc(200ms + var(--i) * 50ms) var(--spring) both; }
+.db-week li { display: grid; justify-items: center; gap: 4px; animation: dbIn 500ms calc(200ms + var(--i) * 50ms) var(--spring) backwards; }
 .db-week i { width: 100%; max-width: 34px; height: 34px; border-radius: 10px; border: 1.5px dashed var(--rule-2, var(--rule)); }
 .db-week li.on i { border: 0; background: var(--accent); box-shadow: inset 0 -4px 0 color-mix(in srgb, #000 15%, transparent); }
 .db-week li.today i { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -81,7 +81,7 @@
 .db-action-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 47.99rem) { .db-action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .db-action { display: grid; align-content: start; gap: 8px; min-height: 108px; padding: 14px; border: 1.5px solid var(--rule); border-radius: 16px; background: var(--paper); color: var(--ink); text-align: left; cursor: pointer;
-    animation: dbIn 520ms calc(300ms + var(--i) * 50ms) var(--spring) both;
+    animation: dbIn 520ms calc(300ms + var(--i) * 50ms) var(--spring) backwards;
     transition: transform var(--dur-short) var(--spring), border-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
 .db-action b { font: 700 0.95rem/1.25 var(--font-body); }
 .db-action-ico { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; background: var(--accent-soft); color: var(--accent-ink); }
@@ -95,7 +95,7 @@
 
 /* set up your desk */
 .db-checklist { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.db-checklist li { animation: dbIn 480ms calc(250ms + var(--i) * 45ms) var(--spring) both; }
+.db-checklist li { animation: dbIn 480ms calc(250ms + var(--i) * 45ms) var(--spring) backwards; }
 .db-checklist button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 10px; border: 0; border-radius: 12px; background: none; color: var(--ink); text-align: left; cursor: pointer; }
 .db-checklist button > svg { width: 16px; height: 16px; margin-left: auto; color: var(--muted); }
 .db-checklist button span:nth-child(2) { display: grid; gap: 2px; min-width: 0; }
@@ -103,7 +103,7 @@
 @media (hover: hover) { .db-checklist button:hover { background: var(--paper-3); } }
 .db-tick { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; border: 2px dashed var(--rule-2, var(--rule)); color: var(--paper-2); }
 .db-tick svg { width: 14px; height: 14px; }
-.db-checklist li.ok .db-tick { border: 0; background: var(--ok); animation: dbTick 500ms var(--spring) both; }
+.db-checklist li.ok .db-tick { border: 0; background: var(--ok); animation: dbTick 500ms var(--spring) backwards; }
 .db-checklist li.ok b { color: var(--muted); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--ok) 60%, transparent); }
 @keyframes dbTick { from { transform: scale(.4); } }
 
@@ -112,7 +112,7 @@
 .db-chain::before { content: ""; position: absolute; top: 19px; left: 12.5%; right: 12.5%; height: 2px; background: repeating-linear-gradient(90deg, var(--rule-2, var(--rule)) 0 4px, transparent 4px 7px); }
 .db-chain li { position: relative; display: grid; justify-items: center; gap: 6px; }
 .db-dot { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 2px dashed var(--rule-2, var(--rule)); background: var(--paper-2); color: var(--muted); font: 800 0.8rem var(--font-display); }
-.db-chain li.on .db-dot { border: 0; background: var(--tone-bg); color: var(--tone); box-shadow: 0 0 0 2px var(--ok); animation: dbTick 500ms calc(var(--i) * 80ms) var(--spring) both; }
+.db-chain li.on .db-dot { border: 0; background: var(--tone-bg); color: var(--tone); box-shadow: 0 0 0 2px var(--ok); animation: dbTick 500ms calc(var(--i) * 80ms) var(--spring) backwards; }
 .db-chain small { font: 600 0.74rem var(--font-body); color: var(--muted); }
 .db-chain li.on small { color: var(--ink); }
 

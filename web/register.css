@@ -32,7 +32,7 @@
 .reg-search input { flex: 1; min-width: 0; min-height: 38px; border: 0; background: none; color: inherit; font: 500 0.9rem var(--font-body); outline: none; }
 .reg-list { display: grid; align-content: start; gap: 2px; margin: 0; padding: 0; list-style: none; overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
 .reg-index > .reg-list { flex: 1; }
-.reg-list li { animation: regIn 420ms calc(var(--i, 0) * 35ms) var(--spring) both; }
+.reg-list li { animation: regIn 420ms calc(var(--i, 0) * 35ms) var(--spring) backwards; }
 @keyframes regIn { from { opacity: 0; transform: translateX(-8px); } }
 .reg-item { position: relative; display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 8px; align-items: start; width: 100%; padding: 9px 8px; border: 0; border-radius: 10px; background: none; color: inherit; text-align: left; cursor: pointer; }
 .reg-item-no { font: italic 400 1.15rem/1.2 'Instrument Serif', Georgia, serif; color: var(--cap); text-align: right; }
@@ -125,7 +125,7 @@
 .register[data-look="plain"] .chat-messages { padding: 20px 28px; background: none; }
 .register:not([data-look="plain"]) .chat-bubble {
     position: relative; max-width: 100%; align-self: stretch; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
-    color: var(--ink-ai); font: 400 1.27rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) both;
+    color: var(--ink-ai); font: 400 1.27rem/var(--line) var(--ink-font); animation: regInk 520ms var(--ease-out) backwards;
 }
 @keyframes regInk { from { opacity: 0; transform: translateY(4px); } }
 .register[data-look="ledger"] .chat-bubble { font-size: 1.08rem; }
@@ -237,7 +237,7 @@
     --ink-ai: var(--ink);   /* the stopwatch's styles read the book's ink; out here it is the page's ink */
     display: inline-flex; align-items: center; gap: 6px; padding: 4px; border: 1px solid var(--rule); border-radius: 999px;
     background: color-mix(in srgb, var(--card-bg, var(--paper-2)) 88%, transparent); box-shadow: var(--card-shadow); color: var(--ink);
-    animation: timebarIn 520ms var(--spring) both 120ms;
+    animation: timebarIn 520ms var(--spring) backwards 120ms;
 }
 @keyframes timebarIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 .reg-now { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px 0 6px; border-radius: 999px; background: var(--paper-3); }

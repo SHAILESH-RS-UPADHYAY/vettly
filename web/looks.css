@@ -76,7 +76,7 @@
     display: inline-block; position: absolute; top: -20px; right: 40px; z-index: 2;
     font: 700 22px/1 'Caveat', cursive; color: var(--scribble);
     transform: rotate(-2deg); filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
-    animation: scribbleIn 900ms var(--spring) 300ms both;
+    animation: scribbleIn 900ms var(--spring) 300ms backwards;
 }
 :root[data-look="classic"] .handwritten-note.left { right: auto; left: 40px; top: -15px; }
 @keyframes scribbleIn { from { opacity: 0; transform: rotate(-12deg) scale(0.7); } }

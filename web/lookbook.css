@@ -8,7 +8,7 @@
     box-shadow: 0 40px 90px -30px rgba(20, 14, 4, 0.55), var(--card-shadow);
 }
 .lookbook::backdrop { background: color-mix(in srgb, var(--ink) 32%, transparent); }
-.lookbook[open] { animation: lbIn 560ms cubic-bezier(.22, 1, .36, 1) both; }
+.lookbook[open] { animation: lbIn 560ms cubic-bezier(.22, 1, .36, 1) backwards; }
 @keyframes lbIn { from { opacity: 0; transform: translateY(18px) scale(.98); } }
 .lb-sheet { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 14px; height: 100%; padding: 22px 24px 18px; }
 

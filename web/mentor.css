@@ -15,7 +15,6 @@
 
 /* ─── 1. Tokens ───────────────────────────────────────────────────── */
 
-@property --m-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 
 :root {
     /* Accent: follows the app's accent theme in both modes (tokens.css) */
@@ -255,22 +254,22 @@
     background: radial-gradient(circle, var(--orb-aura), transparent 66%);
     animation: mBreathe 4.8s var(--m-ease) infinite;
 }
-.m-orb-sphere {
+.m-orb-sphere {                                                 /* the core; its sheen turns on a layer of its own */
     position: absolute; inset: 0; border-radius: 50%;
-    background:
-        radial-gradient(circle at 31% 25%, var(--orb-spec), transparent 32%),
-        conic-gradient(from var(--m-angle), transparent 0deg, var(--orb-sheen) 70deg, transparent 150deg, var(--orb-shade) 250deg, transparent 360deg),
-        radial-gradient(circle at 64% 76%, var(--orb-deep), var(--orb-core) 72%);
+    background: radial-gradient(circle at 64% 76%, var(--orb-deep), var(--orb-core) 72%);
     box-shadow: var(--orb-shadow);
-    animation: mSpin 10s linear infinite;
 }
-.m-orb-art { position: relative; width: 100%; height: 100%; overflow: visible; }
-.m-bezel {                                                      /* watch-bezel ticks, slowly turning */
-    fill: none; stroke: var(--orb-bezel); stroke-width: 0.8; stroke-dasharray: 0.7 2.6;
-    transform-box: view-box; transform-origin: 50% 50%;
-    animation: mTurn 26s linear infinite;
+.m-orb-sphere::before, .m-orb-sphere::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+.m-orb-sphere::before {                                         /* the sheen, turned by the compositor (was a turning gradient angle) */
+    background: conic-gradient(from 0deg, transparent 0deg, var(--orb-sheen) 70deg, transparent 150deg, var(--orb-shade) 250deg, transparent 360deg);
+    animation: mTurn 10s linear infinite;
 }
-.m-orbits { transform-box: view-box; transform-origin: 50% 50%; animation: mTurn 16s linear infinite; }
+.m-orb-sphere::after { background: radial-gradient(circle at 31% 25%, var(--orb-spec), transparent 32%); }   /* the highlight stays put */
+.m-orb-art { position: relative; display: block; width: 100%; height: 100%; }
+.m-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.m-layer-bezel { animation: mTurn 26s linear infinite; }      /* watch-bezel ticks, slowly turning */
+.m-layer-orbits { animation: mTurn 16s linear infinite; }
+.m-bezel { fill: none; stroke: var(--orb-bezel); stroke-width: 0.8; stroke-dasharray: 0.7 2.6; }
 .m-ring { fill: none; stroke: var(--orb-line); stroke-width: 0.8; }
 .m-run {                                                        /* comet tail racing along each orbit */
     fill: none; stroke: var(--orb-run); stroke-width: 1.2; stroke-linecap: round;
@@ -284,11 +283,8 @@
 }
 .m-run-2 { animation-duration: 3.8s; animation-direction: reverse; }
 .m-run-2.m-run-head { animation-delay: 0s; }                    /* running backwards, the lead is the dash start */
-.m-star-group {
-    transform-box: fill-box; transform-origin: center;
-    filter: var(--orb-star-fx);
-    animation: mTwinkle 4.8s var(--m-ease) infinite;
-}
+.m-star-group { filter: var(--orb-star-fx); }
+.m-layer-star { animation: mTwinkle 4.8s var(--m-ease) infinite; }   /* the sparkle is centred, so its layer twinkles about the same point */
 .m-star { fill: var(--orb-star); }
 .m-halo { fill: none; stroke: var(--orb-halo); stroke-width: 0.7; }
 .m-halo-trace {                                                 /* a spark tracing the sparkle's halo */
@@ -560,14 +556,6 @@
 /* ─── 7. Empty state: editorial, left-aligned ─────────────────────── */
 
 .mentor-empty { margin: auto 0; padding: 6px 4px 2px; display: flex; flex-direction: column; align-items: flex-start; }
-.mentor-empty-orb { --s: 54px; margin: 0 0 22px 4px; animation: mRise 0.9s var(--m-ease) backwards, mFloat 6s var(--m-ease) 0.9s infinite; }
-.mentor-empty-orb::before,
-.mentor-empty-orb::after {                                      /* two sparks orbiting the orb */
-    content: ""; position: absolute; top: 50%; left: 50%; border-radius: 50%; pointer-events: none;
-    background: var(--m-accent); box-shadow: 0 0 8px rgba(var(--m-accent-rgb), 0.9);
-}
-.mentor-empty-orb::before { width: 6px; height: 6px; margin: -3px; animation: mOrbit 5s linear infinite; }
-.mentor-empty-orb::after { width: 4px; height: 4px; margin: -2px; animation: mOrbitWide 7.5s linear infinite reverse; }
 .mentor-empty h4 {
     max-width: 21ch; margin-bottom: 10px;
     font-family: var(--m-serif); font-weight: 800; font-size: 24px; line-height: 1.1; letter-spacing: -0.025em;
@@ -744,6 +732,11 @@
    The same rules draw the animated previews in Settings (.pipe-demo[data-pipe]). */
 .mentor-flow { position: fixed; inset: 0; z-index: 899; width: 100%; height: 100%; pointer-events: none; opacity: 0; transition: opacity 0.4s var(--m-ease); }
 .mentor-flow.on { opacity: 1; }
+/* at rest: once the closed panel and the beam have finished fading out, their animations stop ticking
+   (nobody can see them, and they kept the browser repainting every frame). They pick up again on open. */
+.mentor.at-rest .mentor-panel *, .mentor.at-rest .mentor-panel *::before, .mentor.at-rest .mentor-panel *::after { animation-play-state: paused !important; }
+.mentor-flow.at-rest { visibility: hidden; }
+.mentor-flow.at-rest * { animation-play-state: paused !important; }
 :root[data-pipeline="off"] .mentor-flow { display: none; }
 :is(.mentor-flow, .pipe-demo) path { fill: none; stroke: var(--m-accent); stroke-linecap: round; }
 :is(.mentor-flow, .pipe-demo) .rail { stroke-width: 6; opacity: 0.12; }
@@ -849,7 +842,6 @@
 
 /* ─── 11. Keyframes ───────────────────────────────────────────────── */
 
-@keyframes mSpin { to { --m-angle: 360deg; } }
 @keyframes mRun { to { stroke-dashoffset: -100; } }
 @keyframes mTurn { to { rotate: 360deg; } }
 @keyframes mBreathe { 0%, 100% { opacity: 0.55; scale: 0.94; } 50% { opacity: 0.95; scale: 1.08; } }
@@ -862,7 +854,6 @@
 @keyframes mPop { from { opacity: 0; scale: 0.6; } }
 @keyframes mPopUp { from { opacity: 0; translate: 0 10px; scale: 0.97; } }
 @keyframes mReveal { from { opacity: 0; translate: 0 -10px; scale: 0.97; } }
-@keyframes mFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
 @keyframes mSheen { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 @keyframes mCaret { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 @keyframes mGlint { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
@@ -873,8 +864,6 @@
 @keyframes mSweep { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
 @keyframes mStarPop { 40% { scale: 1.9; rotate: 90deg; } 100% { scale: 1; rotate: 180deg; } }
 @keyframes mNudge { 40% { scale: 1.08; } }
-@keyframes mOrbit { from { transform: rotate(0deg) translateX(40px); } to { transform: rotate(360deg) translateX(40px); } }
-@keyframes mOrbitWide { from { transform: rotate(0deg) translateX(50px); } to { transform: rotate(360deg) translateX(50px); } }
 
 /* ─── 12. Reduced motion ──────────────────────────────────────────── */
 
