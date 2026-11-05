@@ -500,7 +500,7 @@
 .mentor-fit-btn { display: none; color: var(--m-accent-ink); border-color: rgba(var(--m-accent-rgb), 0.4); }
 .mentor.custom .mentor-fit-btn { display: grid; animation: mPop 0.55s var(--m-spring); }
 .mentor-fit-btn:hover { color: var(--m-accent-ink); border-color: rgba(var(--m-accent-rgb), 0.7); }
-.mentor-fit-btn:hover svg { transform: scale(0.8); }
+.mentor-fit-btn:hover svg { transform: rotate(-220deg); }   /* the ↻ winds back to the default size and place */
 
 
 /* ─── 6. Conversation ─────────────────────────────────────────────── */
