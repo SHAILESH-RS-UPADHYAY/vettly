@@ -502,6 +502,47 @@ function prepVisible() {
     return rows;
 }
 
+// ── Answers that read well: real lists, bold labels, short paragraphs; long answers fold under a soft fade ──
+const PREP_LONG_WORDS = 140;
+const prepSentences = t => t.split(/(?<=[.!?]["')\]]?)\s+(?=["'(\[]?[A-Z0-9])/);
+function prepAnswerMd(text) {
+    let t = String(text || '').replace(/\r\n?/g, '\n').trim();
+    // inline bullets ("...to solve them: • EVES: ... • RADAR: ...") become a list; "Label:" at an item's start goes bold
+    if (/(^|\s)•\s/.test(t)) {
+        const parts = t.split(/\s*•\s+/), intro = parts.shift().trim();
+        let items = parts.map(x => x.trim()).filter(Boolean), tail = '';
+        if (items.length) {   // the last item often runs on into the closing thought: it keeps about one point's worth
+            const sents = prepSentences(items[items.length - 1]);
+            let keep = 1; while (keep < sents.length && sents.slice(0, keep).join(' ').length < 140) keep++;
+            if (keep < sents.length) { items[items.length - 1] = sents.slice(0, keep).join(' '); tail = sents.slice(keep).join(' '); }
+        }
+        items = items.map(x => x.replace(/^([A-Z][\w .&/+'-]{1,40}?):\s+/, '**$1:** '));
+        t = [intro, items.map(x => `- ${x}`).join('\n'), tail].filter(Boolean).join('\n\n');
+    }
+    // a long paragraph (not a list, quote, table or code) breaks every few sentences
+    return t.split(/\n{2,}/).map(block => {
+        if (block.length < 420 || /^(\s*[-*+]\s|\s*\d+[.)]\s|>|```|\|)/.test(block)) return block;
+        const out = []; let cur = '';
+        for (const sentence of prepSentences(block)) { cur = cur ? `${cur} ${sentence}` : sentence; if (cur.length > 300) { out.push(cur); cur = ''; } }
+        if (cur) out.push(cur);
+        return out.join('\n\n');
+    }).join('\n\n');
+}
+function prepAnswerHtml(text) {
+    const md = prepAnswerMd(text);
+    if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') return md.split(/\n{2,}/).map(p => `<p>${escapeHtml(p)}</p>`).join('');
+    return DOMPurify.sanitize(marked.parse(md, { breaks: true, gfm: true }));
+}
+const prepWords = text => (String(text || '').trim().match(/\S+/g) || []).length;
+const prepSpoken = words => words < 140 ? 'under a minute spoken' : `about ${Math.round(words / 140)} min spoken`;
+// a new or refined answer is written in, block by block, like ink from a nib
+function prepInkAnswer(el) {
+    if (!el || Motion.calm()) return;
+    el.querySelectorAll(':scope > :is(p, blockquote, pre, table), :scope > :is(ul, ol) > li').forEach((b, k) => b.animate(
+        [{ opacity: 0, clipPath: 'inset(0 100% 0 0)', transform: 'translateY(4px)' }, { opacity: 1, clipPath: 'inset(0 0 0 0)', transform: 'none' }],
+        { duration: 560, delay: Math.min(k, 10) * 150, easing: 'cubic-bezier(0.45, 0.05, 0.3, 1)', fill: 'backwards' }));
+}
+
 function prepCardHtml(e, i, k) {
     const n = i + 1;
     const [, catLabel, tone, icon] = prepCat(e.category);
@@ -511,8 +552,10 @@ function prepCardHtml(e, i, k) {
     const hidden = prep.f.view === 'cards' && !prep.open.has(i) && !fresh;
     const score = Number(e.score) > 0 ? `<span class="q-score" title="Answer score"><svg aria-hidden="true"><use href="#i-star"/></svg>${e.score}/10</span>` : '';
     const stateClass = { accept: 'badge-pill-emerald', reject: 'badge-pill-rose', review: 'badge-pill-slate' }[st];
+    const words = prepWords(e.answer), long = words > PREP_LONG_WORDS;
     return `
     <article class="prep-card q-card${fresh ? ' newly-generated' : ''}${st === 'accept' ? ' is-accepted' : st === 'reject' ? ' is-rejected' : ''}" id="prep-card-${i}" data-key="${i}" data-tone="${tone}" style="--i:${Math.min(k, 10)}">
+      <div class="q-body">
         <header class="q-head">
             <span class="badge-pill q-no">Q${n}</span>
             <span class="tone-pill" data-tone="${tone}"><svg aria-hidden="true"><use href="#i-${icon}"/></svg>${escapeHtml(catLabel)}</span>
@@ -524,18 +567,23 @@ function prepCardHtml(e, i, k) {
         <p class="q-text" id="prep-q-${i}">${escapeHtml(e.question)}</p>
         <div class="q-answer${hidden ? ' is-hidden' : ''}">
             ${hidden ? `<button type="button" class="q-reveal" data-reveal="${i}"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Reveal the answer</button>` : ''}
-            <div class="q-ans-body">
-                <span class="q-ans-label"><span class="v-classic">Model spoken delivery</span><span class="v-alt">Model answer</span></span>
-                <p class="q-ans" id="prep-a-${i}">${escapeHtml(e.answer || '')}</p>
+            <div class="q-ans-body${long ? ' is-long' : ''}${long && prep.read?.has(i) ? ' is-open' : ''}">
+                <div class="q-ans-top">
+                    <span class="q-ans-label"><span class="v-classic">Model spoken delivery</span><span class="v-alt">Model answer</span></span>
+                    ${words ? `<span class="q-ans-meta">${words} words · ${prepSpoken(words)}</span>` : ''}
+                </div>
+                <div class="q-ans" id="prep-a-${i}">${prepAnswerHtml(e.answer)}</div>
+                ${long ? `<button type="button" class="q-more" data-more="${i}" aria-expanded="${!!prep.read?.has(i)}" aria-controls="prep-a-${i}"><span>${prep.read?.has(i) ? 'Show less' : 'Read the full answer'}</span><svg aria-hidden="true"><use href="#i-caret-down"/></svg></button>` : ''}
             </div>
         </div>
         <footer class="q-actions">
-            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
-            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
-            <button type="button" class="q-btn q-refine" data-refine="${i}"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
+            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}" aria-label="Accept this answer"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
+            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}" aria-label="Reject this answer"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
+            <button type="button" class="q-btn q-refine" data-refine="${i}" aria-label="Refine this answer"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
             <button type="button" class="q-btn prep-btn prep-btn-mentor" data-mentor="${n}" title="Pin Q${n} to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor</span></button>
             <button type="button" class="q-btn q-copy" data-copy="${i}" aria-label="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg><span class="q-copy-text">Copy</span></button>
         </footer>
+      </div>
     </article>`;
 }
 
@@ -702,7 +750,7 @@ async function loadPrepQuestions() {
             const aEl = document.getElementById(`prep-a-${lastIndex}`);
             if (cardEl) requestAnimationFrame(() => cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
             if (qEl) typewriteText(qEl, entries[lastIndex].question);
-            if (aEl) typewriteText(aEl, entries[lastIndex].answer);
+            prepInkAnswer(aEl);
             Motion.burst(cardEl?.querySelector('.q-fresh'), 14);
         }
     } catch (e) { /* offline: the skeleton stays until the next load */ }
@@ -768,7 +816,7 @@ async function refinePrepAnswer(index) {
         });
         await loadPrepQuestions();
         const a = document.getElementById(`prep-a-${index}`);
-        if (a && prep.entries[index]) typewriteText(a, prep.entries[index].answer);
+        prepInkAnswer(a);
     } catch (e) { alert('Refine failed: ' + e.message); }
 }
 
@@ -813,6 +861,17 @@ async function prepCopy(index, btn) {
         else if (b.dataset.refine) refinePrepAnswer(Number(b.dataset.refine));
         else if (b.dataset.mentor) mentorPinPrep(Number(b.dataset.mentor));
         else if (b.dataset.copy) prepCopy(Number(b.dataset.copy), b);
+        else if (b.dataset.more) {   // Read the full answer / Show less: the height eases between the two
+            const i = Number(b.dataset.more), body = b.closest('.q-ans-body'), ans = body.querySelector('.q-ans');
+            const open = !body.classList.contains('is-open');
+            prep.read ||= new Set(); if (open) prep.read.add(i); else prep.read.delete(i);
+            const from = ans.offsetHeight;
+            body.classList.toggle('is-open', open);
+            b.setAttribute('aria-expanded', String(open)); b.querySelector('span').textContent = open ? 'Show less' : 'Read the full answer';
+            const to = ans.offsetHeight;
+            if (!Motion.calm()) ans.animate([{ height: `${from}px`, overflow: 'hidden' }, { height: `${to}px`, overflow: 'hidden' }], { duration: 440, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+            if (!open) b.closest('.q-card').scrollIntoView({ block: 'nearest', behavior: Motion.calm() ? 'auto' : 'smooth' });
+        }
         else if (b.dataset.reveal) {
             const i = Number(b.dataset.reveal);
             prep.open.add(i);

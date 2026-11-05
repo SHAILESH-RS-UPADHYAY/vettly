@@ -24,7 +24,7 @@
     background: radial-gradient(120% 70% at 100% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%), var(--paper-2);
     box-shadow: var(--pop-shadow); color: var(--ink);
     transform-origin: var(--vt-ck-origin, 0% 100%);
-    animation: vtCkPop 340ms var(--spring) both;
+    animation: vtCkPop 340ms var(--spring) backwards;
 }
 :root .cl-userButtonPopoverMain { background: transparent; box-shadow: none; border: 0; border-radius: 0; }
 :root .cl-userButtonPopoverCard .cl-userPreview { gap: 12px; padding: 16px 16px 12px; }
@@ -36,7 +36,7 @@
     min-height: 44px; gap: 12px; padding: 6px 10px; border: 0; border-radius: var(--r-ctl);
     background: transparent; color: var(--ink); font: 600 0.9rem/1.2 var(--font-body);
     transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
-    animation: vtCkRise 380ms var(--ease-out) both;
+    animation: vtCkRise 380ms var(--ease-out) backwards;
 }
 :root .cl-userButtonPopoverActions > :nth-child(2) { animation-delay: 40ms; }
 :root .cl-userButtonPopoverActions > :nth-child(3) { animation-delay: 80ms; }
@@ -69,9 +69,9 @@
 :root .cl-modalBackdrop {
     background: color-mix(in srgb, var(--ink) 32%, transparent);
     -webkit-backdrop-filter: blur(6px) saturate(120%); backdrop-filter: blur(6px) saturate(120%);
-    animation: vtCkFade 260ms var(--ease-out) both;
+    animation: vtCkFade 260ms var(--ease-out) backwards;
 }
-:root .cl-modalContent { animation: vtCkIn 560ms cubic-bezier(.22, 1, .36, 1) both; }
+:root .cl-modalContent { animation: vtCkIn 560ms cubic-bezier(.22, 1, .36, 1) backwards; }
 @media (max-width: 40rem) { :root .cl-modalContent { margin: 12px 0; } }
 :root .cl-modalContent .cl-cardBox {
     max-width: calc(100vw - 24px); border: 1px solid var(--rule); border-radius: var(--r-sheet, 24px);
@@ -97,7 +97,7 @@
     position: relative; min-height: 44px; gap: 10px; padding: 8px 12px; border: 0; border-radius: var(--r-ctl);
     background: transparent; color: var(--ink-2); font: 600 0.9rem/1.2 var(--font-body); opacity: 1;
     transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring);
-    animation: vtCkRise 420ms var(--ease-out) both;
+    animation: vtCkRise 420ms var(--ease-out) backwards;
 }
 :root .cl-navbarButtons > :nth-child(2) { animation-delay: 45ms; }
 :root .cl-navbarButtons > :nth-child(3) { animation-delay: 90ms; }
@@ -131,9 +131,9 @@
 :root .cl-modalContent .cl-scrollBox { background: transparent; box-shadow: none; border: 0; border-radius: 0; }
 :root .cl-pageScrollBox { padding: 28px 30px 34px; scrollbar-width: thin; scrollbar-color: var(--rule-2) transparent; }
 @media (max-width: 40rem) { :root .cl-pageScrollBox { padding: 20px 16px 26px; } }
-:root .cl-pageScrollBox > * { animation: vtCkPage 440ms cubic-bezier(.22, 1, .36, 1) both; }
+:root .cl-pageScrollBox > * { animation: vtCkPage 440ms cubic-bezier(.22, 1, .36, 1) backwards; }
 :root .cl-page { gap: 22px; }
-:root :is(.cl-page, .cl-profilePage) > * { animation: vtCkRise 460ms var(--ease-out) both; }
+:root :is(.cl-page, .cl-profilePage) > * { animation: vtCkRise 460ms var(--ease-out) backwards; }
 :root :is(.cl-page, .cl-profilePage) > :nth-child(2) { animation-delay: 50ms; }
 :root :is(.cl-page, .cl-profilePage) > :nth-child(3) { animation-delay: 100ms; }
 :root :is(.cl-page, .cl-profilePage) > :nth-child(4) { animation-delay: 150ms; }
@@ -172,7 +172,7 @@
 
 /* ═══ Our tabs: Key Ring · Your look · Your data ═══ */
 .vt-ck-page { display: grid; gap: 22px; min-width: 0; color: var(--ink); font: 400 0.95rem/1.5 var(--font-body); container-type: inline-size; }
-.vt-ck-page > * { animation: vtCkRise 460ms var(--ease-out) both; }
+.vt-ck-page > * { animation: vtCkRise 460ms var(--ease-out) backwards; }
 .vt-ck-page > :nth-child(2) { animation-delay: 60ms; }
 .vt-ck-page > :nth-child(3) { animation-delay: 120ms; }
 .vt-ck-page > :nth-child(n+4) { animation-delay: 180ms; }
@@ -226,7 +226,7 @@
     position: relative; display: grid; gap: 6px; padding: 7px 7px 9px; min-height: 44px; text-align: left;
     border: 1px solid var(--rule); border-radius: min(calc(var(--r-ctl) + 4px), 18px); background: var(--paper); color: var(--ink); cursor: pointer;
     transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-short) var(--spring), box-shadow var(--dur-short) var(--ease-out);
-    animation: vtCkRise 420ms var(--ease-out) both;
+    animation: vtCkRise 420ms var(--ease-out) backwards;
 }
 .vt-ck-look:nth-child(2) { animation-delay: 30ms; } .vt-ck-look:nth-child(3) { animation-delay: 60ms; }
 .vt-ck-look:nth-child(4) { animation-delay: 90ms; } .vt-ck-look:nth-child(5) { animation-delay: 120ms; }
@@ -240,7 +240,7 @@
 .vt-ck-look[aria-checked="true"]::after {   /* the tick */
     content: ""; position: absolute; top: -7px; right: -7px; width: 22px; height: 22px; border-radius: 50%;
     background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 13px no-repeat;
-    box-shadow: 0 0 0 2px var(--paper-2); animation: vtCkTick 420ms var(--spring) both;
+    box-shadow: 0 0 0 2px var(--paper-2); animation: vtCkTick 420ms var(--spring) backwards;
 }
 @media (hover: hover) {
     .vt-ck-look:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--rule)); transform: translateY(-3px); box-shadow: var(--card-shadow-hover, var(--card-shadow)); }
@@ -259,7 +259,7 @@
 :root[data-look="classic"] .cl-modalContent::before {
     content: ""; position: absolute; z-index: 3; top: -11px; left: 50%; width: 92px; height: 24px; margin-left: -46px; pointer-events: none;
     background: var(--tape); transform: rotate(-3deg); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); border-left: 2px dashed rgba(0, 0, 0, 0.1);
-    animation: vtCkTape 700ms var(--spring) 240ms both;
+    animation: vtCkTape 700ms var(--spring) 240ms backwards;
 }
 :root[data-look="classic"] .cl-modalContent .cl-cardBox { border: 2px solid var(--rule-2); }
 :root[data-look="classic"] .cl-navbar { background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px); background-size: 20px 20px; }

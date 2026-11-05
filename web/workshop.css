@@ -4,10 +4,10 @@
    particle canvas by appearance.js; everything here stops under Calm or reduced motion. */
 
 /* ── The workshop panel: slides open under the looks ── */
-.look-workshop { display: grid; margin-top: 18px; border-radius: var(--r-card); border: 1.5px dashed var(--rule-2); background: color-mix(in srgb, var(--paper-3) 55%, transparent); animation: lwOpen 620ms var(--spring) both; }
+.look-workshop { display: grid; margin-top: 18px; border-radius: var(--r-card); border: 1.5px dashed var(--rule-2); background: color-mix(in srgb, var(--paper-3) 55%, transparent); animation: lwOpen 620ms var(--spring) backwards; }
 .look-workshop[hidden] { display: none; }
 .lw-inner { display: grid; gap: 10px; min-width: 0; padding: 16px; }
-.lw-inner > * { animation: lwRise 560ms var(--ease-out) both; }
+.lw-inner > * { animation: lwRise 560ms var(--ease-out) backwards; }
 .lw-inner > :nth-child(2), .lw-inner > :nth-child(3) { animation-delay: 60ms; }
 .lw-inner > :nth-child(4), .lw-inner > :nth-child(5) { animation-delay: 120ms; }
 .lw-inner > :nth-child(6), .lw-inner > :nth-child(7) { animation-delay: 180ms; }

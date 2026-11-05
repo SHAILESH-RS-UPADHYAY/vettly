@@ -50,22 +50,23 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.1">
-    <link rel="stylesheet" href="./base.css?v=7.2">
-    <link rel="stylesheet" href="./styles.css?v=9.2">
-    <link rel="stylesheet" href="./prep.css?v=7.5">
-    <link rel="stylesheet" href="./mentor.css?v=8.1">
-    <link rel="stylesheet" href="./looks.css?v=7.8">
+    <link rel="stylesheet" href="./base.css?v=7.3">
+    <link rel="stylesheet" href="./styles.css?v=9.5">
+    <link rel="stylesheet" href="./prep.css?v=7.7">
+    <link rel="stylesheet" href="./mentor.css?v=9.3">
+    <link rel="stylesheet" href="./looks.css?v=7.9">
     <link rel="stylesheet" href="./paper.css?v=8.1">
-    <link rel="stylesheet" href="./workshop.css?v=8.0">
-    <link rel="stylesheet" href="./bento.css?v=9.0">
-    <link rel="stylesheet" href="./onboard.css?v=2.3">
-    <link rel="stylesheet" href="./keyring.css?v=1.4">
-    <link rel="stylesheet" href="./daybook.css?v=1.3">
-    <link rel="stylesheet" href="./register.css?v=1.10">
-    <link rel="stylesheet" href="./tour.css?v=2.1">
+    <link rel="stylesheet" href="./workshop.css?v=8.1">
+    <link rel="stylesheet" href="./bento.css?v=9.2">
+    <link rel="stylesheet" href="./onboard.css?v=2.4">
+    <link rel="stylesheet" href="./keyring.css?v=1.6">
+    <link rel="stylesheet" href="./daybook.css?v=1.6">
+    <link rel="stylesheet" href="./register.css?v=1.17">
+    <link rel="stylesheet" href="./tour.css?v=2.2">
     <link rel="stylesheet" href="./picker.css?v=1.1">
-    <link rel="stylesheet" href="./lookbook.css?v=1.7">
-    <link rel="stylesheet" href="./account.css?v=1.0">
+    <link rel="stylesheet" href="./lookbook.css?v=1.8">
+    <link rel="stylesheet" href="./account.css?v=1.1">
+    <link rel="stylesheet" href="./tooltip.css?v=1.0">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -670,8 +671,8 @@
                             <header class="reg-head">
                                 <button type="button" class="reg-index-btn" data-reg="index" aria-label="Show chapters" aria-controls="reg-index"><svg aria-hidden="true"><use href="#i-book"/></svg></button>
                                 <div class="reg-heading">
-                                    <p class="reg-meta"><span class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></span></p>
-                                    <h3 class="reg-title"><button type="button" id="reg-title" data-reg="rename" title="Rename this chapter">A new chapter</button></h3>
+                                    <p class="reg-meta"><span class="reg-chno">Chapter <span id="reg-num">I</span><span aria-hidden="true"> · </span><time id="reg-date"></time></span><span class="reg-rename-hint" id="reg-rename-hint">Enter to ink it · Esc to keep the old name</span></p>
+                                    <h3 class="reg-title"><button type="button" id="reg-title" data-reg="rename" title="Rename this chapter">A new chapter</button><button type="button" class="reg-ink-btn" data-reg="rename" aria-label="Rename this chapter" title="Rename this chapter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 18.2 9.4 13.6 19.6 12 21.6 10.4 19.6 5.8 9.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 21.4V12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="10.2" r="1.5" fill="currentColor"/></svg></button><span class="reg-title-nib" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 18.2 9.4 13.6 19.6 12 21.6 10.4 19.6 5.8 9.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 21.4V12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="10.2" r="1.5" fill="currentColor"/></svg></span></h3>
                                 </div>
                                 <div class="reg-tools">
                                     <button type="button" data-reg="archive" title="Put this chapter on the archive shelf"><svg aria-hidden="true"><use href="#i-archive"/></svg><span>Archive</span></button>
@@ -1255,10 +1256,11 @@
                         <span class="mentor-meta"><i class="mentor-live" aria-hidden="true"></i><span id="mentor-sub">Gemini Pro, reading your prep bank</span></span>
                     </div>
                     <button type="button" class="mentor-icon-btn mentor-fit-btn" onclick="mentorResetLayout()" title="Reset size and position" aria-label="Reset size and position">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
                     </button>
-                    <button type="button" class="mentor-icon-btn mentor-new-btn" onclick="mentorReset()" title="New chat" aria-label="New chat">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                    <button type="button" class="mentor-icon-btn mentor-new-btn" id="mentor-new" onclick="mentorNewPage()" title="Start a new page" aria-label="Start a new page" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11.5v6M9 14.5h6"/></svg>
+                        <span class="mentor-new-label">New page</span>
                     </button>
                     <button type="button" class="mentor-icon-btn" onclick="mentorToggle(false)" title="Collapse" aria-label="Collapse Mentor">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
@@ -1266,6 +1268,8 @@
                 </header>
                 <div class="mentor-msgs" id="mentor-msgs"></div>
                 <form class="mentor-input" onsubmit="event.preventDefault(); mentorSend();">
+                    <!-- after a new page: the last one can come back for a few seconds -->
+                    <div class="mentor-undo" id="mentor-undo"><span id="mentor-undo-msg" role="status"></span><button type="button" onclick="mentorUndoPage()" tabindex="-1">Undo</button></div>
                     <div class="mentor-mention hidden" id="mentor-mention" role="listbox" aria-label="Prep Studio questions"></div>
                     <div class="mentor-pills">
                         <div class="mentor-lang" role="group" aria-label="Answer language" data-lang="english">
@@ -1303,23 +1307,24 @@
     <script defer src="./vendor/gsap-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
-    <script defer src="./auth.js?v=9.4"></script>
-    <script defer src="./motion.js?v=8.3"></script>
+    <script defer src="./auth.js?v=9.5"></script>
+    <script defer src="./motion.js?v=8.4"></script>
+    <script defer src="./tooltip.js?v=1.0"></script>
     <script defer src="./appearance.js?v=9.1"></script>
-    <script defer src="./dashboard.js?v=9.2"></script>
-    <script defer src="./mentor.js?v=8.2"></script>
+    <script defer src="./dashboard.js?v=9.4"></script>
+    <script defer src="./mentor.js?v=8.6"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
-    <script defer src="./shortcuts.js?v=1.3"></script>
-    <script defer src="./keyring.js?v=1.4"></script>
+    <script defer src="./shortcuts.js?v=1.4"></script>
+    <script defer src="./keyring.js?v=1.5"></script>
     <script defer src="./account.js?v=1.0"></script>
-    <script defer src="./register.js?v=1.4"></script>
+    <script defer src="./register.js?v=1.7"></script>
     <script defer src="./daybook.js?v=1.3"></script>
     <script defer src="./tour.js?v=2.2"></script>
     <script defer src="./onboard-scenes.js?v=2.3"></script>
     <script defer src="./lookbook.js?v=1.5"></script>
-    <script defer src="./onboard.js?v=9.8"></script>
+    <script defer src="./onboard.js?v=9.9"></script>
     <script defer src="./picker.js?v=1.1"></script>
 </body>
 </html>
