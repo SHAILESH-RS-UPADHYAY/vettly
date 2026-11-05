@@ -685,6 +685,46 @@ function mentorPanelRect() {
     return { left, top, width: panel.offsetWidth, height: panel.offsetHeight };
 }
 
+// Room beside the Mentor: on pages read side by side with it (Prep Studio), when the panel sits on the right
+// and enough page is left, the page reflows into the space beside it instead of hiding under it.
+// The page keeps at least 380px; a panel dragged elsewhere, phones and small windows keep the overlay.
+const MENTOR_ROOM_PAGES = new Set(['prep']);
+let mentorRoomTimer = 0, mentorRoomNow = 0;
+function mentorRoomWanted() {
+    const body = document.body, root = document.getElementById('mentor'), panel = document.querySelector('.mentor-panel');
+    if (!root || !panel || root.dataset.state !== 'open' || !MENTOR_ROOM_PAGES.has(body.dataset.section) || innerWidth < 1024) return 0;
+    if (panel.classList.contains('dragging') || panel.classList.contains('resizing')) return mentorRoomNow;   // settle when the move ends
+    const r = mentorPanelRect(), main = document.getElementById('main-content')?.getBoundingClientRect();
+    const docked = r.left + r.width >= innerWidth - 140;          // still against the right edge
+    const keep = r.left - 20 - (main ? main.left : 0);           // the page that would be left
+    return docked && keep >= 380 ? Math.round(innerWidth - r.left + 20) : 0;
+}
+// one reflow, not one per frame: the page then slides the last few pixels into place on the compositor
+function mentorRoom() {
+    const room = mentorRoomWanted();
+    if (room === mentorRoomNow) return;
+    const body = document.body, page = document.querySelector(`#page-${body.dataset.section} > .page-inner`);
+    const dx = room > mentorRoomNow ? 18 : -18;
+    mentorRoomNow = room;
+    body.style.setProperty('--mentor-room', `${room}px`);
+    body.classList.toggle('mentor-room', room > 0);
+    if (page && !(window.Motion?.calm?.())) page.animate([{ opacity: 0.6, transform: `translateX(${dx}px)` }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+}
+// making room waits for the panel to finish opening (its own animation stays smooth); giving it back is immediate
+function mentorRoomSoon() {
+    clearTimeout(mentorRoomTimer);
+    mentorRoomTimer = setTimeout(mentorRoom, mentorRoomWanted() > mentorRoomNow ? 380 : 40);
+}
+(function mentorRoomWatch() {
+    const root = document.getElementById('mentor'), panel = document.querySelector('.mentor-panel');
+    if (!root || !panel) return;
+    new MutationObserver(mentorRoomSoon).observe(root, { attributes: true, attributeFilter: ['data-state', 'class'] });
+    new MutationObserver(mentorRoomSoon).observe(panel, { attributes: true, attributeFilter: ['class', 'style'] });
+    new MutationObserver(mentorRoomSoon).observe(document.body, { attributes: true, attributeFilter: ['data-section'] });
+    addEventListener('resize', mentorRoomSoon);
+    mentorRoomSoon();
+})();
+
 // The sheet: the pinned question and its whole answer
 function mentorFillSheet(el) {
     const sheet = document.getElementById('mentor-sheet');
