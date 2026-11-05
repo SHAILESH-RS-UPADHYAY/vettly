@@ -1,0 +1,43 @@
+/* Tooltips (tooltip.js): a small slip drawn from the active look's tokens, never the browser's black box.
+   Each look adds its own touch; day and night follow the tokens. */
+.vt-tip {
+    position: fixed; inset: auto; z-index: 2147483000; margin: 0; overflow: visible;
+    max-width: min(300px, calc(100vw - 16px)); padding: 8px 12px 8px 14px;
+    border: 1px solid var(--rule-2); border-radius: var(--r-ctl, 10px);
+    background: var(--paper-2); color: var(--ink);
+    box-shadow: inset 3px 0 0 var(--accent), var(--pop-shadow, 0 12px 30px -12px rgba(0, 0, 0, 0.35));
+    font: 500 0.82rem/1.45 var(--font-body); text-align: left; text-wrap: pretty; letter-spacing: 0;
+    pointer-events: auto;
+}
+.vt-tip[hidden] { display: none; }
+.vt-tip-arrow {
+    position: absolute; left: var(--tip-ax, 50%); width: 10px; height: 10px; margin-left: -5px;
+    background: inherit; border: inherit; border-width: 0 1px 1px 0; rotate: 45deg;
+}
+.vt-tip[data-side="above"] .vt-tip-arrow { bottom: -6px; }
+.vt-tip[data-side="below"] .vt-tip-arrow { top: -6px; border-width: 1px 0 0 1px; }
+.vt-tip.is-in { animation: vtTipIn 240ms var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1)) both; }
+.vt-tip.is-in[data-side="below"] { animation-name: vtTipInBelow; }
+@keyframes vtTipIn { from { opacity: 0; transform: translateY(5px) scale(0.96); } }
+@keyframes vtTipInBelow { from { opacity: 0; transform: translateY(-5px) scale(0.96); } }
+
+/* each look's own touch */
+:root[data-look="classic"] .vt-tip { border-width: 1.5px; box-shadow: inset 3px 0 0 var(--accent), 0 6px 0 -3px var(--tape, rgba(220, 195, 150, 0.7)), var(--pop-shadow); }
+:root[data-look="register"] .vt-tip {
+    padding-left: 18px; font: 600 1.02rem/1.3 var(--font-display);
+    background: repeating-linear-gradient(180deg, transparent 0 19px, var(--grid-line) 19px 20px), linear-gradient(90deg, transparent 9px, var(--pg-margin, rgba(178, 34, 52, 0.5)) 9px 10.5px, transparent 10.5px), var(--paper-2);
+    background-position: 0 4px, 0 0, 0 0; box-shadow: var(--pop-shadow);
+}
+:root[data-look="blueprint"] .vt-tip { border-style: dashed; border-radius: 3px; font: 600 0.72rem/1.5 var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent), var(--pop-shadow); }
+:root[data-look="bubblegum"] .vt-tip { border: 2px solid var(--sticker, var(--ink)); border-radius: 14px; box-shadow: 4px 4px 0 var(--sticker, var(--ink)); font-weight: 600; }
+:root[data-look="bubblegum"] .vt-tip-arrow { border-width: 0 2px 2px 0; }
+:root[data-look="bubblegum"] .vt-tip[data-side="below"] .vt-tip-arrow { border-width: 2px 0 0 2px; }
+:root[data-look="sakura"] .vt-tip { border-color: var(--card-border, var(--rule-2)); border-radius: 14px; font: italic 400 1.02rem/1.35 var(--sk-head, var(--font-body)); box-shadow: var(--card-shadow), var(--pop-shadow); }
+:root[data-look="lavender"] .vt-tip { border-color: var(--card-border, var(--rule-2)); border-radius: 16px; background: color-mix(in srgb, var(--paper-2) 78%, transparent); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); box-shadow: var(--card-shadow); }
+:root[data-look="lavender"] .vt-tip-arrow { background: color-mix(in srgb, var(--paper-2) 92%, transparent); }
+:root[data-look="strawberry"] .vt-tip { border-color: var(--card-border, var(--rule-2)); border-radius: 16px; background: var(--card-bg, var(--paper-2)); box-shadow: var(--card-shadow); }
+:root[data-look="mermaid"] .vt-tip { border: 1.5px solid transparent; border-radius: 14px; background: linear-gradient(var(--paper-2), var(--paper-2)) padding-box, linear-gradient(120deg, var(--shell-a, var(--accent)), var(--shell-b, var(--accent)), var(--shell-c, var(--accent))) border-box; box-shadow: var(--card-shadow); }
+:root[data-look="mermaid"] .vt-tip-arrow { background: var(--paper-2); border-color: color-mix(in srgb, var(--shell-b, var(--accent)) 70%, transparent); }
+
+@media (prefers-reduced-motion: reduce) { .vt-tip.is-in { animation: none; } }
+:root[data-motion="calm"] .vt-tip.is-in { animation: none; }
