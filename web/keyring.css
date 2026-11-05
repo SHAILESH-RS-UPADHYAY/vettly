@@ -234,3 +234,7 @@
 .kr-own-get svg { width: 13px; height: 13px; }
 .kr-own .kr-saved code { font-size: 0.78rem; }
 @media (pointer: coarse) { .kr-own-get { min-height: 44px; padding: 0 4px; } }
+
+/* narrow cards: the title row and its guide button wrap instead of running off the card */
+.kr-top { flex-wrap: wrap; min-width: 0; }
+.keyring-card .toolbelt-card-header .btn { white-space: normal; text-align: left; }

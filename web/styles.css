@@ -2345,3 +2345,17 @@ kbd { display: inline-grid; place-items: center; min-width: 26px; height: 26px; 
 }
 @keyframes palDrop { from { transform: translateY(-100%); } }
 @media (prefers-reduced-motion: reduce) { .palette[open] { animation: none; } }
+
+/* ── Every screen: the narrowest phones (folding phones are ~280px) and touch targets ── */
+/* a prefixed field (github.com/…) keeps room to type: its button drops to its own line when the row gets narrow */
+.input-addon-group { flex-wrap: wrap; }
+.input-addon-field { flex: 999 1 10ch; min-width: 10ch; }
+.input-addon-group .btn { flex: 1 0 auto; margin-left: -1px; }
+/* card headers whose two halves sit side by side (The Attic): each half wraps instead of running off the card */
+#settings-recycle-card .toolbelt-card-header > div { flex-wrap: wrap; min-width: 0; }
+@media (max-width: 22rem) {
+    /* big poster titles shrink with the screen so CANDIDATE or TOOLBELT never runs past the edge, in every look */
+    :root[data-look] .page .poster-header h1 { font-size: clamp(1.35rem, 9.4vw, 2rem); letter-spacing: -0.02em; }
+    :root[data-look] .page .poster-header p { font-size: 0.86rem; }
+    .btn { white-space: normal; text-align: center; }
+}

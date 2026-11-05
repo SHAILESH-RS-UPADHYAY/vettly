@@ -318,3 +318,13 @@
 }
 @media (prefers-reduced-motion: reduce) { .reg-face line { transition: none; } .reg-timebar { animation: none; } }
 :root[data-motion="calm"] :is(.reg-face line, .reg-timebar) { transition: none; animation: none; }
+
+/* touch: every control in Live Copilot is at least 40px */
+@media (pointer: coarse) {
+    .reg-item-ink { width: 40px; height: 40px; }
+    .reg-list li:hover .reg-item-text b, .reg-list li:focus-within .reg-item-text b { padding-right: 40px; }
+    .reg-timebar .reg-sw, .reg-sw { min-height: 40px; }
+    .reg-sw-reset, .reg-timebar .reg-sw-reset { width: 40px; height: 40px; }
+    .reg-index-btn { width: 40px; height: 40px; }
+    .reg-tools button { min-height: 40px; min-width: 40px; }
+}
