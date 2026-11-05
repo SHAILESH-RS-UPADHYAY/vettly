@@ -577,9 +577,9 @@ function prepCardHtml(e, i, k) {
             </div>
         </div>
         <footer class="q-actions">
-            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
-            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
-            <button type="button" class="q-btn q-refine" data-refine="${i}"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
+            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}" aria-label="Accept this answer"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
+            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}" aria-label="Reject this answer"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
+            <button type="button" class="q-btn q-refine" data-refine="${i}" aria-label="Refine this answer"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
             <button type="button" class="q-btn prep-btn prep-btn-mentor" data-mentor="${n}" title="Pin Q${n} to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor</span></button>
             <button type="button" class="q-btn q-copy" data-copy="${i}" aria-label="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg><span class="q-copy-text">Copy</span></button>
         </footer>
