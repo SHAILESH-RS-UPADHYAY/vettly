@@ -169,6 +169,32 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       phones, the phone sheet; all 9 looks day and night; axe 0 issues on Prep Studio; device matrix and the
       regression suites pass
 
+## Phase 13 · Lighter Mentor, a new page, inked renames, readable answers, every screen (requested 5–6 Nov)
+
+- [x] 13.1 Lighter, same look: pages were busy every frame before the Mentor opened. Entrance animations held fill
+      "both" (63 of them, from-only keyframes) and kept their elements composited (Prep: 83 layers, 40 of them cards):
+      now "backwards" (21 layers). The emblem's turning parts are each their own <svg>, turned by the compositor
+      (checked frame by frame against the old one). The hidden panel's emblem and the off beam pause at rest.
+      2x CPU: Prep idle 606 -> 355 ms/s, Daybook 291 -> 189; Daybook opening 34 -> 46 frames
+- [x] 13.2 The empty Mentor page drops its own emblem (the header and launcher show it)
+- [x] 13.3 Mentor: a New page pill (was an unlabelled refresh icon); the written page turns over the binding,
+      Page N stamps, Undo for 7 s; also in the palette
+- [x] 13.4 Live Copilot: Archive and Tear out on the far right; rename by ink (a nib by the title and by each
+      chapter in the list; the old name blots away, the new one is written in); Blueprint's header slimmed so the
+      book is full height
+- [x] 13.6 Prep answers: real lists, bold labels, short paragraphs, markdown; word count and speaking time; long
+      answers fold under a fade with Read the full answer; new and refined answers ink in; cards off screen skip
+      layout (the Mentor's worst opening frame on a long bank 400 -> 183 ms)
+- [x] 13.7 Every screen: phones get an account card in the More sheet (Clerk's menu and window could not open over
+      it); the rail's footer centred under the icons in every side-panel style; the Daybook's setup and keys get a
+      row each between phone and desktop; text fields do not raise the keyboard on their own on touch screens.
+      Swept 9 pages on 18 screens (Mac, Windows, Linux, 2560, iPad mini / Air / Pro both ways, iPhone SE / 15 Pro
+      Max, Pixel 7, 360 and 280 px phones): fixed the squeezed github.com field, 280 px titles and headers, and
+      touch targets under 40 px
+- [x] Checked: axe 0 issues on every page (light and dark) and on the new parts (Mentor, New page, Undo, rename,
+      cards, the phone account card); real clerk-js run: menu, tabs, live recolour, axe 0, phones; Look Book, device
+      matrix, Key Ring and clock suites; the five backend suites
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
