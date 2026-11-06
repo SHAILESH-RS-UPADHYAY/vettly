@@ -43,6 +43,16 @@ const Register = (() => {
     /* ── the index ── */
     const NIB = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 18.2 9.4 13.6 19.6 12 21.6 10.4 19.6 5.8 9.4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 21.4V12.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="12" cy="10.2" r="1.5" fill="currentColor"/></svg>';
     function title(c) { return c.title || c.auto_title || 'A blank page'; }
+    // Chapters are numbered I, II, III... by the order they were begun, counting only those in the book's list:
+    // tear one out and the rest close up; one on the archive shelf shows a shelf mark and rejoins in its place when
+    // taken off the shelf. A page not yet saved is the next number.
+    function chapterNo(c) {
+        if (!c || c.archived) return 0;
+        const live = list.filter(x => !x.archived).sort((a, b) => String(a.created || '').localeCompare(String(b.created || '')) || (a.number || 0) - (b.number || 0));
+        const i = c.id ? live.findIndex(x => x.id === c.id) : -1;
+        return i >= 0 ? i + 1 : live.length + 1;
+    }
+    const SHELF = '<svg class="reg-shelf-mark" aria-hidden="true"><use href="#i-archive"/></svg>';
     function when(iso) {
         if (!iso) return '';
         const d = new Date(iso), today = new Date();
@@ -51,7 +61,7 @@ const Register = (() => {
     }
     function item(c, i) {
         return `<li style="--i:${i}"><button type="button" class="reg-item${c.id === openId ? ' is-open' : ''}" data-open="${c.id}" aria-current="${c.id === openId}">
-            <span class="reg-item-no">${roman(c.number)}</span>
+            <span class="reg-item-no">${c.archived ? SHELF : roman(chapterNo(c))}</span>
             <span class="reg-item-text"><b>${escapeHtml(title(c))}</b><small>${when(c.updated)} · ${c.count} ${c.count === 1 ? 'note' : 'notes'}${c.elapsed_ms > 59000 ? ` · ${clock(c.elapsed_ms)}` : ''}</small></span></button>${c.id ? `<button type="button" class="reg-item-ink" data-rename-id="${c.id}" aria-label="Rename ${escapeHtml(title(c))}" title="Rename">${NIB}</button>` : ''}</li>`;
     }
     function renderIndex() {
@@ -66,7 +76,8 @@ const Register = (() => {
     /* ── the open page ── */
     function renderHead() {
         if (!current) return;
-        $('reg-num').textContent = roman(current.number);
+        const n = chapterNo(current);
+        $('reg-chname').innerHTML = n ? `Chapter <span id="reg-num">${roman(n)}</span>` : 'On the shelf';
         $('reg-date').textContent = new Date(current.created || Date.now()).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
         $('reg-date').dateTime = current.created || '';
         $('reg-title').textContent = title(current) === 'A blank page' ? 'A new chapter' : title(current);
@@ -150,8 +161,9 @@ const Register = (() => {
     /* ── page movements ── */
     const page = () => $('reg-page');
     // the page turns: a leaf lifts from the right edge and swings over the spine
-    function turn(swap, dir = 1) {
+    function turn(swap, dir = 1, { real = false } = {}) {
         if (calm() || current?.look === 'plain' || look() === 'plain') { swap(); return Promise.resolve(); }
+        if (real && window.gsap) return turnReal(swap, dir, real);
         const p = page(), leaf = document.createElement('div');
         leaf.className = 'reg-leaf';
         leaf.style.transformOrigin = dir > 0 ? 'left center' : 'right center';
@@ -163,6 +175,35 @@ const Register = (() => {
             return new Promise(res => gsap.fromTo(leaf, { rotateY: from, '--shade': 0 }, { rotateY: to, '--shade': 1, duration: 0.7, ease: 'power2.inOut', onComplete: () => { leaf.remove(); res(); } }));
         }
         return leaf.animate([{ transform: `perspective(1800px) rotateY(${from}deg)` }, { transform: `perspective(1800px) rotateY(${to}deg)` }], { duration: 700, easing: 'cubic-bezier(.65,0,.35,1)' }).finished.then(() => leaf.remove());
+    }
+    // New chapter: the written page itself turns over, slowly, like a real one. Its corner lifts, it swings over the
+    // spine (showing the paper's back, the ink faintly through it) and settles, its shadow sweeping across the fresh
+    // page underneath. About 1.4 s. Opening a chapter keeps the quick turn above.
+    function turnReal(swap, dir, snap) {
+        const p = page(), leaf = document.createElement('div'), shade = document.createElement('div');
+        leaf.className = 'reg-leaf is-real'; shade.className = 'reg-turn-shade';
+        leaf.style.transformOrigin = dir > 0 ? 'left center' : 'right center';
+        const face = document.createElement('div'), back = document.createElement('div');
+        face.className = 'reg-leaf-face'; back.className = 'reg-leaf-back';
+        const copy = snap?.copy || p.cloneNode(true);   // what was written on the page (taken before the chapter was put away)
+        copy.querySelectorAll('.reg-leaf, .reg-turn-shade').forEach(n => n.remove());
+        copy.removeAttribute('id'); copy.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+        copy.classList.add('reg-leaf-copy'); copy.setAttribute('aria-hidden', 'true'); copy.inert = true;
+        face.append(copy); leaf.append(face, back);
+        p.append(shade, leaf);
+        const to = copy.querySelector('.chat-messages');
+        if (to) to.scrollTop = snap?.scrollTop ?? p.querySelector('#chat-messages')?.scrollTop ?? 0;
+        requestAnimationFrame(() => requestAnimationFrame(swap));   // the fresh page is drawn underneath
+        const k = dir > 0 ? -1 : 1;
+        return new Promise(res => {
+            gsap.timeline({ onComplete: () => { leaf.remove(); shade.remove(); res(); } })
+                .set(leaf, { transformPerspective: 2400, rotateY: 0, '--shade': 0 })
+                .to(leaf, { rotateY: 13 * k, z: 18, '--shade': 0.35, duration: 0.3, ease: 'power1.out' })        // the corner lifts
+                .to(shade, { opacity: 1, duration: 0.3, ease: 'power1.out' }, 0)
+                .to(leaf, { rotateY: 172 * k, z: 0, '--shade': 1, duration: 0.92, ease: 'power2.inOut' })         // over the spine
+                .to(shade, { opacity: 0, duration: 0.7, ease: 'power1.in' }, '-=0.62')
+                .to(leaf, { rotateY: 180 * k, opacity: 0, duration: 0.24, ease: 'power1.out' });                   // it settles
+        });
     }
     // a copy of the page flies somewhere (The Attic, the shelf) while the real page shows the next chapter
     function fly(kind, target) {
@@ -335,6 +376,8 @@ const Register = (() => {
         if (document.body.dataset.section !== 'chat') switchSection('chat', { animate: true });
         const blankNow = !$('chat-messages')?.querySelector('.chat-bubble');   // what is on the page, not what was loaded
         if (current && blankNow && !current.archived && !creating) { closeIndex(); setTimeout(() => Motion.focusField($('chat-input')), 60); return; }   // already a fresh page
+        // the written page, as it is, for the leaf that turns over (stash() is about to put its notes away)
+        const snap = !calm() && window.gsap ? { copy: page().cloneNode(true), scrollTop: $('chat-messages')?.scrollTop || 0 } : true;
         persist();
         stash();
         closeIndex();
@@ -345,7 +388,7 @@ const Register = (() => {
             if (current === blank) { current = { ...ch, messages: [] }; openId = ch.id; renderHead(); renderIndex(); }
             return ch.id;
         }).catch(e => { Motion.toast(`Could not begin a new chapter: ${e.message}`, 'error'); return openId; }).finally(() => { creating = null; });
-        await turn(() => { renderHead(); renderMessages([], current?.id || null); renderIndex(); startClock(0); });
+        await turn(() => { renderHead(); renderMessages([], current?.id || null); renderIndex(); startClock(0); }, 1, { real: snap });
         setTimeout(() => Motion.focusField($('chat-input')), 60);
     }
     async function archive() {

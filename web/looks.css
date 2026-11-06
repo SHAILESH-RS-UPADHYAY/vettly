@@ -280,7 +280,6 @@
     display: block; position: absolute; left: 20px; bottom: 5px;
     font: 700 8px/1 var(--font-mono); letter-spacing: 1.5px; color: var(--accent-ink);
 }
-:root[data-sidebar="poster"] .logo-icon { color: var(--accent); animation: posterPulse 3s var(--ease-in-out) infinite; }
 /* the icon rail is too narrow for the badge and tagline: just the mark, centred */
 @media (min-width: 48rem) and (max-width: 63.99rem) {
     :root[data-sidebar="poster"] :is(.logo-badge, .logo-tagline) { display: none; }

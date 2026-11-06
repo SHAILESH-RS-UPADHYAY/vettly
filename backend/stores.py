@@ -315,7 +315,10 @@ class ChatHistoryStore:
             ch["id"] = f"{ch.get('id', 'ch')}r"
         ch.setdefault("messages", [])
         ch["archived"] = False
-        self._doc["items"].append(ch)
+        # back in its own place, by the day it was begun, so the chapters keep their order (and their numerals)
+        when = ch.get("created") or ""
+        at = next((i for i, c in enumerate(self._doc["items"]) if when and (c.get("created") or "") > when), len(self._doc["items"]))
+        self._doc["items"].insert(at, ch)
         self._doc["open"] = ch["id"]
         self.save()
         return self.full(ch["id"])
@@ -457,10 +460,26 @@ class ProfileStore:
         docstore.save(self._user, "profile", self._data)
         return prefs
 
+    MAX_ROLES = 4
+    ROLE_SEP = " · "   # role names can hold commas ("Staff nurse, ICU"), so several are joined with a middle dot
+
     def update(self, data: dict) -> dict:
         for key in self.FIELDS:
             if isinstance(data.get(key), str):
                 self._data[key] = data[key].strip()[:120]
+        # several target roles: a clean list (no blanks or repeats, at most four), and `role` as their joined text so
+        # every prompt that reads one role keeps working
+        roles = data.get("roles")
+        if isinstance(roles, list):
+            clean: list[str] = []
+            for r in roles:
+                r = " ".join(r.split())[:80] if isinstance(r, str) else ""
+                if r and r.lower() not in {c.lower() for c in clean}:
+                    clean.append(r)
+            self._data["roles"] = clean[: self.MAX_ROLES]
+            self._data["role"] = self.ROLE_SEP.join(self._data["roles"])
+        elif isinstance(data.get("role"), str):
+            self._data["roles"] = [self._data["role"]] if self._data["role"] else []
         self._data["onboarded"] = True
         docstore.save(self._user, "profile", self._data)
         return self._data

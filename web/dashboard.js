@@ -53,7 +53,8 @@ function switchSection(name, { animate = false } = {}) {
         Motion.thumbs(page);
     };
     if (animate && changing) { transitionFrom(name); Motion.page(apply); } else apply();
-    if (location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
+    // #/… belongs to Clerk's sign-in forms (#/sso-callback finishes a Google sign-in): never overwrite it
+    if (!location.hash.startsWith('#/') && location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
     // Load data for specific sections
     if (name === 'aboutme') loadAboutMe();

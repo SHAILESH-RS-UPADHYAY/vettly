@@ -140,6 +140,7 @@ const Motion = (() => {
     const coarse = matchMedia('(pointer: coarse)');
     function focusField(el, opts = { preventScroll: true }) {
         if (!el) return false;
+        if (el.matches('select') && el._picker) el = el._picker.btn;   // a pretty dropdown: its button, never the hidden <select>
         if (coarse.matches && el.matches('input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), textarea, [contenteditable="true"]')) return false;
         el.focus(opts); return true;
     }

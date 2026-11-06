@@ -195,9 +195,49 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       cards, the phone account card); real clerk-js run: menu, tabs, live recolour, axe 0, phones; Look Book, device
       matrix, Key Ring and clock suites; the five backend suites
 
+## Phase 14 · The logo, the sign-in page, roles, and three fixes (requested 6 Nov)
+
+- [x] 14.1 The Mentor's orb is Vettly's logo: the browser tab, the side panel, sign-in and onboarding. It keeps its
+      motion and travels through the nine looks' colours every 6 s (registered colours, so each look blends into the
+      next); it starts on the look you wear and rests in Calm, with reduced motion and in a hidden tab. App icons
+      redrawn from it
+- [x] 14.2 Sign-in copy: "Walk in ready." · "Made for nurses / analysts / engineers / designers / teachers /
+      marketers" (each in a look's colour) · one-line lede · three points
+- [x] 14.3 Sign-in motion (GSAP + SplitText): the orb spins in, "Vettly" drops letter by letter, the kicker wipes
+      open, "Walk in" rises, "ready." stamps down and an ink line draws under it (click it for a splash), the lede
+      sharpens word by word, the points' icons pop, the card rises and its tape slaps on. After: headline letters hop
+      under the pointer, the card leans toward it, the grid paper lights around it. Done by about 2 s; Calm and
+      reduced motion get the finished page, still. Screen readers get plain text (the split is undone after)
+- [x] 14.5 Live Copilot: New chapter turns a real page (about 1.7 s, a copy of the old page lifts and turns over
+      the spine); chapter numerals close up (delete II and III becomes II; shelved chapters show a shelf mark;
+      restoring puts a chapter back in date order)
+- [x] 14.6 Onboarding: up to four roles. Chips fly up into a tray and turn their + into a tick; type your own and
+      press Enter; × or Backspace sends one back; a fifth is refused with a shake. Saved as `roles` (a list) and
+      `role` (joined with " · ", since role names hold commas), so every prompt keeps working; the AI is told to
+      prepare for any of them
+- [x] 14.7 Google sign-in: the blank page on …clerk.accounts.dev is Clerk's own server handing Google's answer back.
+      Vettly now says "Taking you to Google…" before you leave and "Signing you in…" from the first frame on the
+      way back (no blank page, no replayed intro), steps aside at once on an error or a cancel, and no longer
+      reloads the whole app after Clerk finishes. Fixed with it: the app's router wiped Clerk's #/sso-callback before
+      Clerk loaded, so a Google sign-in that needed one more step never finished. To lose Clerk's address
+      entirely, see the owner settings below
+- [x] 14.8 iPad: a see-through list floated over onboarding page 04. Cause: the page focused the first field, which
+      was the hidden native <select> behind the pretty dropdown, and iPadOS opens its own menu for a focused select.
+      Hidden selects are now inert and focus goes to the dropdown's button. Also: page 04 no longer runs wider than
+      the dialog on phones
+- [x] Also: Clerk's "Continue with Google" text was black on navy at night (and grey under 4.5:1 in the pastel
+      looks); Sakura's muted grey deepened to pass on every Sakura paper
+- [x] Checked: axe 0 on every page (light and dark), on the role tray, the sign-in page in all nine looks and both
+      themes, and the hand-off screens; frames of the intro in slow motion; the role tray on desktop, iPad, phones
+      and dark; the iPad edit path; Look Book, device matrix, Key Ring, clock, Prep and real-Clerk suites; the five
+      backend suites (a new roles test)
+
 ## Settings only the owner can change (Vercel / Clerk)
 
-- [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain
+- [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
+      blank page on `…clerk.accounts.dev` during Google sign-in: production uses your own domain (for example
+      clerk.yourdomain.com) and your own Google OAuth app, so Google's screen says Vettly. It needs a domain you own
+      (a vercel.app address cannot take Clerk's DNS records)
 - [ ] Clerk dashboard → API keys: switch off user API keys. Vettly hides the tab, but only the dashboard stops them being made
 - [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel

@@ -65,7 +65,7 @@
 /* ── Sakura: cherry blossoms on blush paper ── */
 :root[data-look="sakura"] {
     --paper: #fff5f7; --paper-2: #fffafb; --paper-3: #fde6ed; --sidebar: #fdeef2; --field: #ffffff;
-    --ink: #4a2433; --ink-2: #7a4a5c; --muted: #9b6f80;
+    --ink: #4a2433; --ink-2: #7a4a5c; --muted: #845e6d;   /* a shade deeper than before: 4.5:1 or better on every Sakura paper */
     --rule: rgba(214, 110, 140, 0.18); --rule-2: rgba(214, 110, 140, 0.3);
     --grid-line: rgba(214, 110, 140, 0.1); --grid-line-2: transparent;
     --pill: #4a2433; --on-pill: #fff5f7;
