@@ -5,10 +5,12 @@
     --sk-desk: #e9e3d3; --sk-paper: #fbf8ef; --sk-rule: #cfdcf2; --sk-margin: #e8a29f; --sk-pen: #1f3c88; --sk-red: #cf3f37;
     --sk-hl: rgba(255, 224, 84, 0.72); --sk-card: #fffefa; --sk-card-rule: #d9e4f6; --sk-pencil: #5f6470; --sk-tape: rgba(255, 190, 172, 0.85);
     --sk-hand: "Caveat", "Kalam", cursive; --sk-note: "Kalam", "Caveat", cursive;
+    --sk-sticky: #fff0a3; --sk-sticky-edge: #f2d86b; --sk-sticky-ink: #3a3000;
 }
 :root.theme-dark .auth-gate {
     --sk-desk: #0b0f17; --sk-paper: #141a26; --sk-rule: rgba(150, 180, 240, 0.14); --sk-margin: rgba(240, 128, 128, 0.42); --sk-pen: #c9d7ff; --sk-red: #ff8d84;
     --sk-hl: rgba(255, 210, 80, 0.3); --sk-card: #1b2232; --sk-card-rule: rgba(150, 180, 240, 0.12); --sk-pencil: #a3abbf; --sk-tape: rgba(255, 160, 140, 0.45);
+    --sk-sticky: #3b3420; --sk-sticky-edge: #5a4f2a; --sk-sticky-ink: #ffe9a6;
 }
 /* while the Sketchbook shows, Clerk takes its colours and pen from here (auth.js reads them off the gate) */
 .auth-gate[data-variant="sketch"] {
@@ -49,6 +51,30 @@
 .sk-arrow { width: 70px; height: 34px; flex: none; overflow: visible; }
 .sk-arrow path { stroke: var(--sk-red); stroke-width: 2.4; }
 .sk-signed { margin: 16px 0 0; font: 600 1.6rem/1.1 var(--sk-hand); color: var(--sk-pencil); rotate: -2deg; }
+
+/* below the list: a sticky note with the one thing to remember, and a flashcard that flips through real questions
+   from different fields (auth-sketch.js turns it). They fill the space beside the card, which is the taller column. */
+.sk-extras { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: clamp(14px, 2vw, 28px);
+    max-width: 640px; margin-top: clamp(12px, 2.6vh, 28px); }
+.sk-sticky { position: relative; width: clamp(168px, 14vw, 214px); padding: 20px 16px 16px; rotate: -3deg; transform-origin: 50% 0;
+    background: linear-gradient(170deg, var(--sk-sticky) 0 82%, var(--sk-sticky-edge)); color: var(--sk-sticky-ink);
+    box-shadow: 0 14px 22px -14px rgba(60, 45, 0, 0.55), 0 1px 0 rgba(0, 0, 0, 0.05); transition: translate 0.35s var(--ease-out, ease-out), box-shadow 0.35s; }
+.sk-sticky:hover { translate: 0 -4px; box-shadow: 0 22px 28px -16px rgba(60, 45, 0, 0.55); }
+.sk-sticky-tape { position: absolute; top: -11px; left: 50%; width: 74px; height: 22px; margin-left: -37px; rotate: 4deg; background: color-mix(in srgb, var(--sk-tape) 80%, transparent); }
+.sk-sticky-line { margin: 0; font: 700 clamp(1.35rem, min(1.9vw, 3vh), 1.75rem)/1.08 var(--sk-hand); }
+.sk-sticky-line + .sk-sticky-line { margin-top: 4px; }
+.sk-opt { position: relative; display: inline-block; color: var(--sk-red); }
+.sk-opt svg { position: absolute; left: -2%; bottom: -6px; width: 104%; height: 10px; overflow: visible; }
+.sk-opt path { fill: none; stroke: var(--sk-red); stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1 2; stroke-dashoffset: 0; vector-effect: non-scaling-stroke; }
+.sk-flash { position: relative; margin: 6px 0 0; perspective: 900px; }
+.sk-flash-label { margin: 0 0 6px 4px; font: 700 1.15rem/1 var(--sk-hand); color: var(--sk-pencil); }
+.sk-flash-card { min-height: clamp(96px, 13vh, 122px); padding: 12px 16px 10px 26px; display: grid; align-content: space-between; gap: 8px; rotate: 1deg;
+    background: linear-gradient(90deg, transparent 12px, color-mix(in srgb, var(--sk-red) 65%, transparent) 12px 13.5px, transparent 13.5px),
+        repeating-linear-gradient(transparent 0 23px, var(--sk-card-rule) 23px 24px) 0 4px / 100% 100%, var(--sk-card);   /* a red margin down the side, never through the words */
+    box-shadow: 0 14px 24px -16px rgba(20, 30, 70, 0.5); transform-style: preserve-3d; backface-visibility: hidden; }
+.sk-flash-q { margin: 0; font: 400 clamp(1.02rem, min(1.35vw, 2.3vh), 1.18rem)/1.32 var(--sk-note); color: var(--sk-pen); text-wrap: pretty; }
+.sk-flash-role { margin: 0; justify-self: end; font: 700 0.95rem/1 var(--sk-hand); color: var(--sk-red); letter-spacing: 0.02em; }
+.sk-flash-timer { display: block; height: 2px; margin: 8px 6px 0; border-radius: 2px; background: var(--sk-pencil); opacity: 0.45; transform: scaleX(0); transform-origin: left; }
 
 /* the index card, taped on */
 .sk-card-wrap { position: relative; justify-self: center; width: min(100%, 420px); rotate: -1.5deg; }
@@ -105,7 +131,7 @@
 :root .sk-card .cl-footer > * { padding-block: 6px; }
 
 /* waiting for the splash to hand over: the words stay hidden (laid out, so the logo knows where to land) */
-.auth-gate.sk-wait :is(.sk-word, .sk-doodle, .sk-title, .sk-todo, .sk-signed, .sk-card-wrap, .auth-theme) { visibility: hidden; }
+.auth-gate.sk-wait :is(.sk-word, .sk-doodle, .sk-title, .sk-todo, .sk-extras, .sk-signed, .sk-card-wrap, .auth-theme) { visibility: hidden; }
 
 @media (max-height: 760px) and (min-width: 861px) {
     .sk-signed { display: none; }
@@ -118,11 +144,17 @@
     .sk-holes { display: none; }
 }
 @media (max-width: 860px) {
-    .sk-page { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--margin-x) + 16px); padding-right: 16px; }
+    .sk-page { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--margin-x) + 16px); padding-right: 16px; row-gap: 14px; }
     .sk-card-wrap { rotate: 0deg; }
+    /* phones and tablets held upright: the name and title, then straight to the sign-in card, then the list and the notes */
+    .sk-copy { display: contents; }
+    .sk-brand { order: 1; margin: 0; } .sk-title { order: 2; margin: 0; } .sk-card-wrap { order: 3; margin-top: 10px; }
+    .sk-todo { order: 4; margin-top: 10px; } .sk-extras { order: 5; margin-top: 4px; } .sk-signed { order: 6; margin-top: 0; }
 }
 @media (max-width: 30rem) {
     .sk-page { --margin-x: 34px; padding-top: 64px; }
+    .sk-extras { grid-template-columns: minmax(0, 1fr); }
+    .sk-sticky { width: min(100%, 230px); }
     .sk-holes { display: none; }
     .sk-arrow { display: none; }
 }
