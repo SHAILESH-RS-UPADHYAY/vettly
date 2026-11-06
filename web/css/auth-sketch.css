@@ -67,16 +67,16 @@
 
 /* Clerk's form, drawn by hand: pen-outlined buttons that a red pen circles on hover, a dashed line to write the
    email on, and a highlighter for Continue */
-:root .sk-card .cl-socialButtonsBlockButton {
+:root .sk-card :is(.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton) {
     position: relative; overflow: visible; min-height: 46px; border: 2.2px solid var(--sk-pen); background: var(--sk-card); box-shadow: none;
     border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px; transition: transform 0.2s;
 }
-:root .sk-card .cl-socialButtonsBlockButton:hover { background: var(--sk-card); transform: rotate(-0.6deg) scale(1.015); }
-:root .sk-card .cl-socialButtonsBlockButton::after {
+:root .sk-card :is(.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton):hover { background: var(--sk-card); transform: rotate(-0.6deg) scale(1.015); }
+:root .sk-card :is(.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton)::after {
     content: ""; position: absolute; inset: -9px -12px; pointer-events: none; opacity: 0; scale: 0.92; rotate: -2deg; transition: opacity 0.25s, scale 0.35s;
     background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M8 22C6 8 40 3 62 4C88 5 98 14 95 24C92 35 60 38 36 37C14 36 3 30 6 18C8 11 20 8 30 7' fill='none' stroke='%23cf3f37' stroke-width='2.4' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
 }
-:root .sk-card .cl-socialButtonsBlockButton:hover::after, :root .sk-card .cl-socialButtonsBlockButton:focus-visible::after { opacity: 1; scale: 1; }
+:root .sk-card :is(.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton):is(:hover, :focus-visible)::after { opacity: 1; scale: 1; }
 :root .sk-card .cl-socialButtonsBlockButtonText { font: 700 1.08rem/1 var(--sk-note); color: var(--sk-pen); }
 :root .sk-card :is(.cl-dividerText, .cl-formFieldLabel, .cl-formFieldHintText) { font-family: var(--sk-note); color: var(--sk-pencil); }
 :root .sk-card .cl-dividerLine { background: var(--sk-card-rule); }

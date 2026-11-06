@@ -293,7 +293,21 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] Checked: frames of the construction and the throws, the pixel switch mid-wave, the two logos taking their paint
       at 5 s and 10 s, no failed requests after the move (21 stylesheets, 26 scripts), every tab, the legal pages, and
       the five backend test scripts
-- [ ] The owner picks a sign-in concept; then it is built into the real page
+- [x] The owner picked the Sketchbook (Phase 17)
+
+## Phase 17 · The Sketchbook sign-in page, Porcelain first, ink for day and night (requested 7 Nov)
+
+- [x] 17.1 The Sketchbook is the main sign-in page, with the real Clerk form inside its taped index card, drawn by hand
+      (pen-outlined buttons a red pen circles on hover, a dashed line for the email, a highlighter for Continue); blue
+      pen on cream by day, pale ink on a dark notebook at night
+- [x] 17.2 The classic "Walk in ready." page stays: everyone new sees the Sketchbook; people with an account see it two
+      visits in three and the classic page every third
+- [x] 17.3 Porcelain holds twice as long as any glaze, so it is the colour seen most; bringing the pointer within 5 cm
+      throws the next glaze at once (at most every 2.5 s); the two logos never match
+- [x] 17.4 Day and night arrive as ink: a drop falls on the switch and the new theme bleeds across the page with a
+      living, ragged edge and small blooms (replaces the pixel switch)
+- [x] Checked: the Sketchbook light, dark and phone (no sideways scroll); live on Vercel as a new visitor with the real
+      Clerk form; all thirteen glazes by day and night; the ink switch mid-bleed; the pointer throwing a glaze
 
 ## Settings only the owner can change (Vercel / Clerk)
 
