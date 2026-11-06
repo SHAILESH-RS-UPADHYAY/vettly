@@ -27,20 +27,44 @@ const Motion = (() => {
         });
     }
 
+    // Vettly's sparkle as a clip-path: four points about (x, y), turned by `turn` degrees, its waist at `waist` of its reach
+    function sparkle(x, y, reach, waist, turn) {
+        const pts = [];
+        for (let i = 0; i < 8; i++) {
+            const a = (turn + i * 45) * Math.PI / 180, r = i % 2 ? reach * waist : reach;
+            pts.push(`${(x + Math.sin(a) * r).toFixed(1)}px ${(y - Math.cos(a) * r).toFixed(1)}px`);
+        }
+        return `polygon(${pts.join(', ')})`;
+    }
+    // The new page opens out of its tab through the logo's sparkle: a thin star that turns as it grows and fills
+    // out until it covers the page (--vt-x and --vt-y, set by dashboard.js, are in the page's own box)
+    function bloom(el, pseudoElement) {
+        const cs = getComputedStyle(document.documentElement), m = document.getElementById('main-content').getBoundingClientRect();
+        const x = parseFloat(cs.getPropertyValue('--vt-x')) || m.width / 2, y = parseFloat(cs.getPropertyValue('--vt-y')) || 0;
+        // how far it has to open: to the farthest corner of the part of the page you can see
+        const l = Math.max(0, -m.left), t = Math.max(0, -m.top), r = Math.min(m.width, innerWidth - m.left), b = Math.min(m.height, innerHeight - m.top);
+        const far = Math.max(Math.hypot(l - x, t - y), Math.hypot(r - x, t - y), Math.hypot(l - x, b - y), Math.hypot(r - x, b - y));
+        const frames = [];
+        for (let k = 0; k <= 12; k++) {
+            const p = k / 12;   // the waist ends at 0.7 of the reach, so the reach is set to clear the far corner there
+            frames.push({ clipPath: sparkle(x, y, (far / 0.7) * 1.04 * p, 0.18 + 0.52 * p * p, 45 * p) });
+        }
+        return el.animate(frames, { duration: 780, easing: 'cubic-bezier(0.55, 0, 0.2, 1)', pseudoElement });
+    }
+
     // Swap page content inside a view transition when the browser has them
     function page(update) {
         const root = document.documentElement;
         if (calm()) { update(); return; }
-        if (!document.startViewTransition) {   // no view transitions: the new page still grows out of its tab
+        if (!document.startViewTransition) {   // no view transitions: the new page still opens out of its tab
             update();
-            const pg = document.querySelector('.page.active'), cs = getComputedStyle(root);
-            const at = `${cs.getPropertyValue('--vt-x').trim() || '50%'} ${cs.getPropertyValue('--vt-y').trim() || '0%'}`;
-            pg?.animate([{ clipPath: `circle(0% at ${at})`, opacity: 0.6 }, { clipPath: `circle(200% at ${at})`, opacity: 1 }], { duration: 560, easing: EASE_OUT });
+            const pg = document.querySelector('.page.active');
+            if (pg) bloom(pg);
             return;
         }
         root.classList.add('vt-page');
         const t = document.startViewTransition(update);
-        t.ready.catch(() => {});   // skipped by a resize or rotation: the update still ran
+        t.ready.then(() => bloom(root, '::view-transition-new(page)')).catch(() => {});   // skipped by a resize or rotation: the update still ran
         t.finished.finally(() => root.classList.remove('vt-page')).catch(() => {});
     }
 

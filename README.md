@@ -94,21 +94,21 @@ Every generated response passes through a **2-stage quality pipeline**: first, `
 <table width="100%">
   <tr>
     <td width="33%" align="center">
-      <img src="./web/agent_toolbelt_case.jpg" alt="Agent Toolbelt Case" width="100%" style="border-radius:10px;" />
+      <img src="./web/agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>1. Agent Context Toolbelt</strong>
       <br/>
       <sub>Multi-source ingestion for Resume PDFs, GitHub repositories, JD Stack Chips &amp; STAR stories.</sub>
     </td>
     <td width="33%" align="center">
-      <img src="./web/blueprint_architect.jpg" alt="Blueprint Architect" width="100%" style="border-radius:10px;" />
+      <img src="./web/blueprint_architect.webp" alt="Blueprint Architect" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>2. Prep Studio HUD</strong>
       <br/>
       <sub>9-category question synthesizer with Newest-First (Q# ↓) HUD sorting &amp; RL refinement.</sub>
     </td>
     <td width="33%" align="center">
-      <img src="./web/copilot_hud_panel.jpg" alt="Copilot HUD Panel" width="100%" style="border-radius:10px;" />
+      <img src="./web/copilot_hud_panel.webp" alt="Copilot HUD Panel" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>3. Live AI Practice Copilot</strong>
       <br/>

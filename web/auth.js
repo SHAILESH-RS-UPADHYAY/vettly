@@ -260,6 +260,8 @@
         try { localStorage.setItem('vettly_has_account', '1'); } catch (e) { /* storage blocked */ }
         const g = gate();
         if (!g.hidden) {
+            // the logo flies home: from the sign-in page to the side panel (on a phone, into the Mentor button)
+            window.Brand?.travel(g.querySelector('.auth-brand .brand-orb'), document.querySelector('#sidebar .sidebar-logo .brand-orb'), document.querySelector('#mentor-orb .m-orb'));
             const card = document.getElementById('auth-card');
             if (mounted === 'in') clerk.unmountSignIn(card); else if (mounted === 'up') clerk.unmountSignUp(card);
             mounted = null;

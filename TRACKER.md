@@ -232,6 +232,41 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       and dark; the iPad edit path; Look Book, device matrix, Key Ring, clock, Prep and real-Clerk suites; the five
       backend suites (a new roles test)
 
+## Phase 15 · A logo that draws itself, sparkle tabs, a sign-in page that acts out its words (requested 6–7 Nov)
+
+- [x] 15.1 Porcelain is the logo's home colour (an ivory disc, the sparkle in the theme's ink, also at night). It still
+      travels through the looks and comes back; Register's ink is out of the cycle. Every colour of the orb (lines,
+      comets, shading) is registered, so Porcelain's glaze blends into a look's gloss
+- [x] 15.2 The splash, on every load: the logo is drawn on a construction sheet (hairlines from the centre, a compass
+      with a pen riding it, the 35° axes and angle, a "48" dimension, the orbits, the star in outline, its ink, the
+      porcelain), then flies to its ring (side panel, sign-in page, onboarding or, on a phone, the Mentor button) and
+      the page opens out from where it lands. It covers the sign-in check (gives up after 9 s). A quicker take after the
+      first load of a visit; a click or a key skips it; never with reduced motion, under Calm, or on the way back from
+      Google
+- [x] 15.3 The logo sits in a still ring. Within 5 cm of the pointer, the side panel's logo and the Mentor button wake:
+      the ring fades in and the orb leans toward the pointer inside it (full strength within 3.5 cm, fading out by
+      5 cm, so nothing snaps). The open Mentor always leans. The owner tried "always on", then "only when open",
+      and settled on 5 cm
+- [x] 15.4 Tabs open through Vettly's sparkle: a thin four-point star from the tab you chose, turning as it grows and
+      filling out until it covers the page; the side panel's logo twirls once
+- [x] 15.5 Sign-in page: every line acts out its words. "Walk in" walks in, "ready." is stamped and inked, the kicker is
+      a ruled mono label (no more pill with a dot), "Made for ..." is a departures board flipping letter by letter,
+      the lede is two plain sentences ("Bring your resume and the job you want. Vettly turns them into practice.")
+      with a marker swipe, and the points are a numbered list between hairlines (a frame locks onto "exact", a voice
+      wave talks while "Answers that sound like you" appears, the 5 counts up). The card is up first, so the form is
+      usable while the words arrive
+- [x] 15.6 Signing in flies the logo from the sign-in page to the side panel (on a phone, into the Mentor button)
+- [x] 15.7 Repository tidied: one-off scripts nothing calls (check_context, verify_context, inject_context,
+      inject_jd_github) and the unused ai/question_matcher shim removed; the three 1 MB JPEG screenshots removed (the
+      app and the README use the WebP copies); resumes and local stores untracked and ignored (they stay on disk);
+      .hallmark/ ignored
+- [x] Checked: Playwright frames of the splash (light, dark, phone, quick take), the sign-in page (light, dark,
+      phone, reduced motion), a tab change frozen mid-sparkle, the lean at three distances with the Mentor open and
+      closed, onboarding and tablet headers, the sign-in hand-off; no console errors; the five backend test scripts
+- [x] The "Merge pull request" commits #4 to #10 showed "Unverified" on GitHub (GitHub made them when a cloud
+      session merged the pull requests). With the owner's go-ahead they were rewritten as plain merges by the owner
+      (same files, same dates) and main was force-pushed; from #11 on, pull requests are merged the same plain way
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
@@ -243,4 +278,4 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
 - [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
-- [ ] Personal files are tracked in git (`backend/uploads/*.pdf`, `backend/context_store/*.json`). They never deploy (`.vercelignore`), but before making the **repository** public: back them up, then `git rm --cached` them
+- [x] Personal files are no longer tracked (`backend/uploads/`, `backend/context_store/*.json`; Phase 15.7). They are still in the git history: before making the **repository** public, purge them from history too (for example with git filter-repo)

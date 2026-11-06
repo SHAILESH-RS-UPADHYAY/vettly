@@ -11,6 +11,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Vettly">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <!-- Link previews (Reddit, LinkedIn, X, WhatsApp): %SITE_URL% is filled in by the server for whichever domain served the page -->
@@ -49,16 +50,24 @@
             for (var k2 in ap) if (!(k2 in d) && typeof ap[k2] === 'string') root.setAttribute(attr(k2), ap[k2]);   // each look's workshop options
             var hands = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' }, hand = (ap.look === 'register') && hands[ap.regHand];
             if (hand) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hand + '&display=swap'; document.head.appendChild(l); }
+            /* the splash (brand.js): every load draws the logo, a quicker take after the first load of a visit; never
+               with reduced motion, under Calm, or on the way back from Google (the hand-off screen shows instead) */
+            var still = (ap.motion || d.motion) === 'calm' || (!!window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+            if (still || back) root.classList.add('no-splash');
+            else {
+                root.classList.add('splashing');
+                try { if (sessionStorage.getItem('vettly_splash')) root.setAttribute('data-splash', 'quick'); sessionStorage.setItem('vettly_splash', '1'); } catch (e) {}
+            }
         })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.1">
-    <link rel="stylesheet" href="./base.css?v=7.3">
-    <link rel="stylesheet" href="./styles.css?v=9.6">
+    <link rel="stylesheet" href="./base.css?v=7.4">
+    <link rel="stylesheet" href="./styles.css?v=9.7">
     <link rel="stylesheet" href="./prep.css?v=7.7">
-    <link rel="stylesheet" href="./mentor.css?v=9.3">
+    <link rel="stylesheet" href="./mentor.css?v=9.6">
     <link rel="stylesheet" href="./looks.css?v=7.10">
     <link rel="stylesheet" href="./paper.css?v=8.1">
     <link rel="stylesheet" href="./workshop.css?v=8.2">
@@ -72,10 +81,42 @@
     <link rel="stylesheet" href="./lookbook.css?v=1.8">
     <link rel="stylesheet" href="./account.css?v=1.1">
     <link rel="stylesheet" href="./tooltip.css?v=1.0">
-    <link rel="stylesheet" href="./brand.css?v=1.1">
-    <link rel="stylesheet" href="./auth-intro.css?v=1.3">
+    <link rel="stylesheet" href="./brand.css?v=2.2">
+    <link rel="stylesheet" href="./auth-intro.css?v=2.1">
 </head>
 <body data-section="home">
+    <!-- The splash: on every load Vettly's logo draws itself on a construction sheet, then flies to its place and the
+         page opens out from there (brand.css draws it, brand.js lands it). Click or press a key to skip. -->
+    <div class="splash" id="splash" aria-hidden="true">
+        <div class="sp-curtain"></div>
+        <div class="sp-center">
+            <div class="sp-stage">
+                <svg class="sp-guides" viewBox="-48 -48 144 144" focusable="false">
+                    <path class="sp-draw sp-hair" d="M24 24H96" pathLength="1"/><path class="sp-draw sp-hair" d="M24 24H-48" pathLength="1"/>
+                    <path class="sp-draw sp-hair" d="M24 24V-48" pathLength="1"/><path class="sp-draw sp-hair" d="M24 24V96" pathLength="1"/>
+                    <path class="sp-draw sp-axis" d="M24 24H78" transform="rotate(-35 24 24)" pathLength="1"/><path class="sp-draw sp-axis" d="M24 24H-30" transform="rotate(-35 24 24)" pathLength="1"/>
+                    <path class="sp-draw sp-axis" d="M24 24H78" transform="rotate(35 24 24)" pathLength="1"/><path class="sp-draw sp-axis" d="M24 24H-30" transform="rotate(35 24 24)" pathLength="1"/>
+                    <circle class="sp-inner" cx="24" cy="24" r="10"/>
+                    <circle class="sp-draw sp-compass" cx="24" cy="24" r="24" transform="rotate(-90 24 24)" pathLength="1"/>
+                    <path class="sp-draw sp-arc" d="M54 24A30 30 0 0 0 48.57 6.79" pathLength="1"/>
+                    <text class="sp-angle" x="59" y="15.5">35°</text>
+                    <g class="sp-dim"><path d="M0 -10.5V-5.5M48 -10.5V-5.5M0 -8H48"/><rect class="sp-knock" x="19.5" y="-13.4" width="9" height="4.4"/><text x="24" y="-10.1">48</text></g>
+                    <g class="sp-pen"><circle cx="24" cy="24" r="24"/><circle class="sp-nib" cx="24" cy="0" r="1.3"/></g>
+                </svg>
+                <svg class="sp-orb" viewBox="0 0 48 48" focusable="false">
+                    <defs><radialGradient id="sp-glaze" cx="36%" cy="30%" r="80%"><stop class="sp-g0" offset="0"/><stop class="sp-g1" offset=".38"/><stop class="sp-g2" offset="1"/></radialGradient></defs>
+                    <circle class="sp-sphere" cx="24" cy="24" r="23.5"/>
+                    <circle class="sp-bezel" cx="24" cy="24" r="21"/>
+                    <ellipse class="sp-draw sp-ring sp-r1" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)" pathLength="1"/>
+                    <ellipse class="sp-draw sp-ring sp-r2" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)" pathLength="1"/>
+                    <ellipse class="m-run" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)" pathLength="100"/><ellipse class="m-run m-run-head" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)" pathLength="100"/><ellipse class="m-run m-run-2" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)" pathLength="100"/><ellipse class="m-run m-run-head m-run-2" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)" pathLength="100"/>
+                    <path class="sp-draw sp-halo" d="M24 9.5C25.1 18 30 22.9 38.5 24C30 25.1 25.1 30 24 38.5C22.9 30 18 25.1 9.5 24C18 22.9 22.9 18 24 9.5Z" pathLength="1"/>
+                    <path class="sp-draw sp-star" d="M24 14C24.7 19.8 28.2 23.3 34 24C28.2 24.7 24.7 28.2 24 34C23.3 28.2 19.8 24.7 14 24C19.8 23.3 23.3 19.8 24 14Z" pathLength="1"/>
+                </svg>
+            </div>
+            <p class="sp-word"><span>V</span><span>e</span><span>t</span><span>t</span><span>l</span><span>y</span></p>
+        </div>
+    </div>
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
     <svg class="icon-sprite" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
         <defs>
@@ -180,18 +221,18 @@
         </button>
         <div class="auth-inner">
             <div class="auth-copy">
-                <p class="auth-brand"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span><span class="auth-word">Vettly</span></p>
-                <p class="auth-kicker"><i aria-hidden="true"></i>Interview prep for every field</p>
+                <p class="auth-brand"><span class="brand-ring"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span></span><span class="auth-word">Vettly</span></p>
+                <p class="auth-kicker"><span class="ak-text">Interview prep for every field</span></p>
                 <h1 class="auth-title"><span class="at-line">Walk in</span> <em class="at-ready"><span class="at-ready-text">ready.</span><svg class="at-ink" viewBox="0 0 300 26" preserveAspectRatio="none" aria-hidden="true"><path d="M5 17 C 70 7, 150 5, 296 13" pathLength="1"/></svg></em></h1>
                 <p class="auth-swap"><span class="sr-only">Made for nurses, analysts, engineers, designers, teachers and marketers.</span>
                     <span aria-hidden="true">Made for</span> <span class="auth-swap-slot" aria-hidden="true"><b data-swap>nurses</b></span>
                 </p>
-                <p class="auth-lede">Tell Vettly your role. Get the questions you'll really face, answers in your own words, and a mentor who explains every one.</p>
-                <ul class="auth-points">
-                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-target"/></svg></span>Questions for your exact role</li>
-                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-chats"/></svg></span>Answers that sound like you</li>
-                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-bento"/></svg></span>Five fresh ideas every morning</li>
-                </ul>
+                <p class="auth-lede">Bring your <mark class="al-mark">resume</mark> and <mark class="al-mark">the job you want</mark>. <span class="al-then">Vettly turns them into practice.</span></p>
+                <ol class="auth-points">
+                    <li><span class="ap-n" aria-hidden="true"><b>01</b></span><span class="ap-t"><span class="ap-in">Questions for your <span class="ap-lock">exact<i class="ap-box" aria-hidden="true"></i></span> role</span></span></li>
+                    <li><span class="ap-n" aria-hidden="true"><b>02</b></span><span class="ap-t"><span class="ap-in">Answers that sound like you</span></span><i class="ap-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></i></li>
+                    <li><span class="ap-n" aria-hidden="true"><b>03</b></span><span class="ap-t"><span class="ap-count">5</span> <span class="ap-in">fresh ideas every morning</span></span></li>
+                </ol>
             </div>
             <div class="auth-panel">
                 <span class="auth-tape" aria-hidden="true"></span>
@@ -209,7 +250,7 @@
 
     <nav id="sidebar" aria-label="Main">
         <div class="sidebar-logo">
-            <span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span>
+            <span class="brand-ring"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span></span>
             <span class="logo-text">Vettly</span>
             <span class="logo-badge">POSTER V2</span>
             <span class="logo-tagline" aria-hidden="true">POSTER SPEC // ARCHITECT</span>
@@ -1327,14 +1368,14 @@
     <script defer src="./vendor/gsap-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
-    <script defer src="./auth.js?v=9.6"></script>
-    <script defer src="./motion.js?v=8.5"></script>
+    <script defer src="./auth.js?v=9.7"></script>
+    <script defer src="./motion.js?v=8.6"></script>
     <script defer src="./tooltip.js?v=1.0"></script>
     <script defer src="./appearance.js?v=9.1"></script>
-    <script defer src="./dashboard.js?v=9.5"></script>
-    <script defer src="./mentor.js?v=8.6"></script>
-    <script defer src="./brand.js?v=1.0"></script>
-    <script defer src="./auth-intro.js?v=1.3"></script>
+    <script defer src="./dashboard.js?v=9.6"></script>
+    <script defer src="./mentor.js?v=8.7"></script>
+    <script defer src="./brand.js?v=2.2"></script>
+    <script defer src="./auth-intro.js?v=2.0"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
@@ -1346,7 +1387,7 @@
     <script defer src="./tour.js?v=2.2"></script>
     <script defer src="./onboard-scenes.js?v=2.3"></script>
     <script defer src="./lookbook.js?v=1.5"></script>
-    <script defer src="./onboard.js?v=9.11"></script>
+    <script defer src="./onboard.js?v=9.12"></script>
     <script defer src="./picker.js?v=1.2"></script>
 </body>
 </html>

@@ -52,7 +52,7 @@ function switchSection(name, { animate = false } = {}) {
         Motion.pill(sideNav);
         Motion.thumbs(page);
     };
-    if (animate && changing) { transitionFrom(name); Motion.page(apply); } else apply();
+    if (animate && changing) { transitionFrom(name); Motion.page(apply); window.Brand?.pulse(); } else apply();
     // #/… belongs to Clerk's sign-in forms (#/sso-callback finishes a Google sign-in): never overwrite it
     if (!location.hash.startsWith('#/') && location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 

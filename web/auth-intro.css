@@ -1,9 +1,9 @@
 /* The sign-in page (auth-intro.js animates it). Tokens only, so every look and day / night dress it. */
 
-/* the kicker: a pill with a breathing dot */
-.auth-kicker { display: inline-flex; align-items: center; gap: 9px; padding: 7px 15px 7px 11px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font: 700 0.74rem/1 var(--font-mono); letter-spacing: 0.09em; text-transform: uppercase; }
-.auth-kicker i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: akPing 2.4s var(--ease-out) infinite; }
-@keyframes akPing { 0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.55); } 70%, 100% { box-shadow: 0 0 0 9px rgba(var(--accent-rgb), 0); } }
+/* the kicker: a ruled label, set in mono (the rule draws, then the words slide out from under it) */
+.auth-kicker { --rule: 1; display: inline-flex; align-items: center; gap: 12px; margin: 0; color: var(--accent-ink); font: 700 0.74rem/1 var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
+.auth-kicker::before { content: ""; flex: none; width: 30px; height: 2px; border-radius: 2px; background: currentColor; transform: scaleX(var(--rule)); transform-origin: left; }
+.ak-text { display: inline-block; }
 
 /* the headline: big and short; letters hop under the pointer once they have landed */
 .auth-title { font-size: clamp(3rem, 7.6vw, 5.9rem); line-height: 0.95; letter-spacing: -0.035em; }
@@ -24,10 +24,41 @@
 .auth-swap-slot { display: inline-block; }
 .auth-swap-slot b { display: inline-block; font-weight: 800; transform-origin: 50% 50% -0.4em; transition: color 0.3s var(--ease-out); }
 
-/* points: an icon in a soft disc, then the words */
-.auth-points li { gap: 12px; }
-.auth-points .ap-ico { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink); }
-.auth-points .ap-ico svg { width: 20px; height: 20px; padding: 0; background: none; border-radius: 0; }
+/* the lede: a marker swipes over what to bring */
+.auth-lede { max-width: 44ch; }
+.al-then { display: block; }   /* one sentence a line: what you bring, then what Vettly does */
+.al-mark { white-space: nowrap; }
+.al-mark {
+    --mk: 100%; padding: 0 0.12em; margin: 0 -0.12em; border-radius: 2px; color: inherit;
+    background: linear-gradient(transparent 56%, color-mix(in srgb, var(--accent) 26%, transparent) 56%, color-mix(in srgb, var(--accent) 26%, transparent) 94%, transparent 94%) no-repeat 0 0 / var(--mk) 100%;
+    -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+
+/* the points: a numbered list between hairlines; each line acts out its words */
+.auth-points { gap: 0; width: min(100%, 31rem); margin-top: 8px; }
+.auth-points li { --hair: 1; position: relative; display: grid; grid-template-columns: auto auto minmax(0, 1fr); align-items: center; gap: 16px; padding: 13px 2px; font-size: 1.04rem; }
+.auth-points li::after, .auth-points li:first-child::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--rule); transform: scaleX(var(--hair)); transform-origin: left; }
+.auth-points li:first-child::before { top: 0; bottom: auto; }
+.ap-n { display: inline-block; overflow: hidden; font: 700 0.76rem/1.2 var(--font-mono); letter-spacing: 0.08em; color: var(--muted); }
+.ap-n b { display: inline-block; font-weight: inherit; }
+.ap-t { display: inline-block; min-width: 0; }
+.ap-in { display: inline-block; }
+.auth-points li:first-child .ap-t { clip-path: inset(-0.4em -0.8em -0.3em -0.4em); }   /* the slot "Questions ..." rises out of */
+/* a frame locks onto "exact" (corners only: the mask keeps four 7px corners of the border) */
+.ap-lock { position: relative; display: inline-block; }
+.ap-box {
+    position: absolute; inset: -2px -6px -1px; border: 1.5px solid var(--accent); border-radius: 3px; pointer-events: none;
+    -webkit-mask: conic-gradient(at 7px 7px, #0000 75%, #000 0) 0 0 / calc(100% - 7px) calc(100% - 7px);
+    mask: conic-gradient(at 7px 7px, #0000 75%, #000 0) 0 0 / calc(100% - 7px) calc(100% - 7px);
+}
+/* a small voice wave beside "Answers that sound like you" */
+.ap-wave { display: inline-flex; align-items: center; gap: 2.5px; height: 18px; margin-left: -6px; }
+.ap-wave i { width: 3px; height: var(--h, 60%); border-radius: 3px; background: var(--accent); opacity: 0.85; }
+.ap-wave i:nth-child(1) { --h: 34%; } .ap-wave i:nth-child(2) { --h: 72%; } .ap-wave i:nth-child(3) { --h: 100%; } .ap-wave i:nth-child(4) { --h: 56%; } .ap-wave i:nth-child(5) { --h: 26%; }
+.ap-count { display: inline-block; min-width: 0.6em; font-variant-numeric: tabular-nums; }
+
+/* the departures board: each letter is a flap that keeps its own width */
+.flap { display: inline-block; text-align: center; transform-origin: 50% 60%; backface-visibility: hidden; }
 
 /* the card: tape on top, a slight lean toward the pointer */
 .auth-panel::before { display: none; }
@@ -56,17 +87,18 @@
 }
 .auth-inner { position: relative; z-index: 1; }
 
-/* while the intro runs, the CSS fallback entrances step aside */
+/* waiting for the splash to hand over: the words stay hidden (laid out, so the logo knows where to land) */
 .auth-gate.intro-on, .auth-gate.intro-on :is(.auth-copy, .auth-points li, .auth-panel) { animation: none !important; }
+.auth-gate.intro-wait :is(.auth-word, .auth-kicker, .auth-title, .auth-swap, .auth-lede, .auth-points, .auth-panel, .auth-theme) { visibility: hidden; }
 
 @media (max-width: 47.99rem) {
     .auth-title { font-size: clamp(2.7rem, 13.5vw, 3.8rem); }
     .auth-gate::before { -webkit-mask-image: radial-gradient(280px circle at 50% 22%, #000, transparent 75%); mask-image: radial-gradient(280px circle at 50% 22%, #000, transparent 75%); }
 }
 @media (prefers-reduced-motion: reduce) {
-    .auth-kicker i, .at-char, .aw-char, .auth-swap-slot b, .auth-tabs::before, .auth-panel { animation: none !important; transition: none !important; }
+    .at-char, .aw-char, .auth-swap-slot b, .auth-tabs::before, .auth-panel { animation: none !important; transition: none !important; }
 }
-:root[data-motion="calm"] :is(.auth-kicker i, .at-char, .aw-char, .auth-swap-slot b, .auth-panel) { animation: none !important; transition: none !important; }
+:root[data-motion="calm"] :is(.at-char, .aw-char, .auth-swap-slot b, .auth-panel) { animation: none !important; transition: none !important; }
 :root[data-motion="calm"] .auth-tabs::before { transition: none !important; }
 
 /* ── The hand-off screen (auth.js): "Taking you to Google…" on the way out, "Signing you in…" on the way back ── */
