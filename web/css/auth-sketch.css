@@ -22,7 +22,9 @@
     --margin-x: clamp(44px, 8vw, 110px);
     position: relative; min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: center;
     gap: clamp(24px, 4vw, 70px); padding: max(clamp(18px, 5vh, 46px), env(safe-area-inset-top)) clamp(20px, 6vw, 90px) max(clamp(18px, 5vh, 56px), env(safe-area-inset-bottom)) calc(var(--margin-x) + clamp(20px, 3vw, 44px));
-    align-items: safe center;
+    /* both columns start on one line (the brand level with the card's top) and the pair is centred as a block, so the
+       space above and below is even; taller than the screen, it starts at the top and scrolls */
+    align-items: start; align-content: safe center;
     background: linear-gradient(90deg, transparent var(--margin-x), var(--sk-margin) var(--margin-x) calc(var(--margin-x) + 2px), transparent calc(var(--margin-x) + 2px)),
         repeating-linear-gradient(transparent 0 33px, var(--sk-rule) 33px 34px), var(--sk-paper);
     color: var(--sk-pen); font-family: var(--sk-note); transform-origin: 0 50%; box-shadow: 0 0 60px rgba(0, 0, 0, 0.12);
