@@ -50,13 +50,14 @@
             for (var k2 in ap) if (!(k2 in d) && typeof ap[k2] === 'string') root.setAttribute(attr(k2), ap[k2]);   // each look's workshop options
             var hands = { kalam: 'Kalam:wght@400;700', patrick: 'Patrick+Hand', gaegu: 'Gaegu:wght@400;700', shadows: 'Shadows+Into+Light' }, hand = (ap.look === 'register') && hands[ap.regHand];
             if (hand) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hand + '&display=swap'; document.head.appendChild(l); }
-            /* the splash (brand.js): every load draws the logo, a quicker take after the first load of a visit; never
+            /* the splash (brand.js): every load draws the logo, the full show once a day; never
                with reduced motion, under Calm, or on the way back from Google (the hand-off screen shows instead) */
             var still = (ap.motion || d.motion) === 'calm' || (!!window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
             if (still || back) root.classList.add('no-splash');
             else {
                 root.classList.add('splashing');
-                try { if (sessionStorage.getItem('vettly_splash')) root.setAttribute('data-splash', 'quick'); sessionStorage.setItem('vettly_splash', '1'); } catch (e) {}
+                /* the full show once a day; later loads that day get the short take */
+                try { var today = new Date().toDateString(); if (localStorage.getItem('vettly_splash_day') === today) root.setAttribute('data-splash', 'quick'); else localStorage.setItem('vettly_splash_day', today); } catch (e) {}
             }
         })();
     </script>
@@ -64,7 +65,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.1">
-    <link rel="stylesheet" href="./base.css?v=7.4">
+    <link rel="stylesheet" href="./base.css?v=7.5">
     <link rel="stylesheet" href="./styles.css?v=9.7">
     <link rel="stylesheet" href="./prep.css?v=7.7">
     <link rel="stylesheet" href="./mentor.css?v=9.6">
@@ -81,7 +82,7 @@
     <link rel="stylesheet" href="./lookbook.css?v=1.8">
     <link rel="stylesheet" href="./account.css?v=1.1">
     <link rel="stylesheet" href="./tooltip.css?v=1.0">
-    <link rel="stylesheet" href="./brand.css?v=2.2">
+    <link rel="stylesheet" href="./brand.css?v=3.1">
     <link rel="stylesheet" href="./auth-intro.css?v=2.1">
 </head>
 <body data-section="home">
@@ -101,11 +102,15 @@
                     <path class="sp-draw sp-arc" d="M54 24A30 30 0 0 0 48.57 6.79" pathLength="1"/>
                     <text class="sp-angle" x="59" y="15.5">35°</text>
                     <g class="sp-dim"><path d="M0 -10.5V-5.5M48 -10.5V-5.5M0 -8H48"/><rect class="sp-knock" x="19.5" y="-13.4" width="9" height="4.4"/><text x="24" y="-10.1">48</text></g>
+                    <g class="sp-arm"><circle cx="24" cy="24" r="34" fill="none"/><line x1="24" y1="24" x2="58" y2="24"/></g>
                     <g class="sp-pen"><circle cx="24" cy="24" r="24"/><circle class="sp-nib" cx="24" cy="0" r="1.3"/></g>
                 </svg>
                 <svg class="sp-orb" viewBox="0 0 48 48" focusable="false">
-                    <defs><radialGradient id="sp-glaze" cx="36%" cy="30%" r="80%"><stop class="sp-g0" offset="0"/><stop class="sp-g1" offset=".38"/><stop class="sp-g2" offset="1"/></radialGradient></defs>
+                    <defs><radialGradient id="sp-glaze" cx="36%" cy="30%" r="80%"><stop class="sp-g0" offset="0"/><stop class="sp-g1" offset=".38"/><stop class="sp-g2" offset="1"/></radialGradient>
+                        <linearGradient id="sp-shine" x1="0" x2="1"><stop class="sp-shine-0" offset="0"/><stop class="sp-shine-1" offset=".5"/><stop class="sp-shine-0" offset="1"/></linearGradient>
+                        <clipPath id="sp-clip"><circle cx="24" cy="24" r="23.5"/></clipPath></defs>
                     <circle class="sp-sphere" cx="24" cy="24" r="23.5"/>
+                    <g clip-path="url(#sp-clip)"><rect class="sp-glint" x="8" y="-6" width="9" height="60" transform="rotate(22 24 24)"/></g>
                     <circle class="sp-bezel" cx="24" cy="24" r="21"/>
                     <ellipse class="sp-draw sp-ring sp-r1" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(-35 24 24)" pathLength="1"/>
                     <ellipse class="sp-draw sp-ring sp-r2" cx="24" cy="24" rx="18.5" ry="7" transform="rotate(35 24 24)" pathLength="1"/>
@@ -116,6 +121,7 @@
             </div>
             <p class="sp-word"><span>V</span><span>e</span><span>t</span><span>t</span><span>l</span><span>y</span></p>
         </div>
+        <p class="sp-skip">Click anywhere to skip</p>
     </div>
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
     <svg class="icon-sprite" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -1371,10 +1377,10 @@
     <script defer src="./auth.js?v=9.7"></script>
     <script defer src="./motion.js?v=8.6"></script>
     <script defer src="./tooltip.js?v=1.0"></script>
-    <script defer src="./appearance.js?v=9.1"></script>
+    <script defer src="./appearance.js?v=9.2"></script>
     <script defer src="./dashboard.js?v=9.6"></script>
     <script defer src="./mentor.js?v=8.7"></script>
-    <script defer src="./brand.js?v=2.2"></script>
+    <script defer src="./brand.js?v=3.2"></script>
     <script defer src="./auth-intro.js?v=2.0"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>

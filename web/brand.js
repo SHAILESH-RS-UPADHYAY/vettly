@@ -1,66 +1,63 @@
 /**
  * Vettly's logo is the Mentor's orb. Wherever it stands (the side panel, the sign-in page, onboarding, the browser
- * tab) it keeps its animation and slowly travels through colours. It starts on Porcelain, its home colour (an ivory
- * disc, the sparkle in your accent's ink), then eases through the looks and comes back: Poster orange, Studio clay,
- * Blueprint blue, Bubblegum pink, Sakura blossom, Lavender, Strawberry, Mermaid teal. Register's ink stays out.
- * brand.css registers every colour so each blends into the next; the logo rests when the tab is hidden, under Calm,
- * or with reduced motion.
+ * tab) it keeps its animation and travels through glazes: Porcelain, its home (an ivory disc, the sparkle in your
+ * theme's ink), then three of twelve light glazes, then Porcelain again. The twelve sit evenly around the colour wheel
+ * at one lightness, each shaped like Porcelain: a light disc with the star and orbits in a deeper shade of its colour.
+ * A new glaze every 10 s, and each one arrives as a drop of paint thrown at the logo. The Ask Mentor button wears
+ * them too (while its orb style is the default), 5 s and two glazes apart, so the two never match. brand.css
+ * registers every colour so changes blend; everything rests when the tab is hidden, under Calm, or with reduced motion.
  *
  * Also the logo's moves:
- *  - lean: the Mentor button and the logo in the side panel wake as the pointer comes within 5 cm: a still ring
- *    fades in and the orb leans toward the pointer inside it (the open Mentor always leans)
+ *  - lean: within 5 cm of the pointer the logo (side panel, sign-in page, onboarding) and the Mentor button wake:
+ *    a still ring fades in and the orb leans toward the pointer inside it (the open Mentor always leans)
  *  - pulse: a twirl when you change tabs
  *  - travel: it flies from the sign-in page to its place in the side panel when you sign in
- *  - the splash: on every load it draws itself (markup in index.html, drawing in brand.css), then flies to its
- *    place and the page opens out from there; afterSplash(fn) runs fn once it has landed
+ *  - the splash: on every load it draws itself on a construction sheet (markup in index.html, drawing in brand.css),
+ *    takes a few throws of paint, washes back to Porcelain, then flies to its place and the page opens out from
+ *    there. The full show once a day, a short one after that; afterSplash(fn) runs fn once it has landed.
  * Markup: <span class="brand-ring"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span></span>
  */
 const Brand = (() => {
     const root = document.documentElement;
-    // core, deep, glow (r, g, b), the star
-    const LOOKS = {
-        classic: ['#f06a20', '#a83a08', '240, 106, 32', '#fff9ee'],
-        studio: ['#e0703a', '#8f3412', '224, 112, 58', '#fff4ea'],
-        blueprint: ['#3f83f8', '#1e3a8a', '63, 131, 248', '#eef6ff'],
-        bubblegum: ['#f0508a', '#9d1550', '240, 80, 138', '#fff0f6'],
-        sakura: ['#f29bb5', '#b8506f', '242, 155, 181', '#fff6f8'],
-        lavender: ['#a07cf0', '#5537b0', '160, 124, 240', '#f6f1ff'],
-        strawberry: ['#f06b8a', '#ad2848', '240, 107, 138', '#fff3f5'],
-        mermaid: ['#2fc4bf', '#1d6684', '47, 196, 191', '#effffe'],
-    };
-    const ORDER = ['porcelain', ...Object.keys(LOOKS)];
+    const GLAZES = [['coral', 25], ['apricot', 55], ['saffron', 85], ['pistachio', 115], ['matcha', 145], ['mint', 175],
+        ['aqua', 205], ['sky', 235], ['periwinkle', 265], ['lilac', 295], ['orchid', 325], ['blush', 355]];
+    const HUE = Object.fromEntries(GLAZES);
+    const ORDER = [];   // Porcelain, three glazes, Porcelain, three glazes...
+    GLAZES.forEach(([id], i) => { if (i % 3 === 0) ORDER.push('porcelain'); ORDER.push(id); });
+    const PERIOD = 10000, MENTOR_AHEAD = 2;
     const quiet = () => matchMedia('(prefers-reduced-motion: reduce)').matches || root.dataset.motion === 'calm';
-    const PERIOD = 6000;   // each colour holds this long; Porcelain twice as long
-    let at = 0, timer = 0;
+    const night = () => root.classList.contains('theme-dark');
+    let at = 0, mentorAt = MENTOR_AHEAD, timers = [];
 
-    // every colour of the orb, for one look; Porcelain reads the theme's own porcelain tokens (they change at night)
+    // every colour of the orb for one glaze; Porcelain reads the theme's own porcelain tokens (they change at night)
     function palette(id) {
+        let core, deep, star;
         if (id === 'porcelain') {
             const cs = getComputedStyle(root), tok = n => cs.getPropertyValue(`--orb-porcelain-${n}`).trim();
-            const star = tok('star') || '#2b3346', mix = p => `color-mix(in srgb, ${star} ${p}%, transparent)`;
-            return {
-                core: tok('core'), deep: tok('deep'), star, aura: 'transparent', ripple: mix(36), spec: 'rgba(255, 255, 255, 0.95)',
-                sheen: 'rgba(255, 255, 255, 0.5)', shade: tok('inset'), rim: 'rgba(255, 255, 255, 0.9)', edge: tok('edge'), drop: tok('drop'),
-                'star-drop': mix(30), line: mix(24), run: mix(55), head: star, 'head-glow': 'transparent', halo: mix(32), bezel: mix(34),
-            };
+            core = tok('core') || '#fffdf8'; deep = tok('deep') || '#ece1cd'; star = tok('star') || '#2b3346';
+        } else {
+            const h = HUE[id], n = night();
+            core = `oklch(${n ? 0.9 : 0.93} 0.055 ${h})`; deep = `oklch(${n ? 0.8 : 0.84} 0.1 ${h})`; star = `oklch(0.52 0.14 ${h})`;
         }
-        const [core, deep, rgb, star] = LOOKS[id];
+        const mix = p => `color-mix(in oklch, ${star} ${p}%, transparent)`;
         return {
-            core, deep, star, aura: `rgba(${rgb}, 0.24)`, ripple: `rgba(${rgb}, 0.5)`, spec: 'rgba(255, 249, 238, 0.9)',
-            sheen: 'rgba(255, 255, 255, 0.26)', shade: `color-mix(in srgb, ${deep} 34%, transparent)`, rim: 'rgba(255, 255, 255, 0.55)',
-            edge: 'rgba(255, 255, 255, 0.14)', drop: `rgba(${rgb}, 0.7)`, 'star-drop': `color-mix(in srgb, ${deep} 40%, transparent)`,
-            line: 'rgba(255, 249, 238, 0.3)', run: 'rgba(255, 250, 240, 0.5)', head: '#ffffff', 'head-glow': '#ffffff',
-            halo: 'rgba(255, 250, 240, 0.35)', bezel: 'rgba(255, 249, 238, 0.5)',
+            core, deep, star, aura: 'transparent', ripple: mix(36), spec: 'rgba(255, 255, 255, 0.95)', sheen: 'rgba(255, 255, 255, 0.5)',
+            shade: mix(14), rim: 'rgba(255, 255, 255, 0.9)', edge: mix(20), drop: mix(45), 'star-drop': mix(30),
+            line: mix(24), run: mix(55), head: star, 'head-glow': 'transparent', halo: mix(32), bezel: mix(34),
         };
     }
     function paint(el, id) {
         for (const [k, v] of Object.entries(palette(id))) el.style.setProperty(`--orb-${k}`, v);
         el.dataset.brandLook = id;
     }
-    // the tab's icon: the orb drawn small, in the same colours
+    function unpaint(el) {
+        Object.keys(palette('porcelain')).forEach(k => el.style.removeProperty(`--orb-${k}`));
+        delete el.dataset.brandLook;
+    }
+    // the tab's icon: the orb drawn small, in the same glaze
     function favicon(id) {
-        const p = palette(id), lines = id === 'porcelain' ? p.star : '#fff';
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><radialGradient id="g" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset=".28" stop-color="${p.core}"/><stop offset="1" stop-color="${p.deep}"/></radialGradient></defs><circle cx="16" cy="16" r="15" fill="url(#g)"${id === 'porcelain' ? ' stroke="#000" stroke-opacity=".14"' : ''}/><ellipse cx="16" cy="16" rx="12.6" ry="4.6" fill="none" stroke="${lines}" stroke-opacity=".6" stroke-width="1.1" transform="rotate(-35 16 16)"/><ellipse cx="16" cy="16" rx="12.6" ry="4.6" fill="none" stroke="${lines}" stroke-opacity=".35" stroke-width="1" transform="rotate(35 16 16)"/><path d="M16 7.2C16.7 13 19 15.3 24.8 16C19 16.7 16.7 19 16 24.8C15.3 19 13 16.7 7.2 16C13 15.3 15.3 13 16 7.2Z" fill="${p.star}"/></svg>`;
+        const p = palette(id);
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><radialGradient id="g" cx="38%" cy="30%" r="78%"><stop offset="0" stop-color="#fff"/><stop offset=".4" stop-color="${p.core}"/><stop offset="1" stop-color="${p.deep}"/></radialGradient></defs><circle cx="16" cy="16" r="15" fill="url(#g)" stroke="#000" stroke-opacity=".14"/><ellipse cx="16" cy="16" rx="12.6" ry="4.6" fill="none" stroke="${p.star}" stroke-opacity=".45" stroke-width="1.1" transform="rotate(-35 16 16)"/><ellipse cx="16" cy="16" rx="12.6" ry="4.6" fill="none" stroke="${p.star}" stroke-opacity=".3" stroke-width="1" transform="rotate(35 16 16)"/><path d="M16 7.2C16.7 13 19 15.3 24.8 16C19 16.7 16.7 19 16 24.8C15.3 19 13 16.7 7.2 16C13 15.3 15.3 13 16 7.2Z" fill="${p.star}"/></svg>`;
         return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     }
     function icon(id) {
@@ -69,47 +66,119 @@ const Brand = (() => {
         link.type = 'image/svg+xml';
         link.href = favicon(id);
     }
-    // fill and colour every brand orb in scope (onboarding calls this when it draws its header)
+    // a new orb takes its colour at once; only changes blend
+    function settle(el, id) {
+        const fresh = !el.dataset.brandLook;
+        if (fresh) el.style.transition = 'none';
+        paint(el, id);
+        if (fresh) { void el.offsetWidth; el.style.transition = ''; }
+    }
+    // fill and colour every logo in scope (onboarding calls this when it draws its header)
     function fill(scope = document) {
         scope.querySelectorAll('.brand-orb').forEach(el => {
             if (!el.childElementCount && typeof MENTOR_EMBLEM === 'string') el.innerHTML = MENTOR_EMBLEM;
-            const fresh = !el.dataset.brandLook;   // a new orb takes its colour at once; only changes blend
-            if (fresh) el.style.transition = 'none';
-            paint(el, ORDER[at]);
-            if (fresh) { void el.offsetWidth; el.style.transition = ''; }
+            settle(el, ORDER[at]);
         });
     }
-    function step() {
+    // the Ask Mentor button wears the glazes while its orb style is the default (Porcelain by day, Classic glow at night);
+    // a style picked in the Atelier is kept
+    const mentorOrb = () => document.querySelector('#mentor-orb .m-orb');
+    const mentorGlazed = () => ['porcelain', 'gloss'].includes(night() ? root.dataset.orbDark : root.dataset.orb);
+    function fillMentor() {
+        const orb = mentorOrb();
+        if (!orb) return;
+        if (!mentorGlazed()) { orb.classList.remove('glazed'); unpaint(orb); return; }
+        orb.classList.add('glazed');
+        settle(orb, ORDER[mentorAt]);
+    }
+
+    // ── each new glaze is thrown: a drop flies in from off to one side, splats on the orb, and the orb takes its colour ──
+    function burst(x, y, color, size, toward) {
+        for (let i = 0; i < 9; i++) {
+            const d = document.createElement('i');
+            d.className = 'paint-fleck';
+            const s = size * (0.12 + Math.random() * 0.14);
+            Object.assign(d.style, { left: `${x}px`, top: `${y}px`, width: `${s}px`, height: `${s}px`, background: color });
+            document.body.append(d);
+            const a = toward + (Math.random() - 0.5) * 2.4, dist = size * (0.5 + Math.random() * 0.9);
+            d.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
+                { transform: `translate(calc(-50% + ${Math.cos(a) * dist}px), calc(-50% + ${Math.sin(a) * dist + size * 0.25}px)) scale(.5)`, opacity: 0 }],
+            { duration: 520 + Math.random() * 240, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => d.remove();
+        }
+    }
+    function hit(orb, id) {
+        const r = orb.getBoundingClientRect();
+        if (quiet() || document.hidden || !r.width || r.bottom < 0 || r.top > innerHeight) { paint(orb, id); return; }
+        const p = palette(id), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const from = Math.random() * Math.PI * 2, dist = r.width * 2 + 40, size = Math.max(7, r.width * 0.26);
+        const sx = cx + Math.cos(from) * dist, sy = cy + Math.sin(from) * dist;
+        const bend = (Math.random() < 0.5 ? -1 : 1) * dist * 0.35;   // an arc, not a straight line
+        const mx = (sx + cx) / 2 - Math.sin(from) * bend, my = (sy + cy) / 2 + Math.cos(from) * bend;
+        const drop = document.createElement('i');
+        drop.className = 'paint-drop';
+        Object.assign(drop.style, { width: `${size}px`, height: `${size}px`, background: `radial-gradient(circle at 35% 30%, ${p.core}, ${p.deep} 65%)` });
+        document.body.append(drop);
+        const frames = [];
+        for (let k = 0; k <= 8; k++) {
+            const t = k / 8, u = 1 - t;
+            const x = u * u * sx + 2 * u * t * mx + t * t * cx, y = u * u * sy + 2 * u * t * my + t * t * cy;
+            const tx = 2 * u * (mx - sx) + 2 * t * (cx - mx), ty = 2 * u * (my - sy) + 2 * t * (cy - my);
+            const stretch = 1 + t * 0.6;   // it stretches as it picks up speed
+            frames.push({ transform: `translate(${x - size / 2}px, ${y - size / 2}px) rotate(${Math.atan2(ty, tx)}rad) scale(${stretch}, ${1 / stretch})` });
+        }
+        drop.animate(frames, { duration: 560, easing: 'cubic-bezier(.5, 0, .9, .6)' }).finished.then(() => {
+            drop.remove();
+            orb.style.transitionDuration = '0.55s';   // paint lands fast
+            paint(orb, id);
+            setTimeout(() => { orb.style.transitionDuration = ''; }, 650);
+            burst(cx, cy, p.deep, r.width, Math.atan2(cy - my, cx - mx));
+            orb.animate([{ scale: 1 }, { scale: 0.86, offset: 0.25 }, { scale: 1.07, offset: 0.6 }, { scale: 1 }], { duration: 560, easing: 'ease-out' });
+        }, () => drop.remove());
+    }
+
+    // the side panel's logo turns every 10 s; the Mentor 5 s later, two glazes ahead, so they never match
+    function stepLogo() {
         at = (at + 1) % ORDER.length;
-        fill();
+        const orbs = [...document.querySelectorAll('.brand-orb')];
+        orbs.forEach(el => (el.closest('.sidebar-logo, .auth-brand, .ob-brand') && el.getClientRects().length ? hit(el, ORDER[at]) : paint(el, ORDER[at])));
         icon(ORDER[at]);
-        timer = setTimeout(tick, at ? PERIOD : PERIOD * 2);
     }
-    function tick() { if (document.hidden) timer = setTimeout(tick, PERIOD); else step(); }
+    function stepMentor() {
+        mentorAt = (mentorAt + 1) % ORDER.length;
+        const orb = mentorOrb();
+        if (orb && mentorGlazed()) hit(orb, ORDER[mentorAt]);
+    }
     function run() {
-        clearTimeout(timer); timer = 0;
-        if (!quiet()) timer = setTimeout(tick, PERIOD * 2);
+        timers.forEach(clearInterval); timers = [];
+        if (quiet()) return;
+        timers.push(setInterval(() => { if (!document.hidden) stepLogo(); }, PERIOD));
+        timers.push(setTimeout(() => {   // clearInterval clears timeouts too
+            if (quiet()) return;
+            if (!document.hidden) stepMentor();
+            timers.push(setInterval(() => { if (!document.hidden) stepMentor(); }, PERIOD));
+        }, PERIOD / 2));
     }
-    // a new look, a new motion setting: home to Porcelain and start again; day and night: the same colour, repainted
-    let dark = root.classList.contains('theme-dark');
+    // a new look, accent or motion setting: home to Porcelain and start again; day and night or the Mentor's orb style: repaint
+    let dark = night();
     new MutationObserver(list => {
-        const restart = list.some(m => m.attributeName !== 'class'), night = root.classList.contains('theme-dark');
-        if (!restart && night === dark) return;   // <html> changes class often; only day and night matter here
-        dark = night;
-        if (restart) { at = 0; run(); }
-        fill(); icon(ORDER[at]);
-    }).observe(root, { attributes: true, attributeFilter: ['data-look', 'data-motion', 'data-accent', 'data-accent-dark', 'class'] });
+        const restart = list.some(m => ['data-look', 'data-motion', 'data-accent', 'data-accent-dark'].includes(m.attributeName));
+        const orbStyle = list.some(m => ['data-orb', 'data-orb-dark'].includes(m.attributeName));
+        if (!restart && !orbStyle && night() === dark) return;   // <html> changes class often; only day and night matter here
+        dark = night();
+        if (restart) { at = 0; mentorAt = MENTOR_AHEAD; run(); }
+        fill(); fillMentor(); icon(ORDER[at]);
+    }).observe(root, { attributes: true, attributeFilter: ['data-look', 'data-motion', 'data-accent', 'data-accent-dark', 'data-orb', 'data-orb-dark', 'class'] });
     matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change', run);
 
-    // ── lean: within 5 cm of the pointer the Mentor button and the side panel's logo wake up: the still ring fades in
-    //    and the orb leans toward the pointer inside it, pulled like a magnet close by. Full strength within 3.5 cm,
-    //    fading out by 5 cm so nothing snaps; the open Mentor always leans. ──
+    // ── lean: within 5 cm of the pointer the logo and the Mentor button wake up: the still ring fades in and the orb
+    //    leans toward the pointer inside it, pulled like a magnet close by. Full strength within 3.5 cm, fading out by
+    //    5 cm so nothing snaps; the open Mentor always leans. ──
     const REACH = 189;   // 5 cm in CSS pixels (96 to the inch)
     let px = -1e4, py = -1e4, frame = 0;
     function lean(home) {
         frame = 0;
         const still = home || quiet(), open = document.getElementById('mentor')?.dataset.state === 'open';
-        document.querySelectorAll('#mentor-orb, .sidebar-logo .brand-ring').forEach(h => {
+        document.querySelectorAll('#mentor-orb, .sidebar-logo .brand-ring, .auth-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
             const r = h.getBoundingClientRect();
             if (!r.width) return;
             const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1;
@@ -161,12 +230,66 @@ const Brand = (() => {
         flight(ghost, ghost, to, 900).finished.finally(() => ghost.remove());
     }
 
-    // ── the splash: lands once the drawing is done and the page behind it is ready (signed in or not) ──
+    // ── the splash ──
     const splash = document.getElementById('splash');
-    let landed = null, splashed = !splash || getComputedStyle(splash).display === 'none';
+    let landed = null, splashed = !splash || getComputedStyle(splash).display === 'none', skipping = false;
     const waiting = [];
     if (splashed) { splash?.remove(); root.classList.remove('splashing'); }
     function afterSplash(fn) { if (splashed) fn(); else waiting.push(fn); }
+    const wait = ms => new Promise(resolve => setTimeout(resolve, skipping ? 0 : ms));
+    function tint(id) {   // the splash's own logo takes a glaze (brand.css blends it)
+        const p = palette(id);
+        splash.style.setProperty('--sp-core', p.core); splash.style.setProperty('--sp-deep', p.deep); splash.style.setProperty('--sp-ink', p.star);
+    }
+    // a throw: a blob of paint flies in on an arc from one side, stretched by its speed, and splats on the logo;
+    // a few drops stay on the paper until the page opens
+    function throwAt(id, side) {
+        if (skipping) { tint(id); return Promise.resolve(); }
+        const mark = splash.querySelector('.sp-orb'), r = mark.getBoundingClientRect(), p = palette(id);
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2, size = r.width * 0.34;
+        const [sx, sy] = { left: [-size, cy + r.height * 1.4], right: [innerWidth + size, cy - r.height * 0.9], bottom: [cx - r.width * 2.4, innerHeight + size] }[side];
+        const mx = (sx + cx) / 2, my = Math.min(sy, cy) - r.height * 1.6;   // the top of the arc
+        const blob = document.createElement('i');
+        blob.className = 'sp-blob';
+        Object.assign(blob.style, { width: `${size}px`, height: `${size}px`, color: p.deep, background: `radial-gradient(circle at 34% 30%, ${p.core}, ${p.deep} 62%, ${p.star})` });
+        splash.append(blob);
+        const frames = [];
+        for (let k = 0; k <= 12; k++) {
+            const t = k / 12, u = 1 - t;
+            const x = u * u * sx + 2 * u * t * mx + t * t * cx, y = u * u * sy + 2 * u * t * my + t * t * cy;
+            const tx = 2 * u * (mx - sx) + 2 * t * (cx - mx), ty = 2 * u * (my - sy) + 2 * t * (cy - my), st = 1 + t * 0.7;
+            frames.push({ transform: `translate(${x - size / 2}px, ${y - size / 2}px) rotate(${Math.atan2(ty, tx)}rad) scale(${st}, ${1 / st})` });
+        }
+        return blob.animate(frames, { duration: 560, easing: 'cubic-bezier(.45, 0, .85, .55)' }).finished.then(() => {
+            blob.remove();
+            tint(id);
+            const toward = Math.atan2(cy - my, cx - mx);
+            mark.animate([{ scale: 1 }, { scale: 0.88, offset: 0.2 }, { scale: 1.06, offset: 0.55 }, { scale: 1 }], { duration: 620, easing: 'ease-out' });
+            const ring = document.createElement('i');
+            ring.className = 'sp-ripple';
+            Object.assign(ring.style, { left: `${cx}px`, top: `${cy}px`, width: `${r.width}px`, height: `${r.width}px`, borderColor: p.deep });
+            splash.append(ring);
+            ring.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 0.8 }, { transform: 'translate(-50%, -50%) scale(1.9)', opacity: 0 }], { duration: 700, easing: 'cubic-bezier(.2, .7, .3, 1)' }).onfinish = () => ring.remove();
+            for (let i = 0; i < 14; i++) {   // the spatter: most drops fly on and fall, a few stay on the paper
+                const d = document.createElement('i'), s = size * (0.1 + Math.random() * 0.22), stays = i % 4 === 0;
+                d.className = stays ? 'sp-spot' : 'sp-fleck';
+                Object.assign(d.style, { left: `${cx}px`, top: `${cy}px`, width: `${s}px`, height: `${s * (0.8 + Math.random() * 0.4)}px`, background: p.deep });
+                splash.append(d);
+                const a = toward + (Math.random() - 0.5) * 2.2, dist = r.width * (0.6 + Math.random() * (stays ? 0.7 : 1.4));
+                d.animate([{ transform: 'translate(-50%, -50%) scale(.4)', opacity: 1 },
+                    { transform: `translate(calc(-50% + ${Math.cos(a) * dist}px), calc(-50% + ${Math.sin(a) * dist + (stays ? 0 : r.width * 0.5)}px)) scale(1)`, opacity: stays ? 0.85 : 0 }],
+                { duration: 480 + Math.random() * 260, easing: 'cubic-bezier(.15, .7, .35, 1)', fill: 'forwards' }).onfinish = () => { if (!stays) d.remove(); };
+            }
+        }, () => blob.remove());
+    }
+    async function throws() {
+        const quick = root.dataset.splash === 'quick';
+        const shots = quick ? [[GLAZES[Math.random() * GLAZES.length | 0][0], 'left']] : [['coral', 'left'], ['saffron', 'right'], ['matcha', 'bottom']];
+        for (const [id, side] of shots) { await throwAt(id, side); await wait(quick ? 240 : 300); }
+        splash.classList.add('sp-wash');   // a soft white pass, and the glaze washes back to Porcelain
+        tint('porcelain');
+        await wait(quick ? 360 : 520);
+    }
     // where the logo lives on the page that is opening: the sign-in page, onboarding, the side panel or, on a phone, the Mentor
     function home() {
         for (const s of ['#auth-gate:not([hidden]) .auth-brand .brand-orb', '.ob-brand .brand-orb', '#sidebar .sidebar-logo .brand-orb', '#mentor-orb .m-orb']) {
@@ -209,15 +332,20 @@ const Brand = (() => {
             if (ok()) { resolve(); return; }
             new MutationObserver((_, o) => { if (ok()) { o.disconnect(); resolve(); } }).observe(root, { attributes: true, attributeFilter: ['class'] });
         });
-        // a click or a key finishes the drawing at once
-        const skip = () => splash.getAnimations({ subtree: true }).forEach(a => { try { a.finish(); } catch (e) { /* the endless ones */ } });
+        // a click or a key skips ahead: the drawing finishes at once and the paint lands without its flight
+        const skip = () => {
+            skipping = true;
+            splash.getAnimations({ subtree: true }).forEach(a => { try { a.finish(); } catch (e) { /* the endless ones */ } });
+        };
         splash.addEventListener('pointerdown', skip);
         addEventListener('keydown', skip, { once: true });
-        Promise.all([drawn, ready, document.fonts?.ready]).then(() => requestAnimationFrame(land));
-        setTimeout(land, 9000);   // never keep anyone waiting on the logo
+        drawn.then(() => { splash.classList.add('sp-built'); return throws(); })
+            .then(() => Promise.all([ready, document.fonts?.ready]))
+            .then(() => requestAnimationFrame(land));
+        setTimeout(land, 14000);   // never keep anyone waiting on the logo
     }
 
-    fill(); icon(ORDER[at]); run();
-    return { fill, looks: () => [...ORDER], favicon, pulse, travel, afterSplash, get landed() { return landed; } };
+    fill(); fillMentor(); icon(ORDER[at]); run();
+    return { fill, glazes: () => [...ORDER], favicon, pulse, travel, afterSplash, get landed() { return landed; } };
 })();
 window.Brand = Brand;
