@@ -1018,7 +1018,7 @@ async function mentorCopyPinned() {
     }
 }
 
-// ─── Delight: spark bursts, magnetic orb, spotlight frame ────────
+// ─── Delight: spark bursts, spotlight frame (the orb leans toward the cursor in brand.js) ────────
 
 const mentorCalm = () => matchMedia('(prefers-reduced-motion: reduce)').matches || document.documentElement.dataset.motion === 'calm';
 
@@ -1046,26 +1046,6 @@ function mentorBurstFrom(el, count) {
     mentorBurst(r.left + r.width / 2, r.top + r.height / 2, count);
 }
 
-// The launcher leans toward a nearby cursor
-let mentorPointer = null;
-function mentorMagnet(e) {
-    if (mentorPointer) {
-        mentorPointer = { x: e.clientX, y: e.clientY };
-        return;
-    }
-    mentorPointer = { x: e.clientX, y: e.clientY };
-    requestAnimationFrame(() => {
-        const orb = document.getElementById('mentor-orb');
-        const r = orb.getBoundingClientRect();
-        const dx = mentorPointer.x - (r.left + r.width / 2);
-        const dy = mentorPointer.y - (r.top + r.height / 2);
-        const pull = Math.hypot(dx, dy) < 120 && !mentorCalm() ? 0.12 : 0;
-        orb.style.setProperty('--pull-x', `${dx * pull}px`);
-        orb.style.setProperty('--pull-y', `${dy * pull}px`);
-        mentorPointer = null;
-    });
-}
-
 // The frame lights up under the cursor
 function mentorSpotlight(e) {
     const panel = e.currentTarget;
@@ -1086,7 +1066,6 @@ function mentorSpotlight(e) {
     mentorSetGeom(mentorStore.get(MENTOR_KEYS.geom, null));
     mentorFitGeom();
     addEventListener('resize', mentorFitGeom);
-    addEventListener('pointermove', mentorMagnet, { passive: true });
     document.querySelector('.mentor-panel').addEventListener('pointermove', mentorSpotlight, { passive: true });
     // the notebook's lines follow the panel's size and the chosen skin
     if ('ResizeObserver' in window) new ResizeObserver(mentorSnap).observe(document.getElementById('mentor-msgs'));

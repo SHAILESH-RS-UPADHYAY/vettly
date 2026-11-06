@@ -1,23 +1,176 @@
-/* Vettly's logo, the Mentor's orb (brand.js). Its colours are registered so that, as the logo travels through the
-   nine looks, one look's colours blend into the next instead of jumping. */
+/* Vettly's logo, the Mentor's orb (brand.js). Every colour it is made of is registered, so that as the logo travels
+   from Porcelain through the looks, one look's colours blend into the next instead of jumping. */
 @property --orb-core { syntax: '<color>'; inherits: true; initial-value: #f06a20; }
 @property --orb-deep { syntax: '<color>'; inherits: true; initial-value: #a83a08; }
+@property --orb-star { syntax: '<color>'; inherits: true; initial-value: #fff9ee; }
 @property --orb-aura { syntax: '<color>'; inherits: true; initial-value: transparent; }
 @property --orb-ripple { syntax: '<color>'; inherits: true; initial-value: transparent; }
-@property --orb-star { syntax: '<color>'; inherits: true; initial-value: #fff9ee; }
+@property --orb-spec { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-sheen { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-shade { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-run { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-head { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-halo { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-bezel { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-rim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-edge { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-drop { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-star-drop { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --orb-head-glow { syntax: '<color>'; inherits: true; initial-value: transparent; }
 
-.brand-orb { --s: 30px; transition: --orb-core 1.6s var(--ease-in-out, ease-in-out), --orb-deep 1.6s var(--ease-in-out, ease-in-out), --orb-aura 1.6s var(--ease-in-out, ease-in-out), --orb-ripple 1.6s var(--ease-in-out, ease-in-out), --orb-star 1.6s var(--ease-in-out, ease-in-out); }
+.brand-orb {
+    --s: 30px;
+    /* one shape of shading for every look (brand.js paints its colours), so Porcelain's light glaze and a look's
+       gloss blend into each other */
+    --orb-shadow: inset 0 -5px 12px var(--orb-shade), inset 0 1px 1px var(--orb-rim), 0 0 0 1px var(--orb-edge), 0 10px 22px -9px var(--orb-drop);
+    --orb-star-fx: drop-shadow(0 1px 1.2px var(--orb-star-drop));
+    --orb-head-fx: drop-shadow(0 0 2px var(--orb-head-glow));
+    transition-property: --orb-core, --orb-deep, --orb-star, --orb-aura, --orb-ripple, --orb-spec, --orb-sheen, --orb-shade, --orb-line,
+        --orb-run, --orb-head, --orb-halo, --orb-bezel, --orb-rim, --orb-edge, --orb-drop, --orb-star-drop, --orb-head-glow;
+    transition-duration: 1.6s;
+    transition-timing-function: var(--ease-in-out, ease-in-out);
+}
 .brand-orb .m-orb-art { transition: rotate 0.8s var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1)); }
+
+/* The logo sits centred in a still ring (where the splash lands it). In the side panel it wakes as the pointer comes
+   within 5 cm: the ring brightens and the orb leans toward the pointer inside it, its star a little further, so the
+   glass seems to have depth (brand.js sets --near, --pull-x and --pull-y on the ring). */
+.brand-ring { position: relative; display: inline-grid; place-items: center; flex: none; margin: 5px; }
+.brand-ring::after {
+    content: ""; position: absolute; inset: -5px; border-radius: 50%; pointer-events: none;
+    border: 1.5px solid rgba(var(--accent-rgb), 0.6);
+    opacity: calc(0.45 + 0.55 * var(--near, 0)); transition: opacity 0.4s var(--ease-out, ease-out);
+}
+.sidebar-logo .brand-orb > :is(.m-orb-sphere, .m-orb-aura) { translate: var(--pull-x, 0px) var(--pull-y, 0px); transition: translate 0.6s var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1)); }
+.sidebar-logo .brand-orb .m-orb-art {
+    translate: calc(var(--pull-x, 0px) * 1.3) calc(var(--pull-y, 0px) * 1.3);
+    transition: rotate 0.8s var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1)), translate 0.6s var(--spring, cubic-bezier(0.34, 1.4, 0.64, 1));
+}
 
 /* where it stands */
 .sidebar-logo .brand-orb { --s: 28px; }   /* fits beside the name and the Poster badge on one line */
 @media (hover: hover) { .sidebar-logo:hover .brand-orb .m-orb-art { rotate: 45deg; } }
 @media (min-width: 48rem) and (max-width: 63.99rem) { .sidebar-logo .brand-orb { --s: 38px; } }   /* the icon rail: the logo alone */
 .auth-brand .brand-orb { --s: 46px; }
+.auth-brand .brand-ring { margin: 6px 4px 6px 6px; }
+.auth-brand .brand-ring::after { inset: -6px; }
 .ob-brand .brand-orb { --s: 28px; }
+
+/* ── The splash: on every load Vettly's logo draws itself, the way a designer builds a mark on a construction
+   sheet (hairlines, a compass, the axes and the angle, the orbits, the star in outline, its ink, the porcelain),
+   then brand.js flies it to its place and the page opens out from there. A quicker take after the first load of
+   a visit (data-splash="quick" sets --t). Reduced motion, Calm and the Google hand-off never see it. ── */
+@property --sp-hole { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.splash {
+    --t: 1;
+    --sp-ink: var(--orb-porcelain-star);
+    --sp-pencil: color-mix(in srgb, var(--orb-porcelain-star) 34%, transparent);
+    --sp-ease: cubic-bezier(0.65, 0, 0.35, 1);
+    position: fixed; inset: 0; z-index: 4000; display: grid; place-items: center; cursor: progress;
+}
+:root[data-splash="quick"] .splash { --t: 0.6; }
+:root.no-splash .splash { display: none; }
+.sp-curtain {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 46%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 36%) var(--paper);
+}
+.sp-curtain::before {   /* the drafting grid, strongest around the mark and gone by the edges */
+    content: ""; position: absolute; inset: 0;
+    background-image: linear-gradient(var(--grid-line, rgba(30, 58, 138, 0.07)) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line, rgba(30, 58, 138, 0.07)) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: center;
+    -webkit-mask-image: radial-gradient(closest-side circle at 50% 46%, #000 20%, transparent);
+    mask-image: radial-gradient(closest-side circle at 50% 46%, #000 20%, transparent);
+}
+.splash.sp-open .sp-curtain {
+    -webkit-mask-image: radial-gradient(circle at var(--hx, 50%) var(--hy, 50%), transparent var(--sp-hole), #000 calc(var(--sp-hole) + 48px));
+    mask-image: radial-gradient(circle at var(--hx, 50%) var(--hy, 50%), transparent var(--sp-hole), #000 calc(var(--sp-hole) + 48px));
+}
+.sp-center { position: relative; display: grid; justify-items: center; gap: clamp(30px, 6vmin, 52px); }
+.sp-stage { position: relative; width: clamp(108px, 21vmin, 148px); aspect-ratio: 1; }
+.sp-guides { position: absolute; inset: -100%; width: 300%; height: 300%; overflow: visible; pointer-events: none; }
+.sp-orb { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform-origin: 50% 50%; }
+
+/* pencil: the construction lines, drawn outward from the centre */
+.sp-guides :is(path, circle, line) { fill: none; stroke: var(--sp-pencil); stroke-width: 0.42; stroke-linecap: round; }
+.sp-draw { stroke-dasharray: 1 2; stroke-dashoffset: 1; animation: spDraw calc(var(--d, 0.5s) * var(--t)) var(--sp-ease) calc(var(--at, 0s) * var(--t)) forwards; }
+.sp-hair { --d: 0.55s; --at: 0.05s; animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+.sp-axis { --d: 0.5s; --at: 0.62s; stroke-dasharray: 1 2; opacity: 0.8; }
+.sp-guides .sp-compass { --d: 0.78s; --at: 0.2s; stroke: color-mix(in srgb, var(--orb-porcelain-star) 52%, transparent); stroke-width: 0.5; }
+.sp-guides .sp-inner { stroke-dasharray: 0.9 1.6; opacity: 0; animation: spFade calc(0.4s * var(--t)) ease-out calc(0.5s * var(--t)) forwards; }
+.sp-arc { --d: 0.36s; --at: 0.86s; }
+.sp-guides .sp-pen { opacity: 0; transform-box: fill-box; transform-origin: center;   /* its invisible full circle centres it on the mark */
+    animation: spPen calc(0.78s * var(--t)) var(--sp-ease) calc(0.2s * var(--t)) forwards; }
+.sp-guides .sp-pen circle { stroke: none; fill: none; }
+.sp-guides .sp-pen .sp-nib { fill: var(--sp-ink); }
+.sp-dim { opacity: 0; animation: spRise calc(0.45s * var(--t)) var(--ease-out, ease-out) calc(0.42s * var(--t)) forwards; }
+.sp-guides .sp-knock { fill: var(--paper); stroke: none; }   /* the hairline breaks for the figure, as on a drawing */
+.sp-guides text { fill: color-mix(in srgb, var(--orb-porcelain-star) 70%, transparent); stroke: none; font: 600 3.4px/1 var(--font-mono, monospace); letter-spacing: 0.04em; text-anchor: middle; }
+.sp-angle { opacity: 0; animation: spRise calc(0.4s * var(--t)) var(--ease-out, ease-out) calc(1s * var(--t)) forwards; }
+/* at the end the pencil is rubbed out: the sheet gives way to the mark */
+.sp-guides { animation: spErase calc(0.5s * var(--t)) ease-in calc(1.58s * var(--t)) forwards; }
+
+/* ink: the mark itself */
+.sp-orb .sp-sphere { fill: url(#sp-glaze); stroke: var(--orb-porcelain-edge); stroke-width: 0.5; transform-box: fill-box; transform-origin: center;
+    filter: drop-shadow(0 2.5px 3px color-mix(in srgb, var(--orb-porcelain-drop) 45%, transparent));
+    opacity: 0; scale: 0.3; animation: spPour calc(0.62s * var(--t)) cubic-bezier(0.34, 1.32, 0.64, 1) calc(1.3s * var(--t)) forwards; }
+.sp-g0 { stop-color: #fff; }
+.sp-g1 { stop-color: var(--orb-porcelain-core); }
+.sp-g2 { stop-color: var(--orb-porcelain-deep); }
+.sp-orb .sp-bezel { fill: none; stroke: color-mix(in srgb, var(--orb-porcelain-star) 34%, transparent); stroke-width: 0.8; stroke-dasharray: 0.7 2.6;
+    transform-box: fill-box; transform-origin: center; opacity: 0; animation: spBezel calc(0.6s * var(--t)) var(--ease-out, ease-out) calc(1.42s * var(--t)) forwards; }
+.sp-orb .sp-ring { --d: 0.55s; fill: none; stroke: color-mix(in srgb, var(--orb-porcelain-star) 72%, transparent); stroke-width: 0.7;
+    animation: spDraw calc(0.55s * var(--t)) var(--sp-ease) calc(var(--at) * var(--t)) forwards, spSettle calc(0.6s * var(--t)) ease-out calc(1.6s * var(--t)) forwards; }
+.sp-r1 { --at: 0.72s; }
+.sp-r2 { --at: 0.84s; }
+.sp-orb .m-run { opacity: 0; animation: mRun 2.8s linear infinite, spFade calc(0.5s * var(--t)) ease-out calc(1.7s * var(--t)) forwards; }
+.sp-orb .m-run.m-run-head { animation-delay: -0.476s, calc(1.7s * var(--t)); }
+.sp-orb .m-run-2 { animation-duration: 3.8s, calc(0.5s * var(--t)); animation-direction: reverse, normal; }
+.sp-orb .m-run-2.m-run-head { animation-delay: 0s, calc(1.7s * var(--t)); }
+.sp-orb { --orb-run: color-mix(in srgb, var(--orb-porcelain-star) 55%, transparent); --orb-head: var(--orb-porcelain-star); --orb-head-fx: none; }
+.sp-orb .sp-halo { --d: 0.4s; --at: 1.26s; fill: none; stroke: color-mix(in srgb, var(--orb-porcelain-star) 32%, transparent); stroke-width: 0.7; }
+.sp-orb .sp-star { fill: var(--sp-ink); fill-opacity: 0; stroke: var(--sp-ink); stroke-width: 0.6; stroke-linejoin: round;
+    transform-box: fill-box; transform-origin: center;
+    animation: spDraw calc(0.42s * var(--t)) var(--sp-ease) calc(0.96s * var(--t)) forwards, spInk calc(0.5s * var(--t)) cubic-bezier(0.34, 1.56, 0.64, 1) calc(1.24s * var(--t)) forwards; }
+/* once drawn, the mark breathes while the page gets ready behind it */
+.sp-stage { animation: spBreathe 2.6s var(--ease-in-out, ease-in-out) calc(2s * var(--t)) infinite; }
+
+/* the name, set one letter at a time under the mark */
+.sp-word { display: flex; margin: 0; overflow: hidden; padding: 0.06em 0.04em 0.1em; font: 800 clamp(1.9rem, 4.4vmin, 2.5rem)/1 var(--font-display); letter-spacing: -0.03em; color: var(--ink); }
+.sp-word span { display: inline-block; transform: translateY(115%); animation: spLetter calc(0.6s * var(--t)) cubic-bezier(0.2, 1.1, 0.3, 1) forwards; }
+.sp-word span:nth-child(1) { animation-delay: calc(1.46s * var(--t)); }
+.sp-word span:nth-child(2) { animation-delay: calc(1.51s * var(--t)); }
+.sp-word span:nth-child(3) { animation-delay: calc(1.56s * var(--t)); }
+.sp-word span:nth-child(4) { animation-delay: calc(1.61s * var(--t)); }
+.sp-word span:nth-child(5) { animation-delay: calc(1.66s * var(--t)); }
+.sp-word span:nth-child(6) { animation-delay: calc(1.71s * var(--t)); }
+
+/* leaving: the name and the sheet step back, the mark flies (brand.js), the page opens from where it lands */
+.splash.sp-leaving { pointer-events: none; }
+.splash.sp-leaving .sp-word { opacity: 0; translate: 0 -8px; transition: opacity 0.22s ease-in, translate 0.3s ease-in; }
+.splash.sp-leaving .sp-guides { opacity: 0 !important; transition: opacity 0.2s ease-in; }
+.splash.sp-leaving .sp-stage { animation: none; }
+
+@keyframes spDraw { to { stroke-dashoffset: 0; } }
+@keyframes spFade { to { opacity: 1; } }
+@keyframes spRise { from { opacity: 0; translate: 0 2px; } to { opacity: 1; translate: 0 0; } }
+@keyframes spPen { 0% { opacity: 1; rotate: 0deg; } 92% { opacity: 1; } 100% { opacity: 0; rotate: 360deg; } }
+@keyframes spErase { to { opacity: 0; scale: 1.05; } }
+@keyframes spPour { to { opacity: 1; scale: 1; } }
+@keyframes spBezel { from { opacity: 0; rotate: -60deg; } to { opacity: 1; rotate: 0deg; } }
+@keyframes spSettle { to { stroke: color-mix(in srgb, var(--orb-porcelain-star) 24%, transparent); } }
+@keyframes spInk { 0% { fill-opacity: 0; scale: 1; } 45% { fill-opacity: 1; scale: 1.22; } 100% { fill-opacity: 1; scale: 1; stroke-width: 0; } }
+@keyframes spBreathe { 50% { scale: 1.035; } }
+@keyframes spLetter { to { transform: none; } }
+
+/* wherever the splash plays, it is the entrance: the sign-in page's CSS fallback entrances stay off (auth-intro.js runs
+   its own once the logo lands), so nothing replays after the curtain opens. Leaving after sign-in still fades. */
+:root:not(.no-splash) :is(.auth-gate:not(.leaving), .auth-copy, .auth-points li, .auth-panel) { animation: none; }
 
 /* rests under reduced motion and Calm, like every other orb */
 @media (prefers-reduced-motion: reduce) {
     .brand-orb, .brand-orb *, .brand-orb *::before, .brand-orb *::after { animation: none !important; transition: none !important; }
+    .splash { display: none; }
 }
 :root[data-motion="calm"] .brand-orb, :root[data-motion="calm"] .brand-orb *, :root[data-motion="calm"] .brand-orb *::before, :root[data-motion="calm"] .brand-orb *::after { animation: none !important; transition: none !important; }
+:root[data-motion="calm"] .splash { display: none; }
