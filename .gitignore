@@ -31,7 +31,13 @@ Thumbs.db
 
 # Private notes and tracking: never pushed or deployed
 .private/
-backend/context_store/chat_history.json
-backend/context_store/context.json
-backend/context_store/profile.json
+
+# Your own data stays on your machine: the local stores (profile, chats, answers) and uploaded resumes
+backend/context_store/*.json
+!backend/context_store/context.example.json
+backend/context_store/users/
+backend/uploads/
+
+# Local design tooling
+.hallmark/
 
