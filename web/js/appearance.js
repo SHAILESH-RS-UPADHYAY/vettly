@@ -180,38 +180,55 @@ const Appearance = (() => {
         Ambient.recolor();
     }
 
-    // Day and night swap pixel by pixel: the screen is cut into squares and each one turns on its own beat, a wave
-    // that starts at the switch you pressed, with a little grain so it never looks mechanical. It is an SVG mask on
-    // the view transition's new page: squares that turn together share one path and one <set>, so nothing is drawn
-    // per frame. Every square turns once (no flashing); Calm, reduced motion and older browsers swap at once.
-    const PIXEL_TIME = 0.78, PIXEL_STEPS = 24;
-    function pixelMask(x, y) {
-        const w = innerWidth, h = innerHeight, cell = Math.max(18, Math.round(Math.sqrt(w * h / 1500)));
-        const cols = Math.ceil(w / cell), rows = Math.ceil(h / cell), far = Math.hypot(Math.max(x, w - x), Math.max(y, h - y)) || 1;
-        const groups = Array(PIXEL_STEPS).fill('');
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                const d = Math.hypot(c * cell + cell / 2 - x, r * cell + cell / 2 - y) / far;
-                const k = Math.min(PIXEL_STEPS - 1, Math.floor((d * 0.74 + Math.random() * 0.26) * PIXEL_STEPS));
-                groups[k] += `M${c * cell} ${r * cell}h${cell}v${cell}h-${cell}z`;
-            }
+    // Day and night arrive as ink. A drop of the new theme falls onto the switch you pressed and splats, then the new
+    // theme bleeds out across the page the way ink soaks into paper: a living, ragged edge, with small blooms opening
+    // near it. The bleed is an SVG mask on the view transition's new page (a growing circle pushed about by turbulence,
+    // drawn at half size to stay light); Calm, reduced motion and older browsers swap at once.
+    const INK_TIME = 1.15;
+    function inkMask(x, y) {
+        const w = Math.ceil(innerWidth / 2), h = Math.ceil(innerHeight / 2), cx = x / 2, cy = y / 2;   // half size, scaled up by the mask
+        const far = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) * 1.35 + 40, seed = Math.random() * 999 | 0;
+        const grow = (to, begin, dur) => `<animate attributeName="r" from="0" to="${to.toFixed(1)}" begin="${begin.toFixed(2)}s" dur="${dur.toFixed(2)}s" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines=".25 .1 .2 1"/>`;
+        // blooms: small soaks that open on their own beat, out near the edge of the spreading ink
+        let blooms = '';
+        for (let i = 0; i < 7; i++) {
+            const a = Math.random() * Math.PI * 2, d = far * (0.25 + Math.random() * 0.45), at = (d / far) * INK_TIME * 0.7;
+            blooms += `<circle cx="${(cx + Math.cos(a) * d).toFixed(1)}" cy="${(cy + Math.sin(a) * d).toFixed(1)}" r="0">${grow(40 + Math.random() * 70, at, 0.55)}</circle>`;
         }
-        const paths = groups.map((d, k) => d && `<path d="${d}" opacity="0"><set attributeName="opacity" to="1" begin="${(k / PIXEL_STEPS * PIXEL_TIME).toFixed(3)}s"/></path>`).join('');
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cols * cell}" height="${rows * cell}" shape-rendering="crispEdges">${paths}</svg>`;
-        return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / ${cols * cell}px ${rows * cell}px no-repeat`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><defs><filter id="i" x="-30%" y="-30%" width="160%" height="160%">`
+            + `<feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="${seed}"/>`
+            + `<feDisplacementMap in="SourceGraphic" scale="46" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="1.2"/></filter></defs>`
+            + `<g fill="#fff" filter="url(#i)"><circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="0">${grow(far, 0, INK_TIME)}</circle>${blooms}</g></svg>`;
+        return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / 100% 100% no-repeat`;
+    }
+    // the drop: the new theme's paper colour, falling onto the switch; resolves when it lands
+    function inkDrop(x, y, dark) {
+        const d = document.createElement('i');
+        d.className = 'ink-drop';
+        d.style.background = dark ? 'radial-gradient(circle at 35% 30%, #3a4766, #0c111c 70%)' : 'radial-gradient(circle at 35% 30%, #ffffff, #efe6d4 70%)';
+        Object.assign(d.style, { left: `${x}px`, top: `${y}px` });
+        document.body.append(d);
+        const fall = d.animate([
+            { transform: 'translate(-50%, -260%) scale(.7, 1.25)', opacity: 0 },
+            { transform: 'translate(-50%, -120%) scale(.85, 1.15)', opacity: 1, offset: 0.55 },
+            { transform: 'translate(-50%, -50%) scale(1.6, .55)', opacity: 1 },
+        ], { duration: 300, easing: 'cubic-bezier(.55, 0, .9, .45)' });
+        return fall.finished.catch(() => {}).then(() => d.remove());
     }
     function applyDark(dark, origin) {
         if (dark === isDark()) { syncThemeChrome(); return; }
         const flip = () => { root.classList.toggle('theme-dark', dark); syncThemeChrome(); renderSettings(); };
         if (!document.startViewTransition || calm() || !origin) { flip(); return; }
-        const r = origin.getBoundingClientRect();
-        const mask = pixelMask(r.left + r.width / 2, r.top + r.height / 2);
-        const style = document.createElement('style');   // a pseudo-element can only take its mask from a stylesheet
-        style.textContent = `:root.vt-theme::view-transition-new(root) { -webkit-mask: ${mask}; mask: ${mask}; animation: vt-pixels ${PIXEL_TIME + 0.06}s linear both; }`;
-        document.head.append(style);
-        root.classList.add('vt-theme');
-        const t = document.startViewTransition(flip);
-        t.finished.finally(() => { root.classList.remove('vt-theme'); style.remove(); }).catch(() => {});
+        const r = origin.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+        inkDrop(x, y, dark).then(() => {
+            const mask = inkMask(x, y);
+            const style = document.createElement('style');   // a pseudo-element can only take its mask from a stylesheet
+            style.textContent = `:root.vt-theme::view-transition-new(root) { -webkit-mask: ${mask}; mask: ${mask}; animation: vt-pixels ${INK_TIME + 0.1}s linear both; }`;
+            document.head.append(style);
+            root.classList.add('vt-theme');
+            const t = document.startViewTransition(flip);
+            t.finished.finally(() => { root.classList.remove('vt-theme'); style.remove(); }).catch(() => {});
+        });
     }
     function setThemeMode(mode, origin) {
         store.set(THEME_KEY, mode === 'dark' ? 'dark' : mode === 'light' ? 'parchment' : 'device');
