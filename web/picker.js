@@ -54,6 +54,9 @@ const Picker = (() => {
         sel.classList.add('pk-native');
         sel.tabIndex = -1;
         sel.setAttribute('aria-hidden', 'true');
+        // inert, so nothing can focus it: on an iPad a focused <select> opens the system's own menu (a see-through
+        // list floating over the page) even though this one is invisible. Its value still submits and reads as usual.
+        sel.inert = true;
         sel._picker = { wrap, btn, list };
         sync(sel);
         btn.addEventListener('click', () => (current?.sel === sel ? close(true) : open(sel)));
