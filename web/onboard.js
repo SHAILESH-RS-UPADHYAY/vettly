@@ -39,6 +39,8 @@ const Onboard = (() => {
     const ROLE_CYCLE = ['Software developer', 'Full-stack developer', 'Product manager (MBA)', 'Business analyst (MBA)', 'Management consultant',
         'AI/ML engineer', 'Generative AI engineer', 'Prompt engineer', 'Data scientist', 'Staff nurse, ICU', 'Digital marketing executive',
         'SEO specialist', 'Financial analyst', 'UX designer'];
+    const MAX_ROLES = 4, SEP = ' · ';   // roles are saved as a list; prompts read them joined (role names can hold commas)
+    const rolesOf = p => (Array.isArray(p.roles) && p.roles.length ? p.roles : String(p.role || '').split(SEP)).map(r => r.trim()).filter(Boolean).slice(0, MAX_ROLES);
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
     const ICONS = ['sparkle', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
     let profile = {}, current = null, typer = null;
@@ -65,7 +67,7 @@ const Onboard = (() => {
             'Prep Studio writes questions for your role. Brain Bento packs five ideas every morning. Live Copilot listens while you practise out loud.', 'watch the cursor'],
         ['badge', 'Candidate spec', 'About you · 1 of 3', 'What should we call you?', 'Your name goes on every answer Vettly writes in your voice.', ''],
         ['badge', 'Candidate spec', 'About you · 2 of 3', 'Which field are you in?', 'It decides your Prep Studio categories and the ideas in your daily Bento.', ''],
-        ['badge', 'Candidate spec', 'About you · 3 of 3', 'What are you preparing for?', 'Every question and model answer is pitched at this role and level.', ''],
+        ['badge', 'Candidate spec', 'About you · 3 of 3', 'What are you preparing for?', 'Pick up to four roles. Every question and model answer is pitched at them and your level.', ''],
         ['context', 'Context fusion · context_engine.py', 'How it works · 1 of 3', 'First, it learns you',
             'Your field and role are enough to start. Add a resume, GitHub, a job description or your stories whenever you like: they join one context of up to 80,000 characters, packed most important first.', 'all of it optional'],
         ['router', 'Failover router · ai/utils.py', 'How it works · 2 of 3', 'Then it finds a model that’s free',
@@ -86,11 +88,19 @@ const Onboard = (() => {
         if (n === 3) return `<label class="ob-field"><span>Your field</span>
                 <select name="field" required>${FIELDS.map(f => opt(f, FIELD_META[f], profile.field === f || (other && f === 'Other'))).join('')}</select></label>
             <label class="ob-field ob-other"${other ? '' : ' hidden'}><span>Which field?</span><input name="field_other" maxlength="60" value="${other ? esc(profile.field) : ''}" placeholder="Aviation, agriculture, journalism..."></label>`;
-        if (n === 4) return `<label class="ob-field"><span>Role you're preparing for</span><input name="role" required maxlength="80" autocomplete="organization-title" value="${esc(profile.role)}" placeholder="${ROLE_CYCLE[0]}"></label>
-            <div class="ob-roles" role="group" aria-label="Roles you can pick"></div>
+        if (n === 4) return `<div class="ob-field ob-rolefield">
+                <span class="ob-rf-head"><span id="ob-roles-l">Roles you're preparing for</span><small class="ob-rf-n" aria-live="polite"></small></span>
+                <div class="ob-tray">
+                    <ul class="ob-picked" aria-label="Roles you picked"></ul>
+                    <span class="ob-tray-in"><input name="role_new" maxlength="80" autocomplete="organization-title" enterkeyhint="enter" aria-labelledby="ob-roles-l" aria-describedby="ob-roles-hint" placeholder="${ROLE_CYCLE[0]}">
+                        <button type="button" class="ob-role-add" data-ob-role-add hidden><svg aria-hidden="true"><use href="#i-plus"/></svg>Add</button></span>
+                </div>
+                <input type="hidden" name="role" value="${esc(rolesOf(profile).join(SEP))}">
+            </div>
+            <div class="ob-roles" role="group" aria-label="Suggested roles"></div>
             <label class="ob-field"><span>Your level</span>
                 <select name="level">${LEVELS.map(l => opt(l, LEVEL_META[l], profile.level === l)).join('')}</select></label>
-            <p class="ob-error" role="alert" hidden>Add the role you're preparing for.</p>`;
+            <p class="ob-error" role="alert" hidden>Pick a role below, or type your own.</p>`;
         if (n === KEYS) {
             if (!window.Auth?.enabled?.() || typeof KEY_PROVIDERS === 'undefined') return `<p class="ob-key-note">Running on your own computer: Vettly uses the keys in <code>backend/.env</code> (<code>GEMINI_API_KEY</code>, <code>GROQ_API_KEY</code>).</p>`;
             return `<div class="ob-keys">${KEY_PROVIDERS.filter(p => p.free).map(p => `
@@ -153,7 +163,9 @@ const Onboard = (() => {
         v.initials = v.name ? v.name.split(/\s+/).slice(0, 2).map(p => p[0]).join('').toUpperCase() : '?';
         form.querySelectorAll('[data-v]').forEach(el => {
             const val = v[el.dataset.v];
-            el.textContent = val || el.dataset.ph || '';
+            const parts = el.dataset.v === 'role' ? val.split(SEP).filter(Boolean) : [];
+            if (parts.length > 1) el.innerHTML = parts.map(p => `<span class="b-role">${esc(p)}</span>`).join('');
+            else el.textContent = val || el.dataset.ph || '';
             el.classList.toggle('empty', !val);
         });
     }
@@ -189,11 +201,11 @@ const Onboard = (() => {
                 : n === PAGES - 1 ? (hasTour() && !Tour.seen() ? 'Take the tour' : 'Start preparing')
                 : n === KEYS && form.querySelector('.ob-key') && !form.querySelector('.ob-key.is-saved') ? 'Skip for now' : 'Next';
             if (n === KEYS) loadKeys();
-            if (n === ROLE) { roleChips(); typeRoles(); }
+            if (n === ROLE) roleChips();   // the chips follow the field; the box types examples while the tray is empty
             pages[n].classList.remove('ob-in'); void pages[n].offsetWidth; pages[n].classList.add('ob-in');
             const stage = pages[n].querySelector('.ob-stage');
             if (S && stage) requestAnimationFrame(() => { if (page === n) stopScene = S.play(stage.dataset.scene, stage); });
-            const field = pages[n].querySelector('input, select');
+            const field = pages[n].querySelector('input:not([type="hidden"]), select');
             if (!Motion.focusField(field)) next.focus({ preventScroll: true });   // touch: no keyboard until they tap a field
         };
         const need = input => {
@@ -269,28 +281,121 @@ const Onboard = (() => {
         // a fresh visitor who leaves early still gets the tour once
         dlg.addEventListener('close', () => { stopScene(); stopTyping(); window.Picker?.close?.(); if (hasTour()) Tour.maybeStart(); }, { once: true });
 
-        // ── the role box: an empty box types out roles (developer, MBA, AI…); chips for this field fill it in one tap ──
+        // ── the role tray: up to four roles. Tap a chip and it flies up into the tray; type your own and press Enter;
+        //    × (or Backspace in an empty box) sends one back. The empty box types out example roles. ──
         const fieldNow = () => (form.field.value === 'Other' ? (form.field_other.value.trim() || 'Other') : form.field.value);
+        const tray = form.querySelector('.ob-tray'), picked = form.querySelector('.ob-picked'), roleIn = form.role_new;
+        const addBtn = form.querySelector('[data-ob-role-add]'), counter = form.querySelector('.ob-rf-n');
+        let roles = rolesOf(profile);
+        const same = (a, b) => a.toLowerCase() === b.toLowerCase();
+        const live = () => [...picked.children].filter(x => !x.classList.contains('is-leaving'));   // not the one fading out
+        const chipFor = r => [...form.querySelectorAll('.ob-role')].find(c => same(c.dataset.role, r));
+        const still = () => Motion.calm();
+        const tokHtml = r => `<span class="ob-tok-t">${esc(r)}</span><button type="button" class="ob-tok-x" data-ob-unrole aria-label="Remove ${esc(r)}"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>`;
+        function tok(r) { const li = document.createElement('li'); li.className = 'ob-tok'; li.dataset.role = r; li.innerHTML = tokHtml(r); return li; }
+        // everything that follows the list: the hidden value, the badge, the count, the chips and the box's hint
+        function roleState() {
+            form.role.value = roles.join(SEP);
+            syncBadge(form);
+            const full = roles.length >= MAX_ROLES;
+            counter.textContent = roles.length ? `${roles.length} of ${MAX_ROLES}` : `up to ${MAX_ROLES}`;
+            tray.classList.toggle('is-empty', !roles.length);
+            tray.classList.toggle('is-full', full);
+            form.querySelectorAll('.ob-role').forEach(c => {
+                const on = roles.some(r => same(r, c.dataset.role));
+                c.setAttribute('aria-pressed', String(on));
+                c.classList.toggle('is-locked', full && !on);
+            });
+            if (roles.length) { stopTyping(); roleIn.placeholder = full ? 'Four picked: remove one to swap' : 'Add another role'; }
+            else if (!typer) typeRoles();
+            if (roles.length) { pages[ROLE].querySelector('.ob-error').hidden = true; tray.removeAttribute('aria-invalid'); }
+        }
+        function drawTray() { picked.replaceChildren(...roles.map(tok)); roleState(); }
+        // the tray says no: a little shake, and the count lights up
+        function refuse(el = tray) {
+            if (still()) return;
+            el.animate([{ transform: 'none' }, { transform: 'translateX(-6px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: 360, easing: 'ease-out' });
+            counter.animate([{ transform: 'scale(1)', color: 'var(--bad)' }, { transform: 'scale(1.25)', color: 'var(--bad)' }, { transform: 'scale(1)' }], { duration: 520, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+        }
+        function addRole(raw, from) {
+            const r = String(raw || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+            if (!r) return false;
+            const had = live().find(li => same(li.dataset.role, r));
+            if (had) { if (!still()) had.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.12) rotate(-3deg)' }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }); return true; }
+            if (roles.length >= MAX_ROLES) { refuse(from || tray); return false; }
+            roles.push(r);
+            const li = tok(r);
+            picked.append(li);
+            roleState();
+            if (!still()) {
+                const b = li.getBoundingClientRect();
+                if (from) {   // thrown from the chip: up in an arc, a turn in the air, a soft landing
+                    const a = from.getBoundingClientRect(), dx = a.left - b.left + (a.width - b.width) / 2, dy = a.top - b.top;
+                    li.animate([
+                        { transform: `translate(${dx}px, ${dy}px) scale(.92)`, opacity: 0.4 },
+                        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 34}px) rotate(-7deg) scale(1.06)`, opacity: 1, offset: 0.55 },
+                        { transform: 'translate(0, 2px) rotate(1.5deg) scale(1.03)', offset: 0.86 },
+                        { transform: 'none' },
+                    ], { duration: 640, easing: 'cubic-bezier(0.3, 0.7, 0.3, 1)' });
+                    from.animate([{ transform: 'scale(1)' }, { transform: 'scale(.9)' }, { transform: 'scale(1.06)' }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+                } else {      // typed: it pops out of the box
+                    li.animate([{ transform: 'scale(.3) rotate(-12deg)', opacity: 0 }, { transform: 'scale(1.1) rotate(3deg)', opacity: 1, offset: 0.6 }, { transform: 'none' }], { duration: 520, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+                }
+                li.animate([{ boxShadow: '0 0 0 0 rgba(var(--accent-rgb), .5)' }, { boxShadow: '0 0 0 10px rgba(var(--accent-rgb), 0)' }], { duration: 700, delay: from ? 520 : 300, easing: 'ease-out' });
+            }
+            return true;
+        }
+        function removeRole(r) {
+            const li = live().find(x => same(x.dataset.role, r));
+            roles = roles.filter(x => !same(x, r));
+            roleState();
+            if (!li) return;
+            if (still()) { li.remove(); return; }
+            // the others slide into the gap (FLIP) while this one tips over and fades
+            li.classList.add('is-leaving');
+            const others = live(), before = new Map(others.map(x => [x, x.getBoundingClientRect()]));
+            const r0 = li.getBoundingClientRect(), host = tray.getBoundingClientRect();
+            Object.assign(li.style, { position: 'absolute', left: `${r0.left - host.left - tray.clientLeft}px`, top: `${r0.top - host.top - tray.clientTop}px`, width: `${r0.width}px`, margin: '0', pointerEvents: 'none' });
+            li.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(-10px) rotate(-10deg) scale(.7)', opacity: 0 }], { duration: 300, easing: 'cubic-bezier(0.55, 0, 0.7, 0.2)' }).finished.then(() => li.remove(), () => li.remove());
+            others.forEach(x => { const a = before.get(x), b = x.getBoundingClientRect(); if (a.left !== b.left || a.top !== b.top) x.animate([{ transform: `translate(${a.left - b.left}px, ${a.top - b.top}px)` }, { transform: 'none' }], { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }); });
+            const chip = chipFor(r);
+            if (chip) chip.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+        }
+        function takeTyped() {
+            const v = roleIn.value.trim();
+            if (!v) return true;
+            const ok = addRole(v);
+            if (ok) { roleIn.value = ''; addBtn.hidden = true; }
+            return ok;
+        }
         function roleChips() {
             const box = form.querySelector('.ob-roles');
             if (!box) return;
             const list = FIELD_ROLES[fieldNow()] || ROLE_CYCLE.slice(0, 6);
-            box.innerHTML = `<span class="ob-roles-k">Tap one, or type your own</span>${list.map((r, i) => `<button type="button" class="chip ob-role" style="--i:${i}" aria-pressed="${form.role.value.trim().toLowerCase() === r.toLowerCase()}">${esc(r)}</button>`).join('')}`;
+            box.innerHTML = `<span class="ob-roles-k" id="ob-roles-hint">Tap to add · tap again to remove</span>${list.map((r, i) => `<button type="button" class="chip ob-role" data-role="${esc(r)}" style="--i:${i}" aria-pressed="false"><span class="ob-role-mark" aria-hidden="true"><svg class="ob-rm-plus"><use href="#i-plus"/></svg><svg class="ob-rm-tick"><use href="#i-check-bold"/></svg></span>${esc(r)}</button>`).join('')}`;
+            drawTray();
         }
         form.addEventListener('click', e => {
             const chip = e.target.closest('.ob-role');
-            if (!chip) return;
-            form.role.value = chip.textContent;
-            form.querySelectorAll('.ob-role').forEach(c => c.setAttribute('aria-pressed', String(c === chip)));
-            const err = pages[ROLE].querySelector('.ob-error'); if (err) err.hidden = true;
-            form.role.removeAttribute('aria-invalid');
-            syncBadge(form);
-            Motion.focusField(form.role);
-            if (!Motion.calm()) chip.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 300, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
+            if (chip) { if (chip.getAttribute('aria-pressed') === 'true') removeRole(chip.dataset.role); else addRole(chip.dataset.role, chip); return; }
+            const x = e.target.closest('[data-ob-unrole]');
+            if (x) {   // focus moves to the neighbour's ×, or back to the box
+                const li = x.closest('.ob-tok'), all = live(), at = all.indexOf(li), near = all[at + 1] || all[at - 1];
+                removeRole(li.dataset.role);
+                if (near) near.querySelector('button').focus({ preventScroll: true }); else Motion.focusField(roleIn);
+                return;
+            }
+            if (e.target.closest('[data-ob-role-add]')) { takeTyped(); Motion.focusField(roleIn); return; }
+            if (e.target === tray || e.target === picked) Motion.focusField(roleIn) || roleIn.focus({ preventScroll: true });
         });
-        form.role.addEventListener('input', () => form.querySelectorAll('.ob-role').forEach(c => c.setAttribute('aria-pressed', String(c.textContent.toLowerCase() === form.role.value.trim().toLowerCase()))));
+        roleIn.addEventListener('input', () => { addBtn.hidden = !roleIn.value.trim(); });
+        roleIn.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && roleIn.value.trim()) { e.preventDefault(); takeTyped(); }
+            else if (e.key === 'Backspace' && !roleIn.value && roles.length) { e.preventDefault(); removeRole(roles[roles.length - 1]); }
+        });
         function typeRoles() {
-            const input = form.role;
+            const input = roleIn;
+            if (roles.length) return;
             if (Motion.calm()) { input.placeholder = ROLE_CYCLE[0]; return; }
             let i = 0, n = 0, back = false, t = 0;
             const tick = () => {
@@ -316,7 +421,16 @@ const Onboard = (() => {
         form.addEventListener('submit', async e => {
             e.preventDefault();
             if (page === NAME && !need(form.name)) return;
-            if (page === ROLE && !need(form.role)) return;
+            if (page === ROLE) {   // a typed role that wasn't added yet counts; none at all asks for one
+                if (!takeTyped()) return;
+                if (!roles.length) {
+                    pages[ROLE].querySelector('.ob-error').hidden = false;
+                    tray.setAttribute('aria-invalid', 'true');
+                    refuse();
+                    Motion.focusField(roleIn);
+                    return;
+                }
+            }
             if (page === PAGES - 1) { dlg.close(); return; }
             if (page === KEYS) {   // Enter in a key box saves it before moving on; a bad key keeps you here
                 for (const row of form.querySelectorAll('.ob-key')) if (!(await saveKey(row))) return;
@@ -324,7 +438,7 @@ const Onboard = (() => {
             }
             if (page !== SAVE) { show(page + 1); return; }
             const f = Object.fromEntries(new FormData(form));
-            const body = { name: f.name.trim(), role: f.role.trim(), level: f.level, field: f.field === 'Other' ? (f.field_other.trim() || 'Other') : f.field };
+            const body = { name: f.name.trim(), role: roles.join(SEP), roles: [...roles], level: f.level, field: f.field === 'Other' ? (f.field_other.trim() || 'Other') : f.field };
             const label = next.querySelector('span');
             const errBox = pages[SAVE].querySelector('.ob-error');
             errBox.hidden = true;

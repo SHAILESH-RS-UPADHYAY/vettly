@@ -100,5 +100,16 @@ assert client.get("/api/bento/field", headers=E).json()["lessons"] is None
 # 6. one user's fresh six are not another's
 assert client.get("/api/bento/field?peek=1", headers=E).json()["lessons"] is None
 
+# 7. several target roles: kept as a clean list (no blanks, no repeats, at most four), joined for every prompt
+r = client.post("/api/profile", json={"name": "Asha Rao", "field": "Healthcare", "level": "Early career", "role": "ignored",
+                                        "roles": ["Staff nurse, ICU", "  Pharmacist ", "pharmacist", "", 7, "Medical officer", "Clinical research associate", "Fifth role"]}, headers=N).json()
+assert r["roles"] == ["Staff nurse, ICU", "Pharmacist", "Medical officer", "Clinical research associate"], r["roles"]
+assert r["role"] == "Staff nurse, ICU · Pharmacist · Medical officer · Clinical research associate", r["role"]
+client.post("/prepare/single", json={"category": "CLINICAL_SKILLS"}, headers=N)
+assert "Target roles (prepare for any of these): Staff nurse, ICU; Pharmacist; Medical officer; Clinical research associate" in seen["context"], seen["context"][:400]
+# an older client that sends one role still gets a one-item list
+r = client.post("/api/profile", json={"role": "Staff nurse, ward"}, headers=N).json()
+assert r["roles"] == ["Staff nurse, ward"] and r["role"] == "Staff nurse, ward", r
+
 ai_utils.generate_multi_provider_completion, main.qa_generator.generate_single_question, main.answer_validator.generate_validated_answer = saved
 print("fields check passed")

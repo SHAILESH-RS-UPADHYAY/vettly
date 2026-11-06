@@ -143,6 +143,8 @@ def profile_context() -> str:
     prof = profile_store.get()
     rows = [(k, (prof.get(k) or "").strip()) for k in ("name", "field", "role", "level")]
     rows = [f"{k.title()}: {v}" for k, v in rows if v]
+    if len(prof.get("roles") or []) > 1:   # several target roles: say so, so questions spread across them
+        rows = [r if not r.startswith("Role: ") else f"Target roles (prepare for any of these): {'; '.join(prof['roles'])}" for r in rows]
     return ("=== CANDIDATE PROFILE ===\n" + "\n".join(rows) + "\n(No resume uploaded: keep examples general and true to this field and level, never invent employers or projects.)") if rows else ""
 
 
