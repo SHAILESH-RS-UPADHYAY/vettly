@@ -269,6 +269,7 @@ kbd {
 :root.vt-theme::view-transition-old(root),
 :root.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 :root.vt-theme::view-transition-new(root) { z-index: 2; }
+@keyframes vt-pixels { from { opacity: 1; } to { opacity: 1; } }   /* holds the theme's transition open while its pixel mask plays (appearance.js) */
 
 /* ── Reduced motion and the Calm setting: state still changes, nothing travels ── */
 @media (prefers-reduced-motion: reduce) {

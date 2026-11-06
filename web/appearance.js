@@ -180,21 +180,38 @@ const Appearance = (() => {
         Ambient.recolor();
     }
 
-    // Swap the theme; with view transitions the new one spreads in a circle from the tapped control
+    // Day and night swap pixel by pixel: the screen is cut into squares and each one turns on its own beat, a wave
+    // that starts at the switch you pressed, with a little grain so it never looks mechanical. It is an SVG mask on
+    // the view transition's new page: squares that turn together share one path and one <set>, so nothing is drawn
+    // per frame. Every square turns once (no flashing); Calm, reduced motion and older browsers swap at once.
+    const PIXEL_TIME = 0.78, PIXEL_STEPS = 24;
+    function pixelMask(x, y) {
+        const w = innerWidth, h = innerHeight, cell = Math.max(18, Math.round(Math.sqrt(w * h / 1500)));
+        const cols = Math.ceil(w / cell), rows = Math.ceil(h / cell), far = Math.hypot(Math.max(x, w - x), Math.max(y, h - y)) || 1;
+        const groups = Array(PIXEL_STEPS).fill('');
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const d = Math.hypot(c * cell + cell / 2 - x, r * cell + cell / 2 - y) / far;
+                const k = Math.min(PIXEL_STEPS - 1, Math.floor((d * 0.74 + Math.random() * 0.26) * PIXEL_STEPS));
+                groups[k] += `M${c * cell} ${r * cell}h${cell}v${cell}h-${cell}z`;
+            }
+        }
+        const paths = groups.map((d, k) => d && `<path d="${d}" opacity="0"><set attributeName="opacity" to="1" begin="${(k / PIXEL_STEPS * PIXEL_TIME).toFixed(3)}s"/></path>`).join('');
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${cols * cell}" height="${rows * cell}" shape-rendering="crispEdges">${paths}</svg>`;
+        return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 0 0 / ${cols * cell}px ${rows * cell}px no-repeat`;
+    }
     function applyDark(dark, origin) {
         if (dark === isDark()) { syncThemeChrome(); return; }
         const flip = () => { root.classList.toggle('theme-dark', dark); syncThemeChrome(); renderSettings(); };
         if (!document.startViewTransition || calm() || !origin) { flip(); return; }
         const r = origin.getBoundingClientRect();
-        const x = r.left + r.width / 2, y = r.top + r.height / 2;
-        const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        const mask = pixelMask(r.left + r.width / 2, r.top + r.height / 2);
+        const style = document.createElement('style');   // a pseudo-element can only take its mask from a stylesheet
+        style.textContent = `:root.vt-theme::view-transition-new(root) { -webkit-mask: ${mask}; mask: ${mask}; animation: vt-pixels ${PIXEL_TIME + 0.06}s linear both; }`;
+        document.head.append(style);
         root.classList.add('vt-theme');
         const t = document.startViewTransition(flip);
-        t.ready.then(() => root.animate(
-            { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-            { duration: 620, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' },
-        )).catch(() => {});
-        t.finished.finally(() => root.classList.remove('vt-theme')).catch(() => {});
+        t.finished.finally(() => { root.classList.remove('vt-theme'); style.remove(); }).catch(() => {});
     }
     function setThemeMode(mode, origin) {
         store.set(THEME_KEY, mode === 'dark' ? 'dark' : mode === 'light' ? 'parchment' : 'device');
