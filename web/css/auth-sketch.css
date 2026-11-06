@@ -148,15 +148,23 @@
     .sk-card-wrap { rotate: 0deg; }
     /* phones and tablets held upright: the name and title, then straight to the sign-in card, then the list and the notes */
     .sk-copy { display: contents; }
-    .sk-brand { order: 1; margin: 0; } .sk-title { order: 2; margin: 0; } .sk-card-wrap { order: 3; margin-top: 10px; }
+    .sk-brand { order: 1; margin: 0; } .sk-title { order: 2; margin: 0; } .sk-card-wrap { order: 3; margin-top: 24px; }   /* room for the tape, clear of the title */
     .sk-todo { order: 4; margin-top: 10px; } .sk-extras { order: 5; margin-top: 4px; } .sk-signed { order: 6; margin-top: 0; }
 }
 @media (max-width: 30rem) {
     .sk-page { --margin-x: 34px; padding-top: 64px; }
     .sk-extras { grid-template-columns: minmax(0, 1fr); }
     .sk-sticky { width: min(100%, 230px); }
+    .sk-tape { top: -11px; width: 84px; height: 22px; } .sk-tape.l { left: -10px; } .sk-tape.r { right: -10px; }
     .sk-holes { display: none; }
     .sk-arrow { display: none; }
+}
+/* the shortest phones (iPhone SE and the like): a smaller title and logo, so the sign-in button still fits the first screen */
+@media (max-width: 30rem) and (max-height: 620px) {
+    .sk-page { padding-top: 50px; row-gap: 10px; }
+    .sk-title { font-size: 2.05rem; }
+    .sk-brand { font-size: 1.6rem; } .sk-brand .brand-orb { --s: 30px; }
+    .sk-card-wrap { margin-top: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
     :root .sk-card .cl-socialButtonsBlockButton, :root .sk-card .cl-socialButtonsBlockButton::after { transition: none; }
