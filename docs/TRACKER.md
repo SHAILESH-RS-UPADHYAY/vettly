@@ -267,6 +267,34 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       session merged the pull requests). With the owner's go-ahead they were rewritten as plain merges by the owner
       (same files, same dates) and main was force-pushed; from #11 on, pull requests are merged the same plain way
 
+## Phase 16 · Glazes, thrown paint, a pixel theme switch, sign-in concepts and a tidy layout (requested 7 Nov)
+
+- [x] 16.1 Twelve light glazes for the logo, evenly around the colour wheel at one lightness (Coral, Apricot, Saffron,
+      Pistachio, Matcha, Mint, Aqua, Sky, Periwinkle, Lilac, Orchid, Blush), each shaped like Porcelain. Order:
+      Porcelain, three glazes, Porcelain... A new glaze every 10 s, and each one arrives as a drop of paint thrown at
+      the logo
+- [x] 16.2 The Ask Mentor button wears the glazes too (while its orb style is the default), 5 s and two glazes apart
+      from the side panel's logo, so the two never match; a style picked in the Atelier is kept
+- [x] 16.3 The 5 cm wake on the sign-up page and onboarding logos as well
+- [x] 16.4 A slower, richer construction on load: the compass pen stops to measure, the figures are typed, a
+      protractor arm swings to 35°, a glaze pass sweeps the porcelain. Then three throws of paint (red, yellow, green)
+      colour the logo and it washes back to Porcelain before flying home. The full show once a day, a short take with
+      one throw after that; a click or a key skips it
+- [x] 16.5 Light and dark swap pixel by pixel: squares turn in a wave from the switch you pressed, with a little grain
+      (an SVG mask on the view transition, no drawing per frame, every square turns once)
+- [x] 16.6 Five sign-in page concepts for the owner to choose from (Green Room, Departures, Mock Interview,
+      Sketchbook, Glaze Studio) and a board of the logo's glazes, each a private preview page. The chosen one will be
+      built for real with Clerk inside its card
+- [x] 16.7 The layout: web/ keeps its entry pages at the top with css/, js/ and img/ beside icons/ and vendor/;
+      backend/tests/, scripts/ (the Windows launchers) and docs/ (this file and the README's figures). The README
+      explains the structure
+- [x] 16.8 Work happens on main only: no other branches, no pull requests (the owner's rule from 7 Nov). The merge
+      commits GitHub made for #4 to #11 were rewritten as plain merges, so none shows "Unverified"
+- [x] Checked: frames of the construction and the throws, the pixel switch mid-wave, the two logos taking their paint
+      at 5 s and 10 s, no failed requests after the move (21 stylesheets, 26 scripts), every tab, the legal pages, and
+      the five backend test scripts
+- [ ] The owner picks a sign-in concept; then it is built into the real page
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
