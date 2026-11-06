@@ -3,8 +3,9 @@
  * tab) it keeps its animation and travels through glazes: Porcelain, its home (an ivory disc, the sparkle in your
  * theme's ink), then three of twelve light glazes, then Porcelain again. The twelve sit evenly around the colour wheel
  * at one lightness, each shaped like Porcelain: a light disc with the star and orbits in a deeper shade of its colour.
- * A new glaze every 10 s, and each one arrives as a drop of paint thrown at the logo. The Ask Mentor button wears
- * them too (while its orb style is the default), 5 s and two glazes apart, so the two never match. brand.css
+ * A new glaze every 10 s (Porcelain, home, holds twice as long, so it is the one you see most), and each arrives as a
+ * drop of paint thrown at the logo; bringing the pointer within 5 cm throws the next one at once. The Ask Mentor
+ * button wears them too (while its orb style is the default), 5 s and two glazes apart, and the two never match. brand.css
  * registers every colour so changes blend; everything rests when the tab is hidden, under Calm, or with reduced motion.
  *
  * Also the logo's moves:
@@ -27,7 +28,8 @@ const Brand = (() => {
     const PERIOD = 10000, MENTOR_AHEAD = 2;
     const quiet = () => matchMedia('(prefers-reduced-motion: reduce)').matches || root.dataset.motion === 'calm';
     const night = () => root.classList.contains('theme-dark');
-    let at = 0, mentorAt = MENTOR_AHEAD, timers = [];
+    let at = 0, mentorAt = MENTOR_AHEAD;
+    const clocks = { logo: 0, mentor: 0 };
 
     // every colour of the orb for one glaze; Porcelain reads the theme's own porcelain tokens (they change at night)
     function palette(id) {
@@ -136,28 +138,34 @@ const Brand = (() => {
         }, () => drop.remove());
     }
 
-    // the side panel's logo turns every 10 s; the Mentor 5 s later, two glazes ahead, so they never match
+    // the next glaze in the order, never the one the other logo is wearing (so the two never match)
+    function next(i, avoid) {
+        do { i = (i + 1) % ORDER.length; } while (ORDER[i] === avoid);
+        return i;
+    }
+    // the logo (side panel, sign-in page, onboarding) and the Mentor turn on their own clocks, 5 s apart
     function stepLogo() {
-        at = (at + 1) % ORDER.length;
-        const orbs = [...document.querySelectorAll('.brand-orb')];
-        orbs.forEach(el => (el.closest('.sidebar-logo, .auth-brand, .ob-brand') && el.getClientRects().length ? hit(el, ORDER[at]) : paint(el, ORDER[at])));
+        at = next(at, mentorOrb() && mentorGlazed() ? ORDER[mentorAt] : null);
+        document.querySelectorAll('.brand-orb').forEach(el => (el.closest('.sidebar-logo, .auth-brand, .sk-brand, .ob-brand') && el.getClientRects().length ? hit(el, ORDER[at]) : paint(el, ORDER[at])));
         icon(ORDER[at]);
     }
     function stepMentor() {
-        mentorAt = (mentorAt + 1) % ORDER.length;
         const orb = mentorOrb();
-        if (orb && mentorGlazed()) hit(orb, ORDER[mentorAt]);
+        if (!orb || !mentorGlazed()) return;
+        mentorAt = next(mentorAt, ORDER[at]);
+        hit(orb, ORDER[mentorAt]);
     }
-    function run() {
-        timers.forEach(clearInterval); timers = [];
-        if (quiet()) return;
-        timers.push(setInterval(() => { if (!document.hidden) stepLogo(); }, PERIOD));
-        timers.push(setTimeout(() => {   // clearInterval clears timeouts too
-            if (quiet()) return;
-            if (!document.hidden) stepMentor();
-            timers.push(setInterval(() => { if (!document.hidden) stepMentor(); }, PERIOD));
-        }, PERIOD / 2));
+    const hold = id => (id === 'porcelain' ? PERIOD * 2 : PERIOD);   // Porcelain is home: it stays twice as long
+    function schedule(which, ms) {
+        clearTimeout(clocks[which]);
+        if (!quiet()) clocks[which] = setTimeout(() => turn(which), ms);
     }
+    function turn(which) {
+        if (document.hidden) { schedule(which, PERIOD); return; }
+        if (which === 'logo') stepLogo(); else stepMentor();
+        schedule(which, hold(which === 'logo' ? ORDER[at] : ORDER[mentorAt]));
+    }
+    function run() { schedule('logo', hold(ORDER[at])); schedule('mentor', PERIOD / 2); }
     // a new look, accent or motion setting: home to Porcelain and start again; day and night or the Mentor's orb style: repaint
     let dark = night();
     new MutationObserver(list => {
@@ -178,11 +186,15 @@ const Brand = (() => {
     function lean(home) {
         frame = 0;
         const still = home || quiet(), open = document.getElementById('mentor')?.dataset.state === 'open';
-        document.querySelectorAll('#mentor-orb, .sidebar-logo .brand-ring, .auth-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
+        document.querySelectorAll('#mentor-orb, .sidebar-logo .brand-ring, .auth-brand .brand-ring, .sk-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
             const r = h.getBoundingClientRect();
             if (!r.width) return;
             const dx = px - (r.left + r.width / 2), dy = py - (r.top + r.height / 2), d = Math.hypot(dx, dy) || 1;
             const near = still ? 0 : open && h.id === 'mentor-orb' ? 1 : Math.min(1, Math.max(0, (REACH - d) / (REACH * 0.3)));
+            // coming close throws the next glaze at once (at most every 2.5 s, so it never flickers)
+            const was = h._near || 0, now = performance.now();
+            h._near = near;
+            if (!still && was < 0.35 && near >= 0.65 && now - (h._thrown || 0) > 2500) { h._thrown = now; turn(h.id === 'mentor-orb' ? 'mentor' : 'logo'); }
             const k = near * Math.min(d * 0.12, r.width * 0.16) / d;   // at most a sixth of its size off centre
             h.style.setProperty('--pull-x', `${(dx * k).toFixed(1)}px`);
             h.style.setProperty('--pull-y', `${(dy * k).toFixed(1)}px`);
@@ -292,7 +304,7 @@ const Brand = (() => {
     }
     // where the logo lives on the page that is opening: the sign-in page, onboarding, the side panel or, on a phone, the Mentor
     function home() {
-        for (const s of ['#auth-gate:not([hidden]) .auth-brand .brand-orb', '.ob-brand .brand-orb', '#sidebar .sidebar-logo .brand-orb', '#mentor-orb .m-orb']) {
+        for (const s of ['#auth-gate:not([hidden]) .sk-brand .brand-orb', '#auth-gate:not([hidden]) .auth-brand .brand-orb', '.ob-brand .brand-orb', '#sidebar .sidebar-logo .brand-orb', '#mentor-orb .m-orb']) {
             const el = document.querySelector(s), r = el?.getBoundingClientRect();
             if (r?.width && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth) return el;
         }
@@ -346,6 +358,12 @@ const Brand = (() => {
     }
 
     fill(); fillMentor(); icon(ORDER[at]); run();
-    return { fill, glazes: () => [...ORDER], favicon, pulse, travel, afterSplash, get landed() { return landed; } };
+    // show(id): every logo, and the Mentor if it wears glazes, in one glaze now (for previews and checks)
+    function show(id) {
+        document.querySelectorAll('.brand-orb').forEach(el => paint(el, id));
+        const orb = mentorOrb();
+        if (orb && mentorGlazed()) paint(orb, id);
+    }
+    return { fill, glazes: () => [...ORDER], favicon, pulse, travel, afterSplash, show, get landed() { return landed; } };
 })();
 window.Brand = Brand;
