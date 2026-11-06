@@ -1,7 +1,7 @@
 """
 Every-field check: Prep works from the onboarding profile alone (no resume), and Brain Bento's "Fresh today" is written
 only when asked: a peek never spends an AI answer, the six are cached for the day, and tech fields can ask too.
-Run from backend/:  python test_fields.py
+Run from backend/:  python tests/test_fields.py
 """
 
 import base64
@@ -20,6 +20,9 @@ import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the backend modules sit one folder up
 import users  # noqa: E402
 import main  # noqa: E402
 from ai import utils as ai_utils  # noqa: E402

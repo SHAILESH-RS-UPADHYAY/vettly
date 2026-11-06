@@ -1,6 +1,6 @@
 """
 Keys check: one saved key per provider, never sent back in full, separate per user, and the router's
-Gemini → Groq → Claude → OpenAI order with fallback. Run from backend/:  python test_keys.py
+Gemini → Groq → Claude → OpenAI order with fallback. Run from backend/:  python tests/test_keys.py
 Uses a throwaway SQLite database and a locally generated signing key; no network, no real Clerk.
 """
 
@@ -20,6 +20,9 @@ import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the backend modules sit one folder up
 import allowance  # noqa: E402
 import users  # noqa: E402
 import main  # noqa: E402

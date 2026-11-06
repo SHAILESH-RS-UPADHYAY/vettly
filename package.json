@@ -5,6 +5,6 @@
   "scripts": {
     "dev": "cd backend && python main.py",
     "start": "cd backend && python main.py",
-    "test": "cd backend && python test_accounts.py"
+    "test": "cd backend && python tests/test_accounts.py"
   }
 }

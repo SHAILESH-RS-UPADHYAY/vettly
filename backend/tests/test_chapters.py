@@ -1,7 +1,7 @@
 """
 Register check: chapters of the Live Copilot. Old history migrates to Chapter 1, new chapters open, messages land
 in the chapter on screen with their timings, archive and time spent persist, a torn-out chapter waits in The Attic
-and comes back whole, and nobody sees anyone else's register. Run from backend/:  python test_chapters.py
+and comes back whole, and nobody sees anyone else's register. Run from backend/:  python tests/test_chapters.py
 """
 
 import base64
@@ -19,6 +19,9 @@ import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the backend modules sit one folder up
 import docstore  # noqa: E402
 import users  # noqa: E402
 import main  # noqa: E402

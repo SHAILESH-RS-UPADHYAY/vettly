@@ -15,7 +15,7 @@ echo.
 REM Ensure port 8766 is free if a previous Vettly instance was left open
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }" >nul 2>&1
 
-cd /d "%~dp0backend"
+cd /d "%~dp0..\backend"
 set AUTO_OPEN_BROWSER=1
 set PYTHONUTF8=1
 

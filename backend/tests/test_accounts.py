@@ -1,6 +1,6 @@
 """
 Accounts check: two signed-in users never see each other's data, and bad tokens are turned away.
-Run from backend/:  python test_accounts.py
+Run from backend/:  python tests/test_accounts.py
 Uses a throwaway SQLite database and a locally generated signing key; no network, no real Clerk.
 """
 
@@ -20,6 +20,9 @@ import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the backend modules sit one folder up
 import users  # noqa: E402
 import main  # noqa: E402
 

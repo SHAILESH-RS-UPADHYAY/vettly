@@ -3,7 +3,7 @@
 <img src=".github/logo.svg" width="88" height="88" alt="Vettly logo">
 
 <!-- White-Mode Parchment Blueprint Animated Hero Banner -->
-<img src="./assets/vettly-hero-animated.svg" alt="Vettly Studio White Blueprint Banner" width="100%" />
+<img src="./docs/images/vettly-hero-animated.svg" alt="Vettly Studio White Blueprint Banner" width="100%" />
 
 <br/>
 
@@ -55,7 +55,7 @@ Vettly is for MBA, nursing, medical, marketing, SEO, finance, law, design, teach
 > **Live Data-Flow Telemetry:** This master architectural blueprint shows all **5 backend execution stages** in a single unified view — from raw multi-source ingestion (`Stage 1`) and 80K RAG priority fusion (`Stage 2`), through the FastAPI orchestrator (`Stage 3`) and 4-Provider LLM Failover Router (`Stage 4`), to the 7-Dimension RL Humanizer & Studio HUD (`Stage 5`).
 
 <div align="center">
-  <img src="./assets/vettly-pipeline-animated.svg" alt="Vettly Master End-to-End Backend Workflow" width="100%" />
+  <img src="./docs/images/vettly-pipeline-animated.svg" alt="Vettly Master End-to-End Backend Workflow" width="100%" />
 </div>
 
 ---
@@ -66,7 +66,7 @@ Vettly is for MBA, nursing, medical, marketing, SEO, finance, law, design, teach
 When Prep Studio or Live Copilot dispatches a prompt, `generate_multi_provider_completion()` routes the request through a **4-tier priority failover chain** with exponential backoff (`429`/`529`) and automatic context slicing (`14K` cap on Groq fallback to prevent `413 Request Too Large` errors):
 
 <div align="center">
-  <img src="./assets/vettly-router-animated.svg" alt="Multi-Provider LLM Auto-Failover Router" width="100%" />
+  <img src="./docs/images/vettly-router-animated.svg" alt="Multi-Provider LLM Auto-Failover Router" width="100%" />
 </div>
 
 ---
@@ -75,7 +75,7 @@ When Prep Studio or Live Copilot dispatches a prompt, `generate_multi_provider_c
 Every generated response passes through a **2-stage quality pipeline**: first, `Humanizer` strips robotic AI meta-openers (*"To expand on that"*, *"As mentioned earlier"*, raw markdown asterisks `*`), and second, `AnswerValidator` scores the spoken cadence across **7 authenticity dimensions** before caching and streaming to the HUD:
 
 <div align="center">
-  <img src="./assets/vettly-rl-humanizer-animated.svg" alt="7-Dimension RL Humanizer Loop" width="100%" />
+  <img src="./docs/images/vettly-rl-humanizer-animated.svg" alt="7-Dimension RL Humanizer Loop" width="100%" />
 </div>
 
 ---
@@ -84,7 +84,7 @@ Every generated response passes through a **2-stage quality pipeline**: first, `
 `ContextEngine.get_full_context()` assembles candidate telemetry in strict priority order so the LLM never loses high-priority specs in the middle of the context window, while `/api/chat` automatically detects natural-language user corrections and saves them as permanent `CHAT_LEARNED_*` rules:
 
 <div align="center">
-  <img src="./assets/vettly-rag-fusion-animated.svg" alt="80K Priority RAG Fusion Engine" width="100%" />
+  <img src="./docs/images/vettly-rag-fusion-animated.svg" alt="80K Priority RAG Fusion Engine" width="100%" />
 </div>
 
 ---
@@ -94,21 +94,21 @@ Every generated response passes through a **2-stage quality pipeline**: first, `
 <table width="100%">
   <tr>
     <td width="33%" align="center">
-      <img src="./web/agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="100%" style="border-radius:10px;" />
+      <img src="./web/img/agent_toolbelt_case.webp" alt="Agent Toolbelt Case" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>1. Agent Context Toolbelt</strong>
       <br/>
       <sub>Multi-source ingestion for Resume PDFs, GitHub repositories, JD Stack Chips &amp; STAR stories.</sub>
     </td>
     <td width="33%" align="center">
-      <img src="./web/blueprint_architect.webp" alt="Blueprint Architect" width="100%" style="border-radius:10px;" />
+      <img src="./web/img/blueprint_architect.webp" alt="Blueprint Architect" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>2. Prep Studio HUD</strong>
       <br/>
       <sub>9-category question synthesizer with Newest-First (Q# ↓) HUD sorting &amp; RL refinement.</sub>
     </td>
     <td width="33%" align="center">
-      <img src="./web/copilot_hud_panel.webp" alt="Copilot HUD Panel" width="100%" style="border-radius:10px;" />
+      <img src="./web/img/copilot_hud_panel.webp" alt="Copilot HUD Panel" width="100%" style="border-radius:10px;" />
       <br/>
       <strong>3. Live AI Practice Copilot</strong>
       <br/>
@@ -167,6 +167,29 @@ sequenceDiagram
 
 ---
 
+## 🗂️ Project structure
+
+```text
+vettly/
+├── web/                     The app people use: plain HTML, CSS and JavaScript, no build step
+│   ├── index.html           The single page; privacy.html and terms.html sit beside it
+│   ├── css/                 One stylesheet per part: tokens.css (colours, type), base.css, then one per screen
+│   ├── js/                  One script per part: auth.js (sign-in), brand.js (the logo), dashboard.js, mentor.js ...
+│   ├── img/                 Screenshots and the social preview image
+│   ├── icons/               App icons for phones and the browser tab
+│   └── vendor/              Pinned third-party scripts (GSAP, marked, DOMPurify)
+├── backend/                 The FastAPI server: the API, AI calls and storage
+│   ├── main.py              Every route, and it serves web/
+│   ├── ai/                  Prompts, answer writing and checking, the provider router
+│   ├── context/             Resume and GitHub readers, the question cache
+│   ├── stt/                 Speech to text for the Live Copilot
+│   ├── tests/               Run from backend/: python tests/test_accounts.py
+│   └── context_store/       Your local data (never committed; context.example.json shows the shape)
+├── api/index.py             Vercel's entry point: hands every request to the backend app
+├── scripts/                 Windows launchers: start_vettly.bat, stop_vettly.bat
+└── docs/                    TRACKER.md (what changed, phase by phase) and the README's figures
+```
+
 ## 🚀 Quick Start (Local & Vercel)
 
 ### 1. Add Your API Key (`backend/.env`)
@@ -184,7 +207,7 @@ GROQ_API_KEY=gsk_...
 ```
 
 ### 2. Launch Locally (Auto-Opens Browser on Port `8766`)
-- **1-Click Windows Launcher:** Double-click **`start_vettly.bat`** — automatically cleans any stale port `8766` process, starts FastAPI, and opens **`http://127.0.0.1:8766`** in your default browser.
+- **1-Click Windows Launcher:** Double-click **`scripts/start_vettly.bat`** — automatically cleans any stale port `8766` process, starts FastAPI, and opens **`http://127.0.0.1:8766`** in your default browser.
 - **Via NPM:**
   ```bash
   npm run dev

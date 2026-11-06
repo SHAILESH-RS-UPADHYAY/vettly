@@ -2,7 +2,7 @@
 Custom provider check: a user's own OpenAI-compatible provider (OpenRouter and friends). Unsafe URLs are refused
 (http, IP addresses, credentials, private or unresolvable hosts), the key is never sent back, the router tries it
 first or last as asked, removing it leaves the other keys alone, and nobody else sees it.
-Run from backend/:  python test_custom.py   (no network: DNS answers and the provider are stubbed)
+Run from backend/:  python tests/test_custom.py   (no network: DNS answers and the provider are stubbed)
 """
 
 import asyncio
@@ -21,6 +21,9 @@ import jwt  # noqa: E402
 from cryptography.hazmat.primitives.asymmetric import rsa  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # the backend modules sit one folder up
 import allowance  # noqa: E402
 import users  # noqa: E402
 import main  # noqa: E402
