@@ -21,7 +21,8 @@
 .sk-page {
     --margin-x: clamp(44px, 8vw, 110px);
     position: relative; min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: center;
-    gap: clamp(24px, 4vw, 70px); padding: max(46px, env(safe-area-inset-top)) clamp(20px, 6vw, 90px) 72px calc(var(--margin-x) + clamp(20px, 3vw, 44px));
+    gap: clamp(24px, 4vw, 70px); padding: max(clamp(18px, 5vh, 46px), env(safe-area-inset-top)) clamp(20px, 6vw, 90px) max(clamp(18px, 5vh, 56px), env(safe-area-inset-bottom)) calc(var(--margin-x) + clamp(20px, 3vw, 44px));
+    align-items: safe center;
     background: linear-gradient(90deg, transparent var(--margin-x), var(--sk-margin) var(--margin-x) calc(var(--margin-x) + 2px), transparent calc(var(--margin-x) + 2px)),
         repeating-linear-gradient(transparent 0 33px, var(--sk-rule) 33px 34px), var(--sk-paper);
     color: var(--sk-pen); font-family: var(--sk-note); transform-origin: 0 50%; box-shadow: 0 0 60px rgba(0, 0, 0, 0.12);
@@ -34,10 +35,10 @@
 .sk-doodle { width: 26px; height: 26px; margin-left: 4px; }
 .sk-doodle path, .sk-box rect, .sk-box path, .sk-arrow path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 0; }
 .sk-doodle path { stroke: var(--sk-red); stroke-width: 1.6; }
-.sk-title { margin: 0 0 14px; font: 700 clamp(3rem, 6.6vw, 5.4rem)/0.95 var(--sk-hand); color: var(--sk-pen); text-wrap: balance; }
+.sk-title { margin: 0 0 clamp(6px, 1.6vh, 14px); font: 700 clamp(2.4rem, min(6.4vw, 8.6vh), 5.4rem)/0.95 var(--sk-hand); color: var(--sk-pen); text-wrap: balance; }
 .sk-hl { --mk: 100%; padding: 0 0.1em; background: linear-gradient(100deg, transparent 2%, var(--sk-hl) 4% 96%, transparent 98%) no-repeat 0 62% / var(--mk) 62%; }
-.sk-todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: clamp(1.15rem, 1.6vw, 1.4rem); }
-.sk-todo li { display: flex; align-items: center; gap: 12px; min-height: 34px; }
+.sk-todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: clamp(1.02rem, min(1.6vw, 2.4vh), 1.4rem); }
+.sk-todo li { display: flex; align-items: center; gap: 12px; min-height: clamp(28px, 4vh, 34px); }
 .sk-say { display: inline-block; }
 .sk-box { width: 24px; height: 24px; flex: none; overflow: visible; }
 .sk-box rect { stroke: var(--sk-pen); stroke-width: 2.2; }
@@ -52,14 +53,15 @@
 .sk-tape { position: absolute; z-index: 2; top: -15px; width: 110px; height: 30px; pointer-events: none;
     background: repeating-linear-gradient(45deg, var(--sk-tape) 0 8px, color-mix(in srgb, var(--sk-tape) 55%, transparent) 8px 16px); }
 .sk-tape.l { left: -22px; rotate: -32deg; } .sk-tape.r { right: -22px; rotate: 30deg; }
-.sk-card { position: relative; display: grid; gap: 6px; padding: 28px 22px 18px;
-    background: linear-gradient(transparent 118px, var(--sk-red) 118px 120px, transparent 120px),
-        repeating-linear-gradient(transparent 0 31px, var(--sk-card-rule) 31px 32px) 0 120px / 100% calc(100% - 120px) no-repeat, var(--sk-card);
+.sk-card { position: relative; display: grid; gap: 4px; padding: clamp(14px, 2.6vh, 26px) 22px clamp(10px, 1.8vh, 16px);
+    background: repeating-linear-gradient(transparent 0 31px, var(--sk-card-rule) 31px 32px), var(--sk-card);
     box-shadow: 0 18px 36px -18px rgba(20, 30, 70, 0.45), 0 2px 0 rgba(0, 0, 0, 0.04); }
-.sk-card-title { margin: -2px 0 6px; font: 700 2.4rem/1 var(--sk-hand); color: var(--sk-pen); }
-.sk-sub { margin: 0 0 18px; font-size: 1.05rem; color: var(--sk-pencil); }
-.sk-card .auth-card { min-height: 260px; }
-.sk-swap { margin: 4px 0 0; font-size: 1.05rem; color: var(--sk-pencil); text-wrap: pretty; }
+/* the card's heading sits on clean card, and its red rule is the heading's own bottom edge, whatever its size */
+.sk-card-head { margin: 0 -22px 2px; padding: 0 22px clamp(6px, 1.2vh, 10px); background: var(--sk-card); border-bottom: 2px solid var(--sk-red); }
+.sk-card-title { margin: 0 0 2px; font: 700 clamp(1.8rem, 4vh, 2.4rem)/1 var(--sk-hand); color: var(--sk-pen); }
+.sk-sub { margin: 0; font-size: clamp(0.95rem, 2vh, 1.05rem); color: var(--sk-pencil); }
+.sk-card .auth-card { min-height: 220px; }
+.sk-swap { margin: 2px 0 0; font-size: clamp(0.95rem, 2vh, 1.02rem); line-height: 1.35; color: var(--sk-pencil); text-wrap: pretty; }
 .sk-link { border: 0; background: none; padding: 0; color: var(--sk-red); font: 700 1.05rem/1 var(--sk-note); text-decoration: underline wavy; text-underline-offset: 3px; cursor: pointer; }
 .sk-legal { margin: 2px 0 0; font: 400 0.78rem/1.4 var(--font-body-ui, "Outfit", system-ui, sans-serif); color: var(--sk-pencil); }
 .sk-legal a { color: inherit; }
@@ -92,11 +94,27 @@
 }
 :root .sk-card .cl-formButtonPrimary:hover { background-color: var(--sk-card); filter: saturate(1.25); }
 :root .sk-card .cl-formButtonPrimary::after { display: none; }
-:root .sk-card :is(.cl-footer, .cl-internal-b3fm6y) { background: transparent; }
+:root .sk-card .cl-card { padding: 8px 2px 4px; gap: clamp(8px, 1.6vh, 14px); }
+:root .sk-card :is(.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton) { min-height: clamp(38px, 5vh, 46px); }
+:root .sk-card .cl-formFieldInput { min-height: clamp(36px, 4.8vh, 44px); }
+:root .sk-card .cl-formButtonPrimary { min-height: clamp(40px, 5.4vh, 50px); }
+:root .sk-card .cl-form { gap: clamp(8px, 1.4vh, 12px); }
+:root .sk-card .cl-footer { background: transparent; margin-top: 0; padding-top: 0; }
+:root .sk-card .cl-footer > * { padding-block: 6px; }
 
 /* waiting for the splash to hand over: the words stay hidden (laid out, so the logo knows where to land) */
 .auth-gate.sk-wait :is(.sk-word, .sk-doodle, .sk-title, .sk-todo, .sk-signed, .sk-card-wrap, .auth-theme) { visibility: hidden; }
 
+@media (max-height: 760px) and (min-width: 861px) {
+    .sk-signed { display: none; }
+    .sk-card-wrap { rotate: -0.8deg; }
+    .sk-tape { top: -10px; height: 24px; width: 90px; }
+}
+@media (max-height: 640px) and (min-width: 861px) {
+    .sk-sub { display: none; }
+    .sk-todo li:nth-child(3) { display: none; }
+    .sk-holes { display: none; }
+}
 @media (max-width: 860px) {
     .sk-page { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--margin-x) + 16px); padding-right: 16px; }
     .sk-card-wrap { rotate: 0deg; }
