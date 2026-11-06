@@ -65,7 +65,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/tokens.css?v=7.1">
-    <link rel="stylesheet" href="./css/base.css?v=7.5">
+    <link rel="stylesheet" href="./css/base.css?v=7.6">
     <link rel="stylesheet" href="./css/styles.css?v=9.7">
     <link rel="stylesheet" href="./css/prep.css?v=7.7">
     <link rel="stylesheet" href="./css/mentor.css?v=9.6">
@@ -83,6 +83,7 @@
     <link rel="stylesheet" href="./css/account.css?v=1.1">
     <link rel="stylesheet" href="./css/tooltip.css?v=1.0">
     <link rel="stylesheet" href="./css/brand.css?v=3.1">
+    <link rel="stylesheet" href="./css/auth-sketch.css?v=1.1">
     <link rel="stylesheet" href="./css/auth-intro.css?v=2.1">
 </head>
 <body data-section="home">
@@ -250,6 +251,32 @@
                 <p class="auth-switch" data-auth-hint="up">Already have an account? <button type="button" class="auth-link" data-auth-mode="in">Sign in</button></p>
                 <p class="auth-switch" data-auth-hint="in" hidden>New here? <button type="button" class="auth-link" data-auth-mode="up">Create an account</button> first: GitHub, Google and LinkedIn sign-in only find accounts that already exist.</p>
                 <p class="auth-legal">By continuing you agree to the <a href="./terms.html">Terms</a> and <a href="./privacy.html">Privacy</a> policy.</p>
+            </div>
+        </div>
+        <!-- The Sketchbook: the main sign-in page (auth.js shows it to everyone new, and two visits in three after that) -->
+        <div class="sk-page">
+            <div class="sk-holes" aria-hidden="true"><i></i><i></i><i></i></div>
+            <section class="sk-copy">
+                <p class="sk-brand"><span class="brand-ring"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span></span><span class="sk-word">Vettly</span><svg class="sk-doodle" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.4 6.3 6.6.4-5.1 4.2 1.7 6.5L12 16.3 6.4 19.9l1.7-6.5L3 9.2l6.6-.4z" pathLength="1"/></svg></p>
+                <h1 class="sk-title">Homework for your <span class="sk-hl">big day</span></h1>
+                <ul class="sk-todo" aria-label="Before the interview">
+                    <li><svg class="sk-box" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" pathLength="1"/><path d="M5 12.5l4.5 4.5L20 4" pathLength="1"/></svg><span class="sk-say">Practice the questions for my role</span></li>
+                    <li><svg class="sk-box" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" pathLength="1"/><path d="M5 12.5l4.5 4.5L20 4" pathLength="1"/></svg><span class="sk-say">Make my answers sound like me</span></li>
+                    <li><svg class="sk-box" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" pathLength="1"/><path d="M5 12.5l4.5 4.5L20 4" pathLength="1"/></svg><span class="sk-say">Learn 5 new ideas every morning</span></li>
+                    <li class="sk-next"><svg class="sk-box" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="3" pathLength="1"/></svg><span class="sk-say" data-auth-hint="up">Sign up on Vettly</span><span class="sk-say" data-auth-hint="in" hidden>Sign in and keep going</span><svg class="sk-arrow" viewBox="0 0 70 34" aria-hidden="true"><path d="M3 22 C 18 4, 34 30, 50 16 S 62 10, 66 14 M 58 7 L 66 14 L 57 20" pathLength="1"/></svg></li>
+                </ul>
+                <p class="sk-signed">For every field, from nursing to finance to code.</p>
+            </section>
+            <div class="sk-card-wrap">
+                <span class="sk-tape l" aria-hidden="true"></span><span class="sk-tape r" aria-hidden="true"></span>
+                <div class="sk-card">
+                    <h2 class="sk-card-title" data-auth-hint="up">Sign up</h2><h2 class="sk-card-title" data-auth-hint="in" hidden>Welcome back</h2>
+                    <p class="sk-sub" data-auth-hint="up">It's free, and it takes a minute.</p><p class="sk-sub" data-auth-hint="in" hidden>Your notes are right where you left them.</p>
+                    <div class="auth-card" id="auth-card-sketch" aria-live="polite"></div>
+                    <p class="sk-swap" data-auth-hint="up">Done this before? <button type="button" class="sk-link" data-auth-mode="in">Sign in</button></p>
+                    <p class="sk-swap" data-auth-hint="in" hidden>New here? <button type="button" class="sk-link" data-auth-mode="up">Sign up</button> first: Google, GitHub and LinkedIn sign-in only find accounts that already exist.</p>
+                    <p class="sk-legal">By continuing you agree to the <a href="./terms.html">Terms</a> and <a href="./privacy.html">Privacy</a> policy.</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1374,13 +1401,14 @@
     <script defer src="./vendor/gsap-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
-    <script defer src="./js/auth.js?v=9.7"></script>
+    <script defer src="./js/auth.js?v=9.8"></script>
     <script defer src="./js/motion.js?v=8.6"></script>
     <script defer src="./js/tooltip.js?v=1.0"></script>
-    <script defer src="./js/appearance.js?v=9.2"></script>
+    <script defer src="./js/appearance.js?v=9.3"></script>
     <script defer src="./js/dashboard.js?v=9.6"></script>
     <script defer src="./js/mentor.js?v=8.7"></script>
-    <script defer src="./js/brand.js?v=3.2"></script>
+    <script defer src="./js/brand.js?v=3.3"></script>
+    <script defer src="./js/auth-sketch.js?v=1.0"></script>
     <script defer src="./js/auth-intro.js?v=2.0"></script>
     <script defer src="./js/bento-data.js?v=8.1"></script>
     <script defer src="./js/bento-fields.js?v=1.0"></script>

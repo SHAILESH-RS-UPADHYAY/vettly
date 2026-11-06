@@ -1,0 +1,111 @@
+/* The Sketchbook sign-in page (auth-sketch.js animates it; auth.js decides when it shows): a page from your prep
+   notebook, a to-do list that ticks itself, and an index card taped on, holding the real sign-in form. By day blue
+   pen on cream paper; at night a dark notebook with pale ink, so every colour keeps its contrast. */
+.auth-gate {
+    --sk-desk: #e9e3d3; --sk-paper: #fbf8ef; --sk-rule: #cfdcf2; --sk-margin: #e8a29f; --sk-pen: #1f3c88; --sk-red: #cf3f37;
+    --sk-hl: rgba(255, 224, 84, 0.72); --sk-card: #fffefa; --sk-card-rule: #d9e4f6; --sk-pencil: #5f6470; --sk-tape: rgba(255, 190, 172, 0.85);
+    --sk-hand: "Caveat", "Kalam", cursive; --sk-note: "Kalam", "Caveat", cursive;
+}
+:root.theme-dark .auth-gate {
+    --sk-desk: #0b0f17; --sk-paper: #141a26; --sk-rule: rgba(150, 180, 240, 0.14); --sk-margin: rgba(240, 128, 128, 0.42); --sk-pen: #c9d7ff; --sk-red: #ff8d84;
+    --sk-hl: rgba(255, 210, 80, 0.3); --sk-card: #1b2232; --sk-card-rule: rgba(150, 180, 240, 0.12); --sk-pencil: #a3abbf; --sk-tape: rgba(255, 160, 140, 0.45);
+}
+/* while the Sketchbook shows, Clerk takes its colours and pen from here (auth.js reads them off the gate) */
+.auth-gate[data-variant="sketch"] {
+    --accent: var(--sk-pen); --ink: var(--sk-pen); --ink-2: var(--sk-pencil); --paper-2: var(--sk-card); --field: transparent; --font-body: var(--sk-note);
+    background: var(--sk-desk); overflow-x: hidden;   /* the tilted tape never makes the page scroll sideways */
+}
+.auth-gate[data-variant="sketch"]::before, .auth-gate[data-variant="sketch"] .auth-inner { display: none; }
+.auth-gate:not([data-variant="sketch"]) .sk-page { display: none; }
+
+.sk-page {
+    --margin-x: clamp(44px, 8vw, 110px);
+    position: relative; min-height: 100%; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: center;
+    gap: clamp(24px, 4vw, 70px); padding: max(46px, env(safe-area-inset-top)) clamp(20px, 6vw, 90px) 72px calc(var(--margin-x) + clamp(20px, 3vw, 44px));
+    background: linear-gradient(90deg, transparent var(--margin-x), var(--sk-margin) var(--margin-x) calc(var(--margin-x) + 2px), transparent calc(var(--margin-x) + 2px)),
+        repeating-linear-gradient(transparent 0 33px, var(--sk-rule) 33px 34px), var(--sk-paper);
+    color: var(--sk-pen); font-family: var(--sk-note); transform-origin: 0 50%; box-shadow: 0 0 60px rgba(0, 0, 0, 0.12);
+}
+.sk-holes { position: absolute; left: clamp(12px, 3vw, 32px); top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: space-evenly; pointer-events: none; }
+.sk-holes i { width: 18px; height: 18px; border-radius: 50%; background: var(--sk-desk); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.25); }
+
+.sk-brand { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font: 700 2rem/1 var(--sk-hand); }
+.sk-brand .brand-orb { --s: 36px; }
+.sk-doodle { width: 26px; height: 26px; margin-left: 4px; }
+.sk-doodle path, .sk-box rect, .sk-box path, .sk-arrow path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1 2; stroke-dashoffset: 0; }
+.sk-doodle path { stroke: var(--sk-red); stroke-width: 1.6; }
+.sk-title { margin: 0 0 14px; font: 700 clamp(3rem, 6.6vw, 5.4rem)/0.95 var(--sk-hand); color: var(--sk-pen); text-wrap: balance; }
+.sk-hl { --mk: 100%; padding: 0 0.1em; background: linear-gradient(100deg, transparent 2%, var(--sk-hl) 4% 96%, transparent 98%) no-repeat 0 62% / var(--mk) 62%; }
+.sk-todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; font-size: clamp(1.15rem, 1.6vw, 1.4rem); }
+.sk-todo li { display: flex; align-items: center; gap: 12px; min-height: 34px; }
+.sk-say { display: inline-block; }
+.sk-box { width: 24px; height: 24px; flex: none; overflow: visible; }
+.sk-box rect { stroke: var(--sk-pen); stroke-width: 2.2; }
+.sk-box path { stroke: var(--sk-red); stroke-width: 3; }
+.sk-todo li.sk-next { color: var(--sk-red); font-weight: 700; }
+.sk-arrow { width: 70px; height: 34px; flex: none; overflow: visible; }
+.sk-arrow path { stroke: var(--sk-red); stroke-width: 2.4; }
+.sk-signed { margin: 16px 0 0; font: 600 1.6rem/1.1 var(--sk-hand); color: var(--sk-pencil); rotate: -2deg; }
+
+/* the index card, taped on */
+.sk-card-wrap { position: relative; justify-self: center; width: min(100%, 420px); rotate: -1.5deg; }
+.sk-tape { position: absolute; z-index: 2; top: -15px; width: 110px; height: 30px; pointer-events: none;
+    background: repeating-linear-gradient(45deg, var(--sk-tape) 0 8px, color-mix(in srgb, var(--sk-tape) 55%, transparent) 8px 16px); }
+.sk-tape.l { left: -22px; rotate: -32deg; } .sk-tape.r { right: -22px; rotate: 30deg; }
+.sk-card { position: relative; display: grid; gap: 6px; padding: 28px 22px 18px;
+    background: linear-gradient(transparent 118px, var(--sk-red) 118px 120px, transparent 120px),
+        repeating-linear-gradient(transparent 0 31px, var(--sk-card-rule) 31px 32px) 0 120px / 100% calc(100% - 120px) no-repeat, var(--sk-card);
+    box-shadow: 0 18px 36px -18px rgba(20, 30, 70, 0.45), 0 2px 0 rgba(0, 0, 0, 0.04); }
+.sk-card-title { margin: -2px 0 6px; font: 700 2.4rem/1 var(--sk-hand); color: var(--sk-pen); }
+.sk-sub { margin: 0 0 18px; font-size: 1.05rem; color: var(--sk-pencil); }
+.sk-card .auth-card { min-height: 260px; }
+.sk-swap { margin: 4px 0 0; font-size: 1.05rem; color: var(--sk-pencil); text-wrap: pretty; }
+.sk-link { border: 0; background: none; padding: 0; color: var(--sk-red); font: 700 1.05rem/1 var(--sk-note); text-decoration: underline wavy; text-underline-offset: 3px; cursor: pointer; }
+.sk-legal { margin: 2px 0 0; font: 400 0.78rem/1.4 var(--font-body-ui, "Outfit", system-ui, sans-serif); color: var(--sk-pencil); }
+.sk-legal a { color: inherit; }
+.sk-link:focus-visible, .sk-legal a:focus-visible { outline: 3px solid var(--sk-red); outline-offset: 3px; border-radius: 4px; }
+
+/* Clerk's form, drawn by hand: pen-outlined buttons that a red pen circles on hover, a dashed line to write the
+   email on, and a highlighter for Continue */
+:root .sk-card .cl-socialButtonsBlockButton {
+    position: relative; overflow: visible; min-height: 46px; border: 2.2px solid var(--sk-pen); background: var(--sk-card); box-shadow: none;
+    border-radius: 255px 18px 225px 18px / 18px 225px 18px 255px; transition: transform 0.2s;
+}
+:root .sk-card .cl-socialButtonsBlockButton:hover { background: var(--sk-card); transform: rotate(-0.6deg) scale(1.015); }
+:root .sk-card .cl-socialButtonsBlockButton::after {
+    content: ""; position: absolute; inset: -9px -12px; pointer-events: none; opacity: 0; scale: 0.92; rotate: -2deg; transition: opacity 0.25s, scale 0.35s;
+    background: center / 100% 100% no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 40' preserveAspectRatio='none'%3E%3Cpath d='M8 22C6 8 40 3 62 4C88 5 98 14 95 24C92 35 60 38 36 37C14 36 3 30 6 18C8 11 20 8 30 7' fill='none' stroke='%23cf3f37' stroke-width='2.4' stroke-linecap='round' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E");
+}
+:root .sk-card .cl-socialButtonsBlockButton:hover::after, :root .sk-card .cl-socialButtonsBlockButton:focus-visible::after { opacity: 1; scale: 1; }
+:root .sk-card .cl-socialButtonsBlockButtonText { font: 700 1.08rem/1 var(--sk-note); color: var(--sk-pen); }
+:root .sk-card :is(.cl-dividerText, .cl-formFieldLabel, .cl-formFieldHintText) { font-family: var(--sk-note); color: var(--sk-pencil); }
+:root .sk-card .cl-dividerLine { background: var(--sk-card-rule); }
+:root .sk-card .cl-formFieldInput {
+    min-height: 44px; border: 0; border-bottom: 2.2px dashed var(--sk-pen); border-radius: 0; background: transparent; box-shadow: none;
+    font: 400 1.2rem/1 var(--sk-note); color: var(--sk-pen);
+}
+:root .sk-card .cl-formFieldInput:focus { border-bottom-style: solid; box-shadow: none; }
+:root .sk-card .cl-formButtonPrimary {
+    min-height: 50px; border: 2.2px solid var(--sk-pen); border-radius: 18px 225px 18px 255px / 255px 18px 225px 18px; box-shadow: none;
+    background: linear-gradient(100deg, transparent 2%, var(--sk-hl) 4% 96%, transparent 98%) var(--sk-card); color: var(--sk-pen);
+    font: 700 1.25rem/1 var(--sk-note); text-transform: none; letter-spacing: 0;
+}
+:root .sk-card .cl-formButtonPrimary:hover { background-color: var(--sk-card); filter: saturate(1.25); }
+:root .sk-card .cl-formButtonPrimary::after { display: none; }
+:root .sk-card :is(.cl-footer, .cl-internal-b3fm6y) { background: transparent; }
+
+/* waiting for the splash to hand over: the words stay hidden (laid out, so the logo knows where to land) */
+.auth-gate.sk-wait :is(.sk-word, .sk-doodle, .sk-title, .sk-todo, .sk-signed, .sk-card-wrap, .auth-theme) { visibility: hidden; }
+
+@media (max-width: 860px) {
+    .sk-page { grid-template-columns: minmax(0, 1fr); padding-left: calc(var(--margin-x) + 16px); padding-right: 16px; }
+    .sk-card-wrap { rotate: 0deg; }
+}
+@media (max-width: 30rem) {
+    .sk-page { --margin-x: 34px; padding-top: 64px; }
+    .sk-holes { display: none; }
+    .sk-arrow { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    :root .sk-card .cl-socialButtonsBlockButton, :root .sk-card .cl-socialButtonsBlockButton::after { transition: none; }
+}

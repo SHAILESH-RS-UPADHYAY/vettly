@@ -33,7 +33,7 @@
 
     // Clerk's widgets take the current look's colours, so they sit in the page instead of on top of it
     function appearance() {
-        const cs = getComputedStyle(root), v = name => cs.getPropertyValue(name).trim();
+        const cs = getComputedStyle(gate() || root), v = name => cs.getPropertyValue(name).trim();
         return {
             variables: {
                 // colorNeutral too: Clerk's default is black, which made "Continue with Google" unreadable at night
@@ -124,6 +124,16 @@
     }
 
     const gate = () => document.getElementById('auth-gate');
+    const sketch = () => gate()?.dataset.variant === 'sketch';
+    const cardEl = () => document.getElementById(sketch() ? 'auth-card-sketch' : 'auth-card');
+    const playIntro = () => (sketch() ? window.AuthSketch : window.AuthIntro)?.play();
+    // Which sign-in page shows: the Sketchbook for everyone new; people with an account see it two visits in three and
+    // the "Walk in ready." page every third, so both stay in rotation with the Sketchbook as the main one
+    function pickVariant(known) {
+        let n = 0;
+        try { n = Number(localStorage.getItem('vettly_gate_visits')) || 0; localStorage.setItem('vettly_gate_visits', String(n + 1)); } catch (e) { /* storage blocked */ }
+        return known && n % 3 === 2 ? 'classic' : 'sketch';
+    }
 
     // ── The hand-off. Google sign-in leaves Vettly for Google and comes back through Clerk's own server, which shows a
     //    blank page on its address (…clerk.accounts.dev) for a moment. A Vettly screen says where you are going
@@ -149,7 +159,7 @@
     }
     // Clerk answered with an error instead of leaving for Google: step aside at once so the message can be read
     function watchForError() {
-        const card = document.getElementById('auth-card');
+        const card = cardEl();
         if (!card) return;
         const seen = () => card.querySelector('.cl-alert, .cl-formFieldErrorText, [role="alert"]');
         const mo = new MutationObserver(() => { if (relayMode() !== 'out') mo.disconnect(); else if (seen()) { mo.disconnect(); unrelay(); } });
@@ -164,11 +174,11 @@
         el.classList.add('is-leaving');
         root.classList.remove('auth-returning');
         setTimeout(() => el.classList.remove('is-on', 'is-leaving'), 380);
-        if (!signedIn && !gate().hidden) window.AuthIntro?.play();   // still signed out (a cancelled or failed sign-in): the page arrives
+        if (!signedIn && !gate().hidden) playIntro();   // still signed out (a cancelled or failed sign-in): the page arrives
     }
     // Clerk's buttons for Google and friends: say where they lead before the page goes
-    document.getElementById('auth-card')?.addEventListener('click', e => {
-        const b = e.target.closest('.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton');
+    gate()?.addEventListener('click', e => {
+        const b = e.target.closest('.auth-card .cl-socialButtonsBlockButton, .auth-card .cl-socialButtonsIconButton');
         if (!b) return;
         const id = (String(b.className).match(/cl-socialButtons(?:Block|Icon)Button__([a-z_]+)/) || [])[1];
         relay('out', PROVIDERS[id]);
@@ -189,23 +199,25 @@
     };
 
     function showGate(error) {
-        const g = gate(), card = document.getElementById('auth-card');
+        const g = gate();
+        let known = false;
+        try { known = localStorage.getItem('vettly_has_account') === '1'; } catch (e) { /* storage blocked */ }
+        g.dataset.variant = pickVariant(known);
+        const card = cardEl();
         g.hidden = false;
         root.classList.remove('auth-checking');
-        if (!error && !relayMode()) window.AuthIntro?.play();   // the page arrives, piece by piece (after the hand-off screen, if any)
+        if (!error && !relayMode()) playIntro();   // the page arrives, piece by piece (after the hand-off screen, if any)
         if (error) {
             unrelay();
             card.innerHTML = `<p class="auth-error">${error}</p>`;
             return;
         }
-        let known = false;
-        try { known = localStorage.getItem('vettly_has_account') === '1'; } catch (e) { /* storage blocked */ }
         setMode(known ? 'in' : 'up');   // first visit: create an account; returning visitors: sign in
     }
 
     // One Clerk form at a time: either sign in or create an account
     function swapForm(next) {
-        const card = document.getElementById('auth-card');
+        const card = cardEl();
         if (mounted === 'in') clerk.unmountSignIn(card);
         else if (mounted === 'up') clerk.unmountSignUp(card);
         if (next === 'up') clerk.mountSignUp(card, { appearance: appearance() });
@@ -218,7 +230,7 @@
     // Switching tabs flips the whole board in a backflip; the form changes while it is upside down.
     // Calm mode and reduced motion swap instantly.
     function setMode(next, animate) {
-        const panel = document.querySelector('.auth-panel');
+        const panel = gate().querySelector(sketch() ? '.sk-card' : '.auth-panel');
         const still = !animate || !panel || flipping || window.Motion?.calm?.() || matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (still) { swapForm(next); return; }
         flipping = true;
@@ -261,8 +273,8 @@
         const g = gate();
         if (!g.hidden) {
             // the logo flies home: from the sign-in page to the side panel (on a phone, into the Mentor button)
-            window.Brand?.travel(g.querySelector('.auth-brand .brand-orb'), document.querySelector('#sidebar .sidebar-logo .brand-orb'), document.querySelector('#mentor-orb .m-orb'));
-            const card = document.getElementById('auth-card');
+            window.Brand?.travel(g.querySelector(sketch() ? '.sk-brand .brand-orb' : '.auth-brand .brand-orb'), document.querySelector('#sidebar .sidebar-logo .brand-orb'), document.querySelector('#mentor-orb .m-orb'));
+            const card = cardEl();
             if (mounted === 'in') clerk.unmountSignIn(card); else if (mounted === 'up') clerk.unmountSignUp(card);
             mounted = null;
             g.classList.add('leaving');
