@@ -54,7 +54,7 @@ const Onboard = (() => {
     const SAVE = 4, NAME = 2, ROLE = 4, KEYS = 8;
     const touch = () => matchMedia('(hover: none)').matches;
     const MOD = () => (window.Shortcuts?.mac ? '⌘' : 'Ctrl');
-    const MARK = '<span class="m-orb brand-orb" data-look="glow" aria-hidden="true"></span>';   // Vettly's logo, the Mentor's orb (brand.js fills and colours it)
+    const MARK = '<span class="brand-ring"><span class="m-orb brand-orb" data-look="glow" aria-hidden="true"></span></span>';   // Vettly's logo, the Mentor's orb (brand.js fills and colours it)
     const THEME_BTN = `<button type="button" class="theme-switch" onclick="toggleTheme(event)" aria-label="Switch between light and dark">
         <svg class="sunmoon" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="sm-ob"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><circle class="sm-bite" cx="18.5" cy="5.5" r="6.2" fill="#000"/></mask></defs><circle class="sm-core" cx="12" cy="12" r="5" mask="url(#sm-ob)"/><g class="sm-rays"><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(0 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(45 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(90 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(135 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(180 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(225 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(270 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(315 12 12)"/></g></svg>
         <span class="ts-label"><span class="ts-to-dark">Dark</span><span class="ts-to-light">Light</span></span></button>`;

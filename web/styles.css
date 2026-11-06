@@ -2138,7 +2138,7 @@ textarea, input, select, img, pre { max-width: 100%; }
 :root[data-motion="calm"] :is(.typing-dots i, .today-tile, .chat-bubble) { animation: none !important; }
 
 /* ── Sign-in gate for the hosted app (auth.js + Clerk) ── */
-html.auth-checking body > :not(.auth-gate, .auth-relay) { visibility: hidden; }
+html.auth-checking body > :not(.auth-gate, .auth-relay, .splash) { visibility: hidden; }
 .auth-gate {
     position: fixed; inset: 0; z-index: 3000; overflow-y: auto; overscroll-behavior: contain;
     background-color: var(--paper);
