@@ -36,7 +36,9 @@
         const cs = getComputedStyle(root), v = name => cs.getPropertyValue(name).trim();
         return {
             variables: {
-                colorPrimary: v('--accent'), colorText: v('--ink'), colorTextSecondary: v('--muted'),
+                // colorNeutral too: Clerk's default is black, which made "Continue with Google" unreadable at night
+                // secondary text in the stronger ink: Clerk's small grey ("or", "Secured by") fell under 4.5:1 in the pastel looks
+                colorPrimary: v('--accent'), colorText: v('--ink'), colorTextSecondary: v('--ink-2'), colorNeutral: v('--ink'),
                 colorBackground: v('--paper-2'), colorInputBackground: v('--field') || v('--paper'), colorInputText: v('--ink'),
                 borderRadius: '12px', fontFamily: v('--font-body'),
             },
@@ -45,7 +47,8 @@
                 rootBox: { width: '100%' }, cardBox: { width: '100%', boxShadow: 'none', border: 0 },
                 card: { boxShadow: 'none', background: 'transparent', padding: '14px 18px 10px', gap: '14px' },
                 header: { display: 'none' }, formFieldRow__name: { display: 'none' }, footerAction: { display: 'none' },   // the tabs switch between the forms
-                socialButtonsBlockButton: { minHeight: '40px' }, socialButtons: { gap: '8px' }, dividerRow: { margin: '2px 0' },
+                socialButtonsBlockButton: { minHeight: '40px' }, socialButtonsBlockButtonText: { color: v('--ink') },   // full ink: readable in every look
+                socialButtons: { gap: '8px' }, dividerRow: { margin: '2px 0' },
                 form: { gap: '12px' }, formFieldInput: { minHeight: '40px', paddingBlock: '8px' }, formButtonPrimary: { minHeight: '42px' },
                 footer: { background: 'transparent', marginTop: '0' },
             },
@@ -122,11 +125,76 @@
 
     const gate = () => document.getElementById('auth-gate');
 
+    // ── The hand-off. Google sign-in leaves Vettly for Google and comes back through Clerk's own server, which shows a
+    //    blank page on its address (…clerk.accounts.dev) for a moment. A Vettly screen says where you are going
+    //    before you leave, and greets you on the way back instead of replaying the sign-in page. ──
+    const PROVIDERS = { google: 'Google', github: 'GitHub', linkedin_oidc: 'LinkedIn', linkedin: 'LinkedIn', apple: 'Apple', microsoft: 'Microsoft', facebook: 'Facebook', discord: 'Discord' };
+    const relayEl = () => document.getElementById('auth-relay');
+    const returning = () => /^#\/sso-callback/.test(location.hash);
+    const relayMode = () => (root.classList.contains('auth-returning') ? 'back' : relayEl()?.classList.contains('is-on') ? relayEl().dataset.mode : '');
+    let relayTimer = returning() ? setTimeout(() => unrelay(), 20000) : 0;
+    function relay(mode, provider = 'your account') {
+        const el = relayEl(); if (!el) return;
+        clearTimeout(relayTimer);
+        el.dataset.mode = mode;
+        el.querySelector('[data-relay-title]').textContent = mode === 'out' ? `Taking you to ${provider}…` : 'Signing you in…';
+        el.querySelector('[data-relay-note]').textContent = mode === 'out'
+            ? 'Clerk, our secure sign-in partner, handles this part. You’ll be right back.' : 'Welcome back. Opening your studio.';
+        el.classList.remove('is-leaving'); el.classList.add('is-on');
+        relayTimer = setTimeout(() => unrelay(), mode === 'out' ? 8000 : 20000);   // nothing happened: back to the page
+        if (mode === 'out') {
+            watchForError();
+            try { sessionStorage.setItem('vettly_relay', String(Date.now())); } catch (e) { /* storage blocked */ }   // so the way back greets you
+        }
+    }
+    // Clerk answered with an error instead of leaving for Google: step aside at once so the message can be read
+    function watchForError() {
+        const card = document.getElementById('auth-card');
+        if (!card) return;
+        const seen = () => card.querySelector('.cl-alert, .cl-formFieldErrorText, [role="alert"]');
+        const mo = new MutationObserver(() => { if (relayMode() !== 'out') mo.disconnect(); else if (seen()) { mo.disconnect(); unrelay(); } });
+        mo.observe(card, { childList: true, subtree: true });
+        setTimeout(() => mo.disconnect(), 9000);
+    }
+    function unrelay() {
+        const el = relayEl(), was = relayMode();
+        clearTimeout(relayTimer);
+        if (was === 'out') try { sessionStorage.removeItem('vettly_relay'); } catch (e) { /* storage blocked */ }   // didn't leave after all
+        if (!el || !was) return;
+        el.classList.add('is-leaving');
+        root.classList.remove('auth-returning');
+        setTimeout(() => el.classList.remove('is-on', 'is-leaving'), 380);
+        if (!signedIn && !gate().hidden) window.AuthIntro?.play();   // still signed out (a cancelled or failed sign-in): the page arrives
+    }
+    // Clerk's buttons for Google and friends: say where they lead before the page goes
+    document.getElementById('auth-card')?.addEventListener('click', e => {
+        const b = e.target.closest('.cl-socialButtonsBlockButton, .cl-socialButtonsIconButton');
+        if (!b) return;
+        const id = (String(b.className).match(/cl-socialButtons(?:Block|Icon)Button__([a-z_]+)/) || [])[1];
+        relay('out', PROVIDERS[id]);
+    });
+    addEventListener('pageshow', e => { if (e.persisted && relayMode() === 'out') unrelay(); });   // Back from Google's page
+    addEventListener('hashchange', () => { if (relayMode() === 'back' && !returning()) unrelay(); });   // Clerk needs more from you, or the sign-in failed
+    // Clerk moves within its own forms by changing the #hash; these hooks only see real page moves. Leaving
+    // #/sso-callback for this same page swaps the address quietly instead of reloading everything.
+    const nav = replace => to => {
+        const u = new URL(to, location.href);
+        if (u.origin === location.origin && u.pathname === location.pathname && !u.hash) {
+            history.replaceState(history.state, '', u.pathname + u.search);
+            // a finished sign-in opens the app within a moment; if nobody is signed in by then, the sign-in page returns
+            setTimeout(() => { if (!signedIn && relayMode() === 'back') unrelay(); }, 900);
+            return;
+        }
+        if (replace) location.replace(u.href); else location.assign(u.href);
+    };
+
     function showGate(error) {
         const g = gate(), card = document.getElementById('auth-card');
         g.hidden = false;
         root.classList.remove('auth-checking');
+        if (!error && !relayMode()) window.AuthIntro?.play();   // the page arrives, piece by piece (after the hand-off screen, if any)
         if (error) {
+            unrelay();
             card.innerHTML = `<p class="auth-error">${error}</p>`;
             return;
         }
@@ -187,6 +255,8 @@
 
     function enter() {
         signedIn = true;
+        unrelay();
+        if (location.hash.startsWith('#/')) history.replaceState(history.state, '', location.pathname + location.search);   // done with Clerk's #/sso-callback
         try { localStorage.setItem('vettly_has_account', '1'); } catch (e) { /* storage blocked */ }
         const g = gate();
         if (!g.hidden) {
@@ -210,7 +280,7 @@
         root.classList.add('hosted');   // the hosted site: hide anything that only makes sense on your own machine
         try {
             clerk = await loadClerk(cfg);
-            await clerk.load();
+            await clerk.load({ routerPush: nav(false), routerReplace: nav(true) });
         } catch (e) {
             showGate('Sign-in could not load. Check your connection and reload the page.');
             return;
@@ -220,7 +290,11 @@
             if (user && !signedIn) enter();
             else if (!user && signedIn) location.reload();   // signed out: start clean
         });
-        if (clerk.user) enter(); else showGate();
+        if (clerk.user) enter();
+        else {
+            if (!returning()) unrelay();   // back, but not signed in (cancelled at Google): the sign-in page, right away
+            showGate();
+        }
     })();
 
     // Passport reads the account from here: who you are, how you sign in, and Clerk's own security window

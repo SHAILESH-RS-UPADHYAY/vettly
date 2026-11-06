@@ -35,6 +35,11 @@
                 root.classList.add('auth-checking');
                 setTimeout(function () { root.classList.remove('auth-checking'); }, 6000);
             }
+            /* back from Google (through Clerk): say so from the first frame, instead of a blank page and a replayed intro.
+               Clerk lands on #/sso-callback when it needs one more step; otherwise auth.js left a note in this tab. */
+            var back = /^#\/sso-callback/.test(location.hash);
+            try { var left = +sessionStorage.getItem('vettly_relay'); if (left && Date.now() - left < 180000) back = true; sessionStorage.removeItem('vettly_relay'); } catch (e) {}
+            if (back) root.classList.add('auth-returning');
             try { ap = JSON.parse(localStorage.getItem('vettly_appearance_v2') || '{}') || {}; saved = localStorage.getItem('acemate_poster_theme'); } catch (e) {}
             var dark = saved === 'dark' || (saved === 'device' && !!window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
             if (dark) root.classList.add('theme-dark');
@@ -51,14 +56,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./tokens.css?v=7.1">
     <link rel="stylesheet" href="./base.css?v=7.3">
-    <link rel="stylesheet" href="./styles.css?v=9.5">
+    <link rel="stylesheet" href="./styles.css?v=9.6">
     <link rel="stylesheet" href="./prep.css?v=7.7">
     <link rel="stylesheet" href="./mentor.css?v=9.3">
     <link rel="stylesheet" href="./looks.css?v=7.10">
     <link rel="stylesheet" href="./paper.css?v=8.1">
-    <link rel="stylesheet" href="./workshop.css?v=8.1">
+    <link rel="stylesheet" href="./workshop.css?v=8.2">
     <link rel="stylesheet" href="./bento.css?v=9.2">
-    <link rel="stylesheet" href="./onboard.css?v=2.4">
+    <link rel="stylesheet" href="./onboard.css?v=2.5">
     <link rel="stylesheet" href="./keyring.css?v=1.6">
     <link rel="stylesheet" href="./daybook.css?v=1.6">
     <link rel="stylesheet" href="./register.css?v=1.21">
@@ -68,6 +73,7 @@
     <link rel="stylesheet" href="./account.css?v=1.1">
     <link rel="stylesheet" href="./tooltip.css?v=1.0">
     <link rel="stylesheet" href="./brand.css?v=1.1">
+    <link rel="stylesheet" href="./auth-intro.css?v=1.3">
 </head>
 <body data-section="home">
     <!-- Icon sprite: Phosphor (MIT), duotone set. Use as <svg class="i"><use href="#i-name"/></svg>. -->
@@ -159,6 +165,14 @@
 
     <!-- Navigation: a sidebar on wide screens, an icon rail on tablets, a tab bar with a More sheet on phones -->
     <!-- Sign-in for the hosted app (auth.js mounts Clerk here); never shown when Vettly runs on your machine -->
+    <div class="auth-relay" id="auth-relay" role="status" aria-live="polite">
+        <div class="relay-card">
+            <span class="relay-orb"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span></span>
+            <p class="relay-title" data-relay-title>Signing you in…</p>
+            <p class="relay-note" data-relay-note>Welcome back. Opening your studio.</p>
+            <span class="relay-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
+    </div>
     <div class="auth-gate" id="auth-gate" hidden>
         <button type="button" class="theme-switch auth-theme" onclick="toggleTheme(event)" aria-label="Switch between light and dark">
             <svg class="sunmoon" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="sm-gate"><rect x="-4" y="-4" width="32" height="32" fill="#fff"/><circle class="sm-bite" cx="18.5" cy="5.5" r="6.2" fill="#000"/></mask></defs><circle class="sm-core" cx="12" cy="12" r="5" mask="url(#sm-gate)"/><g class="sm-rays"><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(0 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(45 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(90 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(135 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(180 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(225 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(270 12 12)"/><line x1="12" y1="1.6" x2="12" y2="3.6" transform="rotate(315 12 12)"/></g></svg>
@@ -166,16 +180,21 @@
         </button>
         <div class="auth-inner">
             <div class="auth-copy">
-                <p class="auth-brand"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span>Vettly</p>
-                <h1 class="auth-title">Walk into every interview <em>ready</em></h1>
-                <p class="auth-lede">Vettly turns your resume and the role you want into practice questions, model answers and a mentor who explains each one. For every field, from nursing to finance to code.</p>
+                <p class="auth-brand"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span><span class="auth-word">Vettly</span></p>
+                <p class="auth-kicker"><i aria-hidden="true"></i>Interview prep for every field</p>
+                <h1 class="auth-title"><span class="at-line">Walk in</span> <em class="at-ready"><span class="at-ready-text">ready.</span><svg class="at-ink" viewBox="0 0 300 26" preserveAspectRatio="none" aria-hidden="true"><path d="M5 17 C 70 7, 150 5, 296 13" pathLength="1"/></svg></em></h1>
+                <p class="auth-swap"><span class="sr-only">Made for nurses, analysts, engineers, designers, teachers and marketers.</span>
+                    <span aria-hidden="true">Made for</span> <span class="auth-swap-slot" aria-hidden="true"><b data-swap>nurses</b></span>
+                </p>
+                <p class="auth-lede">Tell Vettly your role. Get the questions you'll really face, answers in your own words, and a mentor who explains every one.</p>
                 <ul class="auth-points">
-                    <li><svg aria-hidden="true"><use href="#i-target"/></svg>Questions written for your role</li>
-                    <li><svg aria-hidden="true"><use href="#i-chats"/></svg>Answers that sound like you</li>
-                    <li><svg aria-hidden="true"><use href="#i-bento"/></svg>Five new ideas every morning</li>
+                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-target"/></svg></span>Questions for your exact role</li>
+                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-chats"/></svg></span>Answers that sound like you</li>
+                    <li><span class="ap-ico"><svg aria-hidden="true"><use href="#i-bento"/></svg></span>Five fresh ideas every morning</li>
                 </ul>
             </div>
             <div class="auth-panel">
+                <span class="auth-tape" aria-hidden="true"></span>
                 <div class="auth-tabs" role="group" aria-label="Sign in or create an account">
                     <button type="button" data-auth-mode="in" aria-pressed="false">Sign in</button>
                     <button type="button" data-auth-mode="up" aria-pressed="true">Create account</button>
@@ -1308,13 +1327,14 @@
     <script defer src="./vendor/gsap-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
-    <script defer src="./auth.js?v=9.5"></script>
-    <script defer src="./motion.js?v=8.4"></script>
+    <script defer src="./auth.js?v=9.6"></script>
+    <script defer src="./motion.js?v=8.5"></script>
     <script defer src="./tooltip.js?v=1.0"></script>
     <script defer src="./appearance.js?v=9.1"></script>
-    <script defer src="./dashboard.js?v=9.4"></script>
+    <script defer src="./dashboard.js?v=9.5"></script>
     <script defer src="./mentor.js?v=8.6"></script>
     <script defer src="./brand.js?v=1.0"></script>
+    <script defer src="./auth-intro.js?v=1.3"></script>
     <script defer src="./bento-data.js?v=8.1"></script>
     <script defer src="./bento-fields.js?v=1.0"></script>
     <script defer src="./bento.js?v=9.0"></script>
@@ -1326,7 +1346,7 @@
     <script defer src="./tour.js?v=2.2"></script>
     <script defer src="./onboard-scenes.js?v=2.3"></script>
     <script defer src="./lookbook.js?v=1.5"></script>
-    <script defer src="./onboard.js?v=9.10"></script>
-    <script defer src="./picker.js?v=1.1"></script>
+    <script defer src="./onboard.js?v=9.11"></script>
+    <script defer src="./picker.js?v=1.2"></script>
 </body>
 </html>
