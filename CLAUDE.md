@@ -8,5 +8,5 @@
 
 ## Branches
 
-- Keep the branch list short: `main`, plus at most one working branch named `dev` when a change should go through a pull request. Never create a new branch per task.
-- Reuse `dev` for every change: reset it to the latest `main` before starting (`git fetch origin main && git checkout -B dev origin/main`), push it, and open the pull request from it. After a merge, start the next change by resetting `dev` again.
+- Work on `main` only: commit straight to `main` and push it. No other branches and no pull requests (the owner's rule since 2026-11-07).
+- Pull `main` before starting (`git pull --ff-only origin main`) so pushes never need forcing. Never merge through GitHub: its merge commits show "Unverified" on this account.
