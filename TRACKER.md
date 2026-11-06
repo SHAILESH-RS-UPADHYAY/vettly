@@ -263,9 +263,9 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] Checked: Playwright frames of the splash (light, dark, phone, quick take), the sign-in page (light, dark,
       phone, reduced motion), a tab change frozen mid-sparkle, the lean at three distances with the Mentor open and
       closed, onboarding and tablet headers, the sign-in hand-off; no console errors; the five backend test scripts
-- [ ] The "Merge pull request" commits: GitHub's API reports all seven (#4 to #10) as verified (a valid web-flow
-      signature, recorded at merge time). If the commits page still shows "Unverified", the fix is to rewrite them as
-      plain merges and force-push main, which needs the owner's go-ahead
+- [x] The "Merge pull request" commits #4 to #10 showed "Unverified" on GitHub (GitHub made them when a cloud
+      session merged the pull requests). With the owner's go-ahead they were rewritten as plain merges by the owner
+      (same files, same dates) and main was force-pushed; from #11 on, pull requests are merged the same plain way
 
 ## Settings only the owner can change (Vercel / Clerk)
 
