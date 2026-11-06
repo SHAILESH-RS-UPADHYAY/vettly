@@ -308,6 +308,14 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       living, ragged edge and small blooms (replaces the pixel switch)
 - [x] Checked: the Sketchbook light, dark and phone (no sideways scroll); live on Vercel as a new visitor with the real
       Clerk form; all thirteen glazes by day and night; the ink switch mid-bleed; the pointer throwing a glaze
+- [x] 17.5 The Sketchbook fits every screen: sizes follow the screen's height too, Clerk's form is compact, the red rule
+      is the heading's own edge, the two columns share one top line and are centred as a block
+- [x] 17.6 A sticky note ("Nervous is normal. Unprepared is optional.") and a flashcard flipping through real questions
+      from six fields fill the space below the list; on phones and upright tablets the sign-in card comes straight
+      after the title, so the form is on the first screen
+- [x] Checked live with the real Clerk form on 15 screens: iPhone SE, 15 and 15 Pro Max, iPad mini, iPad portrait and
+      landscape, iPad Pro 12.9, 1366x768 and 1280x720 laptops, MacBook Air 13, Pro 14 and Pro 16, 1920 and 2560
+      desktops: the whole card on screen, or the sign-in button on the first screen on phones and tablets
 
 ## Settings only the owner can change (Vercel / Clerk)
 
