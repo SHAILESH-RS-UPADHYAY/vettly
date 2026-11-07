@@ -328,4 +328,7 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
 - [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
-- [x] Personal files are no longer tracked (`backend/uploads/`, `backend/context_store/*.json`; Phase 15.7). They are still in the git history: before making the **repository** public, purge them from history too (for example with git filter-repo)
+- [x] Personal files (the resumes and the local stores) are gone from the whole git history (7 Nov): main was
+      rewritten without them and pushed; they stay on the owner's computer and in the account on the live site
+- [ ] Before making the repository **public**: GitHub still keeps the old pull-request commits (#1 to #11), which hold
+      those files. Ask GitHub Support to purge them, or move the clean history to a fresh repository and point Vercel at it
