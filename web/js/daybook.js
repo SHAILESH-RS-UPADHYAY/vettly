@@ -107,6 +107,7 @@ const Daybook = (() => {
         if (!document.getElementById('page-home')) return;
         await window.Auth?.ready;
         const [profile, keys, ctx, jd, chat, qs] = await Promise.all([get('/api/profile'), get('/api/ai-key'), get('/context'), get('/context/job-description'), get('/api/chat/history'), get('/prepare/questions')]);
+        window.KeyRing?.prime?.(keys);
         let bento = {};
         try { bento = JSON.parse(localStorage.getItem('vettly_bento') || '{}'); } catch (e) { /* storage blocked */ }
         const entries = qs?.entries || (typeof prep !== 'undefined' ? prep.entries : []);

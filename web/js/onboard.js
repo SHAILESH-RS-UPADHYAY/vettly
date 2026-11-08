@@ -74,8 +74,8 @@ const Onboard = (() => {
             'Gemini goes first. If it’s busy, Groq answers, then Claude or OpenAI if you added them, so you’re never left waiting.', 'no dead ends'],
         ['polish', 'Humanizer + 7 checks · answer_validator.py', 'How it works · 3 of 3', 'Finally, it sounds like you',
             'Robotic phrases get struck out, then every answer is scored on 7 checks and rewritten until it passes. Only then does it reach Prep Studio.', 'no “as an AI…”'],
-        ['keys', 'Key Ring · allowance.py', 'Power it up', 'Add two free keys',
-            'You get a few free answers a day. For as many as you like, add your own Gemini and Groq keys: both are free and take about a minute. Add both, so when one is busy the other answers.', 'free, both of them'],
+        ['keys', 'Key Ring · allowance.py', 'Power it up', 'No key needed to start',
+            'Vettly runs on its own free AI keys, so you can start right now with free answers every day. Want no limit? Add your own free Gemini and Groq keys (about a minute each), or a paid Claude, OpenAI or OpenRouter key in Settings → Key Ring. Add two, so when one is busy the other answers.', 'optional, skip it'],
         ['yours', 'Atelier · shortcuts.js', 'Make it yours', 'Your studio, your way',
             () => `The Atelier holds the looks: themes, page styles and how Live Copilot writes. ${touch() ? '' : `Press ${MOD()} K to jump anywhere and ? for every shortcut. `}The Attic keeps what you delete; hide its tab if you never need it.`, 'try it now'],
     ];

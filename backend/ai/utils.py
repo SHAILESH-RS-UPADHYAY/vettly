@@ -217,14 +217,16 @@ async def _via_openai(system_prompt, user_prompt, history, max_tokens, temperatu
 
 async def _via_groq(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
     from groq import AsyncGroq
-    client = AsyncGroq(api_key=config.GROQ_API_KEY)
+    from allowance import own_keys
+    pooled = own_keys.get() is None   # the server's pool: a busy key hands over to the next one instead of waiting
+    client = AsyncGroq(api_key=config.GROQ_API_KEY, max_retries=0 if pooled else 2)
     # keep system + user prompt within Groq's free-tier token budget
     messages = [{"role": "system", "content": system_prompt[:14000]}]
     for msg in (history or [])[-8:]:
         messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
     messages.append({"role": "user", "content": user_prompt[:14000]})
     res = await call_groq_with_retry(
-        client, client.chat.completions.create, model=getattr(config, "GROQ_MODEL", "llama-3.3-70b-versatile"),
+        client, client.chat.completions.create, max_retries=1 if pooled else 7, model=getattr(config, "GROQ_MODEL", "llama-3.3-70b-versatile"),
         messages=messages, max_tokens=min(max_tokens, 4000), temperature=temperature,
     )
     return res.choices[0].message.content.strip()
@@ -260,26 +262,30 @@ async def generate_multi_provider_completion(
     json_mode: bool = False,
 ) -> str:
     """
-    Unified multi-provider router for Vettly: Gemini → Groq → Claude → OpenAI (PROVIDER_ORDER).
-    Providers without a key are skipped; a failing provider hands over to the next one.
+    Unified multi-provider router for Vettly: Gemini → Groq → Claude → OpenAI (PROVIDER_ORDER), once per key slot
+    (the server's pool: Gemini 1, Groq 1, Gemini 2, Groq 2, ...). Providers without a key are skipped; a failing one
+    hands over to the next.
     """
     from allowance import own_custom
     custom = own_custom.get()   # the user's own provider: first or last, as they chose
-    order = list(PROVIDER_ORDER)
+    order = [(s, n) for s in range(config.pool_size()) for n in PROVIDER_ORDER]
     if custom:
-        order = ["custom", *order] if custom.get("first") else [*order, "custom"]
+        order = [(0, "custom"), *order] if custom.get("first") else [*order, (0, "custom")]
     attempted: list[str] = []   # providers that had a key, so a failure is not reported as a missing key
-    for name in order:
-        if name != "custom" and not _usable(PROVIDER_KEYS[name]):
-            continue
-        label = custom.get("label", "Your provider") if name == "custom" else PROVIDER_LABELS[name]
-        attempted.append(label)
+    for slot, name in order:
+        token = config.pool_slot.set(slot)
         try:
+            if name != "custom" and not _usable(PROVIDER_KEYS[name]):
+                continue
+            label = custom.get("label", "Your provider") if name == "custom" else PROVIDER_LABELS[name] + (f" {slot + 1}" if slot else "")
+            attempted.append(label)
             out = await _CALLERS[name](system_prompt, user_prompt, history, max_tokens, temperature, json_mode)
             if out:
                 return out
         except Exception as e:
             logger.warning(f"{label} failed ({type(e).__name__}: {str(e)[:160]}); trying the next provider...")
+        finally:
+            config.pool_slot.reset(token)
 
     if attempted:
         raise RuntimeError(

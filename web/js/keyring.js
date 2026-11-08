@@ -244,6 +244,7 @@ const KeyRing = (() => {
         const boxes = hostsNow();
         if (!boxes.length) return;
         boxes.forEach(b => wire(b));
+        if (status) render(status);   // what the home page already fetched: drawn at once, refreshed below
         try { render(await api('GET', '/api/ai-key')); }
         catch (e) { boxes.forEach(box => { box.innerHTML = `<div class="toolbelt-card-header"><h3>${icon('key', 'h-ico')}Key Ring</h3></div><p class="kr-locked">Couldn't load your keys (${escapeHtml(e.message)}). <button type="button" class="btn btn-sm btn-secondary" onclick="KeyRing.load()">Try again</button></p>`; }); }
     }
@@ -256,6 +257,7 @@ const KeyRing = (() => {
         load();
     }
     const unmount = el => { hosts.delete(el); };
+    const prime = s => { if (s?.keys && !status) status = s; };   // daybook.js hands over its /api/ai-key answer
 
     // focus a provider's input (after the guide's last step, or from the tour)
     function focusProvider(id) {
@@ -266,7 +268,7 @@ const KeyRing = (() => {
     }
 
     document.addEventListener('click', e => { const g = e.target.closest('[data-guide]'); if (g) KeyGuide.open(g.dataset.guide); });
-    return { load, mount, unmount, status: () => status, focusProvider, api };
+    return { load, mount, unmount, prime, status: () => status, focusProvider, api };
 })();
 
 /* ── KeyGuide: how to get each key, as illustrated steps with a moving cursor ── */

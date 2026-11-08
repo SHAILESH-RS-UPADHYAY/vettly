@@ -4,6 +4,7 @@ Loads settings from environment variables and provides multi-provider LLM defaul
 (Anthropic Claude, Google Gemini, OpenAI, and Groq).
 """
 
+import contextvars
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -14,15 +15,28 @@ load_dotenv(BACKEND_DIR / ".env")
 
 
 # ─── API Keys (Multi-Provider Support) ───────────────────────
-# The four AI keys are looked up per request (see __getattr__ below): a user who saved their own key gets it here
-_SERVER_KEYS = {n: os.getenv(n, "") for n in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY")}
+# The four AI keys are looked up per request (see __getattr__ below): a user who saved their own key gets it here.
+# The server's own keys can be a pool, comma separated (GEMINI_API_KEY=key1,key2,key3): free tiers from several
+# accounts. The router walks the slots: Gemini 1, Groq 1, Gemini 2, Groq 2, ... (ai/utils.py). Everything else uses slot 1.
+_SERVER_KEYS = {n: [k.strip() for k in os.getenv(n, "").split(",") if k.strip()]
+                for n in ("ANTHROPIC_API_KEY", "GEMINI_API_KEY", "GROQ_API_KEY", "OPENAI_API_KEY")}
+pool_slot: contextvars.ContextVar = contextvars.ContextVar("vettly_pool_slot", default=0)
+
+
+def pool_size() -> int:
+    """How many slots the router walks: 1 on a user's own keys, else the longest server pool."""
+    from allowance import own_keys
+    return 1 if own_keys.get() is not None else max(1, *(len(v) for v in _SERVER_KEYS.values()))
 
 
 def __getattr__(name):
     if name in _SERVER_KEYS:
         from allowance import own_keys
         mine = own_keys.get()
-        return mine[name] if mine is not None else _SERVER_KEYS[name]
+        if mine is not None:
+            return mine[name]
+        keys, i = _SERVER_KEYS[name], pool_slot.get()
+        return keys[i] if i < len(keys) else ""   # a shorter pool just sits that slot out
     raise AttributeError(name)
 
 
