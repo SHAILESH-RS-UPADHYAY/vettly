@@ -363,10 +363,10 @@ const Brand = (() => {
     // Clicking or coming close to the logo or the Mentor button throws one; so does coming back to the tab (keep: true
     // ends on the glaze it already wore)
     const LOGOS = '.sidebar-logo .brand-orb, .sk-brand .brand-orb, .auth-brand .brand-orb, .ob-brand .brand-orb';
-    function volley(which, { keep = false, ms = 360 } = {}) {
+    function volley(which, { keep = false, ms = 560, gap = 260 } = {}) {
         const mentor = which === 'mentor';
         const orb = mentor ? (mentorGlazed() && mentorOrb()) : [...document.querySelectorAll(LOGOS)].find(el => el.getClientRects().length);
-        if (!orb || !splashed || quiet() || performance.now() - (orb._volley || 0) < 1300) return;
+        if (!orb || !splashed || quiet() || performance.now() - (orb._volley || 0) < 2200) return;
         orb._volley = performance.now();
         if (!keep && mentor) mentorAt = next(mentorAt, ORDER[at]);
         if (!keep && !mentor) { at = next(at, mentorOrb() && mentorGlazed() ? ORDER[mentorAt] : null); icon(ORDER[at]); }
@@ -374,10 +374,10 @@ const Brand = (() => {
         if (!mentor) document.querySelectorAll('.brand-orb').forEach(el => { if (el !== orb) paint(el, end); });
         const pool = GLAZES.map(([id]) => id).filter(id => id !== end).sort(() => Math.random() - 0.5).slice(0, 5);
         const tilt = Math.random() * Math.PI / 3;   // the six sides turn a little each time, so no two volleys match
-        [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * 130));
-        schedule(which, hold(end) + 800);   // the clock waits for the volley to land
+        [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * gap));
+        schedule(which, hold(end) + 5 * gap + ms);   // the clock waits for the volley to land
     }
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true }); });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true, ms: 420, gap: 180 });   // back on the tab: a touch quicker });
     document.addEventListener('click', e => {
         const h = e.target.closest('#mentor-orb, .sidebar-logo, .sk-brand, .auth-brand, .ob-brand');
         if (h) volley(h.id === 'mentor-orb' ? 'mentor' : 'logo');
