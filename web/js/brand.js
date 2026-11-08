@@ -362,12 +362,34 @@ const Brand = (() => {
     // a volley: six glazes thrown from six sides, one after another, landing on the next glaze in the order.
     // Clicking or coming close to the logo or the Mentor button throws one; so does coming back to the tab (keep: true
     // ends on the glaze it already wore)
+    // a bubble's pop, made on the spot: a short sine that swoops up, each one a little higher (only after a click,
+    // the one time browsers let a page make a sound)
+    let audio = null;
+    function bubble(step) {
+        try {
+            audio ||= new (window.AudioContext || window.webkitAudioContext)();
+            const t = audio.currentTime, o = audio.createOscillator(), g = audio.createGain(), f = 380 * 2 ** (step / 7);
+            o.type = 'sine';
+            o.frequency.setValueAtTime(f, t);
+            o.frequency.exponentialRampToValueAtTime(f * 2.6, t + 0.07);
+            g.gain.setValueAtTime(0.0001, t);
+            g.gain.exponentialRampToValueAtTime(0.16, t + 0.008);
+            g.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
+            o.connect(g).connect(audio.destination);
+            o.start(t); o.stop(t + 0.12);
+        } catch (e) { /* no Web Audio: silent */ }
+    }
     const LOGOS = '.sidebar-logo .brand-orb, .sk-brand .brand-orb, .auth-brand .brand-orb, .ob-brand .brand-orb';
-    function volley(which, { keep = false, ms = 560, gap = 260 } = {}) {
+    function volley(which, { keep = false, ms = 560, gap = 260, sound = false } = {}) {
         const mentor = which === 'mentor';
         const orb = mentor ? (mentorGlazed() && mentorOrb()) : [...document.querySelectorAll(LOGOS)].find(el => el.getClientRects().length);
-        if (!orb || !splashed || quiet() || performance.now() - (orb._volley || 0) < 2200) return;
-        orb._volley = performance.now();
+        if (!orb || !splashed || quiet()) return;
+        const now = performance.now();
+        if (now < (orb._lands?.at(-1) || 0) + 150) {   // one is already flying (the pointer woke it): a click still hears its pops
+            if (sound) (orb._lands || []).forEach((at, i) => at > now && setTimeout(() => bubble(i), at - now));
+            return;
+        }
+        orb._lands = [0, 1, 2, 3, 4, 5].map(i => now + i * gap + ms);
         if (!keep && mentor) mentorAt = next(mentorAt, ORDER[at]);
         if (!keep && !mentor) { at = next(at, mentorOrb() && mentorGlazed() ? ORDER[mentorAt] : null); icon(ORDER[at]); }
         const end = ORDER[mentor ? mentorAt : at];
@@ -375,12 +397,13 @@ const Brand = (() => {
         const pool = GLAZES.map(([id]) => id).filter(id => id !== end).sort(() => Math.random() - 0.5).slice(0, 5);
         const tilt = Math.random() * Math.PI / 3;   // the six sides turn a little each time, so no two volleys match
         [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * gap));
+        if (sound) orb._lands.forEach((at, i) => setTimeout(() => bubble(i), at - now));   // a pop as each drop lands
         schedule(which, hold(end) + 5 * gap + ms);   // the clock waits for the volley to land
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true, ms: 420, gap: 180 }); });   // back on the tab: a touch quicker
     document.addEventListener('click', e => {
         const h = e.target.closest('#mentor-orb, .sidebar-logo, .sk-brand, .auth-brand, .ob-brand');
-        if (h) volley(h.id === 'mentor-orb' ? 'mentor' : 'logo');
+        if (h) volley(h.id === 'mentor-orb' ? 'mentor' : 'logo', { sound: true });
     });
 
     fill(); fillMentor(); icon(ORDER[at]); run();
