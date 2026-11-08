@@ -317,6 +317,25 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       landscape, iPad Pro 12.9, 1366x768 and 1280x720 laptops, MacBook Air 13, Pro 14 and Pro 16, 1920 and 2560
       desktops: the whole card on screen, or the sign-in button on the first screen on phones and tablets
 
+## Phase 18 · Ready for the public: free server keys, a Porcelain app icon, paint from every side (requested 8 Nov)
+
+- [x] 18.1 The home-screen icon is the Porcelain orb (ivory disc, ink star and orbits) instead of the orange glaze;
+      the icon files carry `?v=2` so phones fetch the new one (an installed app may need adding to the home screen again)
+- [x] 18.2 A pool of free server keys: `GEMINI_API_KEY` and `GROQ_API_KEY` each take several keys, comma separated;
+      the router tries Gemini 1, Groq 1, Gemini 2, Groq 2, Gemini 3, Groq 3 (`config.py`, `ai/utils.py`)
+- [x] 18.3 Faster answers on the pool: a rate-limited key (429) hands over to the next one at once, where Groq used to
+      back off for up to two minutes; a user's own keys skip the pool and keep their retries
+- [x] 18.4 Onboarding says no key is needed to start: free answers every day, own keys (free Gemini and Groq, or paid
+      Claude, OpenAI, OpenRouter) for no limit. The Key Ring keeps every option, preview and guide
+- [x] 18.5 Key Ring opens at once: root cause was an empty card that waited for its own `/api/ai-key` call on every
+      visit (Clerk check plus 2 to 3 Neon queries, slower when Neon wakes from idle) although the home page had
+      already fetched the same answer; it now draws that answer straight away and refreshes behind it
+- [x] 18.6 The splash throws six glazes from six sides on every load (the daily full show slower, later loads quicker);
+      returning to the tab throws a quick six-way volley at the logo, ending on the glaze it wore
+- [x] 18.7 The first-visit tour waits for the splash to land instead of covering the paint
+- [x] Checked: `tests/test_pool.py` (order, slot reset, own keys skip the pool), the key and custom-provider tests, and
+      the splash and tab volley frame by frame in a local browser
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
@@ -326,6 +345,7 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] Clerk dashboard → API keys: switch off user API keys. Vettly hides the tab, but only the dashboard stops them being made
 - [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
+- [ ] `GEMINI_API_KEY` and `GROQ_API_KEY` in Vercel as comma-separated pools (up to three free keys each), then redeploy
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
 - [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
 - [x] Personal files (the resumes and the local stores) are gone from the whole git history (7 Nov): main was
