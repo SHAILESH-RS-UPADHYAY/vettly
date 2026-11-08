@@ -194,7 +194,7 @@ const Brand = (() => {
             // coming close throws the next glaze at once (at most every 2.5 s, so it never flickers)
             const was = h._near || 0, now = performance.now();
             h._near = near;
-            if (!still && was < 0.35 && near >= 0.65 && now - (h._thrown || 0) > 2500) { h._thrown = now; turn(h.id === 'mentor-orb' ? 'mentor' : 'logo'); }
+            if (!still && was < 0.35 && near >= 0.65 && now - (h._thrown || 0) > 2500) { h._thrown = now; volley(h.id === 'mentor-orb' ? 'mentor' : 'logo'); }
             const k = near * Math.min(d * 0.12, r.width * 0.16) / d;   // at most a sixth of its size off centre
             h.style.setProperty('--pull-x', `${(dx * k).toFixed(1)}px`);
             h.style.setProperty('--pull-y', `${(dy * k).toFixed(1)}px`);
@@ -359,12 +359,28 @@ const Brand = (() => {
         setTimeout(land, 14000);   // never keep anyone waiting on the logo
     }
 
-    // back on the tab: a quick volley from six sides at the logo, ending on the glaze it wore
-    document.addEventListener('visibilitychange', () => {
-        const orb = document.querySelector('.sidebar-logo .brand-orb, .sk-brand .brand-orb, .auth-brand .brand-orb');
-        if (document.hidden || !splashed || quiet() || !orb?.getClientRects().length) return;
-        const ids = ['coral', 'saffron', 'matcha', 'sky', 'lilac', ORDER[at]];
-        ids.forEach((id, i) => setTimeout(() => hit(orb, id, i * Math.PI / 3, 360), i * 130));
+    // a volley: six glazes thrown from six sides, one after another, landing on the next glaze in the order.
+    // Clicking or coming close to the logo or the Mentor button throws one; so does coming back to the tab (keep: true
+    // ends on the glaze it already wore)
+    const LOGOS = '.sidebar-logo .brand-orb, .sk-brand .brand-orb, .auth-brand .brand-orb, .ob-brand .brand-orb';
+    function volley(which, { keep = false, ms = 360 } = {}) {
+        const mentor = which === 'mentor';
+        const orb = mentor ? (mentorGlazed() && mentorOrb()) : [...document.querySelectorAll(LOGOS)].find(el => el.getClientRects().length);
+        if (!orb || !splashed || quiet() || performance.now() - (orb._volley || 0) < 1300) return;
+        orb._volley = performance.now();
+        if (!keep && mentor) mentorAt = next(mentorAt, ORDER[at]);
+        if (!keep && !mentor) { at = next(at, mentorOrb() && mentorGlazed() ? ORDER[mentorAt] : null); icon(ORDER[at]); }
+        const end = ORDER[mentor ? mentorAt : at];
+        if (!mentor) document.querySelectorAll('.brand-orb').forEach(el => { if (el !== orb) paint(el, end); });
+        const pool = GLAZES.map(([id]) => id).filter(id => id !== end).sort(() => Math.random() - 0.5).slice(0, 5);
+        const tilt = Math.random() * Math.PI / 3;   // the six sides turn a little each time, so no two volleys match
+        [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * 130));
+        schedule(which, hold(end) + 800);   // the clock waits for the volley to land
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true }); });
+    document.addEventListener('click', e => {
+        const h = e.target.closest('#mentor-orb, .sidebar-logo, .sk-brand, .auth-brand, .ob-brand');
+        if (h) volley(h.id === 'mentor-orb' ? 'mentor' : 'logo');
     });
 
     fill(); fillMentor(); icon(ORDER[at]); run();

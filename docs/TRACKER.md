@@ -333,6 +333,10 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] 18.6 The splash throws six glazes from six sides on every load (the daily full show slower, later loads quicker);
       returning to the tab throws a quick six-way volley at the logo, ending on the glaze it wore
 - [x] 18.7 The first-visit tour waits for the splash to land instead of covering the paint
+- [x] 18.8 Clicking or coming within 5 cm of the logo (side panel, sign-in page, onboarding) or the Ask Mentor button
+      throws the same six-way volley, sides alternating and turned a little each time, landing on the next glaze
+- [x] 18.9 The sign-in page's "Last used" badge sat half outside the Google button and the card cut it to "Last us";
+      it is now a small highlighter tag inside the button's top edge, checked on desktop and a 390 px phone
 - [x] Checked: `tests/test_pool.py` (order, slot reset, own keys skip the pool), the key and custom-provider tests, and
       the splash and tab volley frame by frame in a local browser
 
