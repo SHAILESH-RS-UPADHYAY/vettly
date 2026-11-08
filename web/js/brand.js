@@ -211,6 +211,22 @@ const Brand = (() => {
     const mentorEl = document.getElementById('mentor');   // opening or closing the Mentor changes how it leans
     if (mentorEl) new MutationObserver(() => lean(false)).observe(mentorEl, { attributes: true, attributeFilter: ['data-state'] });
 
+    // touch screens have no pointer to wake the logo, so it stays awake: the ring shows and the orb drifts to a new
+    // lean every 2.4 s (CSS springs it there; one style write per step). A mouse arriving hands it back to lean().
+    setInterval(() => {
+        if (px > -9e3 || document.hidden || quiet()) return;
+        const open = document.getElementById('mentor')?.dataset.state === 'open';
+        if (open) { const m = document.getElementById('mentor-orb'); m?.style.setProperty('--pull-x', '0px'); m?.style.setProperty('--pull-y', '0px'); }   // open: centred
+        document.querySelectorAll('#mentor-orb, .sk-brand .brand-ring, .auth-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
+            const r = h.getBoundingClientRect();
+            if (!r.width || (open && h.id === 'mentor-orb')) return;
+            const a = Math.random() * Math.PI * 2, d = r.width * (0.06 + Math.random() * 0.07);
+            h.style.setProperty('--pull-x', `${(Math.cos(a) * d).toFixed(1)}px`);
+            h.style.setProperty('--pull-y', `${(Math.sin(a) * d).toFixed(1)}px`);
+            h.style.setProperty('--near', '1');
+        });
+    }, 2400);
+
     // ── pulse: one twirl of the logo in the side panel when you change tabs (its star and orbits look the same after a turn) ──
     function pulse() {
         const orb = document.querySelector('#sidebar .sidebar-logo .brand-orb');

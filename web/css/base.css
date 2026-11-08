@@ -259,6 +259,12 @@ kbd {
 
 /* ── Page and theme transitions (View Transitions API; plain fade where unsupported) ── */
 :root.vt-page #main-content { view-transition-name: page; }
+/* the tab bar (phones) and side panel get their own layer above the page, so the page's snapshot never covers them */
+:root.vt-page #sidebar { view-transition-name: tabbar; }
+:root.vt-page #mentor-orb { view-transition-name: mentor-orb; }
+::view-transition-group(tabbar), ::view-transition-group(mentor-orb) { z-index: 3; animation: none; }
+::view-transition-old(tabbar), ::view-transition-old(mentor-orb) { display: none; }   /* the new tab is lit at once */
+::view-transition-new(tabbar), ::view-transition-new(mentor-orb) { animation: none; }
 :root.vt-page .page.active { animation: none; }
 /* switching tabs: the new page opens out of its tab through Vettly's sparkle (motion.js clips it) while the old one
    sinks back and blurs, both drifting the way you travel down or up the list (dashboard.js sets --vt-x, --vt-y, --vt-dir) */
