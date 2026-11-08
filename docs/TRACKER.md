@@ -338,6 +338,11 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       (each throw 0.56 s, 0.26 s apart, about 1.9 s in all; returning to the tab is a touch quicker)
 - [x] 18.10 A click on the logo or the Mentor button pops like bubbles: one soft pop as each drop lands, each a step
       higher (made with Web Audio, no sound file); a click while the pointer's volley is flying still hears its pops
+- [x] 18.11 On phones the open Mentor's orb sat off-centre in its ring: it leaned toward a mouse that phones never
+      have (the pointer's resting spot is far off screen, top left); with no mouse seen it now stays centred
+- [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
+      390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
+      splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors
 - [x] 18.9 The sign-in page's "Last used" badge sat half outside the Google button and the card cut it to "Last us";
       it is now a small highlighter tag inside the button's top edge, checked on desktop and a 390 px phone
 - [x] Checked: `tests/test_pool.py` (order, slot reset, own keys skip the pool), the key and custom-provider tests, and

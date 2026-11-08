@@ -185,7 +185,8 @@ const Brand = (() => {
     let px = -1e4, py = -1e4, frame = 0;
     function lean(home) {
         frame = 0;
-        const still = home || quiet(), open = document.getElementById('mentor')?.dataset.state === 'open';
+        // no mouse yet (phones, tablets): the open Mentor stays centred instead of leaning toward a pointer off screen
+        const still = home || quiet() || px < -9e3, open = document.getElementById('mentor')?.dataset.state === 'open';
         document.querySelectorAll('#mentor-orb, .sidebar-logo .brand-ring, .auth-brand .brand-ring, .sk-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
             const r = h.getBoundingClientRect();
             if (!r.width) return;
