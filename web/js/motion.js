@@ -53,19 +53,19 @@ const Motion = (() => {
     }
 
     // Swap page content inside a view transition when the browser has them
+    // Returns a promise that settles once the change has finished animating (callers load their data after it)
     function page(update) {
         const root = document.documentElement;
-        if (calm()) { update(); return; }
+        if (calm()) { update(); return Promise.resolve(); }
         if (!document.startViewTransition) {   // no view transitions: the new page still opens out of its tab
             update();
             const pg = document.querySelector('.page.active');
-            if (pg) bloom(pg);
-            return;
+            return pg ? bloom(pg).finished.catch(() => {}) : Promise.resolve();
         }
         root.classList.add('vt-page');
         const t = document.startViewTransition(update);
         t.ready.then(() => bloom(root, '::view-transition-new(page)')).catch(() => {});   // skipped by a resize or rotation: the update still ran
-        t.finished.finally(() => root.classList.remove('vt-page')).catch(() => {});
+        return t.finished.catch(() => {}).finally(() => root.classList.remove('vt-page'));
     }
 
     // Segmented controls: a single thumb glides to the pressed option

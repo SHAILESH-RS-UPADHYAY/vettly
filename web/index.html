@@ -52,8 +52,7 @@
             if (hand) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + hand + '&display=swap'; document.head.appendChild(l); }
             /* the splash (brand.js): every load draws the logo, the full show once a day; never
                with reduced motion, under Calm, or on the way back from Google (the hand-off screen shows instead) */
-            var still = (ap.motion || d.motion) === 'calm' || (!!window.matchMedia && (matchMedia('(prefers-reduced-motion: reduce)').matches
-                || matchMedia('(display-mode: standalone)').matches));   /* the installed app: the phone's own launch screen already showed the logo */
+            var still = (ap.motion || d.motion) === 'calm' || (!!window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
             if (still || back) root.classList.add('no-splash');
             else {
                 root.classList.add('splashing');
@@ -66,8 +65,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@500;700&family=Caveat:wght@700&family=Kalam:wght@300;400;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/tokens.css?v=7.1">
-    <link rel="stylesheet" href="./css/base.css?v=7.7">
-    <link rel="stylesheet" href="./css/styles.css?v=9.7">
+    <link rel="stylesheet" href="./css/base.css?v=7.8">
+    <link rel="stylesheet" href="./css/styles.css?v=9.8">
     <link rel="stylesheet" href="./css/prep.css?v=7.7">
     <link rel="stylesheet" href="./css/mentor.css?v=9.6">
     <link rel="stylesheet" href="./css/looks.css?v=7.10">
@@ -1420,12 +1419,12 @@
     <script defer src="./vendor/gsap-flip-3.13.0.min.js"></script>
     <script defer src="./vendor/gsap-splittext-3.13.0.min.js"></script>
     <script defer src="./js/auth.js?v=9.8"></script>
-    <script defer src="./js/motion.js?v=8.6"></script>
+    <script defer src="./js/motion.js?v=8.7"></script>
     <script defer src="./js/tooltip.js?v=1.0"></script>
-    <script defer src="./js/appearance.js?v=9.3"></script>
-    <script defer src="./js/dashboard.js?v=9.6"></script>
+    <script defer src="./js/appearance.js?v=9.4"></script>
+    <script defer src="./js/dashboard.js?v=9.7"></script>
     <script defer src="./js/mentor.js?v=8.7"></script>
-    <script defer src="./js/brand.js?v=3.9"></script>
+    <script defer src="./js/brand.js?v=4.0"></script>
     <script defer src="./js/auth-sketch.js?v=1.1"></script>
     <script defer src="./js/auth-intro.js?v=2.0"></script>
     <script defer src="./js/bento-data.js?v=8.1"></script>

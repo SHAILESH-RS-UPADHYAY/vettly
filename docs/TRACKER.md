@@ -342,10 +342,22 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       have (the pointer's resting spot is far off screen, top left); with no mouse seen it now stays centred
 - [x] 18.12 On phones the logo never rests: with no mouse to wake it, the Mentor button keeps its ring lit and drifts
       to a new lean every 2.4 s (CSS springs it; one style write per step), and stays centred while the Mentor is open
-- [x] 18.13 The installed app opens straight onto the page: the phone's own launch screen already shows the icon, so
-      the paint splash is skipped in standalone mode (it still plays in the browser)
+- [x] 18.13 ~~The installed app skips the paint splash~~ reverted the same day: the owner wants the six-way splash in
+      the installed app exactly as on the website. (The phone's plain launch screen comes from the manifest and
+      cannot be removed from code; the splash plays right after it.)
 - [x] 18.14 The tab bar no longer vanishes while tabs change: the page transition's snapshot was drawn over it; the tab
       bar and the Mentor button now sit on their own layer above the page, and the new tab lights at once
+- [x] 18.15 Tab changes lag less, measured on a phone at 4x slower CPU (long tasks per change):
+      Prep Studio 1392 to about 480-970 ms, Daybook 658 to about 260-290 ms, opening Live Copilot's page 1199 to 80 ms of
+      layout. Root causes found by profiling, each fixed where it starts:
+      - `transitionFrom` set a property on `<html>` and then read the tab's position, so the read restyled all 7,900
+        elements; it now reads first and writes after
+      - `Brand.pulse` read the hidden side-panel logo's layout on phones; it now asks the media query instead
+      - each section's data refresh ran mid-animation and re-laid out the live page every frame; first visits still
+        draw at once, later visits refresh after the change lands (`Motion.page` returns a promise)
+      - Live Copilot laid out all 182 notes every time it opened; notes and prep cards use `content-visibility: auto`
+        (with a clip margin so the margin's Q. marks stay), and the chat scrolls to the newest note directly
+      - the floaties canvas (about a fifth of the CPU) holds still while a page change animates
 - [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
       390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
       splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors; on a phone the

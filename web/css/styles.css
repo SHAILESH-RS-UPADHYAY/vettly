@@ -101,6 +101,9 @@
 
 #main-content { margin-left: var(--sidebar-w); position: relative; z-index: 1; min-height: 100dvh; }
 .page { display: none; }
+/* long lists lay out only what is on screen: a page with 180 chat notes or 60 prep cards opens without laying out
+   every one (each remembers its last height, so scrolling stays steady); the clip margin keeps the margin notes */
+.chat-messages > .chat-bubble, #prep-list .prep-card { content-visibility: auto; contain-intrinsic-size: auto 160px; overflow-clip-margin: 96px; }
 .page.active { display: block; animation: pageIn var(--dur-long) var(--ease-out) backwards; }
 @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } }
 .page-inner { width: 100%; max-width: var(--page-max); margin-inline: auto; padding: 30px var(--gutter) 80px; }

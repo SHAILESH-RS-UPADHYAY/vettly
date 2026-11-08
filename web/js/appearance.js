@@ -508,7 +508,7 @@ const Appearance = (() => {
                 shape(p, t);
             }
         }
-        function loop(t) { draw(true, t); raf = requestAnimationFrame(loop); }
+        function loop(t) { if (!root.classList.contains('vt-page')) draw(true, t); raf = requestAnimationFrame(loop); }   // holds still during a page change
         function stop() { cancelAnimationFrame(raf); raf = 0; }
         function restart() {
             stop();

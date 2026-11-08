@@ -18,12 +18,13 @@ function transitionFrom(name) {
     const root = document.documentElement, main = document.getElementById('main-content');
     if (!main) return;
     const from = NAV_ORDER.indexOf(document.body.dataset.section), to = NAV_ORDER.indexOf(name);
-    root.style.setProperty('--vt-dir', to >= from ? '1' : '-1');
+    // every read first, every write after: a property set on <html> first would make these reads restyle the whole page
     const tab = [document.getElementById(`nav-${name}`), MORE_SECTIONS.includes(name) ? document.getElementById('nav-more') : null]
         .find(el => el && !el.hidden && el.getClientRects().length && getComputedStyle(el).display !== 'none');
     const m = main.getBoundingClientRect();
     let x = m.width / 2, y = 0;
     if (tab) { const r = tab.getBoundingClientRect(); x = r.left + r.width / 2 - m.left; y = r.top + r.height / 2 - m.top; }
+    root.style.setProperty('--vt-dir', to >= from ? '1' : '-1');
     root.style.setProperty('--vt-x', `${Math.round(x)}px`);
     root.style.setProperty('--vt-y', `${Math.round(y)}px`);
     root.dataset.vtTo = name;
@@ -52,11 +53,18 @@ function switchSection(name, { animate = false } = {}) {
         Motion.pill(sideNav);
         Motion.thumbs(page);
     };
-    if (animate && changing) { transitionFrom(name); Motion.page(apply); window.Brand?.pulse(); } else apply();
+    let settled = Promise.resolve();
+    if (animate && changing) { transitionFrom(name); window.Brand?.pulse(); settled = Motion.page(apply); } else apply();
     // #/… belongs to Clerk's sign-in forms (#/sso-callback finishes a Google sign-in): never overwrite it
     if (!location.hash.startsWith('#/') && location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
-    // Load data for specific sections
+    // Load data for specific sections. A page's first visit draws it at once (so it never opens empty); later visits
+    // refresh once the page change has landed, since a re-render mid-animation re-lays out the page every frame
+    if (!page.dataset.loaded) { page.dataset.loaded = '1'; loadSection(name); }
+    else settled.then(() => { if (document.body.dataset.section === name) loadSection(name); });
+}
+
+function loadSection(name) {
     if (name === 'aboutme') loadAboutMe();
     if (name === 'prep') loadPrepQuestions();
     if (name === 'bento' && typeof Bento !== 'undefined') Bento.render();
@@ -64,13 +72,14 @@ function switchSection(name, { animate = false } = {}) {
     if (name === 'atelier') { Appearance.renderSettings(); window.Register?.renderAtelier?.(); }
     if (name === 'settings' && typeof KeyRing !== 'undefined') { KeyRing.load(); Passport.load(); }
     if (name === 'attic') loadRecycleBin();
-    
+
     // Auto-scroll chat to bottom when switching to chat section
     if (name === 'chat') {
         setTimeout(() => {
             requestAnimationFrame(() => {
                 const messagesDiv = document.getElementById('chat-messages');
-                if (messagesDiv) {
+                if (messagesDiv) {   // the newest note first (the others lay out as you scroll, so their heights are estimates)
+                    messagesDiv.lastElementChild?.scrollIntoView({ block: 'end' });
                     messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 }
             });

@@ -230,7 +230,7 @@ const Brand = (() => {
     // ── pulse: one twirl of the logo in the side panel when you change tabs (its star and orbits look the same after a turn) ──
     function pulse() {
         const orb = document.querySelector('#sidebar .sidebar-logo .brand-orb');
-        if (!orb || quiet() || !orb.getClientRects().length) return;
+        if (!orb || quiet() || matchMedia('(max-width: 47.99rem)').matches) return;   // phones hide it; no layout read needed
         orb.querySelector('.m-orb-art')?.animate([{ rotate: '0deg' }, { rotate: '360deg' }], { duration: 950, easing: 'cubic-bezier(0.3, 1.3, 0.5, 1)', composite: 'add' });
         orb.querySelector('.m-orb-sphere')?.animate([{ scale: 1 }, { scale: 0.84, offset: 0.28 }, { scale: 1.07, offset: 0.62 }, { scale: 1 }], { duration: 640, easing: 'ease-out' });
     }
