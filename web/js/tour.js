@@ -134,7 +134,8 @@ const Tour = (() => {
     // First visit only, and never on top of another open dialog
     function maybeStart() {
         if (seen() || document.querySelector('dialog[open]')) return;
-        setTimeout(start, 350);
+        const go = () => setTimeout(start, 350);   // after the splash has landed, never over the paint
+        window.Brand?.afterSplash ? Brand.afterSplash(go) : go();
     }
 
     document.addEventListener('click', e => {

@@ -108,11 +108,11 @@ const Brand = (() => {
             { duration: 520 + Math.random() * 240, easing: 'cubic-bezier(.2, .7, .4, 1)' }).onfinish = () => d.remove();
         }
     }
-    function hit(orb, id) {
+    function hit(orb, id, from = Math.random() * Math.PI * 2, ms = 560) {
         const r = orb.getBoundingClientRect();
         if (quiet() || document.hidden || !r.width || r.bottom < 0 || r.top > innerHeight) { paint(orb, id); return; }
         const p = palette(id), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-        const from = Math.random() * Math.PI * 2, dist = r.width * 2 + 40, size = Math.max(7, r.width * 0.26);
+        const dist = r.width * 2 + 40, size = Math.max(7, r.width * 0.26);
         const sx = cx + Math.cos(from) * dist, sy = cy + Math.sin(from) * dist;
         const bend = (Math.random() < 0.5 ? -1 : 1) * dist * 0.35;   // an arc, not a straight line
         const mx = (sx + cx) / 2 - Math.sin(from) * bend, my = (sy + cy) / 2 + Math.cos(from) * bend;
@@ -128,7 +128,7 @@ const Brand = (() => {
             const stretch = 1 + t * 0.6;   // it stretches as it picks up speed
             frames.push({ transform: `translate(${x - size / 2}px, ${y - size / 2}px) rotate(${Math.atan2(ty, tx)}rad) scale(${stretch}, ${1 / stretch})` });
         }
-        drop.animate(frames, { duration: 560, easing: 'cubic-bezier(.5, 0, .9, .6)' }).finished.then(() => {
+        drop.animate(frames, { duration: ms, easing: 'cubic-bezier(.5, 0, .9, .6)' }).finished.then(() => {
             drop.remove();
             orb.style.transitionDuration = '0.55s';   // paint lands fast
             paint(orb, id);
@@ -259,7 +259,8 @@ const Brand = (() => {
         if (skipping) { tint(id); return Promise.resolve(); }
         const mark = splash.querySelector('.sp-orb'), r = mark.getBoundingClientRect(), p = palette(id);
         const cx = r.left + r.width / 2, cy = r.top + r.height / 2, size = r.width * 0.34;
-        const [sx, sy] = { left: [-size, cy + r.height * 1.4], right: [innerWidth + size, cy - r.height * 0.9], bottom: [cx - r.width * 2.4, innerHeight + size] }[side];
+        const far = Math.hypot(innerWidth, innerHeight) / 2 + size, a = side * Math.PI / 180;   // side: the angle it comes from
+        const sx = cx + Math.cos(a) * far, sy = cy + Math.sin(a) * far;
         const mx = (sx + cx) / 2, my = Math.min(sy, cy) - r.height * 1.6;   // the top of the arc
         const blob = document.createElement('i');
         blob.className = 'sp-blob';
@@ -296,8 +297,9 @@ const Brand = (() => {
     }
     async function throws() {
         const quick = root.dataset.splash === 'quick';
-        const shots = quick ? [[GLAZES[Math.random() * GLAZES.length | 0][0], 'left']] : [['coral', 'left'], ['saffron', 'right'], ['matcha', 'bottom']];
-        for (const [id, side] of shots) { await throwAt(id, side); await wait(quick ? 240 : 300); }
+        // six throws from all round the logo, every load; the daily full show just takes its time
+        const shots = ['coral', 'saffron', 'matcha', 'sky', 'lilac', 'blush'].map((id, i) => [id, [180, 0, 120, 300, 60, 240][i]]);
+        for (const [id, side] of shots) { await throwAt(id, side); await wait(quick ? 90 : 220); }
         splash.classList.add('sp-wash');   // a soft white pass, and the glaze washes back to Porcelain
         tint('porcelain');
         await wait(quick ? 360 : 520);
@@ -356,6 +358,14 @@ const Brand = (() => {
             .then(() => requestAnimationFrame(land));
         setTimeout(land, 14000);   // never keep anyone waiting on the logo
     }
+
+    // back on the tab: a quick volley from six sides at the logo, ending on the glaze it wore
+    document.addEventListener('visibilitychange', () => {
+        const orb = document.querySelector('.sidebar-logo .brand-orb, .sk-brand .brand-orb, .auth-brand .brand-orb');
+        if (document.hidden || !splashed || quiet() || !orb?.getClientRects().length) return;
+        const ids = ['coral', 'saffron', 'matcha', 'sky', 'lilac', ORDER[at]];
+        ids.forEach((id, i) => setTimeout(() => hit(orb, id, i * Math.PI / 3, 360), i * 130));
+    });
 
     fill(); fillMentor(); icon(ORDER[at]); run();
     // show(id): every logo, and the Mentor if it wears glazes, in one glaze now (for previews and checks)
