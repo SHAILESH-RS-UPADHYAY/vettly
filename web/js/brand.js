@@ -377,7 +377,7 @@ const Brand = (() => {
         [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * gap));
         schedule(which, hold(end) + 5 * gap + ms);   // the clock waits for the volley to land
     }
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true, ms: 420, gap: 180 });   // back on the tab: a touch quicker });
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true, ms: 420, gap: 180 }); });   // back on the tab: a touch quicker
     document.addEventListener('click', e => {
         const h = e.target.closest('#mentor-orb, .sidebar-logo, .sk-brand, .auth-brand, .ob-brand');
         if (h) volley(h.id === 'mentor-orb' ? 'mentor' : 'logo');
