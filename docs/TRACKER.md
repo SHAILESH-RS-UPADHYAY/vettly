@@ -367,6 +367,12 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       launch, all 43 files from the device, splash still plays. The page and the API always come from the network
 - [x] 18.18 The splash throws seven glazes: the six sides plus a seventh (aqua) from straight below; checked by
       recording each blob's start: left, right, below-left, above-right, below-right, above-left, below
+- [x] 18.19 The volley throws seven too: six from alternating sides, the seventh (its new glaze) from straight below
+- [x] 18.20 The logo stays centred until a pointer or a finger comes within 5 cm. The idle drift of 18.12 is gone: it
+      also ran on laptops before the mouse first moved, so a freshly opened app showed the orb off-centre. A finger
+      now counts like a mouse while it is on the screen (touch events, since a sliding finger scrolls the page and the
+      browser cancels its pointer), and lifting it lets the orb settle back. Checked on a laptop and a phone:
+      untouched for 6 s centred, far away centred, 3 cm away leaning, lifted centred, Mentor open centred
 - [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
       390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
       splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors; on a phone the

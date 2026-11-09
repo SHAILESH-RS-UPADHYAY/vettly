@@ -203,30 +203,20 @@ const Brand = (() => {
             h.style.setProperty('--near', near.toFixed(2));
         });
     }
-    addEventListener('pointermove', e => {
-        if (e.pointerType !== 'mouse') return;
-        px = e.clientX; py = e.clientY;
-        frame ||= requestAnimationFrame(() => lean(false));
-    }, { passive: true });
+    // a finger counts too, while it is on the screen: within 5 cm the logo leans toward it, and lifting it lets the logo
+    // settle back to the centre (a mouse keeps leaning wherever it rests). Touch events, not pointer events, because a
+    // sliding finger scrolls the page and the browser cancels its pointer, while touchmove keeps coming.
+    const follow = (x, y) => { px = x; py = y; frame ||= requestAnimationFrame(() => lean(false)); };
+    addEventListener('pointermove', e => { if (e.pointerType === 'mouse') follow(e.clientX, e.clientY); }, { passive: true });
+    const finger = e => { const t = e.touches[0]; if (t) follow(t.clientX, t.clientY); };
+    addEventListener('touchstart', finger, { passive: true });
+    addEventListener('touchmove', finger, { passive: true });
+    const lift = e => { if (e.touches.length) return; px = py = -1e4; cancelAnimationFrame(frame); frame = 0; lean(true); };
+    addEventListener('touchend', lift, { passive: true });
+    addEventListener('touchcancel', lift, { passive: true });
     document.addEventListener('mouseleave', () => lean(true));   // the pointer left the window: back to the centre
     const mentorEl = document.getElementById('mentor');   // opening or closing the Mentor changes how it leans
     if (mentorEl) new MutationObserver(() => lean(false)).observe(mentorEl, { attributes: true, attributeFilter: ['data-state'] });
-
-    // touch screens have no pointer to wake the logo, so it stays awake: the ring shows and the orb drifts to a new
-    // lean every 2.4 s (CSS springs it there; one style write per step). A mouse arriving hands it back to lean().
-    setInterval(() => {
-        if (px > -9e3 || document.hidden || quiet()) return;
-        const open = document.getElementById('mentor')?.dataset.state === 'open';
-        if (open) { const m = document.getElementById('mentor-orb'); m?.style.setProperty('--pull-x', '0px'); m?.style.setProperty('--pull-y', '0px'); }   // open: centred
-        document.querySelectorAll('#mentor-orb, .sk-brand .brand-ring, .auth-brand .brand-ring, .ob-brand .brand-ring').forEach(h => {
-            const r = h.getBoundingClientRect();
-            if (!r.width || (open && h.id === 'mentor-orb')) return;
-            const a = Math.random() * Math.PI * 2, d = r.width * (0.06 + Math.random() * 0.07);
-            h.style.setProperty('--pull-x', `${(Math.cos(a) * d).toFixed(1)}px`);
-            h.style.setProperty('--pull-y', `${(Math.sin(a) * d).toFixed(1)}px`);
-            h.style.setProperty('--near', '1');
-        });
-    }, 2400);
 
     // ── pulse: one twirl of the logo in the side panel when you change tabs (its star and orbits look the same after a turn) ──
     function pulse() {
@@ -377,7 +367,7 @@ const Brand = (() => {
         setTimeout(land, 14000);   // never keep anyone waiting on the logo
     }
 
-    // a volley: six glazes thrown from six sides, one after another, landing on the next glaze in the order.
+    // a volley: seven glazes, six from all round and the seventh from straight below, landing on the next glaze in the order.
     // Clicking or coming close to the logo or the Mentor button throws one; so does coming back to the tab (keep: true
     // ends on the glaze it already wore)
     // a bubble's pop, made on the spot: a short sine that swoops up, each one a little higher (only after a click,
@@ -407,16 +397,17 @@ const Brand = (() => {
             if (sound) (orb._lands || []).forEach((at, i) => at > now && setTimeout(() => bubble(i), at - now));
             return;
         }
-        orb._lands = [0, 1, 2, 3, 4, 5].map(i => now + i * gap + ms);
+        orb._lands = [0, 1, 2, 3, 4, 5, 6].map(i => now + i * gap + ms);
         if (!keep && mentor) mentorAt = next(mentorAt, ORDER[at]);
         if (!keep && !mentor) { at = next(at, mentorOrb() && mentorGlazed() ? ORDER[mentorAt] : null); icon(ORDER[at]); }
         const end = ORDER[mentor ? mentorAt : at];
         if (!mentor) document.querySelectorAll('.brand-orb').forEach(el => { if (el !== orb) paint(el, end); });
-        const pool = GLAZES.map(([id]) => id).filter(id => id !== end).sort(() => Math.random() - 0.5).slice(0, 5);
+        const pool = GLAZES.map(([id]) => id).filter(id => id !== end).sort(() => Math.random() - 0.5).slice(0, 6);
         const tilt = Math.random() * Math.PI / 3;   // the six sides turn a little each time, so no two volleys match
-        [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3, ms), i * gap));
+        // six from all round (alternating sides), the seventh, its new glaze, from straight below
+        [...pool, end].forEach((id, i) => setTimeout(() => hit(orb, id, i < 6 ? tilt + [0, 3, 1, 4, 2, 5][i] * Math.PI / 3 : Math.PI / 2, ms), i * gap));
         if (sound) orb._lands.forEach((at, i) => setTimeout(() => bubble(i), at - now));   // a pop as each drop lands
-        schedule(which, hold(end) + 5 * gap + ms);   // the clock waits for the volley to land
+        schedule(which, hold(end) + 6 * gap + ms);   // the clock waits for the volley to land
     }
     document.addEventListener('visibilitychange', () => { if (!document.hidden) volley('logo', { keep: true, ms: 420, gap: 180 }); });   // back on the tab: a touch quicker
     document.addEventListener('click', e => {
