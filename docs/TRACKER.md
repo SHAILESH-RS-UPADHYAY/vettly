@@ -365,6 +365,8 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       only flashes: a small service worker (`web/sw.js`) keeps the versioned css/js, icons and fonts on the device, so
       the first paint and the splash come at once. Slow network, 4x CPU: first paint 5.2 s to 0.65 s on the second
       launch, all 43 files from the device, splash still plays. The page and the API always come from the network
+- [x] 18.18 The splash throws seven glazes: the six sides plus a seventh (aqua) from straight below; checked by
+      recording each blob's start: left, right, below-left, above-right, below-right, above-left, below
 - [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
       390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
       splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors; on a phone the

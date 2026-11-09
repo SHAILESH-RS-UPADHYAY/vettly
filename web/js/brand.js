@@ -315,8 +315,8 @@ const Brand = (() => {
     }
     async function throws() {
         const quick = root.dataset.splash === 'quick';
-        // six throws from all round the logo, every load; the daily full show just takes its time
-        const shots = ['coral', 'saffron', 'matcha', 'sky', 'lilac', 'blush'].map((id, i) => [id, [180, 0, 120, 300, 60, 240][i]]);
+        // seven throws from all round the logo (the last from straight below), every load; the daily full show just takes its time
+        const shots = ['coral', 'saffron', 'matcha', 'sky', 'lilac', 'blush', 'aqua'].map((id, i) => [id, [180, 0, 120, 300, 60, 240, 90][i]]);   // the 7th from straight below
         for (const [id, side] of shots) { await throwAt(id, side); await wait(quick ? 90 : 220); }
         splash.classList.add('sp-wash');   // a soft white pass, and the glaze washes back to Porcelain
         tint('porcelain');
