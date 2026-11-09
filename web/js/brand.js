@@ -196,7 +196,8 @@ const Brand = (() => {
             const was = h._near || 0, now = performance.now();
             h._near = near;
             if (!still && was < 0.35 && near >= 0.65 && now - (h._thrown || 0) > 2500) { h._thrown = now; volley(h.id === 'mentor-orb' ? 'mentor' : 'logo'); }
-            const k = near * Math.min(d * 0.12, r.width * 0.16) / d;   // at most a sixth of its size off centre
+            // at most a sixth of its size off centre; the open Mentor keeps its ring lit but stays centred in it
+            const k = open && h.id === 'mentor-orb' ? 0 : near * Math.min(d * 0.12, r.width * 0.16) / d;
             h.style.setProperty('--pull-x', `${(dx * k).toFixed(1)}px`);
             h.style.setProperty('--pull-y', `${(dy * k).toFixed(1)}px`);
             h.style.setProperty('--near', near.toFixed(2));

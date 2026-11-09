@@ -358,6 +358,13 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       - Live Copilot laid out all 182 notes every time it opened; notes and prep cards use `content-visibility: auto`
         (with a clip margin so the margin's Q. marks stay), and the chat scrolls to the newest note directly
       - the floaties canvas (about a fifth of the CPU) holds still while a page change animates
+- [x] 18.16 The open Mentor's orb sits centred on laptops too: it was written to always lean toward the pointer while
+      open, so a pointer on the left pulled it off-centre; open, it keeps its ring lit and stays centred (closed, it
+      still leans when the pointer comes near)
+- [x] 18.17 The installed app's plain launch screen (drawn by Android from the manifest; no page can remove it) now
+      only flashes: a small service worker (`web/sw.js`) keeps the versioned css/js, icons and fonts on the device, so
+      the first paint and the splash come at once. Slow network, 4x CPU: first paint 5.2 s to 0.65 s on the second
+      launch, all 43 files from the device, splash still plays. The page and the API always come from the network
 - [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
       390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
       splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors; on a phone the
