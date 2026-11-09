@@ -134,16 +134,18 @@ def decrypted_keys(uid: str) -> dict:
     return out
 
 
-def begin_ai_call() -> None:
-    """Before an AI request: use the user's own key, or spend one of today's free calls (raises when none are left)."""
+def begin_ai_call():
+    """Before an AI request: use the user's own key, or spend one of today's free calls (raises when none are left).
+    Returns the free calls left today when the answer runs on Vettly's shared keys, else None (the page reminds the
+    user now and then that the shared keys are free only for a while)."""
     if not users.auth_enabled():
-        return
+        return None
     uid = users.user_id()
     mine, custom = decrypted_keys(uid), decrypted_custom(uid)
     if mine or custom:   # their own keys only (never the server's): Gemini, Groq, Claude, OpenAI, and their own provider
         own_keys.set({name: mine.get(name, "") for name in PROVIDERS.values()})
         own_custom.set(custom)
-        return
+        return None
     used, total = _count(uid), _count("_global")
     if used >= FREE_DAILY_AI:
         raise LimitReached(f"You've used today's {FREE_DAILY_AI} free AI answers. Add a free Gemini or Groq key in Settings → Key Ring to keep going, or come back tomorrow.")
@@ -152,6 +154,7 @@ def begin_ai_call() -> None:
     # ponytail: read-then-write counters can undercount under heavy concurrency; fine as a cost guard
     docstore.save(uid, "usage", {"day": _today(), "n": used + 1})
     docstore.save("_global", "usage", {"day": _today(), "n": total + 1})
+    return FREE_DAILY_AI - used - 1
 
 
 # A key check that spends nothing: each provider's "list models" call needs a valid key and uses no tokens

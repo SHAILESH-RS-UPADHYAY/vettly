@@ -25,6 +25,8 @@
         const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
         headers.set('Authorization', `Bearer ${token}`);
         const res = await rawFetch(input, { ...init, headers });
+        const left = res.headers.get('X-Vettly-Free-Left');   // this answer ran on Vettly's shared free keys
+        if (left !== null) window.KeyNudge?.tick(Number(left));
         if (res.status === 429) {   // out of free AI answers: say so plainly, wherever it happened
             res.clone().json().then(d => window.Motion?.toast(d.detail || 'Daily AI limit reached', 'error')).catch(() => {});
         }

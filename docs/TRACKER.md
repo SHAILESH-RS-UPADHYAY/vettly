@@ -373,6 +373,14 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       now counts like a mouse while it is on the screen (touch events, since a sliding finger scrolls the page and the
       browser cancels its pointer), and lifting it lets the orb settle back. Checked on a laptop and a phone:
       untouched for 6 s centred, far away centred, 3 cm away leaning, lifted centred, Mentor open centred
+- [x] 18.21 The shared keys are live on Vercel (checked 9 Nov: `GEMINI_API_KEY` and `GROQ_API_KEY` pools in Production,
+      `KEY_ENCRYPTION_SECRET` set) and answer for a fresh account. Users are told they are free for a limited time:
+      onboarding ("free for now"), the Key Ring's summary and description
+- [x] 18.22 KeyNudge: every 15th answer on the shared keys, a taped note slides up with the logo (in the current
+      glaze) and a key that turns as if trying a lock: "Make Vettly yours for good", today's free answers left, and
+      the two-minute Gemini guide. The server marks those answers (`X-Vettly-Free-Left`), so anyone with their own key
+      never sees it; it waits while you read, never covers a dialog, sits above the Mentor on phones, rests under
+      Calm. Checked on a laptop and a phone, by day and night
 - [x] Validated before pushing: every web/js file parses; pool, keys, custom-provider and accounts tests pass; on a
       390 px touch phone the open Mentor's orb is centred and a tap gives six pops, no page errors; on desktop the
       splash lands, a logo click throws the volley with six pops, the tab icon follows, no page errors; on a phone the
@@ -389,9 +397,9 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       clerk.yourdomain.com) and your own Google OAuth app, so Google's screen says Vettly. It needs a domain you own
       (a vercel.app address cannot take Clerk's DNS records)
 - [ ] Clerk dashboard → API keys: switch off user API keys. Vettly hides the tab, but only the dashboard stops them being made
-- [ ] `KEY_ENCRYPTION_SECRET` set in Vercel (without it, nobody can save their own key)
+- [x] `KEY_ENCRYPTION_SECRET` set in Vercel (checked 9 Nov)
 - [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
-- [ ] `GEMINI_API_KEY` and `GROQ_API_KEY` in Vercel as comma-separated pools (up to three free keys each), then redeploy
+- [x] `GEMINI_API_KEY` and `GROQ_API_KEY` in Vercel as comma-separated pools (checked 9 Nov)
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
 - [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
 - [x] Personal files (the resumes and the local stores) are gone from the whole git history (7 Nov): main was

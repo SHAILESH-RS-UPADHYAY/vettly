@@ -74,7 +74,7 @@ const KeyRing = (() => {
         const saved = KEY_PROVIDERS.filter(p => s.keys?.[p.id]?.saved);
         if (saved.length) return `${icon('check-bold')}<span>Using your keys: ${saved.map(p => p.name).join(' → ')}. No daily limit.</span>`;
         if (!window.Auth?.enabled?.()) return `${icon('plug')}<span>Running on your own computer: Vettly uses the keys in <code>backend/.env</code>.</span>`;
-        return `${icon('lightning')}<span><b>${s.free_left} of ${s.free_limit}</b> free answers left today. Add a free key for unlimited answers.</span>`;
+        return `${icon('lightning')}<span><b>${s.free_left} of ${s.free_limit}</b> free answers left today on Vettly's shared keys, which are free for a limited time. Add your own free key so you never run out.</span>`;
     }
 
     function card(p, i, s, pre = '') {
@@ -129,7 +129,7 @@ const KeyRing = (() => {
                 <button type="button" class="btn btn-sm btn-secondary" data-guide="gemini">${icon('path', 'i')}Get a free key in 2 minutes</button>
             </div>
             <p class="kr-summary">${summary(s)}</p>
-            <p class="toolbelt-card-desc">Bring your own AI key and Vettly has no daily limit. <b>Gemini and Groq are free.</b> Add both: if one is busy, the next one answers, in this order.</p>
+            <p class="toolbelt-card-desc">For now Vettly answers on its own shared AI keys, <b>free for a limited time</b>. Bring your own key and Vettly has no daily limit and never depends on them. <b>Gemini and Groq are free.</b> Add both: if one is busy, the next one answers, in this order.</p>
             ${s.own_keys_enabled ? '' : `<p class="kr-locked">${icon('shield')}Saving your own keys isn't switched on for this site yet${window.Auth?.enabled?.() ? '' : ' (on your own computer, put keys in <code>backend/.env</code>)'}.</p>`}
             <ol class="kr-chain" aria-label="Your AI keys, in the order Vettly tries them">${KEY_PROVIDERS.map((p, i) => card(p, i, s, pre)).join('')}</ol>
             ${own(s)}
@@ -506,4 +506,62 @@ const Passport = (() => {
 })();
 
 // modules talk to each other through window: a top-level const is not a window property
-window.KeyRing = KeyRing; window.KeyGuide = KeyGuide; window.Passport = Passport;
+/**
+ * KeyNudge: answers on Vettly's shared free keys are counted (auth.js reads X-Vettly-Free-Left), and every 15th one
+ * a small card says the shared keys are free only for a while and offers the two-minute guide to a free key of your
+ * own. Never for anyone with their own key (their answers carry no header), never over an open dialog.
+ */
+const KeyNudge = (() => {
+    const EVERY = 15, KEY = 'vettly_shared_answers';
+    let card = null, timer = 0;
+    const read = () => { try { return Number(localStorage.getItem(KEY)) || 0; } catch (e) { return 0; } };
+    const write = n => { try { localStorage.setItem(KEY, String(n)); } catch (e) { /* storage blocked: counts this visit only */ } };
+    let n = read(), due = false, left = 0;
+    function tick(freeLeft) {
+        left = freeLeft;
+        write(++n);
+        if (n % EVERY === 0) due = true;
+        if (due) setTimeout(show, 1600);   // after the answer has had its moment
+    }
+    function show() {
+        if (!due || card || document.querySelector('dialog[open]') || document.documentElement.classList.contains('splashing')) return;
+        due = false;
+        const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
+        card = document.createElement('aside');
+        card.className = 'key-nudge';
+        card.setAttribute('role', 'status');
+        card.innerHTML = `
+            <span class="kn-tape" aria-hidden="true"></span>
+            <span class="kn-orb"><span class="m-orb brand-orb" data-look="glow" data-emblem aria-hidden="true"></span><span class="kn-key">${icon('key')}</span></span>
+            <div class="kn-body">
+                <p class="kn-kicker">${n} free answers so far</p>
+                <h4>Make Vettly yours for good</h4>
+                <p>Vettly's shared AI keys are free <b>for a limited time</b>, so one day they may stop. A Gemini key of your own is free, takes two minutes, and keeps your answers coming.${left >= 0 ? ` <span class="kn-left">${left} free today</span>` : ''}</p>
+                <div class="kn-actions">
+                    <button type="button" class="btn btn-primary btn-sm" data-kn="add">${icon('key')}Add my free key</button>
+                    <button type="button" class="btn btn-ghost btn-sm" data-kn="later">Later</button>
+                </div>
+            </div>
+            <span class="kn-fuse" aria-hidden="true"></span>`;
+        document.body.append(card);
+        window.Brand?.fill(card);
+        card.addEventListener('click', e => {
+            const b = e.target.closest('[data-kn]'); if (!b) return;
+            hide();
+            if (b.dataset.kn === 'add') window.KeyGuide?.open('gemini');
+        });
+        card.addEventListener('pointerenter', () => clearTimeout(timer));   // reading it: it waits
+        card.addEventListener('pointerleave', () => { timer = setTimeout(hide, 6000); });
+        timer = setTimeout(hide, 14000);
+    }
+    function hide() {
+        clearTimeout(timer);
+        const c = card; card = null;
+        if (!c) return;
+        c.classList.add('leaving');
+        setTimeout(() => c.remove(), 420);
+    }
+    return { tick, show: () => { due = true; show(); } };   // show(): for previews and checks
+})();
+
+window.KeyRing = KeyRing; window.KeyGuide = KeyGuide; window.Passport = Passport; window.KeyNudge = KeyNudge;

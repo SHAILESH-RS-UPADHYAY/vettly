@@ -238,3 +238,50 @@
 /* narrow cards: the title row and its guide button wrap instead of running off the card */
 .kr-top { flex-wrap: wrap; min-width: 0; }
 .keyring-card .toolbelt-card-header .btn { white-space: normal; text-align: left; }
+
+/* ── KeyNudge: every 15th answer on the shared keys, a taped note with the logo and a wiggling key (keyring.js) ── */
+.key-nudge {
+    position: fixed; z-index: var(--z-toast, 900); left: max(20px, env(safe-area-inset-left, 0px)); bottom: max(20px, env(safe-area-inset-bottom, 0px));
+    display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start;
+    width: min(400px, calc(100% - 32px)); padding: 18px 18px 16px 16px; overflow: hidden;
+    border: 1.5px solid var(--rule); border-radius: 20px; background: var(--paper-2, var(--card-bg)); color: var(--ink);
+    box-shadow: var(--pop-shadow, 0 18px 40px rgba(0, 0, 0, 0.16));
+    transform-origin: 18% 100%;
+    animation: knIn 720ms var(--spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+}
+.key-nudge.leaving { animation: knOut 380ms var(--ease-out, ease-out) forwards; }
+@keyframes knIn { from { opacity: 0; transform: translateY(28px) rotate(-3deg) scale(0.94); } 60% { opacity: 1; } }
+@keyframes knOut { to { opacity: 0; transform: translateY(18px) scale(0.96); } }
+.kn-tape {   /* a strip of tape holding the note to the page */
+    position: absolute; top: -7px; left: 50%; width: 86px; height: 20px; translate: -50% 0; rotate: -3deg; opacity: 0.85;
+    background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--accent) 34%, transparent) 0 6px, color-mix(in srgb, var(--accent) 18%, transparent) 6px 12px);
+}
+.kn-orb { position: relative; width: 52px; height: 52px; margin-top: 4px; }
+.kn-orb .m-orb { --s: 52px; width: 52px; height: 52px; }
+.kn-key {   /* the key that hangs off the logo and gives a little turn, as if trying a lock */
+    position: absolute; right: -8px; bottom: -6px; display: grid; place-items: center; width: 26px; height: 26px;
+    border-radius: 50%; background: var(--accent); color: var(--on-accent, #fff); box-shadow: 0 4px 10px color-mix(in srgb, var(--accent) 40%, transparent);
+    animation: knKey 2.6s 0.8s var(--ease-out, ease-out) infinite;
+}
+.kn-key svg { width: 14px; height: 14px; }
+@keyframes knKey { 0%, 62%, 100% { rotate: 0deg; } 68% { rotate: -24deg; } 76% { rotate: 16deg; } 84% { rotate: -8deg; } }
+.kn-body { min-width: 0; }
+.kn-kicker { margin: 0 0 2px; font: 600 0.68rem/1.3 var(--font-mono); white-space: nowrap; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-ink); }
+.kn-body h4 { margin: 0 0 6px; font: 700 1.08rem/1.25 var(--font-display, var(--font-body)); text-wrap: balance; }
+.kn-body p { margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink-2, var(--muted)); text-wrap: pretty; }
+.kn-body p b { color: var(--ink); }
+.kn-left { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent-ink); font: 600 0.75rem/1.6 var(--font-mono); white-space: nowrap; }
+.kn-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.kn-actions .btn svg { width: 15px; height: 15px; margin-right: 6px; }
+.kn-fuse {   /* how long it stays: a thin line that burns down, and waits while you read */
+    position: absolute; left: 0; right: 0; bottom: 0; height: 3px; transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, transparent));
+    animation: knFuse 14s linear forwards;
+}
+.key-nudge:hover .kn-fuse { animation-play-state: paused; }
+@keyframes knFuse { to { transform: scaleX(0); } }
+@media (max-width: 47.99rem) {   /* phones: centred above the tab bar */
+    .key-nudge { left: 16px; right: 16px; width: auto; bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px) + 96px); transform-origin: 50% 100%; }   /* above the Mentor button */
+}
+@media (prefers-reduced-motion: reduce) { .key-nudge, .key-nudge.leaving, .kn-key, .kn-fuse { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+:root[data-motion="calm"] :is(.key-nudge, .key-nudge.leaving, .kn-key) { animation: none; }

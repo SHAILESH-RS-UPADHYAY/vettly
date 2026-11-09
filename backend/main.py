@@ -249,16 +249,19 @@ async def who_is_asking(request: Request, call_next):
     users.begin_request()
     allowance.own_keys.set(None)
     allowance.own_custom.set(None)
+    shared_left = None   # free answers left today, when this answer runs on Vettly's shared keys
     if request.method != "OPTIONS" and users.is_protected(request.url.path):
         try:
             users.authenticate(request.headers.get("authorization", ""))
             if allowance.is_ai(request.url.path, request.method):
-                allowance.begin_ai_call()
+                shared_left = allowance.begin_ai_call()
         except users.AuthError as e:
             return JSONResponse(status_code=e.status, content={"detail": str(e)})
         except allowance.LimitReached as e:
             return JSONResponse(status_code=429, content={"detail": str(e)})
     response = await call_next(request)
+    if shared_left is not None:   # the page counts these and now and then suggests the user's own free key
+        response.headers["X-Vettly-Free-Left"] = str(shared_left)
     # browser hardening: no MIME sniffing, no framing by other sites, no full URLs leaked to other origins
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")

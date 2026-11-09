@@ -75,7 +75,7 @@ const Onboard = (() => {
         ['polish', 'Humanizer + 7 checks · answer_validator.py', 'How it works · 3 of 3', 'Finally, it sounds like you',
             'Robotic phrases get struck out, then every answer is scored on 7 checks and rewritten until it passes. Only then does it reach Prep Studio.', 'no “as an AI…”'],
         ['keys', 'Key Ring · allowance.py', 'Power it up', 'No key needed to start',
-            'Vettly runs on its own free AI keys, so you can start right now with free answers every day. Want no limit? Add your own free Gemini and Groq keys (about a minute each), or a paid Claude, OpenAI or OpenRouter key in Settings → Key Ring. Add two, so when one is busy the other answers.', 'optional, skip it'],
+            'Vettly’s own AI keys are switched on, so you can start right now with free answers every day. They are shared and free only for a limited time, so add your own free Gemini and Groq keys when you can (about a minute each), or a paid Claude, OpenAI or OpenRouter key. Add two, so when one is busy the other answers.', 'free for now'],
         ['yours', 'Atelier · shortcuts.js', 'Make it yours', 'Your studio, your way',
             () => `The Atelier holds the looks: themes, page styles and how Live Copilot writes. ${touch() ? '' : `Press ${MOD()} K to jump anywhere and ? for every shortcut. `}The Attic keeps what you delete; hide its tab if you never need it.`, 'try it now'],
     ];
