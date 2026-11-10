@@ -49,7 +49,9 @@ const Motion = (() => {
             const p = k / 12;   // the waist ends at 0.7 of the reach, so the reach is set to clear the far corner there
             frames.push({ clipPath: sparkle(x, y, (far / 0.7) * 1.04 * p, 0.18 + 0.52 * p * p, 45 * p) });
         }
-        return el.animate(frames, { duration: 780, easing: 'cubic-bezier(0.55, 0, 0.2, 1)', pseudoElement });
+        // phones and tablets: the same sparkle in half the time, moving from the first frame (a slow start reads as lag)
+        const quick = matchMedia('(max-width: 47.99rem), (pointer: coarse)').matches;
+        return el.animate(frames, quick ? { duration: 400, easing: 'cubic-bezier(0.2, 0.6, 0.2, 1)', pseudoElement } : { duration: 780, easing: 'cubic-bezier(0.55, 0, 0.2, 1)', pseudoElement });
     }
 
     // Swap page content inside a view transition when the browser has them

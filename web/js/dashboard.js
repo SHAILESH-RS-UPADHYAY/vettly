@@ -30,15 +30,16 @@ function transitionFrom(name) {
     root.dataset.vtTo = name;
 }
 
+// what each section's refresh asks the server for (asked early, at the tap)
+const SECTION_DATA = { prep: ['/prepare/questions'], settings: ['/api/ai-key', '/api/profile'], attic: ['/api/recycle-bin'] };
+
 // User-driven switches animate in a view transition; programmatic ones (Mentor jumps) apply at once
 function switchSection(name, { animate = false } = {}) {
     const page = document.getElementById(`page-${name}`);
     if (!page) return;
     const changing = document.body.dataset.section !== name;
-    const apply = () => {
-        document.body.dataset.section = name;
-        mentorSyncMode();
-        document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p === page));
+    // the tab answers the tap at once (its highlight never waits for the page's snapshot); the page follows
+    const light = () => {
         document.querySelectorAll('.nav-item[data-section]').forEach(n => {
             const on = n.dataset.section === name;
             n.classList.toggle('active', on);
@@ -49,12 +50,22 @@ function switchSection(name, { animate = false } = {}) {
         more?.classList.toggle('active', inMore);
         more?.setAttribute('aria-current', String(inMore));
         document.querySelectorAll('.more-item[data-section]').forEach(m => m.setAttribute('aria-current', m.dataset.section === name ? 'page' : 'false'));
-        if (changing) window.scrollTo(0, 0);
         Motion.pill(sideNav);
+    };
+    const apply = () => {
+        document.body.dataset.section = name;
+        mentorSyncMode();
+        document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p === page));
+        if (changing) window.scrollTo(0, 0);
         Motion.thumbs(page);
     };
     let settled = Promise.resolve();
-    if (animate && changing) { transitionFrom(name); window.Brand?.pulse(); settled = Motion.page(apply); } else apply();
+    if (animate && changing) {
+        transitionFrom(name); light(); window.Brand?.pulse();
+        // ask for the page's data now, while it animates; the refresh below then finds the answer waiting (auth.js shares it)
+        if (page.dataset.loaded) (SECTION_DATA[name] || []).forEach(u => fetch(`${API_BASE}${u}`).catch(() => {}));
+        settled = Motion.page(apply);
+    } else { light(); apply(); }
     // #/… belongs to Clerk's sign-in forms (#/sso-callback finishes a Google sign-in): never overwrite it
     if (!location.hash.startsWith('#/') && location.hash.split('?')[0] !== `#${name}`) history.replaceState(null, '', `#${name}`);
 
@@ -740,7 +751,10 @@ async function generateSinglePrep(categoryOverride) {
 async function loadPrepQuestions() {
     try {
         const res = await fetch(`${API_BASE}/prepare/questions`);
-        const data = await res.json();
+        const raw = await res.text();
+        if (prep.loaded && raw === prep.raw && !recentlyGenerated) return;   // nothing changed: the page stays as it is
+        prep.raw = raw;
+        const data = JSON.parse(raw);
         const entries = data.entries || [];
         const grew = entries.length !== prep.entries.length || !prep.loaded;
         prep.entries = entries;

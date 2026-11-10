@@ -16,9 +16,24 @@
     let clerk = null, signedIn = false, mounted = null, flipping = false, open;
     const ready = new Promise(resolve => { open = resolve; });
 
-    window.fetch = async (input, init = {}) => {
+    // One answer for the same question: a page opening asks for the profile, the context and the questions from several
+    // modules at once. The same GET asked again while it is in flight, or within two seconds of its answer, shares that
+    // answer instead of going to the server again. Anything that changes data (POST, PUT, DELETE) forgets them all first.
+    const shared = new Map(), FRESH = 2000;
+    window.fetch = (input, init = {}) => {
         const url = new URL(input instanceof Request ? input.url : String(input), location.href);
-        if (url.origin !== location.origin || !API.test(url.pathname) || OPEN.test(url.pathname)) return rawFetch(input, init);
+        if (url.origin !== location.origin || !API.test(url.pathname)) return rawFetch(input, init);
+        const method = (init.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+        if (method !== 'GET' || init.signal || init.body) { shared.clear(); return send(input, init, url).finally(() => shared.clear()); }   // before and after: no answer from before the change survives it
+        const hit = shared.get(url.href);
+        if (hit && (hit.at === 0 || performance.now() - hit.at < FRESH)) return hit.res.then(r => r.clone());
+        const entry = { at: 0, res: send(input, init, url) };
+        shared.set(url.href, entry);
+        entry.res.then(r => { if (r.ok) entry.at = performance.now(); else shared.delete(url.href); }, () => shared.delete(url.href));
+        return entry.res.then(r => r.clone());
+    };
+    async function send(input, init, url) {
+        if (OPEN.test(url.pathname)) return rawFetch(input, init);
         await ready;
         const token = clerk?.session ? await clerk.session.getToken().catch(() => null) : null;
         if (!token) return rawFetch(input, init);
@@ -31,7 +46,7 @@
             res.clone().json().then(d => window.Motion?.toast(d.detail || 'Daily AI limit reached', 'error')).catch(() => {});
         }
         return res;
-    };
+    }
 
     // Clerk's widgets take the current look's colours, so they sit in the page instead of on top of it
     function appearance() {

@@ -272,6 +272,12 @@ kbd {
 ::view-transition-new(page) { animation: vt-grow 720ms cubic-bezier(0.5, 0, 0.15, 1) both; }
 @keyframes vt-recede { to { opacity: 0; transform: translateY(calc(var(--vt-dir, 1) * -16px)) scale(0.975); filter: blur(3px); } }
 @keyframes vt-grow { from { transform: translateY(calc(var(--vt-dir, 1) * 14px)) scale(0.99); } }
+/* phones and tablets: half the time, and no blur (a full-screen blur is the costliest thing a phone's GPU is asked for) */
+@media (max-width: 47.99rem), (pointer: coarse) {
+    ::view-transition-old(page) { animation: vt-recede-quick 200ms ease-out both; }
+    ::view-transition-new(page) { animation: vt-grow 360ms cubic-bezier(0.2, 0.6, 0.2, 1) both; }
+}
+@keyframes vt-recede-quick { to { opacity: 0; transform: translateY(calc(var(--vt-dir, 1) * -10px)); } }
 :root.vt-theme::view-transition-old(root),
 :root.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 :root.vt-theme::view-transition-new(root) { z-index: 2; }

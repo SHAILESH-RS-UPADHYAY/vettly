@@ -390,6 +390,21 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] Checked: `tests/test_pool.py` (order, slot reset, own keys skip the pool), the key and custom-provider tests, and
       the splash and tab volley frame by frame in a local browser
 
+## Phase 19 · Speed: the server beside the database, files from the CDN, lighter tab changes (requested 10-11 Nov)
+
+- [x] 19.1 Root cause of the slow phone (measured live): the function ran in Washington DC (iad1) while the Neon
+      database is in Singapore and users are in India, and all 43 css/js files went through that function uncached
+- [x] 19.2 `vercel.json` sets the region to Singapore (sin1); live requests now show `bom1::sin1`. API answers
+      ~170-250 ms each from India, were ~370-440 ms with no database work at all
+- [x] 19.3 `pyproject.toml` switches on Vercel's CDN for the static mount; versioned css/js/icons and vendor files are
+      cached for a year (`immutable`), the hardening headers come with them
+- [x] 19.4 One answer for the same question: opening the app asked for the profile 6 times, the context and questions
+      4 times each (34 calls); `auth.js` shares an in-flight or two-second-old GET, so it is 22 calls, and opening
+      Live Copilot asks for nothing again (was 5). Any change (POST, PUT, PATCH, DELETE) clears the shared answers
+- [x] 19.5 Tab changes: the tab lights at the tap, the page's data is asked for while it animates, Prep Studio does
+      not redraw unchanged questions; phones get a 360-400 ms opening without the full-screen blur (was 720-780 ms)
+- [x] 19.6 `sw.js`: files without a version (images) are refreshed behind the scenes instead of kept for ever
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
@@ -398,7 +413,7 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       (a vercel.app address cannot take Clerk's DNS records)
 - [ ] Clerk dashboard → API keys: switch off user API keys. Vettly hides the tab, but only the dashboard stops them being made
 - [x] `KEY_ENCRYPTION_SECRET` set in Vercel (checked 9 Nov)
-- [ ] `DATABASE_URL` (Neon Postgres) set in Vercel
+- [x] `DATABASE_URL` (Neon Postgres) set in Vercel (since 2 Nov; the database is in Singapore)
 - [x] `GEMINI_API_KEY` and `GROQ_API_KEY` in Vercel as comma-separated pools (checked 9 Nov)
 - [ ] `ALLOWED_ORIGINS` = your domain(s), comma-separated (optional: the app is same-origin)
 - [ ] Vercel → Settings → Functions: max duration at least 60 s (long AI answers)
