@@ -24,3 +24,10 @@ try: asyncio.run(utils.generate_multi_provider_completion("s", "u"))
 except RuntimeError: pass
 assert tried == ["mine"], tried
 print("pool ok")
+
+# Vercel may install from pyproject.toml or requirements.txt: the two lists must be the same
+import tomllib  # noqa: E402
+root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+reqs = [l.strip() for l in open(os.path.join(root, "requirements.txt")) if l.strip() and not l.startswith("#")]
+assert tomllib.load(open(os.path.join(root, "pyproject.toml"), "rb"))["project"]["dependencies"] == reqs, "pyproject.toml and requirements.txt differ"
+print("deploy deps ok")
