@@ -477,8 +477,9 @@ function mentorOnKeydown(e) {
     } else if (picking && (e.key === 'Enter' || e.key === 'Tab')) {
         e.preventDefault();
         mentorPickMention(mentor.mention.active);
-    } else if (e.key === 'Escape') {
-        mentorCloseMention();
+    } else if (e.key === 'Escape') {   // first the picker, then the Mentor itself; the button gets the focus back
+        if (picking) mentorCloseMention();
+        else { mentorToggle(false); document.getElementById('mentor-orb')?.focus(); }
     } else if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         mentorSend();

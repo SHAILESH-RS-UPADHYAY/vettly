@@ -80,7 +80,13 @@
 }
 :root[data-look="classic"] .handwritten-note.left { right: auto; left: 40px; top: -15px; }
 @keyframes scribbleIn { from { opacity: 0; transform: rotate(-12deg) scale(0.7); } }
-@media (max-width: 47.99rem) { :root[data-look="classic"] .handwritten-note { right: 8px; top: -14px; font-size: 18px; } :root[data-look="classic"] .handwritten-note.left { left: 8px; } }
+@media (max-width: 47.99rem) {
+    :root[data-look="classic"] .handwritten-note { right: 8px; top: -14px; font-size: 18px; } :root[data-look="classic"] .handwritten-note.left { left: 8px; }
+    /* a short title starts under the note on a phone ("The Attic"): the header makes room, so tape never crosses a title */
+    :root[data-look="classic"] .poster-header:has(.handwritten-note):not(.db-head) { padding-top: 22px; }
+    :root[data-look="classic"][data-cl-notes="off"] .poster-header:has(.handwritten-note):not(.db-head) { padding-top: 0; }
+    #page-chat .poster-header::after { display: none; }   /* Live Copilot's small title sits where the tape would */
+}
 
 /* copy variants: the classic keywords, and the plainer names for the other looks */
 :root[data-look="classic"] .v-alt, :root:not([data-look="classic"]) .v-classic { display: none !important; }

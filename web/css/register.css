@@ -79,7 +79,7 @@
 .reg-title { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; margin: 1px 0 0; font: 400 clamp(1.25rem, 2.2vw, 1.6rem)/1.1 'Instrument Serif', Georgia, serif; }
 .reg-tools { justify-self: end; }   /* always the far right, beside the title or not */
 #reg-title, .reg-title > button:first-child, .reg-title-input { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: text; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (pointer: coarse) { :is(#reg-title, .reg-title > button:first-child) { padding-block: 11px; margin-block: -11px; } }   /* a 44px target, same layout */
+@media (pointer: coarse) { :is(#reg-title, .reg-title > button:first-child) { padding-block: 11px; margin-block: -11px; min-width: 44px; } }   /* a 44px target, same layout */
 
 /* Rename: a fountain-pen nib beside the title; the old name blots away, the new one is written in by the nib */
 .reg-ink-btn { flex: none; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--cap); opacity: 0.45; cursor: pointer;

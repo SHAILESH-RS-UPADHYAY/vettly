@@ -130,7 +130,7 @@ const KeyRing = (() => {
             </div>
             <p class="kr-summary">${summary(s)}</p>
             <p class="toolbelt-card-desc">For now Vettly answers on its own shared AI keys, <b>free for a limited time</b>. Bring your own key and Vettly has no daily limit and never depends on them. <b>Gemini and Groq are free.</b> Add both: if one is busy, the next one answers, in this order.</p>
-            ${s.own_keys_enabled ? '' : `<p class="kr-locked">${icon('shield')}Saving your own keys isn't switched on for this site yet${window.Auth?.enabled?.() ? '' : ' (on your own computer, put keys in <code>backend/.env</code>)'}.</p>`}
+            ${s.own_keys_enabled ? '' : `<p class="kr-locked">${icon('shield')}<span>Saving your own keys isn't switched on for this site yet${window.Auth?.enabled?.() ? '' : ' (on your own computer, put keys in <code>backend/.env</code>)'}.</span></p>`}
             <ol class="kr-chain" aria-label="Your AI keys, in the order Vettly tries them">${KEY_PROVIDERS.map((p, i) => card(p, i, s, pre)).join('')}</ol>
             ${own(s)}
             <p class="kr-note">${icon('shield')}Keys are encrypted before they are stored, used only for your own requests, and never shown again in full.</p>`;

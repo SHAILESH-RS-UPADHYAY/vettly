@@ -405,6 +405,21 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       not redraw unchanged questions; phones get a 360-400 ms opening without the full-screen blur (was 720-780 ms)
 - [x] 19.6 `sw.js`: files without a version (images) are refreshed behind the scenes instead of kept for ever
 
+## Phase 20 · A strict walk through every screen (11 Nov, in progress)
+
+- [x] 20.1 Walked 9 sections on a 390 px phone, a 360 px phone and a laptop, by day and night, and all 9 looks on a
+      phone: no JavaScript errors, no sideways scroll, no broken images, no unnamed controls
+- [x] 20.2 Phones: the taped note no longer crosses a short title (The Attic, The Atelier); Live Copilot's title is
+      clear of its tape
+- [x] 20.3 Phones: the More tab, lit, shows its icon and label like every other lit tab (the icon was nearly invisible)
+- [x] 20.4 Live Copilot opens at its newest note again (the last eight notes are always laid out for real)
+- [x] 20.5 Escape closes the Mentor (the citation picker first) and hands the focus back to its button
+- [x] 20.6 The Key Ring's notice reads as one run of text; a one-word chapter title is a full 44 px target
+- [x] 20.7 Flows run end to end on phone and laptop: the 10-step tour, Prep search (with and without matches),
+      filters, the Mentor's @ picker, the key guide, the More sheet, the command palette, the theme switch
+- [ ] 20.8 Still to walk: onboarding for a new account, the sign-in page on small phones, AI answers end to end on
+      the live site, the Atelier's controls one by one, keyboard-only use, Safari
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the

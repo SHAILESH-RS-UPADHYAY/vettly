@@ -12,6 +12,7 @@
 .kr-summary code, .kr-locked code { font: 600 0.85em var(--font-mono); }
 .kr-locked { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: var(--warn-bg); color: var(--warn); font-weight: 600; font-size: 0.9rem; }
 .kr-locked svg, .kr-note svg { width: 18px; height: 18px; flex: none; }
+.kr-locked > span { min-width: 0; }
 .kr-note { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--muted); font-size: 0.86rem; }
 
 /* the chain: four cards, a line that lights up between saved keys */

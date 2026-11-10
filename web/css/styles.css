@@ -104,6 +104,8 @@
 /* long lists lay out only what is on screen: a page with 180 chat notes or 60 prep cards opens without laying out
    every one (each remembers its last height, so scrolling stays steady); the clip margin keeps the margin notes */
 .chat-messages > .chat-bubble, #prep-list .prep-card { content-visibility: auto; contain-intrinsic-size: auto 160px; overflow-clip-margin: 96px; }
+/* the newest notes are always laid out for real: the chat opens at its end, and "the end" must not move once you are there */
+.chat-messages > .chat-bubble:nth-last-child(-n+8) { content-visibility: visible; }
 .page.active { display: block; animation: pageIn var(--dur-long) var(--ease-out) backwards; }
 @keyframes pageIn { from { opacity: 0; transform: translateY(12px); } }
 .page-inner { width: 100%; max-width: var(--page-max); margin-inline: auto; padding: 30px var(--gutter) 80px; }
@@ -163,7 +165,9 @@
     }
     .nav-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
     .nav-icon { width: 24px; height: 24px; }
-    .nav-more[aria-current="true"] { color: var(--accent-ink); }
+    .nav-more[aria-current="true"]:not(.active) { color: var(--accent-ink); }
+    :root .sidebar-nav #nav-more.active .nav-icon { color: var(--accent-2); }   /* lit: the same icon colour as every other lit tab */
+    :root.theme-dark .sidebar-nav #nav-more.active .nav-icon { color: var(--accent-deep); }
     :root[data-look="classic"] .nav-label .v-classic { display: none !important; }
     :root[data-look="classic"] .nav-label .v-alt { display: inline !important; }
     #main-content { margin-left: 0; }
