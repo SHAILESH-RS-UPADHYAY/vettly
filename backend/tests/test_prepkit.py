@@ -133,3 +133,30 @@ msgs = client.get("/api/chat/history", headers=A).json()["history"]
 assert [m["content"] for m in msgs[-2:]] == ["Tell me about a launch", "I led the rollout."] and msgs[-1]["role"] == "assistant"
 assert client.post("/api/chat", json={"message": "again"}, headers=A).json()["response"] == "I led the rollout."   # older callers still get JSON
 print("copilot stream check passed")
+
+# Gemini is asked to think little (a sooner first word); a model that refuses the setting is asked again without it
+import asyncio  # noqa: E402
+import httpx  # noqa: E402
+import config  # noqa: E402
+from ai import utils as real_utils  # noqa: E402
+seen = []
+
+
+def gemini(request):
+    body = json.loads(request.content)
+    seen.append((request.url.path.split("/")[-1], "thinkingConfig" in body["generationConfig"]))
+    if "thinkingConfig" in body["generationConfig"] and len(seen) == 1:
+        return httpx.Response(400, json={"error": "unknown field"})
+    return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": "fine"}]}}]})
+
+
+Real = httpx.AsyncClient
+real_utils.httpx.AsyncClient = lambda **k: Real(transport=httpx.MockTransport(gemini))
+config._SERVER_KEYS["GEMINI_API_KEY"] = ["k" * 30]
+assert asyncio.run(real_utils._via_gemini("s", "u", None, 100, 0.5, False)) == "fine"
+assert [t for _, t in seen] == [True, False] and seen[0][0].startswith(config.GEMINI_MODEL), seen
+seen.clear(); real_utils.prefer_fast.set(True)
+asyncio.run(real_utils._via_gemini("s", "u", None, 100, 0.5, True))
+assert seen[0][0].startswith(config.GEMINI_FAST_MODEL) and seen[0][1], seen   # lists and labels go to the light model first
+real_utils.httpx.AsyncClient = Real
+print("gemini speed check passed")

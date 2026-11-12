@@ -422,6 +422,11 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] 20.7 MCQ deck: `/prepare/mcq` (write, answer, clear); generating spends an answer, answering does not
 - [x] 20.8 Brain Bento's fresh six follow the subjects; everything written in a day is kept (up to 30) and each visit
       shows a different six
+- [x] 20.11 Slow AI answers (measured live, 13 Nov: one small role-kit call took 29.6 s). Gemini's flash models
+      think at "medium" by default; every call now asks for "low" (a model that refuses is asked again without).
+      Short lists (role kit, categories) go to the light model first. A Prep question is one AI call, not two: the
+      answer written with the question is kept
+- [x] 20.12 Ask Mentor on an answered MCQ card
 - [ ] 20.9 Try 20.4 to 20.8 on the live site with real AI keys (tested here with stand-in AI replies only)
 - [ ] 20.10 Still open: the first request after idle takes about 2 s; a Copilot request makes 12 database round trips
 

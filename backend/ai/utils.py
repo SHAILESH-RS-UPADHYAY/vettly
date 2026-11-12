@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import functools
 import json
 import logging
@@ -135,6 +136,9 @@ async def call_claude_messages(
     return ""
 
 
+THINK = {"thinkingLevel": "low"}
+prefer_fast: contextvars.ContextVar = contextvars.ContextVar("vettly_prefer_fast", default=False)
+
 # Free tiers first: Gemini and Groq cost the user nothing, Claude and OpenAI need paid credits
 PROVIDER_ORDER = ("gemini", "groq", "claude", "openai")
 PROVIDER_KEYS = {"gemini": "GEMINI_API_KEY", "groq": "GROQ_API_KEY", "claude": "ANTHROPIC_API_KEY", "openai": "OPENAI_API_KEY"}
@@ -157,6 +161,8 @@ async def _via_gemini(system_prompt, user_prompt, history, max_tokens, temperatu
     """GEMINI_MODEL, then GEMINI_FAST_MODEL, then other free-tier models: a busy one (503) just moves on."""
     primary_gemini = getattr(config, "GEMINI_MODEL", "gemini-3.6-flash")
     fast_gemini = getattr(config, "GEMINI_FAST_MODEL", "gemini-3.1-flash-lite")
+    if prefer_fast.get():   # short lists and labels: the light model answers in a fraction of the time
+        primary_gemini, fast_gemini = fast_gemini, primary_gemini
     candidate_models = []
     for m in [primary_gemini, fast_gemini, "gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
         if m and m not in candidate_models:
@@ -171,7 +177,9 @@ async def _via_gemini(system_prompt, user_prompt, history, max_tokens, temperatu
     full_user_prompt += user_prompt
 
     # Gemini 3.x thinking models share maxOutputTokens between reasoning and output tokens
-    gen_config = {"temperature": temperature, "maxOutputTokens": max(max_tokens * 4, 4096)}
+    # Interview answers need little reasoning: the flash models' default ("medium") thought for many seconds before
+    # the first word. "low" is accepted by every current flash model; one that refuses it is asked again without.
+    gen_config = {"temperature": temperature, "maxOutputTokens": max(max_tokens * 4, 4096), "thinkingConfig": THINK}
     if json_mode:
         gen_config["responseMimeType"] = "application/json"
     payload = {
@@ -186,6 +194,9 @@ async def _via_gemini(system_prompt, user_prompt, history, max_tokens, temperatu
             try:
                 # the key travels in a header, never in the URL, so it can't end up in logs
                 resp = await client.post(url, json=payload, headers={"x-goog-api-key": config.GEMINI_API_KEY})
+                if resp.status_code == 400 and "thinkingConfig" in gen_config:
+                    plain = {**payload, "generationConfig": {k: v for k, v in gen_config.items() if k != "thinkingConfig"}}
+                    resp = await client.post(url, json=plain, headers={"x-goog-api-key": config.GEMINI_API_KEY})
                 if resp.status_code == 200:
                     candidates = resp.json().get("candidates", [])
                     if candidates:
@@ -267,6 +278,7 @@ async def generate_multi_provider_completion(
     max_tokens: int = 1000,
     temperature: float = 0.7,
     json_mode: bool = False,
+    fast: bool = False,
 ) -> str:
     """
     Unified multi-provider router for Vettly: Gemini → Groq → Claude → OpenAI (PROVIDER_ORDER), once per key slot
@@ -279,6 +291,7 @@ async def generate_multi_provider_completion(
     if custom:
         order = [(0, "custom"), *order] if custom.get("first") else [*order, (0, "custom")]
     attempted: list[str] = []   # providers that had a key, so a failure is not reported as a missing key
+    prefer_fast.set(fast)
     for slot, name in order:
         token = config.pool_slot.set(slot)
         try:
@@ -329,14 +342,15 @@ async def stream_gemini_chat(system_prompt: str, history: list[dict]) -> AsyncIt
     payload = {
         "systemInstruction": {"parts": [{"text": system_prompt}]},
         "contents": contents,
+        "generationConfig": {"thinkingConfig": THINK},   # the first word sooner (see _via_gemini)
     }
     models = dict.fromkeys([config.GEMINI_BOT_MODEL, config.GEMINI_MODEL, config.GEMINI_FAST_MODEL])
 
     # Key goes in a header, not the URL: httpx logs request URLs at INFO level
     async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=15.0), headers={"x-goog-api-key": api_key}) as client:
-        for model in models:
+        for model, body in [(m, b) for m in models for b in (payload, {k: v for k, v in payload.items() if k != "generationConfig"})]:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent"
-            async with client.stream("POST", url, params={"alt": "sse"}, json=payload) as resp:
+            async with client.stream("POST", url, params={"alt": "sse"}, json=body) as resp:
                 if resp.status_code != 200:
                     body = (await resp.aread()).decode(errors="ignore")[:200]
                     logger.warning(f"Gemini model '{model}' returned HTTP {resp.status_code}: {body}; trying next model...")

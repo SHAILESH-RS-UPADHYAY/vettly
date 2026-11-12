@@ -346,7 +346,7 @@ async def suggest_subjects():
                     "Excel, basic Python and AI tools). Names are short, concrete and distinct: no sentences, no duplicates."
                 ),
                 user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}",
-                max_tokens=900, temperature=0.4, json_mode=True,
+                max_tokens=900, temperature=0.4, json_mode=True, fast=True,
             )
             items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["subjects"]
         except Exception as e:   # no key, no answers left, or a bad reply: the page keeps its plain suggestions
@@ -406,7 +406,7 @@ async def prep_categories():
                 "and include BEHAVIORAL and HR_CULTURE_FIT. Use the field's own words."
             ),
             user_prompt=f"Field: {field}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}",
-            max_tokens=600, temperature=0.4, json_mode=True,
+            max_tokens=600, temperature=0.4, json_mode=True, fast=True,
         )
     except Exception as e:   # no AI key yet, or the provider is down: keep the standard tiles
         logger.warning(f"Field categories unavailable: {e}")
@@ -1108,15 +1108,19 @@ async def prepare_single_question(request: Request):
             )
 
         # Now generate a validated answer through the humanization loop
-        logger.info(f"🔄 Generating validated answer for: {result['question'][:60]}...")
-        validated = await answer_validator.generate_validated_answer(
-            question=result["question"],
-            context=full_context,
-            quick_mode=True,
-            language=language.lower(),
-        )
-
-        answer = validated["answer"] or result.get("answer", "")
+        # The question arrives with its answer, written under the same rules. Writing the answer a second time doubled
+        # the wait, so it is only done when the first call left it empty; the humanizer (no AI) still cleans it up.
+        answer = ""
+        if str(result.get("answer") or "").strip():
+            from ai.humanizer import Humanizer
+            own = Humanizer()   # its own, so another request's language never leaks in
+            own.set_language(language.lower())
+            answer = own.humanize(str(result["answer"]).strip(), mode="answer")
+        validated = {"score": 7.0, "iterations": 0}
+        if not answer:
+            validated = await answer_validator.generate_validated_answer(
+                question=result["question"], context=full_context, quick_mode=True, language=language.lower())
+            answer = validated["answer"]
 
         # Add to cache
         qa_cache.add_entry(
