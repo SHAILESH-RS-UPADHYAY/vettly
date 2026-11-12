@@ -204,6 +204,7 @@ const PrepKit = (() => {
             <ol class="mcq-opts">${m.options.map((o, i) => `<li style="--i:${i}"><button type="button" class="mcq-opt${m.pick === i ? ' is-pick' : ''}${answered && m.answer === i ? ' is-right' : ''}" data-pick="${i}"${answered ? ' disabled' : ''}>
                 <span class="omr">${SCRIBBLE}<b>${'ABCD'[i]}</b></span><span class="opt-text">${esc(o)}</span>${RING}${STRIKE}</button></li>`).join('')}</ol>
             <div class="mcq-why"${answered ? '' : ' hidden'}><b>Why</b><p>${esc(m.why || `The answer is ${'ABCD'[m.answer]}.`)}</p></div>
+            <button type="button" class="q-btn prep-btn prep-btn-mentor mcq-mentor" data-mcq="mentor"${answered ? '' : ' hidden'} title="Pin this MCQ to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor why</span></button>
             <span class="mcq-stamp" aria-hidden="true">${state === 'wrong' ? 'Not quite' : 'Correct'}</span>
         </article>`;
     }
@@ -289,6 +290,7 @@ const PrepKit = (() => {
         card.dataset.state = ok ? 'right' : 'wrong';
         card.querySelectorAll('.mcq-opt').forEach((b, k) => { b.disabled = true; b.classList.toggle('is-pick', k === i); b.classList.toggle('is-right', k === m.answer); });
         const why = card.querySelector('.mcq-why'); why.hidden = false;
+        card.querySelector('.mcq-mentor').hidden = false;
         const stamp = card.querySelector('.mcq-stamp'); stamp.textContent = ok ? 'Correct' : 'Not quite';
         $('mcq-say').textContent = ok ? 'Correct.' : `Not quite. The answer is ${'ABCD'[m.answer]}.`;
         if (!calm()) {
@@ -306,6 +308,14 @@ const PrepKit = (() => {
         refreshSlip();
         if (!calm()) panel.querySelector(`[data-pile="${ok ? 'right' : 'wrong'}"]`)?.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.22)' }, { transform: 'scale(1)' }], { duration: 420, delay: 700, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
         if (!Motion.focusField(next)) next.focus({ preventScroll: true });
+    }
+    // the answered card goes to the Mentor's desk: the question, all four choices, the right one and what was picked
+    function askMentor() {
+        const m = byId(cur), card = $('mcq-panel').querySelector('.mcq-card');
+        if (!m || m.pick == null || !card || typeof mentorPin !== 'function') return;
+        card._question = m.question;
+        card._answer = [...m.options.map((o, i) => `${'ABCD'[i]}. ${o}`), `Right answer: ${'ABCD'[m.answer]}. I picked ${'ABCD'[m.pick]}.`, m.why && `Why: ${m.why}`].filter(Boolean).join('\n\n');
+        mentorPin(card);
     }
     let moving = false;
     async function next() {
@@ -397,7 +407,7 @@ const PrepKit = (() => {
             const o = e.target.closest('[data-pick]'); if (o) return pick(Number(o.dataset.pick));
             const v = e.target.closest('[data-mcq-view] button'); if (v) { view = v.dataset.v; cur = null; return paintDeck({ enter: true }); }
             const b = e.target.closest('[data-mcq]'); if (!b) return;
-            ({ next, again, deal: dealMcqs, retry: retryMissed, clear: () => clearDeck(b) })[b.dataset.mcq]?.();
+            ({ next, again, mentor: askMentor, deal: dealMcqs, retry: retryMissed, clear: () => clearDeck(b) })[b.dataset.mcq]?.();
         });
         // A–D or 1–4 fills a bubble, Enter or → takes the next card
         document.addEventListener('keydown', e => {

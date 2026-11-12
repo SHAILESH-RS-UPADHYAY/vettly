@@ -830,8 +830,9 @@ function mentorFillSheet(el) {
     const from = mentorHome(el);
     if (el.dataset.tone) sheet.dataset.tone = el.dataset.tone; else delete sheet.dataset.tone;
     const n = from === 'prep' ? Number(el.id.replace('prep-card-', '')) + 1 : 0;
+    const mcq = el.classList.contains('mcq-card');   // an MCQ card from Prep Studio's second tab
     document.getElementById('sheet-tag').innerHTML = {
-        prep: `<b>Q${n}</b>${escapeHtml(el.querySelector('.tone-pill')?.textContent.trim() || '')}`,
+        prep: `<b>${mcq ? 'MCQ' : `Q${n}`}</b>${escapeHtml(el.querySelector('.tone-pill')?.textContent.trim() || '')}`,
         bento: `<b>Bento</b>${escapeHtml(el.dataset.trackName || '')}`,
         chat: '<b>Copilot</b>answer',
     }[from];
@@ -840,7 +841,7 @@ function mentorFillSheet(el) {
     const answer = el._answer ?? (el.querySelector('.chat-bubble-content')?.innerText || '');
     document.getElementById('sheet-a').innerHTML = typeof prepAnswerHtml === 'function' && from === 'prep' ? prepAnswerHtml(answer)   // the same lists and bold as the card
         : answer.split(/\n{2,}/).map(p => p.trim()).filter(Boolean).map(p => `<p>${escapeHtml(p)}</p>`).join('');
-    document.getElementById('sheet-label').textContent = { prep: 'Model answer', bento: 'Interview answer', chat: 'Copilot said' }[from];
+    document.getElementById('sheet-label').textContent = { prep: mcq ? 'The choices' : 'Model answer', bento: 'Interview answer', chat: 'Copilot said' }[from];
     sheet.querySelector('.sheet-body').scrollTop = 0;
 }
 
