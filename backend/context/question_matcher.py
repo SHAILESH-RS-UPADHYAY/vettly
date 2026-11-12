@@ -9,6 +9,8 @@ import logging
 import re
 from typing import Optional
 
+import functools
+
 from groq import AsyncGroq
 
 import config
@@ -48,9 +50,13 @@ class QuestionMatcher:
     KEYWORD_MIN_OVERLAP = 2
     SEMANTIC_CONFIDENCE_THRESHOLD = 0.8
 
+    @functools.cached_property
+    def _client(self):
+        # built on first use: a client costs ~100 ms of CPU, which the server's start should not pay
+        return AsyncGroq(api_key=config.GROQ_API_KEY)
+
     def __init__(self, qa_cache: QACache):
         self._cache = qa_cache
-        self._client = AsyncGroq(api_key=config.GROQ_API_KEY)
 
     def extract_keywords(self, text: str) -> list[str]:
         """Extract meaningful keywords from a question."""

@@ -122,3 +122,14 @@ r = client.get("/api/subjects/suggest", headers=A).json()
 assert r["seeded"] is False and r["subjects"] == ["Python", "SQL"] and len(r["suggested"]) == 7
 
 print("prep kit check passed")
+
+# the Copilot streams: the answer arrives as text and is saved to the chapter once it has finished
+async def one_piece(**k):
+    return "I led the rollout."
+ai_utils.generate_multi_provider_completion = one_piece
+r = client.post("/api/chat", json={"message": "Tell me about a launch", "history": [{"role": "user", "content": "Tell me about a launch"}], "stream": True}, headers=A)
+assert r.status_code == 200 and r.headers["content-type"].startswith("text/plain") and r.text == "I led the rollout.", (r.status_code, r.text)
+msgs = client.get("/api/chat/history", headers=A).json()["history"]
+assert [m["content"] for m in msgs[-2:]] == ["Tell me about a launch", "I led the rollout."] and msgs[-1]["role"] == "assistant"
+assert client.post("/api/chat", json={"message": "again"}, headers=A).json()["response"] == "I led the rollout."   # older callers still get JSON
+print("copilot stream check passed")

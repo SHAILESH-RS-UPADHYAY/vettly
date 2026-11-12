@@ -441,14 +441,17 @@ async def bento_for_field(peek: bool = False, again: bool = False):
     subjects = prof.get("subjects") or []
     made_for = "|".join([field, role, *sorted(s.lower() for s in subjects)]) if subjects else f"{field}|{role}"
     cached = docstore.load(uid, "bento_field", {})
-    if not again and cached.get("day") == today and cached.get("for") == made_for and cached.get("lessons"):
-        return {"lessons": cached["lessons"], "field": field or role}
+    import random
+    # everything written today is kept; each visit is handed a different six of them, so the box keeps changing
+    # without spending another answer
+    pool = (cached.get("pool") or cached.get("lessons") or []) if cached.get("day") == today and cached.get("for") == made_for else []
+    if not again and pool:
+        return {"lessons": random.sample(pool, 6) if len(pool) > 6 else pool, "field": field or role}
     if peek:
         return {"lessons": None}
-    import random
     picked = random.sample(subjects, min(3, len(subjects)))
     about = (f"\nSubjects to draw from this time (two lessons each where you can): {', '.join(picked)}"
-             f"\nAvoid repeating these earlier titles: {'; '.join(l['en']['title'] for l in cached.get('lessons', []))[:600]}") if picked else ""
+             f"\nAvoid repeating these earlier titles: {'; '.join(l['en']['title'] for l in pool)[:900]}") if picked else ""
     from ai.utils import generate_multi_provider_completion
     try:
         allowance.begin_ai_call()
@@ -476,14 +479,14 @@ async def bento_for_field(peek: bool = False, again: bool = False):
             continue
         nodes = [str(n)[:40] for n in (l.get("diagram") or {}).get("nodes", [])][:5]
         lessons.append({
-            "id": f"f{i}-" + "".join(ch for ch in str(l.get("id", "")).lower() if ch.isalnum() or ch == "-")[:40],
+            "id": f"f{len(pool) + i}-" + "".join(ch for ch in str(l.get("id", "")).lower() if ch.isalnum() or ch == "-")[:40],
             "track": "fresh", "keys": [str(k).lower()[:30] for k in l.get("keys", [])][:6],
             "diagram": {"type": "flow", "nodes": nodes} if len(nodes) >= 3 else None,
             "en": {k: (l.get(k) if k == "follow" else str(l.get(k, ""))[:900]) for k in ("title", "hook", "body", "analogy", "q", "a", "follow")},
         })
     if not lessons:
         return {"lessons": None}
-    docstore.save(uid, "bento_field", {"day": today, "for": made_for, "lessons": lessons})
+    docstore.save(uid, "bento_field", {"day": today, "for": made_for, "lessons": lessons, "pool": (pool + lessons)[-30:]})
     return {"lessons": lessons, "field": field or role}
 
 
@@ -1283,6 +1286,7 @@ class ChatRequest(BaseModel):
     history: list[dict] = []  # [{role: "user"/"assistant", content: "..."}]
     chat_id: Optional[str] = None   # the register chapter this message belongs to
     think_ms: Optional[int] = Field(None, ge=0, le=1000 * 60 * 60)   # the practice stopwatch, if it was running
+    stream: bool = False   # the page asks for the answer word by word; older callers still get JSON
 
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest):
@@ -1352,6 +1356,39 @@ If the user specifies an instruction, preference, correction, or rule about how 
 1. Acknowledge it clearly: "Got it, I've updated my studio behavior. [explain what was saved]."
 2. Confirm that it has been saved to your permanent context.
 3. Explain that Vettly will now follow this rule in all future practice and prep sessions."""
+
+        if req.stream:
+            from ai.utils import _usable, stream_gemini_chat
+            store = chat_store._target()   # this request's own chapter store, held for when the answer has finished
+            past = req.history[-20:]
+            if past and past[-1].get("role") == "user" and (past[-1].get("content") or "").strip() == req.message.strip():
+                past = past[:-1]   # the page sends the new question in the history too
+
+            async def stream():
+                parts: list[str] = []
+                try:
+                    if _usable("GEMINI_API_KEY") and not (allowance.own_custom.get() or {}).get("first"):
+                        try:
+                            async for chunk in stream_gemini_chat(system_prompt, past + [{"role": "user", "content": req.message}]):
+                                parts.append(chunk)
+                                yield chunk
+                        except Exception as e:
+                            logger.warning(f"Copilot Gemini stream failed ({type(e).__name__}); falling back")
+                    if not parts:   # no Gemini key, or it failed before writing: the router answers in one piece
+                        text = await generate_multi_provider_completion(system_prompt=system_prompt, user_prompt=req.message,
+                                                                        history=past, max_tokens=1000, temperature=0.7)
+                        parts.append(text)
+                        yield text
+                except Exception as e:
+                    logger.error(f"Chat error: {e}")
+                    if not parts:
+                        yield f"Error: {e}"
+                        return
+                finally:
+                    if parts:   # whatever was written is kept, even if the reader left mid-answer
+                        store.add_message("assistant", "".join(parts), ms=int((time.monotonic() - started) * 1000))
+
+            return StreamingResponse(stream(), media_type="text/plain; charset=utf-8", headers={"Content-Encoding": "identity", "Cache-Control": "no-cache"})
 
         reply_text = await generate_multi_provider_completion(
             system_prompt=system_prompt,

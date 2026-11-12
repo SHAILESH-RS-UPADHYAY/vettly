@@ -368,22 +368,40 @@ async function sendChatMessage() {
         const res = await fetch(`${API_BASE}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: chatId || null, think_ms: thinkMs }),
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-20), chat_id: chatId || null, think_ms: thinkMs, stream: true }),
         });
-        const data = await res.json();
-        typingBubble.remove();
-
-        const reply = data.response || data.error || 'No response';
+        // the answer arrives word by word: the first words show as soon as the AI writes them, not after the whole answer
+        let reply = '', streamed = false;
+        if (res.ok && res.body && !(res.headers.get('content-type') || '').includes('json')) {
+            const reader = res.body.getReader(), decoder = new TextDecoder();
+            let live = null, queued = false;
+            for (;;) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                reply += decoder.decode(value, { stream: true });
+                if (!live) {
+                    typingBubble.className = 'chat-bubble assistant';
+                    typingBubble.innerHTML = '<div class="chat-bubble-content"></div>';
+                    live = typingBubble.firstChild;
+                }
+                if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; if (live.isConnected) live.innerHTML = formatChatMessage(reply); }); }
+            }
+            reply = reply.trim() || 'No response';
+            streamed = true;
+        } else {
+            const data = await res.json().catch(() => ({}));
+            reply = data.response || data.error || data.detail || 'No response';
+        }
         const aiBubble = createAssistantBubble(reply, msg);
         aiBubble.dataset.time = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-        messagesDiv.appendChild(aiBubble);
-        window.Register?.write?.(aiBubble);   // the answer is written in ink, word by word
+        typingBubble.replaceWith(aiBubble);   // the finished note, with its buttons, takes the place of the one being written
+        if (!streamed) window.Register?.write?.(aiBubble);   // an answer that came in one piece is written in ink, word by word
         window.Register?.touch?.();
 
         chatHistory.push({ role: 'assistant', content: reply });
         // Server handles persistence now
     } catch (e) {
-        typingBubble.textContent = `Error: ${e.message}. Is the server running?`;
+        typingBubble.textContent = `Error: ${e.message}. Check your connection and send it again.`;
         typingBubble.classList.remove('typing');
     }
     // Anchor the question at the top so a long answer reads from its first line (short ones just land at the bottom)

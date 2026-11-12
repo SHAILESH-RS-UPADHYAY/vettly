@@ -8,6 +8,8 @@ V2: Added opener tracking and consistent language propagation.
 import logging
 from typing import AsyncGenerator
 
+import functools
+
 from groq import AsyncGroq
 
 import config
@@ -51,8 +53,13 @@ class AnswerGenerator:
     Target: first chunk in ~0.5s, full answer in ~2-3s.
     """
 
+    @functools.cached_property
+    def _client(self):
+        # built on first use: a client costs ~100 ms of CPU, which the server's start should not pay
+        return AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+
     def __init__(self):
-        self._client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+        pass
 
     async def generate_stream(
         self,

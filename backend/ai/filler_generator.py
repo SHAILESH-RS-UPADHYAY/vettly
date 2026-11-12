@@ -6,6 +6,8 @@ V2: Added opener tracking and Hinglish fallback messages.
 """
 
 import logging
+import functools
+
 from groq import AsyncGroq
 
 import config
@@ -36,8 +38,13 @@ class FillerGenerator:
     Target: response in < 0.5 seconds.
     """
 
+    @functools.cached_property
+    def _client(self):
+        # built on first use: a client costs ~100 ms of CPU, which the server's start should not pay
+        return AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+
     def __init__(self):
-        self._client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+        pass
 
     async def generate(
         self,

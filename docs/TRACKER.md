@@ -405,6 +405,26 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       not redraw unchanged questions; phones get a 360-400 ms opening without the full-screen blur (was 720-780 ms)
 - [x] 19.6 `sw.js`: files without a version (images) are refreshed behind the scenes instead of kept for ever
 
+## Phase 20 · Lag in the Mentor and Live Copilot on phones; Prep Studio's kit (requested 12 Nov)
+
+- [x] 20.1 Root cause of the Mentor freezing (measured at 4x CPU slowdown, phone size): every frame of a streaming
+      answer re-parsed and re-laid out the whole answer, and the notebook lines were measured block by block (a
+      layout each). About 30 s of blocked frames per answer; now about 1 s. Finished blocks are drawn once
+- [x] 20.2 The Mentor reads the newest 40K characters of the chat (was 150K): a sooner first word
+- [x] 20.3 The server built a Groq client (~160 ms of blocked CPU) for every request that read the user's context,
+      and three more at start. They are built once, on first use
+- [x] 20.4 Live Copilot answers stream (`/api/chat` with `stream: true`): the first words show as the AI writes them;
+      the answer is saved to the chapter when it ends. Older callers still get JSON
+- [x] 20.5 Prep Studio: Questions | MCQs tabs, toughness (Medium by default), subjects (Agent Toolbelt, saved on the
+      profile), a subject filter, and a card that is written while the AI works (`prepkit.js`, `prepkit.css`)
+- [x] 20.6 Role kit: ten subjects the AI writes for the field and role (`/api/subjects/suggest`); a new account gets
+      the first five
+- [x] 20.7 MCQ deck: `/prepare/mcq` (write, answer, clear); generating spends an answer, answering does not
+- [x] 20.8 Brain Bento's fresh six follow the subjects; everything written in a day is kept (up to 30) and each visit
+      shows a different six
+- [ ] 20.9 Try 20.4 to 20.8 on the live site with real AI keys (tested here with stand-in AI replies only)
+- [ ] 20.10 Still open: the first request after idle takes about 2 s; a Copilot request makes 12 database round trips
+
 ## Phase 20 · A strict walk through every screen (11 Nov, in progress)
 
 - [x] 20.1 Walked 9 sections on a 390 px phone, a 360 px phone and a laptop, by day and night, and all 9 looks on a
