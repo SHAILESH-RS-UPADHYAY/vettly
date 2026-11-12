@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import json
 import logging
 from typing import AsyncIterator, Optional
@@ -215,11 +216,17 @@ async def _via_openai(system_prompt, user_prompt, history, max_tokens, temperatu
     return res.choices[0].message.content.strip()
 
 
-async def _via_groq(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
+@functools.lru_cache(maxsize=16)
+def _groq_client(key: str, retries: int):
+    """One client per key, kept: building one costs ~100 ms of CPU and a fresh TLS handshake on every answer."""
     from groq import AsyncGroq
+    return AsyncGroq(api_key=key, max_retries=retries)
+
+
+async def _via_groq(system_prompt, user_prompt, history, max_tokens, temperature, json_mode):
     from allowance import own_keys
     pooled = own_keys.get() is None   # the server's pool: a busy key hands over to the next one instead of waiting
-    client = AsyncGroq(api_key=config.GROQ_API_KEY, max_retries=0 if pooled else 2)
+    client = _groq_client(config.GROQ_API_KEY, 0 if pooled else 2)
     # keep system + user prompt within Groq's free-tier token budget
     messages = [{"role": "system", "content": system_prompt[:14000]}]
     for msg in (history or [])[-8:]:

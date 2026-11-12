@@ -55,7 +55,8 @@ class ContextEngine:
         self._structured: dict = {}  # Categorized context (projects, experience, skills, qa_bank, stories)
         self._assignment: dict = {}  # Company assignment/assessment (HIGHEST PRIORITY)
         self._rolling_summary: str = ""  # Persistent memory of summarized old conversation turns
-        self._groq_client = AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+        # built on first use: a client costs ~100 ms of CPU, and this engine is created for every request
+        self._groq = None
         self.load_context()
 
     def set_resume(self, parsed_resume: dict) -> None:
@@ -509,7 +510,8 @@ class ContextEngine:
             user_prompt = f"CONVERSATION TURNS:\n{new_turns_text}\n\nSummarize these interview turns."
 
         try:
-            response = await self._groq_client.chat.completions.create(
+            self._groq = self._groq or AsyncGroq(api_key=config.GROQ_API_KEY or "unconfigured")
+            response = await self._groq.chat.completions.create(
                 model=config.GROQ_MODEL,
                 messages=[
                     {"role": "system", "content": ROLLING_SUMMARY_PROMPT},
