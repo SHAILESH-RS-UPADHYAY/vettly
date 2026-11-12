@@ -68,6 +68,7 @@
     <link rel="stylesheet" href="./css/base.css?v=7.9">
     <link rel="stylesheet" href="./css/styles.css?v=9.9">
     <link rel="stylesheet" href="./css/prep.css?v=7.7">
+    <link rel="stylesheet" href="./css/prepkit.css?v=1.1">
     <link rel="stylesheet" href="./css/mentor.css?v=9.6">
     <link rel="stylesheet" href="./css/looks.css?v=7.11">
     <link rel="stylesheet" href="./css/paper.css?v=8.1">
@@ -633,6 +634,19 @@
                     </div>
 
                     <!-- Custom Context Blueprint Tabs -->
+                    <div class="toolbelt-card full-width subjects-card" id="subjects-card">
+                        <div class="toolbelt-card-header">
+                            <h3><svg class="i em-i" aria-hidden="true"><use href="#i-books"/></svg>Subjects to practise</h3>
+                            <span class="badge-pill badge-pill-orange"><span class="badge-dot"></span><span id="subjects-count">0</span> of 12</span>
+                        </div>
+                        <p class="toolbelt-card-desc">Anything your interviews touch, even outside your field: an MBA student can add Python, SQL or Excel. Prep Studio can aim questions and MCQs at one, and Brain Bento's fresh ideas follow them.</p>
+                        <form class="subject-add" id="subject-add" autocomplete="off">
+                            <input type="text" id="subject-input" maxlength="40" placeholder="Type a subject and press Enter" aria-label="Add a subject" enterkeyhint="done">
+                            <button type="submit" class="btn btn-secondary btn-sm"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add</button>
+                        </form>
+                        <div class="subject-row subject-row-edit" id="toolbelt-subjects" aria-live="polite"></div>
+                        <div class="subject-ideas" id="subject-ideas" role="group" aria-label="Suggestions"></div>
+                    </div>
                     <div class="toolbelt-card full-width" id="context-card">
                         <div class="toolbelt-card-header">
                             <h3><svg class="i em-i" aria-hidden="true"><use href="#i-brain"/></svg>Custom Background Modules</h3>
@@ -820,6 +834,12 @@
                     <p>Synthesize questions, study streamed answers &amp; fine-tune responses</p>
                     <h2 class="sr-only">Generate and review questions</h2>
                 </div>
+                <!-- Two ways to practise: spoken questions (the main one) and quick MCQs (prepkit.js) -->
+                <div class="prep-tabs" id="prep-tabs" role="tablist" aria-label="Practice mode">
+                    <button type="button" role="tab" id="prep-tab-qa" data-prep-tab="qa" aria-selected="true" aria-controls="prep-qa-panel"><svg aria-hidden="true"><use href="#i-chats"/></svg><span><b>Questions</b><small>Spoken answers, in your voice</small></span><i class="num" data-tab-count="qa">0</i></button>
+                    <button type="button" role="tab" id="prep-tab-mcq" data-prep-tab="mcq" aria-selected="false" aria-controls="mcq-panel" tabindex="-1"><svg aria-hidden="true"><use href="#i-list-checks"/></svg><span><b>MCQs</b><small>Quick rounds, four choices</small></span><i class="num" data-tab-count="mcq">0</i></button>
+                    <span class="prep-tabs-ink" aria-hidden="true"></span>
+                </div>
                 <!-- Synthesis Lab: pick a category and language, then generate -->
                 <div class="toolbelt-card prep-lab">
                     <div class="lab-head">
@@ -841,6 +861,20 @@
                         <button type="button" class="cat-tile category-btn" data-tone="hr" aria-pressed="false" style="--i:7" onclick="selectCategory('HR_CULTURE_FIT', this)"><svg aria-hidden="true"><use href="#i-chats"/></svg><span>HR / Culture</span></button>
                         <button type="button" class="cat-tile category-btn" data-tone="asg" aria-pressed="false" style="--i:8" onclick="selectCategory('ASSIGNMENT', this)"><svg aria-hidden="true"><use href="#i-target"/></svg><span>Assignment</span></button>
                     </div>
+                    <div class="lab-tune">
+                        <div class="tune-block">
+                            <span class="dock-label">Toughness</span>
+                            <div class="seg seg-fill lab-level" id="lab-level" role="group" aria-label="Toughness">
+                                <button type="button" data-v="easy" aria-pressed="false"><span class="diff-dots" aria-hidden="true"><i class="on"></i><i></i><i></i></span>Easy</button>
+                                <button type="button" data-v="medium" aria-pressed="true"><span class="diff-dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i></span>Medium</button>
+                                <button type="button" data-v="hard" aria-pressed="false"><span class="diff-dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i></span>Hard</button>
+                            </div>
+                        </div>
+                        <div class="tune-block tune-subjects">
+                            <span class="dock-label">Subject <small>from your Toolbelt</small></span>
+                            <div class="subject-row" id="lab-subjects" role="group" aria-label="Subject to aim at"></div>
+                        </div>
+                    </div>
                     <div class="lab-go">
                         <p class="lab-hint">Built from your Agent Toolbelt context and target role.</p>
                         <button type="button" class="btn btn-primary prep-generate" id="prep-generate-btn" onclick="generateSinglePrep()"><svg aria-hidden="true"><use href="#i-wand"/></svg><span class="v-classic">Synthesize &amp; stream</span><span class="v-alt">Generate a question</span></button>
@@ -854,7 +888,9 @@
                         <span class="lab-status" id="prep-progress-text">Synthesizing candidate context...</span>
                     </div>
                 </div>
-                <div class="prep-layout">
+                <!-- MCQ practice: a deck of exam cards (prepkit.js draws it) -->
+                <section class="mcq-panel" id="mcq-panel" role="tabpanel" aria-labelledby="prep-tab-mcq" hidden></section>
+                <div class="prep-layout" id="prep-qa-panel" role="tabpanel" aria-labelledby="prep-tab-qa">
                     <div class="prep-stream" id="prep-list-toolbar">
                         <div class="stream-bar">
                             <label class="stream-search">
@@ -905,6 +941,10 @@
                                         <div class="dock-block dock-diffs">
                                             <span class="dock-label">Difficulty</span>
                                             <div class="pill-grid" data-f-diffs role="group" aria-label="Difficulty"></div>
+                                        </div>
+                                        <div class="dock-block dock-subs" hidden>
+                                            <span class="dock-label">Subjects</span>
+                                            <div class="pill-grid" data-f-subs role="group" aria-label="Subjects"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -1422,7 +1462,7 @@
     <script defer src="./js/motion.js?v=8.8"></script>
     <script defer src="./js/tooltip.js?v=1.0"></script>
     <script defer src="./js/appearance.js?v=9.4"></script>
-    <script defer src="./js/dashboard.js?v=9.8"></script>
+    <script defer src="./js/dashboard.js?v=9.9"></script>
     <script defer src="./js/mentor.js?v=8.9"></script>
     <script defer src="./js/brand.js?v=4.4"></script>
     <script>/* the app's files stay on the device, so the installed app paints at once (sw.js) */ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));</script>
@@ -1430,7 +1470,8 @@
     <script defer src="./js/auth-intro.js?v=2.0"></script>
     <script defer src="./js/bento-data.js?v=8.1"></script>
     <script defer src="./js/bento-fields.js?v=1.0"></script>
-    <script defer src="./js/bento.js?v=9.0"></script>
+    <script defer src="./js/bento.js?v=9.1"></script>
+    <script defer src="./js/prepkit.js?v=1.0"></script>
     <script defer src="./js/shortcuts.js?v=1.4"></script>
     <script defer src="./js/keyring.js?v=1.8"></script>
     <script defer src="./js/account.js?v=1.0"></script>
@@ -1439,7 +1480,7 @@
     <script defer src="./js/tour.js?v=2.3"></script>
     <script defer src="./js/onboard-scenes.js?v=2.3"></script>
     <script defer src="./js/lookbook.js?v=1.5"></script>
-    <script defer src="./js/onboard.js?v=9.13"></script>
+    <script defer src="./js/onboard.js?v=9.14"></script>
     <script defer src="./js/picker.js?v=1.2"></script>
 </body>
 </html>

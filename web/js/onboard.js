@@ -458,6 +458,7 @@ const Onboard = (() => {
                 profile = await res.json();
                 loadCategories();
                 if (typeof Bento !== 'undefined') Bento.useField();
+                window.PrepKit?.refresh();   // a new field or role brings its own subjects
                 if (editing) { dlg.close(); Motion.toast(`Saved. Vettly is tuned for ${profile.role} in ${profile.field}.`, 'ok'); return; }
                 // the toast would sit under the modal, so the confirmation lives on the next page
                 const saved = form.querySelector('.ob-saved');

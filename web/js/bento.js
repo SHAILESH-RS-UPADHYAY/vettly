@@ -121,7 +121,8 @@ const Bento = (() => {
         page.querySelector('[data-bento-progress]').innerHTML = `${ring(done)}<span><b class="num">${done}</b> of 5 eaten today</span>`;
         page.querySelector('[data-bento-streak]').innerHTML = `<svg aria-hidden="true"><use href="#i-fire"/></svg><b class="num">${state.streak}</b> day streak`;
         const chips = [['all', { name: "Chef's Choice", icon: 'sparkle' }], ...Object.entries(TRACKS)];
-        const freshBtn = fresh?.length ? '' : `<button type="button" class="chip bento-fresh" data-fresh><svg aria-hidden="true"><use href="#i-wand"/></svg>Write six fresh ones${profile.role ? ` for ${esc(profile.role)}` : ''}</button>`;
+        // with subjects in the Toolbelt the six can be dealt again: a different handful of subjects each time
+        const freshBtn = fresh?.length ? (profile.subjects?.length ? `<button type="button" class="chip bento-fresh" data-fresh="again"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle six more from your subjects</button>` : '') : `<button type="button" class="chip bento-fresh" data-fresh><svg aria-hidden="true"><use href="#i-wand"/></svg>Write six fresh ones${profile.role ? ` for ${esc(profile.role)}` : ''}</button>`;
         page.querySelector('[data-bento-track]').innerHTML = chips.map(([k, tr]) => `<button type="button" class="chip" data-v="${k}"${tr.tone ? ` data-tone="${tr.tone}"` : ''} aria-pressed="${k === state.track}"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</button>`).join('') + freshBtn;
         const lang = page.querySelector('#bento-lang');
         if (lang) { lang.checked = state.lang === 'hi'; lang.closest('label').hidden = !LESSONS.some(l => l.hi); }
@@ -421,7 +422,7 @@ const Bento = (() => {
         const was = btn.innerHTML;
         btn.innerHTML = '<svg aria-hidden="true"><use href="#i-wand"/></svg>Writing six for you…';
         try {
-            const d = await (await fetch(`${API_BASE}/api/bento/field`)).json();
+            const d = await (await fetch(`${API_BASE}/api/bento/field${btn.dataset.fresh === 'again' ? '?again=1' : ''}`)).json();
             if (!d.lessons?.length) throw new Error(d.error || "Couldn't write fresh ones just now. Today's box still has plenty.");
             setFresh(d.lessons);
             state.track = 'fresh'; openId = null; save(); render();

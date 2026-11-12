@@ -460,6 +460,19 @@ class ProfileStore:
         docstore.save(self._user, "profile", self._data)
         return prefs
 
+    MAX_SUBJECTS = 12
+
+    def set_subjects(self, items) -> list:
+        """Subjects the user wants to practise (Python, SQL, Marketing…): a clean list, no blanks or repeats."""
+        clean: list[str] = []
+        for s in items if isinstance(items, list) else []:
+            s = " ".join(s.split())[:40] if isinstance(s, str) else ""
+            if s and s.lower() not in {c.lower() for c in clean}:
+                clean.append(s)
+        self._data["subjects"] = clean[: self.MAX_SUBJECTS]
+        docstore.save(self._user, "profile", self._data)
+        return self._data["subjects"]
+
     MAX_ROLES = 4
     ROLE_SEP = " · "   # role names can hold commas ("Staff nurse, ICU"), so several are joined with a middle dot
 

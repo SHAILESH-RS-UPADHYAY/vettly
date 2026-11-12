@@ -1,0 +1,202 @@
+/* Prep kit (prepkit.js): the Questions | MCQs tabs, toughness and subjects in the lab, the forge (a card being
+   written while the AI works) and the MCQ deck. The look is exam-hall stationery: an answer sheet's pencil-filled
+   bubbles, a rubber stamp for the verdict, tally marks for the streak. Everything is drawn from tokens, so each look
+   and theme restyles it. Only transform, opacity and clip-path move. */
+
+/* ── Tabs: two index cards; ink slides under the one in use ── */
+.prep-tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: var(--gap-stack); padding: 4px; border-radius: calc(var(--r-ctl) + 4px); background: var(--paper-3); border: 1px solid var(--rule); isolation: isolate; }
+.prep-tabs [role="tab"] { position: relative; z-index: 1; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 56px; padding: 8px 14px; border: 0; border-radius: var(--r-ctl); background: none; color: var(--ink-2); text-align: left; cursor: pointer; transition: color var(--dur-short) var(--ease-out); }
+.prep-tabs [role="tab"] > svg { width: 22px; height: 22px; transition: transform var(--dur-long) var(--spring); }
+.prep-tabs [role="tab"] b { display: block; font: 700 1rem/1.2 var(--font-body); }
+.prep-tabs [role="tab"] small { display: block; font-size: 0.74rem; line-height: 1.25; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prep-tabs [role="tab"] i { font: 700 0.74rem/1 var(--font-mono); font-style: normal; padding: 5px 8px; border-radius: var(--r-chip); background: color-mix(in srgb, currentColor 12%, transparent); }
+.prep-tabs [role="tab"] i.has { background: var(--accent); color: var(--on-accent, #fff); }
+.prep-tabs [role="tab"][aria-selected="true"] { color: var(--on-pill); }
+.prep-tabs [role="tab"][aria-selected="true"] > svg { transform: rotate(-8deg) scale(1.12); }
+.prep-tabs-ink { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: var(--r-ctl); background: var(--pill); transition: transform 460ms var(--spring); }
+.prep-tabs[data-on="mcq"] .prep-tabs-ink { transform: translateX(100%); }
+@media (max-width: 30rem) { .prep-tabs [role="tab"] small { display: none; } .prep-tabs [role="tab"] { min-height: 48px; } }
+#page-prep[data-prep-tab="mcq"] .prep-lang { display: none; }   /* MCQs are written in English */
+
+/* ── Toughness and subject, under the category tiles ── */
+.lab-tune { display: grid; gap: 12px; min-width: 0; }
+.tune-block { display: grid; gap: 6px; min-width: 0; }
+.lab-level > button { gap: 7px; }
+.lab-level .diff-dots { display: inline-flex; gap: 3px; }
+#lab-level .diff-dots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.28; }
+#lab-level .diff-dots i.on { background: currentColor; opacity: 1; }
+@container prep (min-width: 640px) { .lab-tune { grid-column: 1 / -1; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); align-items: start; column-gap: var(--space-lg); } }
+
+.subject-row { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.sub-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; max-width: 100%; padding: 6px 13px; border: 1.5px solid var(--rule-2); border-radius: var(--r-chip); background: var(--card-bg); color: var(--ink-2); font: 600 0.84rem/1.1 var(--font-body); cursor: pointer; overflow-wrap: anywhere;
+    transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+    animation: subIn 420ms var(--spring) backwards; animation-delay: calc(min(var(--i, 0), 10) * 35ms); }
+.sub-chip svg { width: 14px; height: 14px; flex: none; }
+.sub-chip:active { transform: scale(0.94); }
+.sub-chip[aria-pressed="true"] { background: var(--pill); border-color: var(--pill); color: var(--on-pill); }
+.sub-chip.sub-add { border-style: dashed; color: var(--accent-ink); }
+input.sub-chip.sub-input { width: 9.5rem; cursor: text; border-color: var(--accent); outline: none; animation: none; }
+.sub-chip.sub-own { cursor: default; padding-right: 5px; background: var(--accent-soft); border-color: transparent; color: var(--ink); }
+.sub-chip.sub-own button { display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 50%; background: none; color: inherit; opacity: 0.6; cursor: pointer; }
+.sub-chip.sub-own button:hover { opacity: 1; background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.sub-none { font-size: 0.86rem; color: var(--muted); }
+@keyframes subIn { from { opacity: 0; transform: translateY(6px) scale(0.9); } }
+.subject-add { display: flex; gap: 8px; margin: 10px 0 12px; }
+.subject-add input { flex: 1; min-width: 0; }
+.subject-ideas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.sub-idea { display: inline-flex; align-items: center; gap: 4px; padding: 5px 10px; border: 1px dashed var(--rule-2); border-radius: var(--r-chip); background: none; color: var(--muted); font: 500 0.78rem/1 var(--font-body); cursor: pointer; }
+.sub-idea svg { width: 12px; height: 12px; }
+.sub-idea { animation: subIn 420ms var(--spring) backwards; animation-delay: calc(min(var(--i, 0), 10) * 45ms); }
+.sub-ideas-label { flex-basis: 100%; display: flex; align-items: center; gap: 6px; font: 600 0.72rem/1.2 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent-ink); }
+.sub-ideas-label svg { width: 14px; height: 14px; }
+.sub-idea:hover { color: var(--accent-ink); border-color: var(--accent); }
+.q-subject { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--r-chip); background: var(--accent-soft); color: var(--accent-ink); font: 600 0.74rem/1.2 var(--font-body); }
+.q-subject svg { width: 13px; height: 13px; }
+
+/* ── The forge: a sheet of paper being written on ── */
+.forge { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; margin-bottom: 14px; padding: 16px; border-radius: var(--r-card); background: var(--card-bg); border: 1.5px dashed color-mix(in srgb, var(--accent) 55%, var(--rule)); }
+.forge-sheet { position: relative; container-type: inline-size; display: grid; gap: 13px; padding: 22px 18px 18px; border-radius: 6px; background: var(--paper); box-shadow: 0 1px 0 var(--rule-2), 0 8px 18px -12px color-mix(in srgb, var(--ink) 40%, transparent); rotate: -0.6deg; overflow: hidden; }
+.forge-tape { position: absolute; top: -7px; left: 50%; width: 74px; height: 18px; translate: -50% 0; rotate: -3deg; background: color-mix(in srgb, var(--accent-2) 45%, transparent); }
+.forge-line { display: block; height: 5px; width: var(--w); border-radius: 3px; background: color-mix(in srgb, var(--ink) 62%, transparent); clip-path: inset(0 100% 0 0); animation: forgeLine 5.2s linear infinite; animation-delay: calc(var(--k) * 1.1s); }
+@keyframes forgeLine { 0% { clip-path: inset(0 100% 0 0); opacity: 1; } 21% { clip-path: inset(0 0 0 0); opacity: 1; } 84% { clip-path: inset(0 0 0 0); opacity: 1; } 94%, 100% { clip-path: inset(0 0 0 0); opacity: 0; } }
+/* the nib rides the line being written: 18px a line, 4 lines, then lifts and starts again */
+.forge-nib { position: absolute; left: 10px; top: 4px; width: 22px; height: 22px; color: var(--accent-ink); animation: forgeNib 5.2s linear infinite; }
+.forge-nib svg { width: 100%; height: 100%; rotate: 200deg; }
+@keyframes forgeNib {
+    0% { transform: translate(0, 0); } 21% { transform: translate(80cqw, 0); }
+    21.2% { transform: translate(0, 18px); } 42% { transform: translate(66cqw, 18px); }
+    42.2% { transform: translate(0, 36px); } 63% { transform: translate(74cqw, 36px); }
+    63.2% { transform: translate(0, 54px); } 84% { transform: translate(42cqw, 54px); opacity: 1; }
+    94%, 100% { transform: translate(42cqw, 40px); opacity: 0; }
+}
+.forge-side { display: grid; gap: 8px; align-content: center; min-width: 0; }
+.forge-title { font: 700 1.02rem/1.25 var(--font-body); color: var(--ink); text-transform: capitalize; }
+.forge-title em { font-style: normal; color: var(--accent-ink); text-transform: none; }
+.forge-status { font: 500 0.82rem/1.35 var(--font-mono); color: var(--accent-ink); min-height: 1.35em; }
+.forge-bar { display: block; height: 6px; border-radius: 3px; background: var(--paper-3); overflow: hidden; }
+.forge-bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform-origin: 0 50%; transform: scaleX(0.04); animation: forgeBar 16s cubic-bezier(0.1, 0.7, 0.2, 1) forwards; }
+@keyframes forgeBar { to { transform: scaleX(0.93); } }
+.forge.is-done .forge-bar i { animation: none; transform: scaleX(1); transition: transform 240ms var(--ease-out); }
+.forge-pips { display: flex; gap: 6px; }
+.forge-pips i { width: 18px; height: 4px; border-radius: 2px; background: var(--rule-2); transition: background-color var(--dur-long) var(--ease-out), transform var(--dur-long) var(--spring); }
+.forge-pips i.on { background: var(--accent); transform: scaleY(1.5); }
+@container stream (min-width: 620px) { .forge { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: center; gap: 22px; } }
+.mcq-forge-slot:empty { display: none; }
+#prep-progress { display: none; }   /* the forge shows the work now */
+
+/* ── MCQ deck ── */
+.mcq-panel { --sheet: var(--paper-2); container: mcq / inline-size; display: grid; gap: 14px; max-width: 760px; margin-inline: auto; }
+.mcq-panel[hidden] { display: none; }
+@media (max-width: 47.99rem) { .mcq-panel { padding-bottom: 64px; } }   /* room to scroll the last row clear of the Mentor button */
+.mcq-slip { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 16px; align-items: center; padding: 12px 14px; border-radius: var(--r-card); background: var(--card-bg); border: 1px solid var(--rule); }
+.mcq-streak { display: flex; align-items: center; gap: 8px; min-height: 34px; }
+.mcq-tally { display: inline-flex; align-items: center; gap: 4px; min-width: 20px; color: var(--ink); }
+.tally { display: block; height: 30px; width: auto; overflow: visible; }
+.tally path { fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 1; animation: tallyDraw 380ms var(--ease-out) backwards; }
+.tally path:last-child { animation-name: tallyDrawNew; }
+.tally .slash { stroke: var(--accent); stroke-width: 3; }
+@keyframes tallyDraw { from { stroke-dashoffset: 0; } }
+@keyframes tallyDrawNew { from { stroke-dashoffset: 1; } }
+.mcq-best { font: 500 0.7rem/1 var(--font-mono); color: var(--muted); white-space: nowrap; }
+.mcq-nums { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 14px; font-size: 0.82rem; color: var(--muted); }
+.mcq-nums b { font: 700 1.05rem/1 var(--font-body); color: var(--ink); margin-right: 3px; }
+.mcq-view { grid-column: 1 / -1; }
+.mcq-view .n { margin-left: 6px; }
+
+.mcq-deck { position: relative; display: grid; isolation: isolate; padding-bottom: 12px; }
+.mcq-deck > * { grid-area: 1 / 1; }
+.mcq-ghost { z-index: 0; border-radius: var(--r-card); background: var(--sheet); border: 1px solid var(--rule); opacity: 0; transition: opacity var(--dur-long) var(--ease-out), transform var(--dur-long) var(--spring); }
+.mcq-deck[data-left="1"] .g1, .mcq-deck[data-left="2"] .g1 { opacity: 1; transform: translateY(8px) rotate(1.6deg) scale(0.985); }
+.mcq-deck[data-left="2"] .g2 { opacity: 0.8; transform: translateY(14px) rotate(-2.2deg) scale(0.97); }
+.mcq-card { position: relative; z-index: 1; display: grid; gap: 14px; padding: 20px 18px 18px; border-radius: var(--r-card); background: var(--sheet); border: 1px solid var(--rule-2);
+    box-shadow: 0 14px 30px -22px color-mix(in srgb, var(--ink) 55%, transparent);
+    background-image: linear-gradient(90deg, transparent 27px, color-mix(in srgb, var(--bad) 30%, transparent) 27px 28.5px, transparent 28.5px); }   /* the answer sheet's margin line */
+.mcq-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-left: 22px; }
+.mcq-no { font: 700 0.72rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.mcq-q { padding-left: 22px; font: 400 1.42rem/1.28 'Instrument Serif', Georgia, serif; color: var(--ink); text-wrap: pretty; overflow-wrap: anywhere; }
+.mcq-opts { list-style: none; display: grid; gap: 9px; margin: 0; padding: 0; }
+.mcq-opt { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; width: 100%; min-height: 54px; padding: 9px 14px 9px 9px; border: 1.5px solid var(--rule); border-radius: 14px; background: var(--paper); color: var(--ink); font: 500 0.96rem/1.35 var(--font-body); text-align: left; cursor: pointer;
+    transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out), opacity var(--dur-long) var(--ease-out); }
+.mcq-opt:not(:disabled):active { transform: scale(0.985); }
+@media (hover: hover) { .mcq-opt:not(:disabled):hover { border-color: var(--ink-2); } .mcq-opt:not(:disabled):hover .omr { transform: rotate(-8deg) scale(1.08); } }
+.opt-text { overflow-wrap: anywhere; }
+/* the bubble: an OMR circle that is filled in with pencil */
+.omr { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border: 2px solid var(--ink-2); border-radius: 50%; color: var(--ink); transition: transform var(--dur-long) var(--spring), background-color 200ms var(--ease-out) 300ms, border-color 200ms var(--ease-out) 300ms; }
+.omr b { position: relative; font: 700 0.86rem/1 var(--font-mono); transition: color 160ms var(--ease-out) 300ms; }
+.omr-fill { position: absolute; inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); }
+.omr-fill path, .opt-ring path, .opt-strike path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; }   /* hidden until drawn: a round cap would leave a dot */
+.mcq-opt.is-pick .omr-fill path, .mcq-opt.is-right .opt-ring path, .mcq-opt.is-pick:not(.is-right) .opt-strike path { opacity: 1; }
+.omr-fill path { stroke: var(--ink); stroke-width: 4.2; transition: stroke-dashoffset 340ms var(--ease-out); }
+.mcq-opt.is-pick .omr-fill path { stroke-dashoffset: 0; }
+.mcq-opt.is-pick .omr { background: var(--ink); border-color: var(--ink); }
+.mcq-opt.is-pick .omr b { color: var(--paper); }
+/* the verdict, drawn by hand: a ring round the right choice, a line through a wrong pick */
+.opt-ring, .opt-strike { position: absolute; inset: -5px -3px; width: calc(100% + 6px); height: calc(100% + 10px); pointer-events: none; overflow: visible; }
+.opt-ring path { stroke: var(--ok); stroke-width: 1.1; transition: stroke-dashoffset 560ms var(--ease-out) 320ms; }
+.opt-strike { inset: 0 8px 0 56px; width: auto; height: 100%; }
+.opt-strike path { stroke: var(--bad); stroke-width: 1.4; transition: stroke-dashoffset 380ms var(--ease-out) 260ms; }
+.mcq-opt.is-right .opt-ring path { stroke-dashoffset: 0; }
+.mcq-opt.is-right { border-color: transparent; background: var(--ok-bg); opacity: 1; }
+.mcq-opt.is-pick:not(.is-right) .opt-strike path { stroke-dashoffset: 0; }
+.mcq-opt.is-pick:not(.is-right) { border-color: transparent; background: var(--bad-bg); }
+.mcq-opt.is-pick:not(.is-right) .omr { background: var(--bad); border-color: var(--bad); }
+.mcq-opt:disabled { cursor: default; color: var(--ink); }
+.mcq-card:not([data-state="open"]) .mcq-opt:not(.is-pick, .is-right) { opacity: 0.5; }
+/* the note that says why: a sticky note, a little askew */
+.mcq-why { position: relative; margin: 4px 6px 0 22px; padding: 12px 14px; rotate: -0.7deg; border-radius: 3px 3px 12px 3px; background: #fff1a6; color: #3b2f12; box-shadow: 0 10px 16px -12px rgba(60, 45, 10, 0.6); }
+.mcq-why[hidden] { display: none; }
+.mcq-why b { display: block; margin-bottom: 3px; font: 700 0.7rem/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.7; }
+.mcq-why p { font-size: 0.92rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+/* the rubber stamp */
+.mcq-stamp { position: absolute; top: -13px; right: 10px; z-index: 2; padding: 5px 11px 4px; border: 3px double currentColor; border-radius: 8px; rotate: 0deg; transform: rotate(-9deg); font: 800 0.8rem/1 var(--font-display); letter-spacing: 0.14em; background: var(--sheet); text-transform: uppercase; pointer-events: none; opacity: 0;
+    -webkit-mask-image: radial-gradient(circle at 30% 40%, #000 55%, rgba(0, 0, 0, 0.72) 56% 62%, #000 63%); mask-image: radial-gradient(circle at 30% 40%, #000 55%, rgba(0, 0, 0, 0.72) 56% 62%, #000 63%); }
+.mcq-card[data-state="right"] .mcq-stamp { opacity: 0.92; color: var(--ok); }
+.mcq-card[data-state="wrong"] .mcq-stamp { opacity: 0.92; color: var(--bad); }
+
+.mcq-foot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.mcq-next { min-height: 52px; font-size: 1rem; }
+.mcq-next svg { width: 18px; height: 18px; transition: transform var(--dur-long) var(--spring); }
+.mcq-next:not(:disabled) svg { animation: mcqNudge 1.4s var(--ease-out) 0.9s infinite; }
+@keyframes mcqNudge { 0%, 60%, 100% { transform: none; } 30% { transform: translateX(5px); } }
+.mcq-pile { display: grid; justify-items: center; gap: 1px; min-width: 58px; padding: 6px 8px; border-radius: 12px; border: 1.5px dashed var(--rule-2); color: var(--muted); }
+.mcq-pile svg { width: 15px; height: 15px; }
+.mcq-pile b { font: 700 1.05rem/1 var(--font-body); color: var(--ink); }
+.mcq-pile small { font: 600 0.62rem/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+.mcq-pile[data-pile="right"] svg { color: var(--ok); } .mcq-pile[data-pile="wrong"] svg { color: var(--bad); }
+.mcq-keys { margin: 0; text-align: center; font-size: 0.78rem; color: var(--muted); }
+.mcq-keys kbd { padding: 1px 6px; border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 5px; font: 600 0.72rem/1.4 var(--font-mono); }
+@media (pointer: coarse) { .mcq-keys:not(:has(button)) { display: none; } }
+.mcq-again, .mcq-clear { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 0; background: none; color: var(--muted); font: 600 0.8rem/1 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.mcq-again svg { width: 14px; height: 14px; }
+.mcq-again:hover, .mcq-clear:hover { color: var(--ink); }
+
+/* empty deck and the report slip */
+.mcq-empty, .mcq-report { display: grid; justify-items: center; gap: 12px; padding: 34px 20px 30px; text-align: center; border-radius: var(--r-card); background: var(--card-bg); border: 1px solid var(--rule); }
+.mcq-empty h3, .mcq-report h3 { font: 400 1.7rem/1.15 'Instrument Serif', Georgia, serif; color: var(--ink); }
+.mcq-empty p, .mcq-report p { max-width: 44ch; margin: 0; color: var(--muted); text-wrap: pretty; }
+.mcq-fan { position: relative; width: 150px; height: 104px; margin-bottom: 6px; }
+.mcq-fan i { position: absolute; left: 50%; bottom: 0; display: grid; place-items: center; width: 62px; height: 84px; margin-left: -31px; border-radius: 10px; background: var(--paper); border: 1.5px solid var(--rule-2); font: 700 1.1rem/1 var(--font-mono); font-style: normal; color: var(--ink-2); transform-origin: 50% 130%; box-shadow: 0 8px 14px -10px color-mix(in srgb, var(--ink) 50%, transparent); animation: fanOut 720ms var(--spring) backwards; }
+.mcq-fan i:nth-child(1) { transform: rotate(-24deg); animation-delay: 60ms; } .mcq-fan i:nth-child(2) { transform: rotate(-8deg); animation-delay: 120ms; }
+.mcq-fan i:nth-child(3) { transform: rotate(8deg); animation-delay: 180ms; } .mcq-fan i:nth-child(4) { transform: rotate(24deg); animation-delay: 240ms; background: var(--pill); color: var(--on-pill); border-color: var(--pill); }
+@keyframes fanOut { from { transform: rotate(0deg) translateY(16px); opacity: 0; } }
+.mcq-grade { display: grid; place-items: center; min-width: 92px; padding: 12px 18px 8px; border: 4px double currentColor; border-radius: 14px; rotate: -7deg; font: 800 2.4rem/1 var(--font-display); letter-spacing: 0.04em; color: var(--ok); animation: gradeIn 520ms var(--spring) 120ms backwards; }
+.mcq-grade[data-g="b"] { color: var(--accent-ink); } .mcq-grade[data-g="c"] { color: var(--bad); }
+@keyframes gradeIn { from { opacity: 0; transform: scale(2.4) rotate(-14deg); } }
+.mcq-report-go { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+@container mcq (min-width: 560px) {
+    .mcq-slip { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .mcq-view { grid-column: auto; min-width: 290px; }
+    .mcq-nums { justify-content: center; }
+    .mcq-card { padding: 26px 26px 24px; background-image: linear-gradient(90deg, transparent 41px, color-mix(in srgb, var(--bad) 30%, transparent) 41px 42.5px, transparent 42.5px); }
+    .mcq-head, .mcq-q { padding-left: 30px; } .mcq-why { margin-left: 30px; }
+    .mcq-q { font-size: 1.62rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .forge-line, .forge-nib, .forge-bar i, .mcq-next svg, .sub-chip, .mcq-fan i, .mcq-grade, .tally path { animation: none !important; }
+    .forge-line { clip-path: none; }
+    .omr-fill path, .opt-ring path, .opt-strike path, .prep-tabs-ink { transition: none; }
+}
+:root[data-motion="calm"] :is(.forge-line, .forge-nib, .forge-bar i, .mcq-next svg, .sub-chip, .mcq-fan i, .mcq-grade, .tally path) { animation: none !important; }
+:root[data-motion="calm"] .forge-line { clip-path: none; }

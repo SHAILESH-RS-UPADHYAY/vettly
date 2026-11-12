@@ -20,6 +20,14 @@ from ai.prompts import (
 logger = logging.getLogger("vettly.ai.qa_generator")
 
 
+# What each level means, for single questions and MCQs alike
+DIFFICULTY_RULES = {
+    "easy": "DIFFICULTY: EASY. A warm-up a fresher answers comfortably: one clear idea, a definition or a simple example. No tricks.",
+    "medium": "DIFFICULTY: MEDIUM. The standard level a real interviewer asks for this role: applying the idea, not just naming it.",
+    "hard": "DIFFICULTY: HARD. A demanding question: depth, trade-offs, edge cases or a multi-step scenario that separates strong candidates.",
+}
+
+
 class QAGenerator:
     """
     Generates interview questions tailored to the candidate's resume,
@@ -195,6 +203,8 @@ class QAGenerator:
         company: Optional[str] = None,
         language: str = "ENGLISH",
         existing_questions: Optional[list[str]] = None,
+        difficulty: str = "medium",
+        subject: Optional[str] = None,
     ) -> Optional[dict]:
         """
         Generate exactly ONE question + answer for a specific category.
@@ -241,6 +251,11 @@ class QAGenerator:
             "own field, target role and level as shown in the context. Use that field's real language, not software terms."
         )
 
+        focus += "\n" + DIFFICULTY_RULES.get(difficulty, DIFFICULTY_RULES["medium"])
+        if subject:
+            focus += (f'\nSUBJECT: the question MUST test "{subject}", the way an interviewer for the role the candidate '
+                      "is aiming at would ask it. Stay on that subject even if it is outside their main field.")
+
         if language == "HINGLISH":
             lang_rules = """- LANGUAGE: Generate both the QUESTION and the ANSWER in authentic, casual Hinglish (Hindi written in English alphabet mixed with English technical terms).
 - Make it sound like a smart professional from Delhi talking to a peer."""
@@ -262,7 +277,7 @@ ANSWER RULES:
 - Keep answers concise, 2-4 sentences max.
 
 OUTPUT: Return ONLY a single JSON object (NOT an array):
-{{"category": "{category}", "question": "...", "answer": "...", "difficulty": "easy|medium|hard", "keywords": ["...", "..."]}}"""
+{{"category": "{category}", "question": "...", "answer": "...", "difficulty": "{difficulty}", "keywords": ["...", "..."]}}"""
 
         user_prompt = f"""CANDIDATE CONTEXT:
 {context[:80000]}

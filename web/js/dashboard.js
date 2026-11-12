@@ -469,7 +469,7 @@ let recentlyGenerated = false;
 
 const prep = {
     entries: [],
-    f: { q: '', st: 'all', cats: new Set(), diffs: new Set(), sort: 'new', view: 'answers' },
+    f: { q: '', st: 'all', cats: new Set(), diffs: new Set(), subs: new Set(), sort: 'new', view: 'answers' },
     seed: 1,          // shuffle order, stable until Shuffle is pressed again
     open: new Set(),  // flashcards turned over
     loaded: false,
@@ -500,7 +500,7 @@ function prepWriteHash() {
     if (location.hash !== next) history.replaceState(null, '', next);
 }
 
-const prepActiveCount = () => (prep.f.st !== 'all') + prep.f.cats.size + prep.f.diffs.size + (prep.f.q ? 1 : 0);
+const prepActiveCount = () => (prep.f.st !== 'all') + prep.f.cats.size + prep.f.diffs.size + prep.f.subs.size + (prep.f.q ? 1 : 0);
 const prepHay = e => `${e.question || ''} ${e.answer || ''} ${(e.keywords || []).join(' ')}`.toLowerCase();
 
 // Entries matching every filter except `skip`, so each facet's counts stay honest
@@ -510,6 +510,7 @@ function prepPool(skip) {
         (skip === 'st' || f.st === 'all' || prepStatus(e) === f.st)
         && (skip === 'cat' || !f.cats.size || f.cats.has(prepCat(e.category)[0]))
         && (skip === 'diff' || !f.diffs.size || f.diffs.has(prepDiff(e.difficulty)[0]))
+        && (skip === 'sub' || !f.subs.size || f.subs.has(e.subject || ''))
         && (!q || prepHay(e).includes(q)));
 }
 
@@ -581,6 +582,7 @@ function prepCardHtml(e, i, k) {
             <span class="badge-pill q-no">Q${n}</span>
             <span class="tone-pill" data-tone="${tone}"><svg aria-hidden="true"><use href="#i-${icon}"/></svg>${escapeHtml(catLabel)}</span>
             <span class="q-diff" title="Difficulty: ${diffLabel}">${[1, 2, 3].map(d => `<i class="${d <= dots ? 'on' : ''}"></i>`).join('')}<span>${diffLabel}</span></span>
+            ${e.subject ? `<span class="q-subject"><svg aria-hidden="true"><use href="#i-books"/></svg>${escapeHtml(e.subject)}</span>` : ''}
             ${fresh ? '<span class="badge-pill badge-pill-orange q-fresh">New</span>' : ''}
             ${score}
             <span class="badge-pill q-state ${stateClass}">${PREP_STATE_LABEL[st]}</span>
@@ -635,6 +637,13 @@ function prepBuildDock() {
         const [, label, dots] = prepDiff(key);
         return `<button type="button" class="f-pill" data-diff="${key}" aria-pressed="false"><span class="diff-dots" aria-hidden="true">${[1, 2, 3].map(d => `<i class="${d <= dots ? 'on' : ''}"></i>`).join('')}</span><span class="lbl">${label}</span><span class="n" data-count>0</span></button>`;
     }).join('');
+    const subs = [...new Set(prep.entries.map(e => e.subject).filter(Boolean))];
+    const subBlock = dock.querySelector('.dock-subs');
+    if (subBlock) {
+        subBlock.hidden = !subs.length;
+        subBlock.querySelector('[data-f-subs]').innerHTML = subs.map(s =>
+            `<button type="button" class="f-pill" data-sub="${escapeHtml(s)}" aria-pressed="false"><svg aria-hidden="true"><use href="#i-books"/></svg><span class="lbl">${escapeHtml(s)}</span><span class="n" data-count>0</span></button>`).join('');
+    }
 }
 
 function prepUpdateDock(shown) {
@@ -661,6 +670,7 @@ function prepUpdateDock(shown) {
     };
     facet(dock.querySelectorAll('[data-f-cats] .f-pill'), tally(catPool, e => prepCat(e.category)[0]), f.cats, 'cat');
     facet(dock.querySelectorAll('[data-f-diffs] .f-pill'), tally(diffPool, e => prepDiff(e.difficulty)[0]), f.diffs, 'diff');
+    facet(dock.querySelectorAll('[data-f-subs] .f-pill'), tally(prepPool('sub'), e => e.subject || ''), f.subs, 'sub');
     dock.querySelectorAll('[data-f-sort] > button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === f.sort)));
     dock.querySelectorAll('[data-f-view] > button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === f.view)));
     const active = prepActiveCount();
@@ -679,6 +689,7 @@ function prepUpdateDock(shown) {
     if (f.st !== 'all') tags.push(['st', f.st, PREP_STATUS.find(s => s[0] === f.st)[1]]);
     f.cats.forEach(c => tags.push(['cat', c, escapeHtml(prepCat(c)[1]), prepCat(c)[2]]));
     f.diffs.forEach(d => tags.push(['diff', d, prepDiff(d)[1]]));
+    f.subs.forEach(s => tags.push(['sub', s, escapeHtml(s)]));
     ribbon.hidden = !tags.length;
     ribbon.innerHTML = tags.map(([kind, v, label, tone]) =>
         `<span class="f-tag"${tone ? ` data-tone="${tone}"` : ''}>${label}<button type="button" data-f-remove="${kind}" data-v="${escapeHtml(v)}" aria-label="Remove filter ${label}"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button></span>`).join('')
@@ -707,6 +718,7 @@ function selectCategory(category, btnEl) {
 }
 
 async function generateSinglePrep(categoryOverride) {
+    if (window.PrepKit?.tab() === 'mcq') return PrepKit.dealMcqs();   // the MCQ tab's own generate
     const category = categoryOverride || currentPrepCategory;
     const role = contextData.assignment?.title || (typeof Onboard !== 'undefined' && Onboard.role()) || '';
     const company = contextData.assignment?.company || '';
@@ -720,12 +732,14 @@ async function generateSinglePrep(categoryOverride) {
     if (generateBtn) generateBtn.disabled = true;
     progressEl.classList.remove('hidden');
     textEl.textContent = `Synthesizing a ${prepCat(category)[1]} question…`;
+    const tune = window.PrepKit?.tune() || { difficulty: 'medium', subject: '' };
+    const forge = window.PrepKit?.forge(document.getElementById('prep-list'), { what: 'question', category: prepCat(category)[1], ...tune });
 
     try {
         const res = await fetch(`${API_BASE}/prepare/single`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ category, job_role: role, company: company, language: language }),
+            body: JSON.stringify({ category, job_role: role, company: company, language: language, difficulty: tune.difficulty, subject: tune.subject }),
         });
         let data;
         try { data = await res.json(); } catch (e) {
@@ -734,14 +748,16 @@ async function generateSinglePrep(categoryOverride) {
         }
         if (!res.ok) { alert(data.error || 'Failed to generate question'); return; }
         // the new question streams in at the top, so nothing may hide it
-        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set(), sort: 'new' };
+        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set(), subs: new Set(), sort: 'new' };
         const search = document.getElementById('prep-search');
         if (search) search.value = '';
         recentlyGenerated = true;
+        await forge?.done();   // the card being written closes before the real one arrives
         await loadPrepQuestions();
     } catch (e) {
         alert('Connection failed: ' + e.message);
     } finally {
+        forge?.stop();
         progressEl.classList.add('hidden');
         document.querySelectorAll('.prep-category-buttons button').forEach(b => b.disabled = false);
         if (generateBtn) generateBtn.disabled = false;
@@ -873,7 +889,7 @@ async function prepCopy(index, btn) {
     const search = document.getElementById('prep-search');
 
     function clearFilters() {
-        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set() };
+        prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set(), subs: new Set() };
         search.value = '';
         prepRender();
     }
@@ -922,6 +938,7 @@ async function prepCopy(index, btn) {
             prepRender();
         }
         else if (b.dataset.diff) { if (f.diffs.has(b.dataset.diff)) f.diffs.delete(b.dataset.diff); else f.diffs.add(b.dataset.diff); prepRender(); }
+        else if (b.dataset.sub) { if (f.subs.has(b.dataset.sub)) f.subs.delete(b.dataset.sub); else f.subs.add(b.dataset.sub); prepRender(); }
         else if (b.parentElement.matches('[data-f-sort]')) {
             if (b.dataset.v === 'shuffle') prep.seed = (prep.seed * 48271 + 7) % 2147483647 || 1;
             f.sort = b.dataset.v;
@@ -939,6 +956,7 @@ async function prepCopy(index, btn) {
         else if (kind === 'st') prep.f.st = 'all';
         else if (kind === 'cat') prep.f.cats.delete(b.dataset.v);
         else if (kind === 'diff') prep.f.diffs.delete(b.dataset.v);
+        else if (kind === 'sub') prep.f.subs.delete(b.dataset.v);
         else if ('fClear' in b.dataset) return clearFilters();
         prepRender();
     });

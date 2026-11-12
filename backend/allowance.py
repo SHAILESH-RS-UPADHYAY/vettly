@@ -21,8 +21,8 @@ import users
 FREE_DAILY_AI = int(os.getenv("FREE_DAILY_AI", "25"))
 GLOBAL_DAILY_AI = int(os.getenv("GLOBAL_DAILY_AI", "2000"))
 PROVIDERS = {"anthropic": "ANTHROPIC_API_KEY", "gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY", "groq": "GROQ_API_KEY"}
-AI_PATHS = ("/api/chat", "/api/mentor", "/prepare/single", "/prepare/refine", "/api/prep/")
-NOT_AI = ("/api/chat/history", "/api/chat/sync")
+AI_PATHS = ("/api/chat", "/api/mentor", "/prepare/single", "/prepare/refine", "/prepare/mcq", "/api/prep/")
+NOT_AI = ("/api/chat/history", "/api/chat/sync", "/prepare/mcq/answer")
 
 # the key set for this request: None = the server's own keys
 own_keys: contextvars.ContextVar = contextvars.ContextVar("vettly_own_keys", default=None)

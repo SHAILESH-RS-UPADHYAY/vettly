@@ -143,6 +143,8 @@ def profile_context() -> str:
     prof = profile_store.get()
     rows = [(k, (prof.get(k) or "").strip()) for k in ("name", "field", "role", "level")]
     rows = [f"{k.title()}: {v}" for k, v in rows if v]
+    if prof.get("subjects"):
+        rows.append("Subjects they are practising: " + ", ".join(prof["subjects"]))
     if len(prof.get("roles") or []) > 1:   # several target roles: say so, so questions spread across them
         rows = [r if not r.startswith("Role: ") else f"Target roles (prepare for any of these): {'; '.join(prof['roles'])}" for r in rows]
     return ("=== CANDIDATE PROFILE ===\n" + "\n".join(rows) + "\n(No resume uploaded: keep examples general and true to this field and level, never invent employers or projects.)") if rows else ""
@@ -312,6 +314,65 @@ async def save_profile(request: Request):
     return profile_store.update(await request.json())
 
 
+@app.post("/api/subjects")
+async def save_subjects(request: Request):
+    """Subjects to practise (Agent Toolbelt): Prep Studio can aim a question or MCQs at one, Brain Bento follows them."""
+    return {"subjects": profile_store.set_subjects((await request.json()).get("subjects"))}
+
+
+@app.get("/api/subjects/suggest")
+async def suggest_subjects():
+    """The role kit: subjects that interviews for this user's field and role really test today, written by the AI
+    once per field + role and kept on the profile. Someone with no subjects yet gets the first five added for them
+    (once per role; they can remove any), so Prep Studio's subject picker and filters and Brain Bento fit the role
+    from the start. No AI key or no answers left: nothing is suggested and nothing is spent."""
+    prof = profile_store.get()
+    field, role = (prof.get("field") or "").strip(), (prof.get("role") or "").strip()
+    if not field and not role:
+        return {"suggested": [], "subjects": prof.get("subjects") or []}
+    key = f"{field}|{role}|{prof.get('level') or ''}".lower()
+    kit = prof.get("kit") or {}
+    if kit.get("for") != key:
+        from ai.utils import generate_multi_provider_completion
+        try:
+            allowance.begin_ai_call()
+            raw = await generate_multi_provider_completion(
+                system_prompt=(
+                    "You advise job candidates on what interviews test today. Return ONLY JSON: "
+                    '{"subjects": [{"name": "1-3 words", "why": "one short line: how interviews for this role use it"}]} '
+                    "with exactly 10 subjects for the given field, target role and level. Order them by how often they come up. "
+                    "Cover the role's core craft AND the tools and tech now expected around it, even from outside the field "
+                    "(for example an MBA aiming at product management is asked about SQL, product metrics, A/B testing, "
+                    "Excel, basic Python and AI tools). Names are short, concrete and distinct: no sentences, no duplicates."
+                ),
+                user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}",
+                max_tokens=900, temperature=0.4, json_mode=True,
+            )
+            items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["subjects"]
+        except Exception as e:   # no key, no answers left, or a bad reply: the page keeps its plain suggestions
+            logger.warning(f"Role kit unavailable: {e}")
+            return {"suggested": [], "subjects": prof.get("subjects") or []}
+        seen, clean = set(), []
+        for s in items if isinstance(items, list) else []:
+            name = " ".join(str(s.get("name", "")).split())[:40] if isinstance(s, dict) else ""
+            if name and name.lower() not in seen:
+                seen.add(name.lower())
+                clean.append({"name": name, "why": " ".join(str(s.get("why", "")).split())[:140]})
+        if not clean:
+            return {"suggested": [], "subjects": prof.get("subjects") or []}
+        kit = {"for": key, "subjects": clean[:10]}
+        prof["kit"] = kit
+        seeded = False
+        if not prof.get("subjects") and prof.get("kit_seeded") != key:
+            prof["kit_seeded"] = key
+            profile_store.set_subjects([s["name"] for s in kit["subjects"][:5]])   # saves the profile too
+            seeded = True
+        else:
+            docstore.save(users.user_id(), "profile", prof)
+        return {"suggested": kit["subjects"], "subjects": prof.get("subjects") or [], "seeded": seeded, "role": role or field}
+    return {"suggested": kit.get("subjects", []), "subjects": prof.get("subjects") or [], "seeded": False, "role": role or field}
+
+
 @app.post("/api/prefs")
 async def save_prefs(request: Request):
     """Per-account preferences, such as hidden optional tabs."""
@@ -366,7 +427,7 @@ async def prep_categories():
 
 
 @app.get("/api/bento/field")
-async def bento_for_field(peek: bool = False):
+async def bento_for_field(peek: bool = False, again: bool = False):
     """Brain Bento's "Fresh today": six concepts written for the user's own field and role, cached for the day. The
     built-in packs (web/bento-fields.js) need no AI; these are extra. `peek` returns today's six only if they were
     already written, so opening Brain Bento never spends an answer: the user asks for them with a button."""
@@ -376,11 +437,18 @@ async def bento_for_field(peek: bool = False):
         return {"lessons": None}
     today = datetime.now().strftime("%Y-%m-%d")
     uid = users.user_id()
+    # the user's subjects (Agent Toolbelt) steer the six: a different handful of them each time, so the box keeps changing
+    subjects = prof.get("subjects") or []
+    made_for = "|".join([field, role, *sorted(s.lower() for s in subjects)]) if subjects else f"{field}|{role}"
     cached = docstore.load(uid, "bento_field", {})
-    if cached.get("day") == today and cached.get("for") == f"{field}|{role}" and cached.get("lessons"):
+    if not again and cached.get("day") == today and cached.get("for") == made_for and cached.get("lessons"):
         return {"lessons": cached["lessons"], "field": field or role}
     if peek:
         return {"lessons": None}
+    import random
+    picked = random.sample(subjects, min(3, len(subjects)))
+    about = (f"\nSubjects to draw from this time (two lessons each where you can): {', '.join(picked)}"
+             f"\nAvoid repeating these earlier titles: {'; '.join(l['en']['title'] for l in cached.get('lessons', []))[:600]}") if picked else ""
     from ai.utils import generate_multi_provider_completion
     try:
         allowance.begin_ai_call()
@@ -393,7 +461,7 @@ async def bento_for_field(peek: bool = False):
                 '"diagram": {"type": "flow", "nodes": ["3 to 5 short steps"]}}]} with exactly 6 lessons. '
                 "Use the field's real concepts, standards and situations, at the given level. Simple words."
             ),
-            user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}",
+            user_prompt=f"Field: {field or 'not given'}\nTarget role: {role or 'any role in this field'}\nLevel: {prof.get('level') or 'any'}\nDate: {today}{about}",
             max_tokens=3500, temperature=0.7, json_mode=True,
         )
         items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
@@ -415,7 +483,7 @@ async def bento_for_field(peek: bool = False):
         })
     if not lessons:
         return {"lessons": None}
-    docstore.save(uid, "bento_field", {"day": today, "for": f"{field}|{role}", "lessons": lessons})
+    docstore.save(uid, "bento_field", {"day": today, "for": made_for, "lessons": lessons})
     return {"lessons": lessons, "field": field or role}
 
 
@@ -978,6 +1046,18 @@ async def prepare_feedback(request: Request):
 
 # ─── Single Question Generation (One-at-a-Time Prep) ──────────
 
+def _level(value) -> str:
+    """easy | medium | hard; anything else is medium (the default)."""
+    value = str(value or "").lower()
+    return value if value in ("easy", "medium", "hard") else "medium"
+
+
+def _subject(value) -> str:
+    """A subject to aim at, only if it is one the user saved in their Toolbelt."""
+    value = " ".join(str(value or "").split()).lower()
+    return next((s for s in profile_store.get().get("subjects") or [] if s.lower() == value), "")
+
+
 @app.post("/prepare/single")
 async def prepare_single_question(request: Request):
     """Generate a single Q&A pair for a specific category. No rate limiting issues."""
@@ -987,6 +1067,7 @@ async def prepare_single_question(request: Request):
         job_role = data.get("job_role", "")
         company = data.get("company", "")
         language = data.get("language", "ENGLISH").upper()
+        difficulty, subject = _level(data.get("difficulty")), _subject(data.get("subject"))
 
         import re
         # the curated tech categories, or a field's own (see /prepare/categories): short upper-case names
@@ -1013,6 +1094,8 @@ async def prepare_single_question(request: Request):
             company=company or None,
             language=language,
             existing_questions=existing,
+            difficulty=difficulty,
+            subject=subject,
         )
 
         if not result:
@@ -1038,10 +1121,12 @@ async def prepare_single_question(request: Request):
             answer=answer,
             category=result.get("category", category),
             keywords=result.get("keywords", []),
-            difficulty=result.get("difficulty", "medium"),
+            difficulty=difficulty,   # the level that was asked for, whatever the model labelled it
             score=validated.get("score", 7.0),
             iterations=validated.get("iterations", 0),
         )
+        if subject:
+            qa_cache.update_entry(len(qa_cache.get_all()) - 1, subject=subject)
         qa_cache.save()
 
         entry_index = len(qa_cache.get_all()) - 1
@@ -1055,7 +1140,8 @@ async def prepare_single_question(request: Request):
                 "answer": answer,
                 "category": result.get("category", category),
                 "keywords": result.get("keywords", []),
-                "difficulty": result.get("difficulty", "medium"),
+                "difficulty": difficulty,
+                "subject": subject,
                 "score": validated.get("score", 7.0),
             },
         }
@@ -1063,6 +1149,99 @@ async def prepare_single_question(request: Request):
     except Exception as e:
         logger.error(f"Single question generation failed: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# ─── MCQ practice (Prep Studio's second tab) ──────────────────
+MCQ_KEEP = 200   # the newest ones are kept
+
+
+def _mcqs() -> list:
+    doc = docstore.load(users.user_id(), "mcq", {})
+    return doc.get("items", []) if isinstance(doc, dict) else []
+
+
+@app.get("/prepare/mcq")
+async def list_mcqs():
+    return {"items": _mcqs()}
+
+
+@app.post("/prepare/mcq")
+async def generate_mcqs(request: Request):
+    """Write a set of multiple-choice questions for a category, level and (optionally) one of the user's subjects."""
+    import random
+    import re
+    import time
+    from ai.qa_generator import DIFFICULTY_RULES
+    from ai.utils import generate_multi_provider_completion
+    data = await request.json()
+    category = str(data.get("category", "GENERAL")).upper()
+    if not re.fullmatch(r"[A-Z][A-Z0-9_]{1,39}", category):
+        return JSONResponse(status_code=400, content={"error": "Invalid category name."})
+    if not has_any_context():
+        return JSONResponse(status_code=400, content={"error": "Tell Vettly your field and role first (Settings → Edit profile), or add a resume in Agent Toolbelt."})
+    difficulty, subject = _level(data.get("difficulty")), _subject(data.get("subject"))
+    try:
+        count = max(1, min(int(data.get("count") or 5), 10))
+    except (TypeError, ValueError):
+        count = 5
+    items = _mcqs()
+    avoid = "\n".join(f"- {m['question']}" for m in items[-15:])
+    area = f'the subject "{subject}"' if subject else f'the "{category.replace("_", " ").title()}" area of interviews for this candidate\'s field and role'
+    try:
+        raw = await generate_multi_provider_completion(
+            system_prompt=(
+                f"You write multiple-choice practice questions for interview preparation. Write exactly {count} on {area}.\n"
+                f"{DIFFICULTY_RULES[difficulty]}\n"
+                "Each has exactly 4 options, exactly one correct, the wrong ones plausible (real mistakes people make), "
+                "all four about the same length. No 'all of the above' or 'none of the above'. Code or formulas are fine in plain text.\n"
+                'Return ONLY JSON: {"mcqs": [{"question": "...", "options": ["...", "...", "...", "..."], "answer": 0, '
+                '"why": "one or two plain sentences on why the right option is right"}]} where "answer" is the index (0-3) of the correct option.'
+                + (f"\nDo NOT repeat these:\n{avoid}" if avoid else "")
+            ),
+            user_prompt=f"CANDIDATE CONTEXT (for their field, role and level):\n{candidate_context()[:12000]}",
+            max_tokens=400 * count + 400, temperature=0.8, json_mode=True,
+        )
+        got = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["mcqs"]
+    except Exception as e:
+        logger.error(f"MCQ generation failed: {e}")
+        return JSONResponse(status_code=500, content={"error": "Couldn't write MCQs just now. Try again in a moment."})
+    added, stamp = [], int(time.time() * 1000)
+    for m in got[:count] if isinstance(got, list) else []:
+        opts = [str(o).strip()[:300] for o in m.get("options", [])] if isinstance(m, dict) else []
+        try:
+            right = int(m.get("answer"))
+        except (TypeError, ValueError, AttributeError):
+            continue
+        if not str(m.get("question", "")).strip() or len(opts) != 4 or len(set(opts)) != 4 or not 0 <= right < 4:
+            continue
+        order = random.sample(range(4), 4)   # models favour option A: the right one lands anywhere
+        added.append({"id": f"m{stamp}{len(added)}", "question": str(m["question"]).strip()[:600], "options": [opts[i] for i in order],
+                      "answer": order.index(right), "why": str(m.get("why", "")).strip()[:500], "category": category,
+                      "difficulty": difficulty, "subject": subject, "pick": None})
+    if not added:
+        return JSONResponse(status_code=500, content={"error": "Couldn't write MCQs just now. Try again in a moment."})
+    items = (items + added)[-MCQ_KEEP:]
+    docstore.save(users.user_id(), "mcq", {"items": items})
+    return {"added": [m["id"] for m in added], "items": items}
+
+
+@app.post("/prepare/mcq/answer")
+async def answer_mcq(request: Request):
+    """Remember which option the user chose (None clears it, to try again)."""
+    data = await request.json()
+    items, pick = _mcqs(), data.get("pick")
+    m = next((x for x in items if x["id"] == data.get("id")), None)
+    if not m or pick not in (None, 0, 1, 2, 3) or isinstance(pick, bool):
+        return JSONResponse(status_code=400, content={"error": "Unknown question or option"})
+    m["pick"] = pick
+    docstore.save(users.user_id(), "mcq", {"items": items})
+    return {"status": "success"}
+
+
+@app.delete("/prepare/mcq")
+async def clear_mcqs():
+    docstore.save(users.user_id(), "mcq", {"items": []})
+    return {"items": []}
 
 
 # ─── Assignment / Assessment Context ──────────────────────────
