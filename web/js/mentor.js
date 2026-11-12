@@ -161,11 +161,18 @@ function mentorSnap() {
         const root = document.documentElement;
         const on = root.dataset.mentorSkin === 'paper';
         const lh = parseFloat(getComputedStyle(root).getPropertyValue('--nb-lh')) || 28;
-        document.querySelectorAll(`#mentor-msgs :is(${MENTOR_SNAP})`).forEach(el => {
-            el.style.marginBottom = '';
-            if (!on || !el.offsetHeight) return;
-            const extra = Math.ceil(el.offsetHeight / lh) * lh - el.offsetHeight;
-            if (extra) el.style.marginBottom = `${(parseFloat(getComputedStyle(el).marginBottom) || 0) + extra}px`;
+        const els = [...document.querySelectorAll(`#mentor-msgs :is(${MENTOR_SNAP})`)];
+        // every read first, then every write: one layout for the pass. Writing and reading block by block made the
+        // browser lay the whole conversation out again for each block, on every frame of a streaming answer.
+        const plan = els.map(el => {
+            const was = el._snap || 0, h = on ? el.offsetHeight : 0;   // a margin never changes the block's own height
+            if (!h) return [el, 0, 0, was];
+            return [el, Math.ceil(h / lh) * lh - h, (parseFloat(getComputedStyle(el).marginBottom) || 0) - was, was];
+        });
+        plan.forEach(([el, extra, base, was]) => {
+            if (extra === was) return;
+            el._snap = extra;
+            el.style.marginBottom = extra ? `${base + extra}px` : '';
         });
     });
 }
@@ -338,9 +345,15 @@ async function mentorStream(payload, onText) {
 }
 
 // One markdown render per frame while streaming, with a caret riding the end of the text
+// Only the block still being written is parsed and laid out again: finished blocks (everything up to the last blank
+// line outside a code fence) are drawn once and left alone. Re-drawing the whole answer on every frame cost more with
+// every word. The final render in mentorSend draws the complete answer in one piece.
 function mentorStreamRenderer(bot, out) {
     let queued = false;
     let latest = '';
+    let settled = 0, kept = 0;   // characters already drawn for good, and how many of out's nodes they made
+    const nodes = md => { const t = document.createElement('template'); t.innerHTML = mentorMd(md); return [...t.content.childNodes]; };
+    const inFence = text => text.split('```').length % 2 === 0;
     return text => {
         latest = text;
         if (queued) return;
@@ -348,8 +361,16 @@ function mentorStreamRenderer(bot, out) {
         requestAnimationFrame(() => {
             queued = false;
             if (!bot.classList.contains('streaming')) return;  // the final render already landed
-            const insideCodeFence = latest.split('```').length % 2 === 0;
-            out.innerHTML = mentorMd(latest + (insideCodeFence ? '' : '<span class="mentor-caret"></span>'));
+            while (out.childNodes.length > kept) out.lastChild.remove();   // the block in progress (or "Thinking")
+            let cut = latest.lastIndexOf('\n\n');
+            while (cut > settled && inFence(latest.slice(settled, cut))) cut = latest.lastIndexOf('\n\n', cut - 1);
+            if (cut > settled) {
+                out.append(...nodes(latest.slice(settled, cut)));
+                kept = out.childNodes.length;
+                settled = cut;
+            }
+            const tail = latest.slice(settled);
+            out.append(...nodes(tail + (inFence(tail) ? '' : '<span class="mentor-caret"></span>')));
             mentorSnap();
         });
     };

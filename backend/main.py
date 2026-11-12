@@ -1356,7 +1356,8 @@ async def api_mentor(req: MentorRequest):
     copilot_chat = "\n\n".join(
         f"{'INTERVIEWER' if m.get('role') == 'user' else 'COPILOT'}: {m.get('content', '')}"
         for m in chat_store.get_history()
-    )[-150000:]  # newest ~150K chars; Gemini's window takes far more, this just bounds latency
+    )[-40000:]  # the newest ~40K chars: a pinned answer rides along in full anyway, and a long chapter used to add
+    # ~20K tokens to every Mentor message (slower first word, and the free tier's tokens-per-minute run out sooner)
 
     reply_language = (
         "natural Hinglish (Hindi in Roman script mixed with English technical terms, the way Indian engineers talk)"
