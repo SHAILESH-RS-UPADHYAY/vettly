@@ -16,7 +16,7 @@ const Onboard = (() => {
         'Design': ['palette', 'UX, UI, graphic, product'], 'Education': ['books', 'Teaching, training, tutoring'],
         'Operations & supply chain': ['path', 'Logistics, procurement, planning'], 'Law': ['scroll', 'Corporate, litigation, compliance'],
         'Hospitality': ['star', 'Hotels, food, travel, aviation'], 'Government & public service': ['cap', 'UPSC, policy, NGOs'],
-        'Other': ['sparkle', 'Type your own field'],
+        'Other': ['pencil', 'Type your own field'],
     };
     const LEVEL_META = { 'Student or fresher': ['cap', 'Final year, or under a year of work'], 'Early career': ['path', '1 to 3 years'],
         'Mid-level': ['briefcase', '3 to 7 years'], 'Senior': ['star', '7 years or more'], 'Lead or manager': ['user', 'You lead a team or people'] };
@@ -42,7 +42,7 @@ const Onboard = (() => {
     const MAX_ROLES = 4, SEP = ' · ';   // roles are saved as a list; prompts read them joined (role names can hold commas)
     const rolesOf = p => (Array.isArray(p.roles) && p.roles.length ? p.roles : String(p.role || '').split(SEP)).map(r => r.trim()).filter(Boolean).slice(0, MAX_ROLES);
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
-    const ICONS = ['sparkle', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
+    const ICONS = ['stack', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
     let profile = {}, current = null, typer = null;
     const stopTyping = () => { typer?.(); typer = null; };
     const esc = s => escapeHtml(String(s || ''));

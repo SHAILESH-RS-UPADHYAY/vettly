@@ -51,7 +51,7 @@ const Appearance = (() => {
             { key: 'regDoodles', label: 'Doodles', thumb: 'doodle', options: [['none', 'None', 'Clean pages'], ['stars', 'Stars & hearts', 'Doodles across the desk'], ['stamps', 'Teacher stamps', 'Shabash! and Excellent'], ['stickers', 'Stickers', 'Little stickers on the corners']] },
             { key: 'regMarker', label: 'Highlighter', swatch: true, options: [['yellow', 'Yellow', '#ffe14d', '#ffe14d'], ['pink', 'Pink', '#ff9ccb', '#ff9ccb'], ['mint', 'Mint', '#8ff0c0', '#8ff0c0'], ['sky', 'Sky', '#9ad8ff', '#9ad8ff'], ['orange', 'Orange', '#ffb36b', '#ffb36b']] },
         ] },
-        studio: { title: 'Studio Lab', icon: 'sparkle', note: 'Studio Soft stays as it is. Tune the glass, the backdrop and the depth.', groups: [
+        studio: { title: 'Studio Lab', icon: 'swatches', note: 'Studio Soft stays as it is. Tune the glass, the backdrop and the depth.', groups: [
             { key: 'stGlass', label: 'Glass', options: [['frosted', 'Frosted', 'Soft blur, the original'], ['clear', 'Clear', 'See right through'], ['solid', 'Solid', 'No blur at all']] },
             { key: 'stMesh', label: 'Backdrop', options: [['none', 'Paper', 'The original'], ['aurora', 'Aurora', 'Soft moving colour'], ['sunset', 'Sunset', 'Peach into lilac'], ['ocean', 'Ocean', 'Teal into blue']] },
             { key: 'stDepth', label: 'Depth', options: [['soft', 'Soft', 'The original'], ['float', 'Floating', 'Bigger, softer shadows'], ['flat', 'Flat', 'No shadows at all']] },
@@ -68,7 +68,7 @@ const Appearance = (() => {
             { key: 'bgOutline', label: 'Outline', options: [['bold', 'Bold', 'The original'], ['thin', 'Thin', 'A delicate line'], ['chunky', 'Chunky', 'An extra thick line']] },
             { key: 'bgFloat', label: 'Floaties', options: [['none', 'None', 'Just the page'], ['bubbles', 'Bubbles', 'Drifting up'], ['hearts', 'Hearts', 'Floating hearts'], ['sparkles', 'Sparkles', 'Twinkling stars']] },
         ] },
-        sakura: { title: 'Sakura Garden', icon: 'sparkle', note: 'Cherry blossoms drifting across soft blush paper.', groups: [
+        sakura: { title: 'Sakura Garden', icon: 'palette', note: 'Cherry blossoms drifting across soft blush paper.', groups: [
             { key: 'skPetals', label: 'Petals', options: [['gentle', 'Gentle', 'A few petals drifting'], ['flurry', 'Flurry', 'A spring breeze'], ['none', 'Still', 'No petals']] },
             { key: 'skPaper', label: 'Paper', options: [['washi', 'Washi', 'Soft fibre paper'], ['silk', 'Silk', 'Smooth with a sheen'], ['wash', 'Watercolour', 'A pink wash']] },
             { key: 'skTitle', label: 'Headings', options: [['serif', 'Serif italic', 'Elegant'], ['brush', 'Brush script', 'Handwritten'], ['clean', 'Clean', 'Simple and bold']] },
@@ -83,7 +83,7 @@ const Appearance = (() => {
             { key: 'smEdge', label: 'Card trim', options: [['scallop', 'Scallop', 'A wavy cake edge'], ['round', 'Round', 'Simply rounded'], ['lace', 'Lace', 'A dotted lace trim']] },
             { key: 'smFloat', label: 'Floaties', options: [['hearts', 'Hearts', 'Floating hearts'], ['none', 'None', 'No floaties']] },
         ] },
-        mermaid: { title: 'Pearl Lagoon', icon: 'sparkle', note: 'Sea glass colours, pearly cards and shimmering edges.', groups: [
+        mermaid: { title: 'Pearl Lagoon', icon: 'swatches', note: 'Sea glass colours, pearly cards and shimmering edges.', groups: [
             { key: 'mpSea', label: 'Sea', swatch: true, options: [['aqua', 'Aqua', '#0e7a74', '#4fd1c7', { accent: 'teal', accentDark: 'teal' }], ['lilac', 'Lilac lagoon', '#6a4ddc', '#b6a2ff', { accent: 'lilac', accentDark: 'lilac' }], ['coral', 'Coral reef', '#c7402f', '#ff8a7a', { accent: 'coral', accentDark: 'coral' }]] },
             { key: 'mpShimmer', label: 'Shimmer', options: [['iridescent', 'Iridescent', 'A rainbow edge that turns'], ['pearl', 'Pearl', 'A soft pearly glow'], ['none', 'None', 'Plain edges']] },
             { key: 'mpFloat', label: 'Bubbles', options: [['bubbles', 'Bubbles', 'Rising from below'], ['none', 'None', 'Still water']] },

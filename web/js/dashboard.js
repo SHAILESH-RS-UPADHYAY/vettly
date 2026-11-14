@@ -452,7 +452,7 @@ async function restoreSetupState() {
 // #prep?q=redis&st=review&cat=TECHNICAL,GENERAL&diff=HARD&sort=shuffle&view=cards
 
 const PREP_CATS = {
-    GENERAL: ['General', 'gen', 'sparkle'],
+    GENERAL: ['General', 'gen', 'stack'],
     BEHAVIORAL: ['Behavioral', 'beh', 'brain'],
     TECHNICAL: ['Technical', 'tech', 'code'],
     DSA_CODING: ['DSA / Coding', 'dsa', 'path'],
@@ -471,7 +471,7 @@ const PREP_STATE_LABEL = { accept: 'Accepted', reject: 'Rejected', review: 'To r
 function prepCat(category) {
     const key = String(category || 'GENERAL').toUpperCase();
     const known = PREP_CATS[key];
-    return known ? [key, ...known] : [key, key.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), 'gen', 'sparkle'];
+    return known ? [key, ...known] : [key, key.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), 'gen', 'stack'];
 }
 function prepDiff(difficulty) {
     const key = String(difficulty || 'MEDIUM').toUpperCase();
@@ -607,7 +607,7 @@ function prepCardHtml(e, i, k) {
         </header>
         <p class="q-text" id="prep-q-${i}">${escapeHtml(e.question)}</p>
         <div class="q-answer${hidden ? ' is-hidden' : ''}">
-            ${hidden ? `<button type="button" class="q-reveal" data-reveal="${i}"><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Reveal the answer</button>` : ''}
+            ${hidden ? `<button type="button" class="q-reveal" data-reveal="${i}"><svg aria-hidden="true"><use href="#i-eye"/></svg>Reveal the answer</button>` : ''}
             <div class="q-ans-body${long ? ' is-long' : ''}${long && prep.read?.has(i) ? ' is-open' : ''}">
                 <div class="q-ans-top">
                     <span class="q-ans-label"><span class="v-classic">Model spoken delivery</span><span class="v-alt">Model answer</span></span>

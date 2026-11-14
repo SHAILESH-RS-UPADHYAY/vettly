@@ -71,7 +71,7 @@ const Daybook = (() => {
         const pick = want.map(id => reg.find(x => x.id === id)).filter(Boolean).filter((x, i, all) => !(x.id === 'go-chat' && all.some(y => y.id === 'new-chapter'))).slice(0, 6);
         const LABEL = { 'go-setup': 'Feed your Toolbelt', 'go-chat': 'Practise in Copilot', 'go-prep': 'Generate a question', 'go-bento': "Today's Bento", 'prep-search': 'Search my questions', palette: 'Search & commands', theme: 'Light / dark', 'new-chapter': 'New Copilot chapter' };
         const box = $('actions');
-        box.innerHTML = pick.map((x, i) => `<button type="button" class="db-action" data-act="${x.id}" style="--i:${i}"><span class="db-action-ico">${icon(x.icon || 'sparkle')}</span><b>${LABEL[x.id] || x.label}</b><span class="db-kbd">${Shortcuts.kbd(x)}</span></button>`).join('');
+        box.innerHTML = pick.map((x, i) => `<button type="button" class="db-action" data-act="${x.id}" style="--i:${i}"><span class="db-action-ico">${icon(x.icon || 'lightning')}</span><b>${LABEL[x.id] || x.label}</b><span class="db-kbd">${Shortcuts.kbd(x)}</span></button>`).join('');
         box.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => reg.find(x => x.id === b.dataset.act)?.run()));
     }
 

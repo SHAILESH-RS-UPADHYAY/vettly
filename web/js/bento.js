@@ -16,7 +16,7 @@ const Bento = (() => {
     const day = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return d.toLocaleDateString('en-CA'); };
     const doneToday = () => state.done[day()] || [];
     const text = l => ({ ...l.en, ...(state.lang === 'hi' ? l.hi : {}) });   // Hinglish where written, English for the rest
-    const FRESH = { name: 'Fresh today', tone: 'asg', icon: 'sparkle' };
+    const FRESH = { name: 'Fresh today', tone: 'asg', icon: 'lightning' };
     let openId = null, uid = 0, ready = false, profile = {}, packs = null, fresh = null, TRACKS = {}, LESSONS = [];
     const find = id => LESSONS.find(l => l.id === id);
 
@@ -120,7 +120,7 @@ const Bento = (() => {
         page.querySelector('[data-bento-date]').textContent = when;
         page.querySelector('[data-bento-progress]').innerHTML = `${ring(done)}<span><b class="num">${done}</b> of 5 eaten today</span>`;
         page.querySelector('[data-bento-streak]').innerHTML = `<svg aria-hidden="true"><use href="#i-fire"/></svg><b class="num">${state.streak}</b> day streak`;
-        const chips = [['all', { name: "Chef's Choice", icon: 'sparkle' }], ...Object.entries(TRACKS)];
+        const chips = [['all', { name: "Chef's Choice", icon: 'star' }], ...Object.entries(TRACKS)];
         // with subjects in the Toolbelt the six can be dealt again: a different handful of subjects each time
         const freshBtn = fresh?.length ? (profile.subjects?.length ? `<button type="button" class="chip bento-fresh" data-fresh="again"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle six more from your subjects</button>` : '') : `<button type="button" class="chip bento-fresh" data-fresh><svg aria-hidden="true"><use href="#i-wand"/></svg>Write six fresh ones${profile.role ? ` for ${esc(profile.role)}` : ''}</button>`;
         page.querySelector('[data-bento-track]').innerHTML = chips.map(([k, tr]) => `<button type="button" class="chip" data-v="${k}"${tr.tone ? ` data-tone="${tr.tone}"` : ''} aria-pressed="${k === state.track}"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</button>`).join('') + freshBtn;
@@ -178,7 +178,7 @@ const Bento = (() => {
             <section class="lesson-block lesson-interview">
                 <h3><svg aria-hidden="true"><use href="#i-chats"/></svg>Say it in the interview</h3>
                 <p class="lesson-q">${esc(t.q)}</p>
-                <button type="button" class="q-reveal" data-reveal><svg aria-hidden="true"><use href="#i-sparkle"/></svg>Reveal a model answer</button>
+                <button type="button" class="q-reveal" data-reveal><svg aria-hidden="true"><use href="#i-eye"/></svg>Reveal a model answer</button>
                 <p class="lesson-a" hidden>${esc(t.a)}</p>
             </section>
             ${follow.length ? `<section class="lesson-block">

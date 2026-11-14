@@ -29,7 +29,7 @@ const PrepKit = (() => {
     function paintSubjects() {
         if (subject && !subjects.includes(subject)) subject = '';
         const lab = $('lab-subjects');
-        if (lab) lab.innerHTML = `<button type="button" class="sub-chip" data-sub="" aria-pressed="${!subject}" style="--i:0">${ico('sparkle')}Any</button>`
+        if (lab) lab.innerHTML = `<button type="button" class="sub-chip" data-sub="" aria-pressed="${!subject}" style="--i:0">${ico('stack')}Any</button>`
             + subjects.map((s, i) => `<button type="button" class="sub-chip" data-sub="${esc(s)}" aria-pressed="${s === subject}" style="--i:${i + 1}">${esc(s)}</button>`).join('')
             + (subjects.length < MAX ? `<button type="button" class="sub-chip sub-add" data-sub-add style="--i:${subjects.length + 1}">${ico('plus')}Add</button>` : '')
             + (subjects.length < MAX ? ideasLeft().slice(0, 3).map(s => `<button type="button" class="sub-idea" data-sub-idea="${esc(s.name)}" title="${esc(s.why)}">${ico('plus')}${esc(s.name)}</button>`).join('') : '');
@@ -38,7 +38,7 @@ const PrepKit = (() => {
             ? subjects.map((s, i) => `<span class="sub-chip sub-own" style="--i:${i}">${esc(s)}<button type="button" data-sub-remove="${esc(s)}" aria-label="Remove ${esc(s)}">${ico('x-bold')}</button></span>`).join('')
             : '<span class="sub-none">None yet. Add the subjects your interviews touch.</span>';
         const ideas = $('subject-ideas');
-        if (ideas) ideas.innerHTML = subjects.length >= MAX ? '' : (suggested.length ? `<span class="sub-ideas-label">${ico('sparkle')}Asked in ${esc(kitRole)} interviews</span>` : '')
+        if (ideas) ideas.innerHTML = subjects.length >= MAX ? '' : (suggested.length ? `<span class="sub-ideas-label">${ico('briefcase')}Asked in ${esc(kitRole)} interviews</span>` : '')
             + ideasLeft().slice(0, 8).map((s, i) => `<button type="button" class="sub-idea" style="--i:${i}" data-sub-idea="${esc(s.name)}" title="${esc(s.why)}">${ico('plus')}${esc(s.name)}</button>`).join('');
         const n = $('subjects-count'); if (n) n.textContent = subjects.length;
     }

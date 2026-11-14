@@ -34,7 +34,7 @@ const LookBook = (() => {
                         <article class="toolbelt-card lb-card"><small>Streak</small><b class="lb-big">3 days</b><span class="lb-week">${'<i></i>'.repeat(4)}${'<i class="off"></i>'.repeat(3)}</span></article>
                         <article class="toolbelt-card lb-card"><small>Brain Bento</small><span class="lb-ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15"/><circle class="f" cx="18" cy="18" r="15" pathLength="1"/></svg><b>2 of 5</b></span></article>
                     </div>
-                    <article class="toolbelt-card lb-card lb-ink"><small>Live Copilot</small><p class="lb-q">Q. Tell me about yourself.</p><p class="lb-a">I'm a final-year student who turns messy problems into plans people can act on…</p><span class="chip">${icon('sparkle')}Ask Mentor</span></article>
+                    <article class="toolbelt-card lb-card lb-ink"><small>Live Copilot</small><p class="lb-q">Q. Tell me about yourself.</p><p class="lb-a">I'm a final-year student who turns messy problems into plans people can act on…</p><span class="chip">${icon('chats')}Ask Mentor</span></article>
                 </div>
             </div>
         </div>`;
