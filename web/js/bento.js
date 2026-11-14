@@ -219,27 +219,18 @@ const Bento = (() => {
     // plate out, still, on the counter. Plates ride on CSS (offset-path); JS sets the path and eases the speed.
     const Belt = (() => {
         const SPEED = 32, SLAT = 24;   // px a second along the belt; one slat and its gap (bento.css draws 2 + 22)
-        const DISHES = ['maki', 'nigiri', 'gunkan'];
-        // what is on the plate, in the colours of the real thing: [fish or filling, its lighter streak]
-        const FOODS = {
-            maki: [['#7aa356', '#4f7a35'], ['#c2423a', '#9e2f29'], ['#f2c84b', '#d9a521'], ['#f08a5d', '#d96a3c']],   // cucumber, tuna, tamago, salmon
-            nigiri: [['#f08a5d', '#ffd2b8'], ['#c2423a', '#e2756d'], ['#f2c84b', '#f9e08c'], ['#f6a07c', '#fff0e3']],   // salmon, tuna, tamago, ebi
-            gunkan: [['#e8692e', '#ffbd8a'], ['#f39a3c', '#ffd79a'], ['#6f9a4f', '#b8d391']],   // ikura, tobiko, wakame
-        };
         let section, belt, tray, track, plates = [], queue = [], mounted = false, stir = 0, size = '', inside = false, touchT = 0;
         let rate = 0, goal = 1, raf = 0, last = 0, seen = false;
         const still = () => Motion.calm();
         const base = () => (inside ? 0.35 : 1);
         const r1 = v => Math.round(v * 10) / 10;
-        const hashOf = id => { let h = 7; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
-        const dishOf = id => { const h = hashOf(id), kind = DISHES[h % DISHES.length], [food, streak] = FOODS[kind][(h >>> 4) % FOODS[kind].length]; return { kind, food, streak }; };
         const pick = () => {
             const pool = LESSONS.filter(l => state.track === 'all' || l.track === state.track);
             const done = new Set(Object.values(state.done).flat()), box = new Set(todaysBox().map(x => x.l.id));
             const mixed = shuffled(day() + 'belt' + stir, pool);
             return [...mixed.filter(l => !done.has(l.id)), ...mixed.filter(l => done.has(l.id))].map(l => ({ l, done: done.has(l.id), today: box.has(l.id) }));
         };
-        // one plate: a rim in its track's colour, a piece of sushi (a tick once it is learned), the name, and steam on today's
+        // one plate: a rim in its track's colour and the name; a tick once it is learned, a heavier rim if it is in today's box
         function paint(el, item) {
             const { l, done, today } = item, tr = TRACKS[l.track];
             el._item = item;
@@ -248,11 +239,8 @@ const Bento = (() => {
             el.dataset.pondOpen = l.id;
             el.dataset.tone = tr.tone;
             el.style.setProperty('--plate', plateOf(l.track));
-            const dish = dishOf(l.id);
-            el.innerHTML = `<span class="plate-lift"><span class="plate-dish dish-${done ? 'eaten' : dish.kind}" style="--food:${dish.food};--food-2:${dish.streak}" aria-hidden="true">${done ? '<svg><use href="#i-check-bold"/></svg>' : ''}</span>`
-                + `<span class="plate-name">${esc(text(l).title)}</span><span class="sr-only">, ${esc(tr.name)}${done ? ', learned' : ''}${today ? ", in today's box" : ''}</span>`
-                + (today && !done ? '<span class="plate-steam" aria-hidden="true"><svg viewBox="0 0 30 26"><path d="M6 24c-3-4 3-7 0-11s3-7 0-11"/><path d="M15 24c-3-4 3-7 0-11s3-7 0-11"/><path d="M24 24c-3-4 3-7 0-11s3-7 0-11"/></svg></span>' : '')
-                + '</span>';
+            el.innerHTML = `<span class="plate-lift">${done ? '<svg class="plate-tick" aria-hidden="true"><use href="#i-check-bold"/></svg>' : ''}`
+                + `<span class="plate-name">${esc(text(l).title)}</span><span class="sr-only">, ${esc(tr.name)}${done ? ', learned' : ''}${today ? ", in today's box" : ''}</span></span>`;
         }
         function fill() {
             section = document.getElementById('bento-belt');
@@ -271,7 +259,7 @@ const Bento = (() => {
         }
         // the belt's shape: a stadium inside the counter, or (narrow) two lanes whose bends sit past the edges
         function shape(W, H, pw, ph, wide) {
-            const top = ph / 2 + 30, bottom = H - ph / 2 - 14, r = (bottom - top) / 2, cy = top + r;   // 30 above: room for steam
+            const top = ph / 2 + 16, bottom = H - ph / 2 - 16, r = (bottom - top) / 2, cy = top + r;
             const a = wide ? pw / 2 + 14 + r : -(pw / 2 + 6), b = wide ? W - pw / 2 - 14 - r : W + pw / 2 + 6;
             const d = wide   // starts at the hatch: top centre when wide, the far right bend when narrow
                 ? `M ${r1(W / 2)} ${r1(top)} H ${r1(b)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(b)} ${r1(bottom)} H ${r1(a)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(a)} ${r1(top)} Z`
@@ -325,7 +313,7 @@ const Bento = (() => {
             if (!bell || still() || belt.dataset.island !== 'on') return;
             bell.classList.remove('is-ringing'); void bell.offsetWidth; bell.classList.add('is-ringing');
         }
-        // New plates: the belt whooshes and every plate flips over to a new dish, one after another down the line
+        // New plates: the belt whooshes and every plate flips over to a new topic, one after another down the line
         function spinOut() {
             stir++;
             const list = pick();

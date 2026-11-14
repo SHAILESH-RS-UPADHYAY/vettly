@@ -479,6 +479,8 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] 22.4 The lesson opens like a pin: the diagram on a wash of the plate's colour with its analogy as the caption; the
       title, words, interview card, chips and Prep links on the other side; one Mark as learned pill, quiet round buttons
 - [x] 22.5 Today's box takes the plate colours (lacquer lids, a tiny plate before the track); no glow gradients
+- [x] 22.7 No stickers: the sushi drawings, the steam and the curtain's emblem are gone (plates carry only their name, a
+      tick once learned, a heavier rim for today's box), and no tape on Brain Bento's cards
 - [ ] 22.6 Check on the live site after the deploy (tested locally on laptop and phone, day and night)
 
 ## Settings only the owner can change (Vercel / Clerk)
