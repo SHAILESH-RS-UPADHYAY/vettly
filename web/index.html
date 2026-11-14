@@ -67,13 +67,13 @@
     <link rel="stylesheet" href="./css/tokens.css?v=7.1">
     <link rel="stylesheet" href="./css/base.css?v=7.9">
     <link rel="stylesheet" href="./css/styles.css?v=9.9">
-    <link rel="stylesheet" href="./css/prep.css?v=8.6">
+    <link rel="stylesheet" href="./css/prep.css?v=8.8">
     <link rel="stylesheet" href="./css/prepkit.css?v=1.4">
     <link rel="stylesheet" href="./css/mentor.css?v=9.7">
     <link rel="stylesheet" href="./css/looks.css?v=7.11">
     <link rel="stylesheet" href="./css/paper.css?v=8.1">
     <link rel="stylesheet" href="./css/workshop.css?v=8.2">
-    <link rel="stylesheet" href="./css/bento.css?v=9.2">
+    <link rel="stylesheet" href="./css/bento.css?v=9.7">
     <link rel="stylesheet" href="./css/onboard.css?v=2.5">
     <link rel="stylesheet" href="./css/keyring.css?v=1.9">
     <link rel="stylesheet" href="./css/daybook.css?v=1.6">
@@ -149,6 +149,7 @@
             <symbol id="i-sprout" viewBox="0 0 256 256"><path d="M128 128C122 72 156 42 218 42 222 102 188 134 128 128Z" fill="currentColor" opacity=".2"/><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M128 224V128M128 128C122 72 156 42 218 42 222 102 188 134 128 128ZM128 172C132 126 104 100 44 100 42 146 74 174 128 172Z"/></g></symbol>
             <symbol id="i-cards" viewBox="0 0 256 256"><rect x="72" y="52" width="100" height="140" rx="16" transform="rotate(-20 128 232)" fill="currentColor" opacity=".2"/><rect x="84" y="52" width="100" height="140" rx="16" transform="rotate(16 128 232)" fill="currentColor" opacity=".2"/><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><rect x="72" y="52" width="100" height="140" rx="16" transform="rotate(-20 128 232)"/><rect x="84" y="52" width="100" height="140" rx="16" transform="rotate(16 128 232)"/></g><circle cx="134" cy="122" r="12" fill="currentColor" transform="rotate(16 128 232)"/></symbol>
             <symbol id="i-ask" viewBox="0 0 256 256"><path d="M48 56h160a16 16 0 0 1 16 16v96a16 16 0 0 1-16 16H104l-40 32v-32H48a16 16 0 0 1-16-16V72a16 16 0 0 1 16-16Z" fill="currentColor" opacity=".2"/><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M48 56h160a16 16 0 0 1 16 16v96a16 16 0 0 1-16 16H104l-40 32v-32H48a16 16 0 0 1-16-16V72a16 16 0 0 1 16-16Z"/><path d="M108 100a20 20 0 1 1 30 17.3c-6.6 3.8-10 8.3-10 14.7"/></g><circle cx="128" cy="156" r="11" fill="currentColor"/></symbol>
+            <symbol id="i-bell" viewBox="0 0 256 256"><path d="M48 176a80 80 0 0 1 160 0Z" fill="currentColor" opacity=".2"/><g fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"><path d="M48 176a80 80 0 0 1 160 0Z"/><path d="M32 204h192"/><path d="M128 96V78M110 70h36"/></g></symbol>
             <symbol id="i-search" viewBox="0 0 256 256"><path fill="currentColor" d="M192 112a80 80 0 1 1-80-80a80 80 0 0 1 80 80" opacity=".2"/><path fill="currentColor" d="m229.66 218.34l-50.06-50.06a88.21 88.21 0 1 0-11.32 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32M40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72"/></symbol>
             <symbol id="i-funnel" viewBox="0 0 256 256"><path fill="currentColor" d="M232 56v144a16 16 0 0 1-16 16H40a16 16 0 0 1-16-16V56a16 16 0 0 1 16-16h176a16 16 0 0 1 16 16" opacity=".2"/><path fill="currentColor" d="M200 136a8 8 0 0 1-8 8H64a8 8 0 0 1 0-16h128a8 8 0 0 1 8 8m32-56H24a8 8 0 0 0 0 16h208a8 8 0 0 0 0-16m-80 96h-48a8 8 0 0 0 0 16h48a8 8 0 0 0 0-16"/></symbol>
             <symbol id="i-sort" viewBox="0 0 256 256"><path fill="currentColor" d="M224 88v88a16 16 0 0 1-16 16H48V64h152Z" opacity=".2"/><path fill="currentColor" d="M40 128a8 8 0 0 1 8-8h72a8 8 0 0 1 0 16H48a8 8 0 0 1-8-8m8-56h56a8 8 0 0 0 0-16H48a8 8 0 0 0 0 16m136 112H48a8 8 0 0 0 0 16h136a8 8 0 0 0 0-16m45.66-101.66l-40-40a8 8 0 0 0-11.32 0l-40 40a8 8 0 0 0 11.32 11.32L176 67.31V144a8 8 0 0 0 16 0V67.31l26.34 26.35a8 8 0 0 0 11.32-11.32"/></symbol>
@@ -883,7 +884,6 @@
                         </div>
                     </div>
                     <div class="lab-go">
-                        <p class="lab-hint">Built from your Agent Toolbelt context and target role.</p>
                         <button type="button" class="btn btn-primary prep-generate" id="prep-generate-btn" onclick="generateSinglePrep()"><svg viewBox="0 0 256 256" aria-hidden="true"><g class="pg-glass"><path d="M72 156 44 200a16 16 0 0 0 14 24h140a16 16 0 0 0 14-24l-28-44Z" fill="currentColor" opacity=".2"/><path d="M96 32h64M112 32v64L44 200a16 16 0 0 0 14 24h140a16 16 0 0 0 14-24L144 96V32M72 156h112" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/><circle class="pg-bub" cx="116" cy="190" r="10" fill="currentColor"/><circle class="pg-bub" cx="148" cy="194" r="6" fill="currentColor"/></g></svg><span class="v-classic">Synthesize &amp; stream</span><span class="v-alt">Generate a question</span></button>
                     </div>
                     <div class="prep-progress hidden" id="prep-progress" role="status">
@@ -992,15 +992,24 @@
                     </div>
                     <div class="bento-tracks" data-bento-track role="group" aria-label="Which tracks to pack"></div>
                 </div>
-                <section class="toolbelt-card bento-pond" id="bento-pond" aria-labelledby="pond-title">
-                    <header class="pond-head">
+                <section class="toolbelt-card bento-belt" id="bento-belt" aria-labelledby="belt-title">
+                    <header class="belt-head">
                         <div>
-                            <h2 class="pond-title" id="pond-title">Help yourself</h2>
-                            <p class="pond-hint" data-pond-hint>Every topic, floating free. Tap one to open it.</p>
+                            <h2 class="belt-title" id="belt-title">Help yourself</h2>
+                            <p class="belt-hint" data-belt-hint>Every topic rides the belt. Reach for a plate and it stops.</p>
                         </div>
-                        <button type="button" class="btn btn-ghost btn-sm pond-stir" data-pond-stir aria-label="Stir the topics"><svg aria-hidden="true"><use href="#i-refresh"/></svg><span>Stir</span></button>
+                        <button type="button" class="btn btn-ghost btn-sm belt-spin" data-belt-spin aria-label="Send out new plates"><svg aria-hidden="true"><use href="#i-refresh"/></svg><span>New plates</span></button>
                     </header>
-                    <div class="pond-water" data-pond role="group" aria-label="Topics to open"></div>
+                    <!-- the sushi-bar belt (bento.js Belt): the steel band, the counter's middle, the kitchen curtain, the plates -->
+                    <div class="belt" data-belt>
+                        <svg class="belt-track" aria-hidden="true"><path class="belt-rail"/><path class="belt-band"/><path class="belt-slats"/></svg>
+                        <div class="belt-island" aria-hidden="true">
+                            <span class="belt-bell"><svg><use href="#i-bell"/></svg><b>Order up!</b></span>
+                            <div class="belt-card"><h3>Plate colours</h3><ul class="belt-legend" data-belt-legend></ul></div>
+                        </div>
+                        <div class="belt-noren" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                        <div class="belt-plates" data-belt-plates role="group" aria-label="Topics to open"></div>
+                    </div>
                 </section>
                 <article class="toolbelt-card bento-lesson" id="bento-lesson" hidden aria-live="polite"></article>
                 <h2 class="bento-box-title">Today's box</h2>
@@ -1476,14 +1485,14 @@
     <script defer src="./js/auth-intro.js?v=2.0"></script>
     <script defer src="./js/bento-data.js?v=8.1"></script>
     <script defer src="./js/bento-fields.js?v=1.0"></script>
-    <script defer src="./js/bento.js?v=9.4"></script>
+    <script defer src="./js/bento.js?v=9.8"></script>
     <script defer src="./js/prepkit.js?v=1.5"></script>
     <script defer src="./js/shortcuts.js?v=1.5"></script>
     <script defer src="./js/keyring.js?v=1.9"></script>
     <script defer src="./js/account.js?v=1.0"></script>
     <script defer src="./js/register.js?v=1.10"></script>
     <script defer src="./js/daybook.js?v=1.4"></script>
-    <script defer src="./js/tour.js?v=2.3"></script>
+    <script defer src="./js/tour.js?v=2.4"></script>
     <script defer src="./js/onboard-scenes.js?v=2.3"></script>
     <script defer src="./js/lookbook.js?v=1.6"></script>
     <script defer src="./js/onboard.js?v=9.16"></script>

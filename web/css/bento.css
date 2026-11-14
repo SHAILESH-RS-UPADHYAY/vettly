@@ -26,8 +26,8 @@
 .bento-cell {
     position: relative; isolation: isolate; overflow: hidden; display: grid; align-content: start; gap: 8px; text-align: left;
     min-height: 150px; padding: 18px 18px 16px; border-radius: var(--r-card);
-    border: 1.5px solid color-mix(in srgb, var(--cfg) 28%, var(--card-border));
-    background: radial-gradient(130% 90% at 0% 0%, color-mix(in srgb, var(--cfg) 14%, transparent), transparent 60%), var(--card-bg);
+    --cfg: var(--plate, var(--accent)); --cbg: color-mix(in srgb, var(--plate, var(--accent)) 10%, var(--card-bg));   /* the track's plate colour */
+    border: 1.5px solid var(--card-border); background: var(--card-bg);
     box-shadow: var(--card-shadow); color: var(--ink);
     transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
     animation: cellIn 620ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 70ms);
@@ -36,13 +36,13 @@
 .bento-cell:first-child .cell-title { font-size: 1.45rem; }
 .cell-lid {   /* the compartment's lid: lifts on hover */
     position: absolute; inset: 0 0 auto; height: 8px; z-index: 1;
-    background: linear-gradient(90deg, var(--cfg), color-mix(in srgb, var(--cfg) 45%, var(--accent)));
+    background: var(--cfg);
     transform-origin: 0 100%; transition: transform var(--dur-long) var(--spring);
 }
 .cell-top { display: flex; align-items: center; gap: 8px; }
-.cell-no { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--cbg); color: var(--cfg); font: 700 0.85rem/1 var(--font-body); }
-.cell-track { display: inline-flex; align-items: center; gap: 6px; font: 600 0.78rem/1.2 var(--font-body); color: var(--cfg); }
-.cell-track svg { width: 15px; height: 15px; }
+.cell-no { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--cbg); color: var(--ink); font: 700 0.85rem/1 var(--font-body); }
+.cell-track { display: inline-flex; align-items: center; gap: 7px; font: 600 0.78rem/1.2 var(--font-body); color: var(--ink-2); }
+.cell-plate { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--card-bg); box-shadow: inset 0 0 0 3px var(--cfg); }
 .cell-title { font: 700 1.12rem/1.25 var(--font-body); color: var(--ink); text-wrap: balance; }
 .cell-hook { font-size: 0.9rem; color: var(--ink-2); text-wrap: pretty; }
 .cell-quote { position: relative; margin-top: 6px; padding: 14px 16px 14px 40px; border-radius: max(8px, calc(var(--r-card) - 8px)); background: var(--cbg); color: var(--ink); font-size: 0.95rem; font-style: italic; line-height: 1.55; text-wrap: pretty; }
@@ -61,62 +61,114 @@
 }
 @keyframes cellIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } }
 
-/* ── The lesson ── */
-.bento-lesson { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-bottom: var(--gap-stack); scroll-margin-top: 16px; container: lesson / inline-size; animation: lessonIn 600ms var(--spring) backwards; }
+/* ── The lesson: it opens like a pin. The picture on one side (the diagram on a wash of the plate's colour, the analogy
+   as its caption), the words on the other. Mark as learned is the one loud button; the rest are quiet rounds and chips ── */
+.bento-lesson {
+    --cfg: var(--plate, var(--accent)); --cbg: color-mix(in srgb, var(--plate, var(--accent)) 9%, var(--card-bg));
+    position: relative; display: grid; grid-template-columns: minmax(0, 1fr); padding: 0; overflow: clip;
+    margin-bottom: var(--gap-stack); scroll-margin-top: 16px; border-radius: calc(var(--r-card) + 8px);
+    animation: lessonIn 520ms var(--ease-out) backwards;
+}
 .bento-lesson[hidden] { display: none; }
-@keyframes lessonIn { from { opacity: 0; transform: translateY(-12px) scale(0.985); } }
-.lesson-head { display: grid; gap: 8px; padding-right: 48px; }
-.lesson-head .tone-pill { justify-self: start; }
-.lesson-title { font: 800 clamp(1.4rem, 1.1rem + 1.2vw, 2rem)/1.15 var(--font-display); letter-spacing: -0.02em; color: var(--ink); text-wrap: balance; }
-.lesson-hook { font-size: 1rem; color: var(--ink-2); }
-.lesson-close { position: absolute; top: var(--pad-card); right: var(--pad-card); }
-.lesson-diagram { margin: 0; padding: 18px; border-radius: max(8px, calc(var(--r-card) - 6px)); background: color-mix(in srgb, var(--cbg) 55%, var(--paper-2)); border: 1px dashed color-mix(in srgb, var(--cfg) 35%, transparent); overflow: hidden; }
-.lesson-grid { display: grid; gap: 14px; }
-@container lesson (min-width: 640px) { .lesson-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
-.lesson-block { display: grid; gap: 8px; align-content: start; }
-.lesson-block h3 { display: flex; align-items: center; gap: 8px; font: 700 0.98rem/1.3 var(--font-body); color: var(--ink); }
-.lesson-block h3 svg { width: 19px; height: 19px; color: var(--accent-ink); }
-.lesson-block p { font-size: 0.97rem; line-height: 1.7; color: var(--ink-2); text-wrap: pretty; }
-.lesson-analogy { padding: 14px 16px; border-radius: max(8px, calc(var(--r-card) - 8px)); background: var(--accent-soft); }
-.lesson-analogy p { color: var(--ink); font-style: italic; }
-.lesson-interview { padding: 16px; border-radius: max(8px, calc(var(--r-card) - 8px)); border: 1.5px solid var(--rule-2); }
-.lesson-q { font-weight: 700; color: var(--ink) !important; }
-.lesson-a { padding: 12px 14px; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--paper-3) 70%, transparent); border-radius: 0 10px 10px 0; }
+@container bento (min-width: 860px) { .bento-lesson { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); } }
+@keyframes lessonIn { from { opacity: 0; transform: translateY(14px); filter: blur(4px); } }
+:root:not([data-tape="none"]) #page-bento .bento-lesson::after { content: none; }
+:root[data-look="classic"] #page-bento .bento-lesson:hover { transform: none; border-color: var(--rule-2); }
+
+.lesson-visual { container: lessonvis / inline-size; display: grid; align-content: center; gap: 18px; min-width: 0; padding: 28px; background: var(--cbg); }
+.lesson-diagram { margin: 0; }
+.lesson-picture {
+    margin: 0; padding: 16px 18px; border-radius: 18px; background: color-mix(in srgb, var(--card-bg) 84%, transparent);
+    box-shadow: 0 1px 2px rgba(40, 26, 10, 0.06); font: italic 500 1rem/1.55 var(--font-body); color: var(--ink); text-wrap: pretty;
+}
+.lesson-picture span { display: block; margin-bottom: 6px; font: 700 0.68rem/1 var(--font-mono); font-style: normal; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+.lesson-body { display: grid; align-content: start; gap: 14px; min-width: 0; padding: 22px 26px 28px; }
+.lesson-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 12px; margin-bottom: 2px; }
+.lesson-track { display: inline-flex; align-items: center; gap: 8px; min-width: 0; font: 600 0.84rem/1.2 var(--font-body); color: var(--ink-2); }
+.lesson-track i { flex-shrink: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--card-bg); box-shadow: inset 0 0 0 3.5px var(--cfg); }   /* a tiny plate */
+.lesson-tools { display: flex; align-items: center; gap: 8px; flex-shrink: 0; margin-left: auto; }
+.lesson-round {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%;
+    background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); cursor: pointer;
+    transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+}
+.lesson-round svg { width: 18px; height: 18px; }
+#page-bento .lesson-round.prep-btn-mentor svg { width: 19px; height: 19px; color: var(--ink); }
+.lesson-save {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border: 0; border-radius: var(--r-chip);
+    background: var(--accent); color: var(--on-accent); font: 700 0.95rem/1 var(--font-body); white-space: nowrap; cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 8px 18px -12px rgba(var(--accent-rgb), 0.9);
+    transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+}
+.lesson-save svg { width: 16px; height: 16px; }
+.lesson-save:disabled { background: color-mix(in srgb, var(--ok) 14%, var(--card-bg)); color: var(--ok); box-shadow: none; cursor: default; }
+@media (hover: hover) {
+    .lesson-round:hover { background: color-mix(in srgb, var(--ink) 11%, transparent); }
+    .lesson-save:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+}
+.lesson-round:active, .lesson-save:active:not(:disabled) { transform: scale(0.96); }
+.lesson-round:focus-visible, .lesson-save:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lesson-title { font: 800 clamp(1.6rem, 1.25rem + 1.3vw, 2.25rem)/1.1 var(--font-body); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
+.lesson-title:focus { outline: none; }   /* it takes focus only to move the reader there */
+.lesson-hook { font: 500 1.05rem/1.45 var(--font-body); color: var(--ink-2); text-wrap: pretty; }
+.lesson-text { font-size: 0.98rem; line-height: 1.7; color: var(--ink-2); text-wrap: pretty; }
+.lesson-ask { display: grid; gap: 10px; margin-top: 6px; padding: 18px; border-radius: 20px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
+:is(.lesson-ask, .lesson-more) h3 { font: 700 0.92rem/1.3 var(--font-body); color: var(--ink); }
+.lesson-q { font: 600 1rem/1.5 var(--font-body); color: var(--ink); text-wrap: pretty; }
+.lesson-reveal {
+    justify-self: start; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border: 0; border-radius: var(--r-chip);
+    background: var(--card-bg); color: var(--ink); font: 600 0.88rem/1 var(--font-body); box-shadow: 0 0 0 1px var(--rule-2); cursor: pointer;
+    transition: box-shadow var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+}
+.lesson-reveal svg { width: 16px; height: 16px; }
+@media (hover: hover) { .lesson-reveal:hover { box-shadow: 0 0 0 1px var(--ink-2); } }
+.lesson-reveal:active { transform: scale(0.97); }
+.lesson-a { padding: 2px 0 2px 14px; border-left: 3px solid var(--cfg); font-size: 0.96rem; line-height: 1.65; color: var(--ink); text-wrap: pretty; }
+.lesson-more { display: grid; gap: 10px; margin-top: 4px; }
 .lesson-follow { display: flex; flex-wrap: wrap; gap: 8px; }
-.lesson-follow .chip { white-space: normal; text-align: left; min-height: 40px; }
-.lesson-related { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-.lesson-rel { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 12px; border: 1px solid var(--rule-2); border-radius: var(--r-ctl); background: var(--card-bg); color: var(--ink); text-align: left; font-size: 0.92rem; transition: border-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
+.lesson-chip {
+    min-height: 40px; padding: 8px 15px; border: 0; border-radius: var(--r-chip); background: color-mix(in srgb, var(--ink) 6%, transparent);
+    color: var(--ink); font: 600 0.86rem/1.3 var(--font-body); text-align: left; cursor: pointer;
+    transition: background-color var(--dur-short) var(--ease-out), transform var(--dur-micro) var(--ease-out);
+}
+@media (hover: hover) { .lesson-chip:hover { background: color-mix(in srgb, var(--ink) 11%, transparent); } }
+.lesson-chip:active { transform: scale(0.97); }
+.lesson-related { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+.lesson-rel {
+    display: flex; align-items: center; gap: 12px; min-width: 0; min-height: 44px; padding: 8px 12px; border: 0; border-radius: 14px;
+    background: transparent; color: var(--ink); font: 500 0.92rem/1.35 var(--font-body); text-align: left; cursor: pointer;
+    transition: background-color var(--dur-short) var(--ease-out);
+}
 .lesson-rel span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (hover: hover) { .lesson-rel:hover { border-color: var(--accent); } }
-.lesson-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 6px; border-top: 1px dashed var(--rule-2); }
-.lesson-actions .btn { min-height: 46px; }
-.lesson-actions .prep-btn-mentor svg { width: 14px; height: 14px; }
+.lesson-rel-no { flex-shrink: 0; font: 600 0.72rem/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--muted); }
+@media (hover: hover) { .lesson-rel:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); } }
+@container bento (max-width: 520px) { .lesson-visual { padding: 20px; } .lesson-body { padding: 18px 18px 22px; } .lesson-save { padding: 0 16px; } }
 
 /* ── Diagrams ── */
 .dg { display: block; width: 100%; height: auto; max-height: 420px; overflow: visible; }
 .dg-v { display: none; max-width: 360px; margin: 0 auto; }
-@container lesson (max-width: 619px) { .dg-h { display: none; } .dg-v { display: block; } }
+@container lessonvis (max-width: 619px) { .dg-h { display: none; } .dg-v { display: block; } }
 .dg-cycle { max-width: 380px; margin: 0 auto; }
 .dg-layers { max-width: 520px; margin: 0 auto; }
-.dg-node rect { fill: var(--card-bg); stroke: var(--cfg); stroke-width: 2; }
+.dg-node rect { fill: var(--card-bg); stroke: color-mix(in srgb, var(--ink) 16%, transparent); stroke-width: 1.5; filter: drop-shadow(0 2px 3px rgba(40, 26, 10, 0.08)); }
 .dg-node text { fill: var(--ink); font: 600 13px/1 var(--font-body); }
 .dg-node { transform-box: fill-box; transform-origin: center; animation: dgPop 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 140ms + 120ms); }
-.dg-layer rect { fill: color-mix(in srgb, var(--cbg) 70%, var(--card-bg)); }
+.dg-layer rect { fill: color-mix(in srgb, var(--cfg) 12%, var(--card-bg)); }
 .dg-layer { animation-name: dgSlide; }
-.dg-link { fill: none; stroke: var(--cfg); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 5 6; animation: dgFlow 1s linear infinite, dgFade 400ms ease-out both; animation-delay: 0s, calc(var(--i, 0) * 140ms + 300ms); }
-.dg-arrow { fill: var(--cfg); }
+.dg-link { fill: none; stroke: color-mix(in srgb, var(--ink) 34%, transparent); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 5 6; animation: dgFlow 1s linear infinite, dgFade 400ms ease-out both; animation-delay: 0s, calc(var(--i, 0) * 140ms + 300ms); }
+.dg-arrow { fill: color-mix(in srgb, var(--ink) 45%, transparent); }
 .dg-orbit { fill: none; stroke: color-mix(in srgb, var(--cfg) 18%, transparent); stroke-width: 10; }
-.dg-packet { fill: var(--accent); offset-rotate: 0deg; animation: dgPacket 3.2s var(--ease-in-out) infinite 1s; filter: drop-shadow(0 0 6px var(--accent)); }
+.dg-packet { fill: var(--cfg); offset-rotate: 0deg; animation: dgPacket 3.2s var(--ease-in-out) infinite 1s; }
 .dg-packet-loop { animation: dgPacket 5s linear infinite 1s; }
 .dg-compare { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 12px; }
-@container lesson (max-width: 479px) { .dg-compare { grid-template-columns: minmax(0, 1fr); } .dg-vs { justify-self: center; } }
-.dg-col { padding: 14px 16px; border-radius: 14px; background: var(--card-bg); border: 2px solid var(--cfg); animation: dgPop 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 160ms + 100ms); }
-.dg-col:last-of-type { border-style: dashed; }
-.dg-col h4 { font: 700 1.05rem/1.2 var(--font-body); color: var(--cfg); margin-bottom: 8px; }
+@container lessonvis (max-width: 479px) { .dg-compare { grid-template-columns: minmax(0, 1fr); } .dg-vs { justify-self: center; } }
+.dg-col { padding: 14px 16px; border-radius: 16px; background: var(--card-bg); border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); animation: dgPop 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 160ms + 100ms); }
+.dg-col h4 { font: 700 1.05rem/1.2 var(--font-body); color: var(--ink); margin-bottom: 8px; }
 .dg-col ul { list-style: none; display: grid; gap: 7px; }
 .dg-col li { position: relative; padding-left: 18px; font-size: 0.92rem; line-height: 1.45; color: var(--ink-2); animation: dgFade 420ms var(--ease-out) backwards; animation-delay: calc(var(--i, 0) * 110ms + 360ms); }
 .dg-col li::before { content: ""; position: absolute; left: 2px; top: 0.55em; width: 7px; height: 7px; border-radius: 50%; background: var(--cfg); }
-.dg-vs { align-self: center; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 800 0.85rem/1 var(--font-body); animation: vsPulse 2.4s var(--ease-in-out) infinite; }
+.dg-vs { align-self: center; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--paper); font: 800 0.85rem/1 var(--font-body); animation: vsPulse 2.4s var(--ease-in-out) infinite; }
 @keyframes dgPop { from { opacity: 0; transform: scale(0.6); } }
 @keyframes dgSlide { from { opacity: 0; transform: translateX(-24px); } }
 @keyframes dgFade { from { opacity: 0; } }
@@ -124,69 +176,161 @@
 @keyframes dgPacket { from { offset-distance: 0%; } to { offset-distance: 100%; } }
 @keyframes vsPulse { 50% { transform: scale(1.1); } }
 
-/* ── The pond: every topic afloat. JS moves each bubble (transform); CSS bobs it, pops it in and squashes on a bump ── */
-.bento-pond { display: grid; gap: 12px; margin-bottom: var(--gap-stack); }
-.pond-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.pond-title { font: 800 1.3rem/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--ink); }
-.pond-hint { margin-top: 4px; font-size: 0.9rem; color: var(--ink-2); text-wrap: pretty; }
-.pond-stir { flex-shrink: 0; }
-@container bento (max-width: 420px) { .pond-stir span { display: none; } .pond-stir { padding: 0 10px; } .pond-title { font-size: 1.15rem; } }
-.pond-stir svg { width: 15px; height: 15px; transition: transform 600ms var(--spring); }
-.pond-stir:active svg { transform: rotate(-200deg); }
-.pond-water {
-    position: relative; overflow: hidden; container-type: inline-size; touch-action: pan-y;
-    height: clamp(280px, 30cqw, 400px); border-radius: max(10px, calc(var(--r-card) - 6px));
+/* ── The belt: a sushi-bar conveyor (bento.js Belt). Plates ride an offset-path that JS fits to the belt's own size;
+   the steel band and its slats are that path drawn three times in one SVG. Rims carry the track's colour and the card
+   in the middle says which. Narrow screens show two lanes; their bends and the kitchen hatch sit out of sight ── */
+.bento-belt { display: grid; gap: 12px; margin-bottom: var(--gap-stack); }
+.belt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.belt-title { font: 800 1.3rem/1.15 var(--font-display); letter-spacing: -0.01em; color: var(--ink); }
+.belt-hint { margin-top: 4px; font-size: 0.9rem; color: var(--ink-2); text-wrap: pretty; }
+.belt-spin { flex-shrink: 0; }
+.belt-spin svg { width: 15px; height: 15px; transition: transform 600ms var(--spring); }
+.belt-spin:active svg { transform: rotate(-200deg); }
+@container bento (max-width: 420px) { .belt-spin span { display: none; } .belt-spin { padding: 0 10px; } .belt-title { font-size: 1.15rem; } }
+
+.belt {
+    --belt-mode: wide; --plate-w: 184px; --plate-h: 62px;
+    position: relative; overflow: clip; height: 420px; touch-action: pan-y;
+    border-radius: max(10px, calc(var(--r-card) - 6px));
     background:
-        radial-gradient(60% 70% at 12% 18%, color-mix(in srgb, var(--c-hr) 10%, transparent), transparent 70%),
-        radial-gradient(55% 60% at 88% 82%, color-mix(in srgb, var(--c-beh) 10%, transparent), transparent 70%),
-        radial-gradient(40% 50% at 70% 10%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%),
+        radial-gradient(60% 55% at 50% 52%, color-mix(in srgb, var(--card-bg) 70%, transparent), transparent 78%),
+        repeating-linear-gradient(90deg, color-mix(in srgb, var(--ink) 2.5%, transparent) 0 1px, transparent 1px 11px),
         var(--paper-2);
-    box-shadow: inset 0 2px 10px color-mix(in srgb, var(--ink) 8%, transparent), inset 0 0 0 1px var(--rule-2);
+    box-shadow: inset 0 2px 12px color-mix(in srgb, var(--ink) 7%, transparent), inset 0 0 0 1px var(--rule-2);
 }
-@container bento (max-width: 560px) { .pond-water { height: 320px; } }
-.pond-water::after {   /* a slow sheen across the surface */
-    content: ""; position: absolute; inset: -40% -10%; pointer-events: none;
-    background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--card-bg) 40%, transparent) 50%, transparent 60%);
-    animation: pondSheen 9s var(--ease-in-out) infinite;
+@container bento (max-width: 700px) { .belt { --belt-mode: narrow; --plate-w: 156px; --plate-h: 56px; height: 244px; } }
+.belt-track { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.belt-track path { fill: none; stroke-linejoin: round; }
+.belt-rail { stroke: color-mix(in srgb, var(--ink) 22%, var(--card-bg)); stroke-width: calc(var(--plate-h) + 26px); }
+.belt-band { stroke: color-mix(in srgb, var(--ink) 7%, var(--card-bg)); stroke-width: calc(var(--plate-h) + 18px); }
+.belt-slats { stroke: color-mix(in srgb, var(--ink) 14%, var(--card-bg)); stroke-width: calc(var(--plate-h) + 18px); stroke-dasharray: 2 22; animation: beltSlats var(--slat-lap, 0.75s) linear infinite; }
+@keyframes beltSlats { to { stroke-dashoffset: -24; } }
+
+/* the plates: the button rides the path; its face lifts, tilts and flips */
+.belt-plates { position: absolute; inset: 0; z-index: 2; }
+.belt-plate {
+    position: absolute; left: 0; top: 0; width: var(--plate-w); height: var(--plate-h); padding: 0; border: 0; background: none; color: var(--ink);
+    offset-path: var(--belt-path); offset-rotate: 0deg; offset-distance: 0%;
+    animation: beltRide var(--lap, 60s) linear infinite; animation-delay: calc(var(--lap, 60s) * var(--k, 0) / var(--n, 1) * -1);
+    perspective: 600px; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-@keyframes pondSheen { from { transform: translateX(-60%); } to { transform: translateX(60%); } }
-.pond-bubble {
-    position: absolute; left: 0; top: 0; z-index: 1; padding: 0; border: 0; background: none; color: var(--ink);
-    max-width: min(15rem, 72cqw); will-change: transform; cursor: pointer; -webkit-tap-highlight-color: transparent;
+@keyframes beltRide { to { offset-distance: 100%; } }
+.plate-lift {
+    --rims: inset 0 0 0 3px var(--plate), inset 0 0 0 6px var(--card-bg), inset 0 0 0 7px color-mix(in srgb, var(--plate) 30%, transparent);
+    position: relative; display: flex; align-items: center; gap: 10px; width: 100%; height: 100%; padding: 0 16px 0 9px;
+    border-radius: 999px; background: var(--card-bg);
+    box-shadow: var(--rims), 0 9px 14px -9px rgba(40, 26, 10, 0.5), 0 2px 3px rgba(40, 26, 10, 0.12);
+    transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out);
 }
-.pb-bob { display: block; animation: pbBob var(--bob, 3s) var(--ease-in-out) infinite alternate; animation-delay: calc(var(--i, 0) * -0.37s); }
-.pb-face {
-    display: flex; align-items: center; gap: 7px; padding: 9px 14px 9px 11px; border-radius: 20px;
-    border: 1.5px solid color-mix(in srgb, var(--cfg) 45%, transparent); background: color-mix(in srgb, var(--cbg) 82%, var(--card-bg));
-    box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--cfg) 55%, transparent), 0 1px 0 color-mix(in srgb, var(--card-bg) 60%, transparent) inset;
-    font: 600 0.88rem/1.25 var(--font-body); text-align: left; text-wrap: balance;
-    transition: transform var(--dur-long) var(--spring), box-shadow var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out);
-    animation: pbIn 560ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 45ms + 80ms);
+.plate-name {
+    min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+    font: 600 0.82rem/1.22 var(--font-body); text-align: left; text-wrap: balance; color: var(--ink);
 }
-.pb-face svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--cfg); }
-.pond-bubble.is-today .pb-face { border-width: 2px; border-color: var(--cfg); font-weight: 700; }
-.pond-bubble.is-done .pb-face { background: var(--card-bg); color: var(--ink-2); border-style: dashed; box-shadow: none; }
-.pond-bubble.is-done .pb-face svg { color: var(--ok); }
-.pond-bubble.is-open .pb-face { border-color: var(--cfg); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cfg) 25%, transparent), 0 8px 20px -8px var(--cfg); }
-.pond-bubble:focus-visible { outline: none; }
-.pond-bubble:focus-visible .pb-face { outline: 2.5px solid var(--focus, var(--accent)); outline-offset: 3px; }
-@media (hover: hover) { .pond-bubble:hover { z-index: 3; } .pond-bubble:hover .pb-face { transform: scale(1.07); box-shadow: 0 12px 26px -10px var(--cfg); border-color: var(--cfg); } }
-.pond-bubble:active .pb-face { transform: scale(0.95); }
-@keyframes pbBob { from { transform: translateY(-3px) rotate(-0.8deg); } to { transform: translateY(3px) rotate(0.8deg); } }
-@keyframes pbIn { from { opacity: 0; transform: scale(0.3) translateY(14px); } }
-.pond-ripple { position: absolute; z-index: 0; width: 24px; height: 24px; margin: -12px 0 0 -12px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent); pointer-events: none; animation: pondRipple 900ms var(--ease-out) forwards; }
-@keyframes pondRipple { to { transform: scale(14); opacity: 0; } }
-.pond-ghost {   /* the bubble on its way to becoming the lesson card */
+.belt-plate.is-today .plate-name { font-weight: 700; }
+.belt-plate.is-done .plate-name { color: var(--muted); }
+@media (hover: hover) {
+    .belt-plate:hover { z-index: 3; }
+    .belt-plate:hover .plate-lift { transform: translateY(-7px) rotate(-1.5deg) scale(1.04); box-shadow: var(--rims), 0 22px 22px -14px rgba(40, 26, 10, 0.5), 0 2px 3px rgba(40, 26, 10, 0.12); }
+}
+.belt-plate:active .plate-lift { transform: translateY(-3px) scale(0.97); }
+.belt-plate:focus-visible { outline: none; }
+.belt-plate:focus-visible .plate-lift { outline: 2.5px solid var(--focus, var(--accent)); outline-offset: 3px; }
+.belt-plate.is-open .plate-lift { box-shadow: var(--rims), 0 0 0 4px color-mix(in srgb, var(--plate) 30%, transparent), 0 12px 18px -10px rgba(40, 26, 10, 0.5); }
+
+/* the food: maki, nigiri and gunkan drawn in CSS, each in its track's colour; a learned one is an empty plate and a tick */
+.plate-dish { position: relative; flex-shrink: 0; display: grid; place-items: center; }
+.dish-maki {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%, var(--food) 0 26%, #f7f1e3 27% 58%, #23302a 60% 100%);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2), 0 2px 3px rgba(40, 26, 10, 0.3);
+}
+.dish-maki::after { content: ""; position: absolute; top: 15px; left: 16px; width: 5px; height: 3px; border-radius: 50%; background: rgba(255, 250, 240, 0.6); }
+.dish-nigiri { width: 44px; height: 26px; margin: 4px 0 0; border-radius: 13px; background: #f7f1e3; box-shadow: 0 3px 3px rgba(40, 26, 10, 0.25); }
+.dish-nigiri::before {
+    content: ""; position: absolute; inset: -6px -3px 8px; border-radius: 16px 16px 11px 11px;
+    background: repeating-linear-gradient(115deg, var(--food-2) 0 3px, var(--food) 3px 9px);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+.dish-nigiri::after { content: ""; position: absolute; left: 50%; top: -8px; bottom: -1px; width: 8px; translate: -50% 0; border-radius: 2px; background: #23302a; }
+.dish-gunkan {
+    width: 40px; height: 40px; border-radius: 50%; border: 6px solid #23302a;
+    background: radial-gradient(circle at 40% 40%, var(--food-2) 0 1.6px, transparent 2.3px) 0 0 / 7px 7px, var(--food);
+    box-shadow: 0 2px 3px rgba(40, 26, 10, 0.3);
+}
+.dish-eaten { width: 38px; height: 38px; border-radius: 50%; border: 2px dashed color-mix(in srgb, var(--ok) 55%, transparent); color: var(--ok); }
+.dish-eaten svg { width: 17px; height: 17px; }
+
+/* today's dishes steam: three wisps that draw themselves upward and fade */
+.plate-steam { position: absolute; left: 14px; bottom: calc(100% - 6px); width: 30px; height: 26px; pointer-events: none; }
+.plate-steam svg { width: 100%; height: 100%; overflow: visible; }
+.plate-steam path {
+    fill: none; stroke: color-mix(in srgb, var(--ink) 34%, transparent); stroke-width: 1.8; stroke-linecap: round;
+    stroke-dasharray: 26; stroke-dashoffset: 26; opacity: 0; animation: steam 3s var(--ease-in-out) infinite;
+}
+.plate-steam path:nth-child(2) { animation-delay: 1s; }
+.plate-steam path:nth-child(3) { animation-delay: 2s; }
+@keyframes steam { 0% { stroke-dashoffset: 26; opacity: 0; transform: translateY(5px); } 30% { opacity: 1; } 75% { stroke-dashoffset: 0; opacity: 0.7; } 100% { stroke-dashoffset: -26; opacity: 0; transform: translateY(-6px); } }
+
+/* the kitchen hatch: a noren on a rod over the belt; it sways whenever a plate pushes through */
+.belt-noren {
+    --noren: #2b3a5c;   /* indigo, as a real noren is dyed; it keeps its colour in every look */
+    position: absolute; z-index: 4; top: 0; left: var(--hatch-x, 50%); width: calc(var(--plate-w) + 28px); height: var(--hatch-h, 110px);
+    translate: -50% 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding-top: 6px; pointer-events: none;
+}
+.belt-noren::before { content: ""; position: absolute; left: -12px; right: -12px; top: 0; height: 8px; border-radius: 4px; background: linear-gradient(#8a7a63, #5d5040); box-shadow: 0 2px 4px rgba(40, 26, 10, 0.35); }   /* the bamboo rod */
+.belt-noren i {
+    border-radius: 0 0 7px 7px; transform-origin: 50% 0;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.07) 42%, rgba(0, 0, 0, 0.12)), var(--noren);   /* the folds of the cloth */
+    box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18), 0 10px 14px -10px rgba(20, 16, 30, 0.6);
+}
+.belt-noren i:nth-child(2), .belt-noren i:nth-child(3) { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath fill='%23fff6e8' d='M80 216v-79.4a48 48 0 0 1 2-92.1 52 52 0 0 1 92 0 48 48 0 0 1 2 92.1V216Z'/%3E%3C/svg%3E") no-repeat, linear-gradient(90deg, rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.07) 42%, rgba(0, 0, 0, 0.12)), var(--noren); background-size: 30px 30px, auto, auto; }
+.belt-noren i:nth-child(2) { background-position: calc(100% + 17px) 56%, 0 0, 0 0; }
+.belt-noren i:nth-child(3) { background-position: -17px 56%, 0 0, 0 0; }
+.belt-noren.is-swaying i { animation: noren 1100ms var(--ease-out); }
+.belt-noren.is-swaying i:nth-child(2) { animation-delay: 70ms; }
+.belt-noren.is-swaying i:nth-child(3) { animation-delay: 140ms; }
+.belt-noren.is-swaying i:nth-child(4) { animation-delay: 210ms; }
+@keyframes noren { 25% { transform: rotate(-5deg) skewX(-3deg); } 55% { transform: rotate(3deg) skewX(2deg); } 80% { transform: rotate(-1.5deg); } }
+.belt[data-mode="narrow"] .belt-noren { display: none; }
+
+/* the middle of the counter: the bell, and a card that says which colour is which track */
+.belt-island {
+    position: absolute; z-index: 1; left: var(--isl-x); top: var(--isl-y); width: var(--isl-w); height: var(--isl-h);
+    display: none; align-content: center; justify-items: center; gap: 10px; text-align: center; pointer-events: none;
+}
+.belt[data-island="on"] .belt-island { display: grid; }
+.belt-card { max-width: min(100%, 520px); padding: 12px 16px 14px; rotate: -1.2deg; border-radius: 12px; background: var(--card-bg); box-shadow: 0 0 0 1px var(--rule), 0 12px 24px -18px rgba(40, 26, 10, 0.7); }
+.belt-card h3 { margin: 0 0 8px; font: 700 0.7rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.belt-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 14px; margin: 0; padding: 0; list-style: none; }
+.belt-legend li { display: inline-flex; align-items: center; gap: 6px; font: 600 0.78rem/1.2 var(--font-body); color: var(--ink-2); }
+.belt-legend i { width: 14px; height: 14px; border-radius: 50%; background: var(--card-bg); box-shadow: inset 0 0 0 3.5px var(--plate); }
+.belt-legend b { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+/* at night a black-lacquer plate would vanish into the dark belt: every plate gets a faint cream hairline */
+:root.theme-dark :is(.plate-lift, .belt-legend i, .cell-plate, .lesson-track i) { outline: 1px solid rgba(255, 246, 232, 0.14); outline-offset: -1px; }
+.belt-bell { position: relative; display: grid; place-items: center; width: 34px; height: 34px; color: color-mix(in srgb, var(--ink) 55%, var(--card-bg)); }
+.belt-bell svg { width: 30px; height: 30px; transform-origin: 50% 85%; }
+.belt-bell b {
+    position: absolute; left: calc(100% + 6px); top: 3px; padding: 5px 10px; border-radius: 999px; white-space: nowrap;
+    background: var(--ink); color: var(--paper); font: 700 0.72rem/1 var(--font-body); opacity: 0; scale: 0.6; transform-origin: left center;
+}
+.belt-bell.is-ringing svg { animation: bellRing 900ms var(--ease-out); }
+.belt-bell.is-ringing b { animation: orderUp 1400ms var(--spring); }
+@keyframes bellRing { 10% { rotate: 16deg; } 25% { rotate: -13deg; } 40% { rotate: 9deg; } 55% { rotate: -6deg; } 70% { rotate: 3deg; } 100% { rotate: 0deg; } }
+@keyframes orderUp { 15% { opacity: 1; scale: 1; } 75% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 0.9; translate: 0 -6px; } }
+
+.belt-ghost {   /* the plate on its way to becoming the lesson card */
     position: fixed; z-index: 80; display: grid; place-items: center; overflow: hidden; pointer-events: none;
-    border: 2px solid var(--cfg); background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--cfg) 16%, transparent), transparent 60%), color-mix(in srgb, var(--cbg) 78%, var(--card-bg)); box-shadow: var(--card-shadow-hover);
-    font: 800 1.05rem/1.2 var(--font-body); color: var(--cfg);
+    border: 2px solid var(--plate); background: color-mix(in srgb, var(--plate) 9%, var(--card-bg)); box-shadow: var(--card-shadow-hover);
+    font: 800 1.05rem/1.2 var(--font-body); color: var(--ink);
 }
-.pond-ghost span { padding: 0 14px; text-align: center; animation: ghostText 620ms var(--ease-out) forwards; }
+.belt-ghost span { padding: 0 14px; text-align: center; animation: ghostText 680ms var(--ease-out) forwards; }
 @keyframes ghostText { 70% { opacity: 1; transform: scale(1.5); } to { opacity: 0; transform: scale(1.7); } }
-/* still: calm or reduced motion lays the topics out as a plain cloud */
-.pond-water.is-still { height: auto; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 14px; }
-.pond-water.is-still .pond-bubble { position: static; transform: none !important; }
-.pond-water.is-still::after { display: none; }
+
+/* still: calm or reduced motion sets every plate out on the counter */
+.belt.is-still { height: auto; padding: 16px; }
+.belt.is-still :is(.belt-track, .belt-noren, .belt-island) { display: none; }
+.belt.is-still .belt-plates { position: static; display: flex; flex-wrap: wrap; gap: 14px; }
+.belt.is-still .belt-plate { position: relative; offset-path: none; animation: none; }
 .bento-box-title { margin: 0 0 10px; font: 800 1.15rem/1.2 var(--font-display); color: var(--ink); }
 .bento-fresh { border-style: dashed; color: var(--accent-ink); }
 .bento-fresh svg { color: var(--accent); }
@@ -211,10 +355,10 @@
 @media (hover: hover) { .menu-item:hover { background: var(--cbg); color: var(--ink); } }
 
 @media (prefers-reduced-motion: reduce) {
-    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .pb-bob, .pb-face, .pond-water::after { animation: none !important; }
+    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .plate-steam path, .belt-noren i, .belt-bell svg, .belt-bell b, .belt-slats { animation: none !important; }
     .dg-packet { display: none; }
 }
-:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .pb-bob, .pb-face) { animation: none !important; }
+:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .plate-steam path, .belt-noren i, .belt-bell svg, .belt-bell b, .belt-slats) { animation: none !important; }
 :root[data-motion="calm"] .dg-packet { display: none; }
 
 @media (pointer: coarse) { .bento-menu summary { min-height: 44px; } }

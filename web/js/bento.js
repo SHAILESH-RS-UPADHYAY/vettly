@@ -4,8 +4,8 @@
  * bento-fields.js, so a nurse, an MBA student or a marketer sees their own ideas with no AI and no network.
  * "Fresh today" adds six AI-written ones on request (never on page load, so opening the page spends nothing).
  * Today's box is seeded by the date and the chosen track, so it stays the same all day; lessons that match the
- * learner's Toolbelt skills move to the front. The pond above it holds every topic, floating and bouncing; tapping one
- * grows it into the lesson. Progress and the streak live in localStorage. Ask Mentor pins the lesson (mentor.js).
+ * learner's Toolbelt skills move to the front. The belt above it carries every topic round on plates, like a sushi
+ * bar; tapping a plate lifts it off into the lesson. Progress and the streak live in localStorage. Ask Mentor pins the lesson (mentor.js).
  */
 const Bento = (() => {
     const KEY = 'vettly_bento';
@@ -17,6 +17,9 @@ const Bento = (() => {
     const doneToday = () => state.done[day()] || [];
     const text = l => ({ ...l.en, ...(state.lang === 'hi' ? l.hi : {}) });   // Hinglish where written, English for the rest
     const FRESH = { name: 'Fresh today', tone: 'asg', icon: 'sprout' };
+    // each track's plate colour, as a sushi bar lacquers its plates: red, mustard, steel, black, indigo, sage (in track order)
+    const PLATES = ['#c8372d', '#d9a21b', '#8a9099', '#232326', '#2f4a78', '#5f7f63'];
+    const plateOf = track => PLATES[Math.max(0, Object.keys(TRACKS).indexOf(track)) % PLATES.length];
     let openId = null, uid = 0, ready = false, profile = {}, packs = null, fresh = null, TRACKS = {}, LESSONS = [];
     const find = id => LESSONS.find(l => l.id === id);
 
@@ -82,8 +85,8 @@ const Bento = (() => {
         const vert = nodes.map((t, i) => `<g class="dg-node" style="--i:${i}"><rect x="10" y="${i * (VH + VG)}" width="${VW - 20}" height="${VH}" rx="13"/>${label(VW / 2, i * (VH + VG) + VH / 2 + 5, t, 26)}</g>`).join('')
             + nodes.slice(1).map((_, i) => `<path class="dg-link" style="--i:${i}" d="M ${VW / 2} ${i * (VH + VG) + VH + 3} v ${VG - 8}" marker-end="url(#${id}v)"/>`).join('');
         const marker = m => `<defs><marker id="${id}${m}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="dg-arrow"/></marker></defs>`;
-        return `<svg class="dg dg-h" viewBox="0 0 ${hw} ${H + 20}" role="img" aria-label="${esc(nodes.join(', then '))}">${marker('h')}${horiz}<circle class="dg-packet" r="6" style="offset-path: path('${hPath}')"/></svg>`
-            + `<svg class="dg dg-v" viewBox="0 0 ${VW} ${vh}" role="img" aria-label="${esc(nodes.join(', then '))}">${marker('v')}${vert}<circle class="dg-packet" r="6" style="offset-path: path('${vPath}')"/></svg>`;
+        return `<svg class="dg dg-h" viewBox="0 0 ${hw} ${H + 20}" role="img" aria-label="${esc(nodes.join(', then '))}">${marker('h')}<circle class="dg-packet" r="6" style="offset-path: path('${hPath}')"/>${horiz}</svg>`
+            + `<svg class="dg dg-v" viewBox="0 0 ${VW} ${vh}" role="img" aria-label="${esc(nodes.join(', then '))}">${marker('v')}<circle class="dg-packet" r="6" style="offset-path: path('${vPath}')"/>${vert}</svg>`;
     }
     function cycle(nodes) {
         const id = `dg${++uid}`, n = nodes.length, C = 170, R = 112;
@@ -95,8 +98,8 @@ const Bento = (() => {
         const boxes = nodes.map((t, i) => { const [x, y] = pos(i); return `<g class="dg-node" style="--i:${i}"><rect x="${x - 64}" y="${y - 25}" width="128" height="50" rx="14"/>${label(x, y + 5, t, 15)}</g>`; }).join('');
         return `<svg class="dg dg-cycle" viewBox="0 0 340 340" role="img" aria-label="${esc(nodes.join(', then ') + ', and around again')}">
             <defs><marker id="${id}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" class="dg-arrow"/></marker></defs>
-            <circle class="dg-orbit" cx="${C}" cy="${C}" r="${R}"/>${arcs}${boxes}
-            <circle class="dg-packet dg-packet-loop" r="6" style="offset-path: path('M ${C} ${C - R} A ${R} ${R} 0 1 1 ${C - 0.01} ${C - R}')"/></svg>`;
+            <circle class="dg-orbit" cx="${C}" cy="${C}" r="${R}"/>${arcs}
+            <circle class="dg-packet dg-packet-loop" r="6" style="offset-path: path('M ${C} ${C - R} A ${R} ${R} 0 1 1 ${C - 0.01} ${C - R}')"/>${boxes}</svg>`;
     }
     function layers(nodes) {
         const n = nodes.length, W = 340, H = 48, G = 14, h = n * H + (n - 1) * G;
@@ -134,9 +137,9 @@ const Bento = (() => {
         page.querySelector('#bento-box').innerHTML = todaysBox().map(({ l, forYou }, i) => {
             const t = text(l), tr = TRACKS[l.track];
             const isDone = done.includes(l.id);
-            return `<button type="button" class="bento-cell${isDone ? ' is-done' : ''}" data-id="${l.id}" data-tone="${tr.tone}" style="--i:${i}" aria-pressed="${openId === l.id}">
+            return `<button type="button" class="bento-cell${isDone ? ' is-done' : ''}" data-id="${l.id}" data-tone="${tr.tone}" style="--i:${i};--plate:${plateOf(l.track)}" aria-pressed="${openId === l.id}">
                 <span class="cell-lid" aria-hidden="true"></span>
-                <span class="cell-top"><span class="cell-no num">${i + 1}</span><span class="cell-track"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</span></span>
+                <span class="cell-top"><span class="cell-no num">${i + 1}</span><span class="cell-track"><i class="cell-plate" aria-hidden="true"></i>${esc(tr.name)}</span></span>
                 <span class="cell-title">${esc(t.title)}</span>
                 <span class="cell-hook">${esc(t.hook)}</span>
                 ${i === 0 && t.analogy ? `<span class="cell-quote">${esc(t.analogy)}</span>` : ''}
@@ -163,33 +166,33 @@ const Bento = (() => {
         panel.dataset.trackName = tr.name;
         panel._question = t.q;
         panel._answer = `${t.a}\n\n${t.body}`;
+        panel.style.setProperty('--plate', plateOf(l.track));
         panel.innerHTML = `
-            <header class="lesson-head">
-                <span class="tone-pill" data-tone="${tr.tone}"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</span>
+            <div class="lesson-visual">
+                ${l.diagram ? `<figure class="lesson-diagram">${diagram(l.diagram)}</figure>` : ''}
+                ${t.analogy ? `<blockquote class="lesson-picture"><span>Picture it</span>${esc(t.analogy)}</blockquote>` : ''}
+            </div>
+            <div class="lesson-body">
+                <header class="lesson-bar">
+                    <span class="lesson-track"><i aria-hidden="true"></i>${esc(tr.name)}</span>
+                    <div class="lesson-tools">
+                        <button type="button" class="lesson-round prep-btn-mentor" data-ask aria-label="Ask the Mentor about this" title="Ask the Mentor about this"><svg aria-hidden="true"><use href="#i-ask"/></svg></button>
+                        <button type="button" class="lesson-save" data-done${isDone ? ' disabled' : ''}>${isDone ? '<svg aria-hidden="true"><use href="#i-check-bold"/></svg>Learned today' : 'Mark as learned'}</button>
+                        <button type="button" class="lesson-round lesson-close" data-close aria-label="Close the lesson" title="Close"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
+                    </div>
+                </header>
                 <h2 class="lesson-title" tabindex="-1">${esc(t.title)}</h2>
                 <p class="lesson-hook">${esc(t.hook)}</p>
-                <button type="button" class="btn btn-ghost btn-icon lesson-close" data-close aria-label="Close the lesson"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
-            </header>
-            ${l.diagram ? `<figure class="lesson-diagram" data-tone="${tr.tone}">${diagram(l.diagram)}</figure>` : ''}
-            <div class="lesson-grid">
-                <section class="lesson-block"><h3><svg aria-hidden="true"><use href="#i-books"/></svg>In plain words</h3><p>${esc(t.body)}</p></section>
-                ${t.analogy ? `<section class="lesson-block lesson-analogy"><h3><svg aria-hidden="true"><use href="#i-bulb"/></svg>Picture it</h3><p>${esc(t.analogy)}</p></section>` : ''}
-            </div>
-            <section class="lesson-block lesson-interview">
-                <h3><svg aria-hidden="true"><use href="#i-chats"/></svg>Say it in the interview</h3>
-                <p class="lesson-q">${esc(t.q)}</p>
-                <button type="button" class="q-reveal" data-reveal><svg aria-hidden="true"><use href="#i-eye"/></svg>Reveal a model answer</button>
-                <p class="lesson-a" hidden>${esc(t.a)}</p>
-            </section>
-            ${follow.length ? `<section class="lesson-block">
-                <h3><svg aria-hidden="true"><use href="#i-lightning"/></svg>They might ask next</h3>
-                <div class="lesson-follow">${follow.map(f => `<button type="button" class="chip" data-follow="${esc(f)}"><svg aria-hidden="true"><use href="#i-chats"/></svg>${esc(f)}</button>`).join('')}</div>
-            </section>` : ''}
-            ${rel.length ? `<section class="lesson-block"><h3><svg aria-hidden="true"><use href="#i-target"/></svg>From your Prep bank</h3><div class="lesson-related">${rel.map(({ e, n }) => `<button type="button" class="lesson-rel" data-jump="${n}"><span class="badge-pill q-no">Q${n}</span><span>${esc(e.question)}</span></button>`).join('')}</div></section>` : ''}
-            <footer class="lesson-actions">
-                <button type="button" class="btn btn-secondary prep-btn-mentor" data-ask><svg aria-hidden="true"><use href="#i-ask"/></svg>Ask Mentor</button>
-                <button type="button" class="btn btn-primary" data-done${isDone ? ' disabled' : ''}><svg aria-hidden="true"><use href="#i-check-bold"/></svg>${isDone ? 'Learned today' : 'Mark as learned'}</button>
-            </footer>`;
+                <p class="lesson-text">${esc(t.body)}</p>
+                <section class="lesson-ask">
+                    <h3>Say it in the interview</h3>
+                    <p class="lesson-q">${esc(t.q)}</p>
+                    <button type="button" class="lesson-reveal" data-reveal><svg aria-hidden="true"><use href="#i-eye"/></svg>Show a model answer</button>
+                    <p class="lesson-a" hidden>${esc(t.a)}</p>
+                </section>
+                ${follow.length ? `<section class="lesson-more"><h3>They might ask next</h3><div class="lesson-follow">${follow.map(f => `<button type="button" class="lesson-chip" data-follow="${esc(f)}">${esc(f)}</button>`).join('')}</div></section>` : ''}
+                ${rel.length ? `<section class="lesson-more"><h3>From your Prep bank</h3><div class="lesson-related">${rel.map(({ e, n }) => `<button type="button" class="lesson-rel" data-jump="${n}"><span class="lesson-rel-no">Q${n}</span><span>${esc(e.question)}</span></button>`).join('')}</div></section>` : ''}
+            </div>`;
         if (focus) requestAnimationFrame(() => panel.scrollIntoView({ behavior: Motion.calm() ? 'auto' : 'smooth', block: 'start' }));
     }
     function renderMenu(page) {
@@ -205,155 +208,184 @@ const Bento = (() => {
         renderBox(page);
         renderLesson(page, false);
         renderMenu(page);
-        Pond.fill();
+        Belt.fill();
     }
 
-    // ── The pond: every topic floating, drifting and bouncing off the walls and each other ──
-    const Pond = (() => {
-        let water, items = [], raf = 0, last = 0, W = 0, H = 0, pointer = null, seen = false, stir = 0, mounted = false, lastW = 0;
+    // ── The belt: every topic rides a plate round a sushi-bar conveyor. A plate's rim is its track's colour (the card in
+    // the middle says which, like a sushi bar's plate prices). Plates come out of the kitchen hatch under the curtain and
+    // pass it again once a lap; under the curtain a plate may be swapped for a topic that has not been out yet, so every
+    // topic comes round. Reaching for a plate eases the belt to a stop; tapping one lifts it off into the lesson.
+    // Narrow screens run it as two lanes whose bends (and the hatch) sit out of sight. Calm and reduced motion set every
+    // plate out, still, on the counter. Plates ride on CSS (offset-path); JS sets the path and eases the speed.
+    const Belt = (() => {
+        const SPEED = 32, SLAT = 24;   // px a second along the belt; one slat and its gap (bento.css draws 2 + 22)
+        const DISHES = ['maki', 'nigiri', 'gunkan'];
+        // what is on the plate, in the colours of the real thing: [fish or filling, its lighter streak]
+        const FOODS = {
+            maki: [['#7aa356', '#4f7a35'], ['#c2423a', '#9e2f29'], ['#f2c84b', '#d9a521'], ['#f08a5d', '#d96a3c']],   // cucumber, tuna, tamago, salmon
+            nigiri: [['#f08a5d', '#ffd2b8'], ['#c2423a', '#e2756d'], ['#f2c84b', '#f9e08c'], ['#f6a07c', '#fff0e3']],   // salmon, tuna, tamago, ebi
+            gunkan: [['#e8692e', '#ffbd8a'], ['#f39a3c', '#ffd79a'], ['#6f9a4f', '#b8d391']],   // ikura, tobiko, wakame
+        };
+        let section, belt, tray, track, plates = [], queue = [], mounted = false, stir = 0, size = '', inside = false, touchT = 0;
+        let rate = 0, goal = 1, raf = 0, last = 0, seen = false;
         const still = () => Motion.calm();
+        const base = () => (inside ? 0.35 : 1);
+        const r1 = v => Math.round(v * 10) / 10;
+        const hashOf = id => { let h = 7; for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
+        const dishOf = id => { const h = hashOf(id), kind = DISHES[h % DISHES.length], [food, streak] = FOODS[kind][(h >>> 4) % FOODS[kind].length]; return { kind, food, streak }; };
         const pick = () => {
             const pool = LESSONS.filter(l => state.track === 'all' || l.track === state.track);
             const done = new Set(Object.values(state.done).flat()), box = new Set(todaysBox().map(x => x.l.id));
-            const mixed = shuffled(day() + 'pond' + stir, pool);
+            const mixed = shuffled(day() + 'belt' + stir, pool);
             return [...mixed.filter(l => !done.has(l.id)), ...mixed.filter(l => done.has(l.id))].map(l => ({ l, done: done.has(l.id), today: box.has(l.id) }));
         };
+        // one plate: a rim in its track's colour, a piece of sushi (a tick once it is learned), the name, and steam on today's
+        function paint(el, item) {
+            const { l, done, today } = item, tr = TRACKS[l.track];
+            el._item = item;
+            el.type = 'button';
+            el.className = `belt-plate${done ? ' is-done' : ''}${today ? ' is-today' : ''}${l.id === openId ? ' is-open' : ''}`;
+            el.dataset.pondOpen = l.id;
+            el.dataset.tone = tr.tone;
+            el.style.setProperty('--plate', plateOf(l.track));
+            const dish = dishOf(l.id);
+            el.innerHTML = `<span class="plate-lift"><span class="plate-dish dish-${done ? 'eaten' : dish.kind}" style="--food:${dish.food};--food-2:${dish.streak}" aria-hidden="true">${done ? '<svg><use href="#i-check-bold"/></svg>' : ''}</span>`
+                + `<span class="plate-name">${esc(text(l).title)}</span><span class="sr-only">, ${esc(tr.name)}${done ? ', learned' : ''}${today ? ", in today's box" : ''}</span>`
+                + (today && !done ? '<span class="plate-steam" aria-hidden="true"><svg viewBox="0 0 30 26"><path d="M6 24c-3-4 3-7 0-11s3-7 0-11"/><path d="M15 24c-3-4 3-7 0-11s3-7 0-11"/><path d="M24 24c-3-4 3-7 0-11s3-7 0-11"/></svg></span>' : '')
+                + '</span>';
+        }
         function fill() {
-            water = document.querySelector('#bento-pond [data-pond]');
-            if (!water) return;
+            section = document.getElementById('bento-belt');
+            belt = section?.querySelector('[data-belt]');
+            if (!belt) return;
+            tray = belt.querySelector('[data-belt-plates]');
+            track = belt.querySelector('.belt-track');
             mount();
-            const hint = document.querySelector('#bento-pond [data-pond-hint]');
-            if (hint) hint.textContent = state.track === 'all' ? 'Every topic, floating free. Tap one to open it.' : `Every topic in ${TRACKS[state.track].name}. Tap one to open it.`;
-            const list = pick();
-            water.innerHTML = list.map(({ l, done, today }, i) => {
-                const tr = TRACKS[l.track];
-                return `<button type="button" class="pond-bubble${done ? ' is-done' : ''}${today ? ' is-today' : ''}" data-pond-open="${l.id}" data-tone="${tr.tone}" style="--i:${i};--bob:${(2.6 + ((i * 37) % 19) / 10).toFixed(1)}s">
-                    <span class="pb-bob"><span class="pb-face"><svg aria-hidden="true"><use href="#i-${done ? 'check-bold' : tr.icon}"/></svg><span class="pb-t">${esc(text(l).title)}</span>${done ? '<span class="sr-only">(learned)</span>' : ''}</span></span></button>`;
-            }).join('');
-            water.classList.toggle('is-still', still());
-            layout();
+            const hint = section.querySelector('[data-belt-hint]');
+            if (hint) hint.textContent = still() ? 'Every topic, set out on the counter. Tap one to open it.'
+                : state.track === 'all' ? 'Every topic rides the belt. Reach for a plate and it stops.' : `Every ${TRACKS[state.track].name} topic rides the belt. Reach for a plate and it stops.`;
+            const legend = belt.querySelector('[data-belt-legend]');
+            if (legend) legend.innerHTML = Object.entries(TRACKS).filter(([k]) => state.track === 'all' || k === state.track)
+                .map(([k, tr]) => `<li style="--plate:${plateOf(k)}"><i></i><span>${esc(tr.name)}</span><b>${LESSONS.filter(l => l.track === k).length}</b></li>`).join('');
+            layout(pick());
         }
-        // keep as many bubbles as sit comfortably in the water, placed so they start apart
-        function layout() {
-            cancelAnimationFrame(raf); raf = 0;
-            if (still()) { items = []; return; }
-            W = water.clientWidth; H = water.clientHeight; lastW = W;
-            if (!W || !H) { items = []; return; }
-            const all = [...water.children].map(el => ({ el, w: el.offsetWidth, h: el.offsetHeight }));
-            const budget = W * H * (W < 520 ? 0.5 : 0.4);
-            let used = 0;
-            items = [];
-            for (const b of all) {
-                if (used + b.w * b.h > budget || b.w > W - 8) { b.el.remove(); continue; }
-                used += b.w * b.h; items.push(b);
-            }
-            const rnd = seeded(day() + stir + W);
-            const free = (x, y, b) => items.every(o => o === b || o.x === undefined || x + b.w + 6 < o.x || o.x + o.w + 6 < x || y + b.h + 6 < o.y || o.y + o.h + 6 < y);
-            items.forEach(b => {
-                let x, y, tries = 0;
-                do { x = rnd() * (W - b.w); y = rnd() * (H - b.h); } while (!free(x, y, b) && ++tries < 40);
-                const a = rnd() * Math.PI * 2, sp = 14 + rnd() * 18;
-                Object.assign(b, { x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, cruise: sp, held: false });
-                b.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-                b.el._b = b;
-            });
-            run();
+        // the belt's shape: a stadium inside the counter, or (narrow) two lanes whose bends sit past the edges
+        function shape(W, H, pw, ph, wide) {
+            const top = ph / 2 + 30, bottom = H - ph / 2 - 14, r = (bottom - top) / 2, cy = top + r;   // 30 above: room for steam
+            const a = wide ? pw / 2 + 14 + r : -(pw / 2 + 6), b = wide ? W - pw / 2 - 14 - r : W + pw / 2 + 6;
+            const d = wide   // starts at the hatch: top centre when wide, the far right bend when narrow
+                ? `M ${r1(W / 2)} ${r1(top)} H ${r1(b)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(b)} ${r1(bottom)} H ${r1(a)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(a)} ${r1(top)} Z`
+                : `M ${r1(b + r)} ${r1(cy)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(b)} ${r1(bottom)} H ${r1(a)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(a)} ${r1(top)} H ${r1(b)} A ${r1(r)} ${r1(r)} 0 0 1 ${r1(b + r)} ${r1(cy)} Z`;
+            return { top, bottom, a, b, d, length: 2 * (b - a) + 2 * Math.PI * r };
         }
-        function squash(b, axis, speed) {
-            if (speed < 18 || b.squashing) return;
-            b.squashing = true;
-            const s = Math.min(0.16, speed / 900);
-            const k = axis === 'x' ? [`scale(${1 - s}, ${1 + s * 0.6})`] : [`scale(${1 + s * 0.6}, ${1 - s})`];
-            const a = b.el.querySelector('.pb-face').animate([{ transform: 'none' }, { transform: k[0] }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
-            a.onfinish = a.oncancel = () => { b.squashing = false; };
+        function layout(list) {
+            belt.classList.toggle('is-still', still());
+            tray.innerHTML = ''; plates = []; queue = [];
+            if (still()) { list.forEach(item => { const el = document.createElement('button'); paint(el, item); tray.append(el); }); return; }
+            const W = belt.clientWidth, H = belt.clientHeight, cs = getComputedStyle(belt);
+            if (!W || !H) return;   // the page is hidden: the ResizeObserver lays it out once it shows
+            const pw = parseFloat(cs.getPropertyValue('--plate-w')) || 170, ph = parseFloat(cs.getPropertyValue('--plate-h')) || 58;
+            let wide = cs.getPropertyValue('--belt-mode').trim() !== 'narrow', g = shape(W, H, pw, ph, wide);
+            if (wide && g.b - g.a < 80) { wide = false; g = shape(W, H, pw, ph, false); }
+            belt.dataset.mode = wide ? 'wide' : 'narrow';
+            const n = Math.max(1, Math.min(list.length, Math.floor(g.length / (pw + 22))));
+            const islW = g.b - g.a, islH = g.bottom - g.top - ph - 40;
+            Object.entries({
+                '--belt-path': `path("${g.d}")`, '--lap': `${(g.length / SPEED).toFixed(2)}s`, '--slat-lap': `${(SLAT / SPEED).toFixed(3)}s`, '--n': n,
+                '--hatch-x': `${r1(W / 2)}px`, '--hatch-h': `${r1(g.top + ph / 2 + 10)}px`,
+                '--isl-x': `${r1(g.a)}px`, '--isl-y': `${r1(g.top + ph / 2 + 20)}px`, '--isl-w': `${r1(islW)}px`, '--isl-h': `${r1(islH)}px`,
+            }).forEach(([k, v]) => belt.style.setProperty(k, v));
+            belt.dataset.island = wide && islW >= 260 && islH >= 110 ? 'on' : 'off';
+            track.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            track.querySelectorAll('path').forEach(p => p.setAttribute('d', g.d));
+            list.slice(0, n).forEach((item, k) => { const el = document.createElement('button'); el.style.setProperty('--k', k); paint(el, item); tray.append(el); plates.push(el); });
+            queue = list.slice(n);
+            size = `${W}x${H}`;
+            apply();
         }
-        function step(t) {
+        // the speed eases toward its goal; every plate and the slats share one rate, so they never drift apart
+        function apply() { belt?.getAnimations({ subtree: true }).forEach(an => { if (an.animationName === 'beltRide' || an.animationName === 'beltSlats') an.playbackRate = rate; }); }
+        function setGoal(g) { goal = g; if (!raf) { last = 0; raf = requestAnimationFrame(tick); } }
+        function tick(t) {
             raf = 0;
-            if (!seen || document.hidden || !items.length) { last = 0; return; }
-            const dt = Math.min(0.04, (t - (last || t)) / 1000); last = t;
-            for (const b of items) {
-                if (b.held) continue;
-                // near the cursor a bubble slows right down, so it is easy to catch; away from it, a lazy drift
-                const near = pointer ? Math.max(0, 1 - Math.hypot(b.x + b.w / 2 - pointer.x, b.y + b.h / 2 - pointer.y) / 160) : 0;
-                const sp = Math.hypot(b.vx, b.vy) || 1, goal = b.cruise * (1 - near * 0.9);
-                const k = 1 + (goal / sp - 1) * Math.min(1, dt * (near ? 6 : 1.2));
-                b.vx *= k; b.vy *= k;
-                b.x += b.vx * dt; b.y += b.vy * dt;
-                if (b.x < 0) { b.x = 0; squash(b, 'x', Math.abs(b.vx)); b.vx = Math.abs(b.vx); }
-                else if (b.x + b.w > W) { b.x = W - b.w; squash(b, 'x', Math.abs(b.vx)); b.vx = -Math.abs(b.vx); }
-                if (b.y < 0) { b.y = 0; squash(b, 'y', Math.abs(b.vy)); b.vy = Math.abs(b.vy); }
-                else if (b.y + b.h > H) { b.y = H - b.h; squash(b, 'y', Math.abs(b.vy)); b.vy = -Math.abs(b.vy); }
-            }
-            for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {   // bump, part, bounce
-                const a = items[i], c = items[j];
-                const ox = Math.min(a.x + a.w, c.x + c.w) - Math.max(a.x, c.x), oy = Math.min(a.y + a.h, c.y + c.h) - Math.max(a.y, c.y);
-                if (ox <= 0 || oy <= 0 || (a.held && c.held)) continue;
-                const ax = ox < oy, sa = a.held ? 0 : c.held ? 1 : 0.5, sc = 1 - sa;
-                if (ax) {
-                    const dir = a.x + a.w / 2 < c.x + c.w / 2 ? -1 : 1;
-                    a.x += dir * ox * sa; c.x -= dir * ox * sc;
-                    if ((c.vx - a.vx) * dir > 0) { const v = a.vx; if (!a.held) a.vx = c.held ? -a.vx : c.vx; if (!c.held) c.vx = a.held ? -c.vx : v; }
-                } else {
-                    const dir = a.y + a.h / 2 < c.y + c.h / 2 ? -1 : 1;
-                    a.y += dir * oy * sa; c.y -= dir * oy * sc;
-                    if ((c.vy - a.vy) * dir > 0) { const v = a.vy; if (!a.held) a.vy = c.held ? -a.vy : c.vy; if (!c.held) c.vy = a.held ? -c.vy : v; }
-                }
-            }
-            for (const b of items) {
-                b.x = Math.max(0, Math.min(W - b.w, b.x)); b.y = Math.max(0, Math.min(H - b.h, b.y));
-                b.el.style.transform = `translate3d(${b.x.toFixed(1)}px, ${b.y.toFixed(1)}px, 0)`;
-            }
-            raf = requestAnimationFrame(step);
+            const dt = last ? Math.min(0.05, (t - last) / 1000) : 1 / 60; last = t;
+            const want = seen && !document.hidden ? goal : 0;
+            rate += (want - rate) * Math.min(1, dt * 6);
+            if (Math.abs(want - rate) < 0.01) rate = want;
+            apply();
+            if (rate !== want) raf = requestAnimationFrame(tick);
         }
-        function run() { if (!raf && seen && !document.hidden && items.length) { last = 0; raf = requestAnimationFrame(step); } }
-
+        function sway() {
+            const noren = belt.querySelector('.belt-noren');
+            if (!noren || belt.dataset.mode !== 'wide') return;
+            noren.classList.remove('is-swaying'); void noren.offsetWidth; noren.classList.add('is-swaying');
+        }
+        function ring() {
+            const bell = belt.querySelector('.belt-bell');
+            if (!bell || still() || belt.dataset.island !== 'on') return;
+            bell.classList.remove('is-ringing'); void bell.offsetWidth; bell.classList.add('is-ringing');
+        }
+        // New plates: the belt whooshes and every plate flips over to a new dish, one after another down the line
+        function spinOut() {
+            stir++;
+            const list = pick();
+            if (still() || !plates.length) { layout(list); return; }
+            queue = list.slice(plates.length);
+            setGoal(5);
+            setTimeout(() => setGoal(belt.contains(document.activeElement) ? 0 : base()), 900);
+            plates.forEach((el, k) => setTimeout(() => {
+                const out = el.querySelector('.plate-lift').animate([{ transform: 'none' }, { transform: 'rotateY(90deg) scale(0.9)' }], { duration: 170, easing: 'cubic-bezier(0.4, 0, 1, 1)' });
+                out.onfinish = () => { paint(el, list[k]); el.querySelector('.plate-lift').animate([{ transform: 'rotateY(-90deg) scale(0.9)' }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }); };
+            }, 70 * k));
+        }
         function mount() {
             if (mounted) return;
             mounted = true;
-            const pond = document.getElementById('bento-pond');
-            new IntersectionObserver(([e]) => { seen = e.isIntersecting; run(); }).observe(water);
-            document.addEventListener('visibilitychange', run);
+            new IntersectionObserver(([e]) => { seen = e.isIntersecting; setGoal(goal); }).observe(belt);
+            document.addEventListener('visibilitychange', () => setGoal(goal));
             let t;
-            new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => { if (water.clientWidth && Math.abs(water.clientWidth - lastW) > 24) fill(); else { W = water.clientWidth; H = water.clientHeight; } }, 180); }).observe(water);
-            const local = e => { const r = water.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-            water.addEventListener('pointermove', e => { if (e.pointerType === 'mouse') pointer = local(e); });
-            water.addEventListener('pointerleave', () => { pointer = null; });
-            // hovering or focusing a bubble holds it still so it can be read and clicked
-            const hold = (e, on) => { const b = e.target.closest?.('.pond-bubble')?._b; if (b) { b.held = on; if (!on) { b.vx = (Math.random() - 0.5) * b.cruise * 2; b.vy = (Math.random() - 0.5) * b.cruise * 2; } } };
-            water.addEventListener('pointerover', e => { if (e.pointerType === 'mouse') hold(e, true); });
-            water.addEventListener('pointerout', e => { if (e.pointerType === 'mouse' && !e.target.closest('.pond-bubble')?.contains(e.relatedTarget)) hold(e, false); });
-            water.addEventListener('focusin', e => hold(e, true));
-            water.addEventListener('focusout', e => hold(e, false));
-            // a finger on a bubble holds it for the tap; a tap on open water sends a ripple and nearby bubbles bounce away
-            water.addEventListener('pointerdown', e => {
-                if (e.target.closest('.pond-bubble')) { if (e.pointerType !== 'mouse') { hold(e, true); const b = e.target.closest('.pond-bubble'); setTimeout(() => { if (document.activeElement !== b && b._b) b._b.held = false; }, 900); } return; }
-                if (still()) return;
-                const p = local(e);
-                items.forEach(b => {
-                    const dx = b.x + b.w / 2 - p.x, dy = b.y + b.h / 2 - p.y, d = Math.hypot(dx, dy) || 1;
-                    if (d < 220) { const f = (1 - d / 220) * 260; b.vx += (dx / d) * f; b.vy += (dy / d) * f; }
-                });
-                const ring = document.createElement('span');
-                ring.className = 'pond-ripple'; ring.style.left = `${p.x}px`; ring.style.top = `${p.y}px`;
-                water.append(ring); setTimeout(() => ring.remove(), 900);
+            new ResizeObserver(() => { clearTimeout(t); t = setTimeout(() => { if (belt.clientWidth && `${belt.clientWidth}x${belt.clientHeight}` !== size) layout(pick()); }, 180); }).observe(belt);
+            // a mouse in the bar slows the belt; on a plate (or with the keyboard in it) the belt stops; a finger holds it for a moment
+            belt.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { inside = true; setGoal(base()); } });
+            belt.addEventListener('pointerleave', () => { inside = false; if (!belt.contains(document.activeElement)) setGoal(base()); });
+            tray.addEventListener('pointerover', e => { if (e.pointerType === 'mouse' && e.target.closest('.belt-plate')) setGoal(0); });
+            tray.addEventListener('pointerout', e => {
+                const p = e.target.closest('.belt-plate');
+                if (e.pointerType === 'mouse' && p && !p.contains(e.relatedTarget) && !belt.contains(document.activeElement)) setGoal(base());
             });
-            pond.addEventListener('click', e => {
-                const b = e.target.closest('[data-pond-open]');
-                if (b) grow(b);
-                else if (e.target.closest('[data-pond-stir]')) { stir++; fill(); }
+            belt.addEventListener('focusin', () => setGoal(0));
+            belt.addEventListener('focusout', e => { if (!belt.contains(e.relatedTarget)) setGoal(base()); });
+            belt.addEventListener('pointerdown', e => {
+                if (e.pointerType === 'mouse') return;
+                setGoal(0); clearTimeout(touchT);
+                touchT = setTimeout(() => { if (!belt.contains(document.activeElement)) setGoal(base()); }, 1800);
+            });
+            // at the hatch: the curtain sways, and a plate nobody is reaching for may go back for a topic not yet out
+            tray.addEventListener('animationiteration', e => {
+                if (e.animationName !== 'beltRide') return;
+                const el = e.target;
+                sway();
+                if (!queue.length || !el._item || el.matches(':hover, :focus-within') || el.dataset.pondOpen === openId) return;
+                queue.push(el._item);
+                paint(el, queue.shift());
+            });
+            section.addEventListener('click', e => {
+                const p = e.target.closest('[data-pond-open]');
+                if (p) { ring(); grow(p); }
+                else if (e.target.closest('[data-belt-spin]')) spinOut();
             });
         }
 
-        // the tapped bubble grows into the lesson card
+        // the tapped plate lifts off and grows into the lesson card
         function grow(btn) {
             const id = btn.dataset.pondOpen, from = btn.getBoundingClientRect();
             const page = document.getElementById('page-bento'), panel = page.querySelector('#bento-lesson');
             openId = id;
             page.querySelectorAll('.bento-cell').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === openId)));
             renderLesson(page, false);
-            water.querySelectorAll('.pond-bubble').forEach(b => b.classList.toggle('is-open', b === btn));
+            tray.querySelectorAll('.belt-plate').forEach(b => b.classList.toggle('is-open', b === btn));
             panel.querySelector('.lesson-title')?.focus({ preventScroll: true });
-            // glide the page so the lesson lands near the top, and fly the bubble to exactly where it will land
+            // glide the page so the lesson lands near the top, and fly the plate to exactly where it will land
             const r0 = panel.getBoundingClientRect();
             let scroller = panel.parentElement;
             while (scroller && scroller !== document.body && !(/(auto|scroll)/.test(getComputedStyle(scroller).overflowY) && scroller.scrollHeight > scroller.clientHeight)) scroller = scroller.parentElement;
@@ -366,30 +398,35 @@ const Bento = (() => {
             if (still()) { if (needs) scroller.scrollTo({ top: target, behavior: 'auto' }); return; }
             if (needs) scroller.scrollTo({ top: target, behavior: 'smooth' });
             const ghost = document.createElement('div');
-            ghost.className = 'pond-ghost'; ghost.dataset.tone = btn.dataset.tone; ghost.setAttribute('aria-hidden', 'true');
-            ghost.innerHTML = `<span>${esc(btn.querySelector('.pb-t').textContent)}</span>`;
+            ghost.className = 'belt-ghost'; ghost.style.setProperty('--plate', btn.style.getPropertyValue('--plate')); ghost.setAttribute('aria-hidden', 'true');
+            ghost.innerHTML = `<span>${esc(btn.querySelector('.plate-name').textContent)}</span>`;
             document.body.append(ghost);
             const end = { left: `${to.left}px`, top: `${Math.max(to.top, 8)}px`, width: `${to.width}px`, height: `${Math.min(to.height, innerHeight - Math.max(to.top, 8) - 8)}px` };
             panel.style.opacity = '0';
             const a = ghost.animate([
-                { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, borderRadius: '999px' },
-                { offset: 0.35, left: `${from.left - 6}px`, top: `${from.top - 10}px`, width: `${from.width + 12}px`, height: `${from.height + 8}px`, borderRadius: '999px' },
-                { ...end, borderRadius: '22px' },
-            ], { duration: 620, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' });
+                { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, borderRadius: '999px', transform: 'none' },
+                { offset: 0.3, left: `${from.left - 8}px`, top: `${from.top - 26}px`, width: `${from.width + 16}px`, height: `${from.height + 10}px`, borderRadius: '999px', transform: 'rotate(-4deg)' },
+                { ...end, borderRadius: '22px', transform: 'none' },
+            ], { duration: 680, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' });
             a.onfinish = () => {
                 panel.style.opacity = '';
                 panel.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
                 ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }).onfinish = () => ghost.remove();
             };
         }
-        return { fill };
+        // a lesson marked learned: its plate, if it is on the belt, shows the tick at once
+        function mark(id) {
+            const el = tray && [...tray.querySelectorAll('.belt-plate')].find(p => p.dataset.pondOpen === id);
+            if (el?._item) paint(el, { ...el._item, done: true });
+        }
+        return { fill, mark };
     })();
 
     function open(id) {
         openId = openId === id ? null : id;
         const page = document.getElementById('page-bento');
         page.querySelectorAll('.bento-cell').forEach(c => c.setAttribute('aria-pressed', String(c.dataset.id === openId)));
-        page.querySelectorAll('.pond-bubble').forEach(b => b.classList.toggle('is-open', b.dataset.pondOpen === openId));
+        page.querySelectorAll('.belt-plate').forEach(b => b.classList.toggle('is-open', b.dataset.pondOpen === openId));
         const cell = page.querySelector(`.bento-cell[data-id="${id}"]`);
         if (openId && cell && !Motion.calm()) cell.animate([{ transform: 'none' }, { transform: 'translateY(-10px) scale(1.03) rotate(-1deg)' }, { transform: 'none' }], { duration: 520, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
         renderLesson(page, Boolean(openId));
@@ -407,8 +444,7 @@ const Bento = (() => {
         if (box.every(({ l }) => list.includes(l.id))) page.querySelectorAll('.bento-cell').forEach((c, i) => setTimeout(() => Motion.burst(c, 14), i * 120));
         const next = box.find(({ l }) => !list.includes(l.id));
         renderBar(page); renderBox(page); renderMenu(page);
-        const bubble = page.querySelector(`.pond-bubble[data-pond-open="${openId}"]`);
-        if (bubble) { bubble.classList.add('is-done'); bubble.querySelector('use')?.setAttribute('href', '#i-check-bold'); }
+        Belt.mark(openId);
         if (next) setTimeout(() => open(next.l.id), 700); else { openId = null; renderLesson(page, false); }
     }
 
@@ -438,7 +474,7 @@ const Bento = (() => {
         if (!page) return;
         page.addEventListener('click', e => {
             const b = e.target.closest('button');
-            if (!b || b.closest('#bento-pond')) return;
+            if (!b || b.closest('#bento-belt')) return;
             if ('fresh' in b.dataset) writeFresh(b);
             else if (b.closest('[data-bento-track]')) { state.track = b.dataset.v; openId = null; save(); render(); }
             else if (b.classList.contains('bento-cell')) open(b.dataset.id);

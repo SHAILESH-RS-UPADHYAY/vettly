@@ -67,7 +67,6 @@
 .prep-lang:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
 
 .lab-go { display: grid; gap: 10px; }
-.lab-hint { display: none; font-size: 0.86rem; color: var(--muted); text-wrap: pretty; }
 /* the one big button: a flat pill in the accent, in sentence case, the Lab's flask leading and an arrow that leans in on
    hover; while a question is written the flask bubbles. The arrow is drawn here (::after), so the MCQ label gets it too */
 #page-prep .prep-generate {
@@ -118,10 +117,9 @@
 @keyframes labStep { 0%, 100% { opacity: 0.45; } 12%, 30% { opacity: 1; } }
 .lab-status { font: 500 0.8rem/1.3 var(--font-mono); color: var(--accent-ink); }
 
-/* tablets: the button sits beside its hint */
+/* tablets: the button sits at the right of the Lab's foot */
 @container prep (min-width: 640px) {
-    .lab-hint { display: block; }
-    .lab-go { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .lab-go { display: flex; align-items: center; justify-content: flex-end; gap: 20px; }
     #page-prep .lab-go .prep-generate { width: auto; }
     .lab-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
@@ -305,7 +303,8 @@ body.mentor-room #page-prep { padding-right: var(--mentor-room); }
 .q-head .tone-pill { padding: 0; background: none; color: var(--ink-2); font: 600 0.8rem/1.2 var(--font-body); }
 .q-head .tone-pill svg { width: 16px; height: 16px; color: var(--cfg); }
 .q-head .q-subject { padding: 0; background: none; color: var(--ink-2); }
-.q-no { margin-left: auto; font: 600 0.72rem/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; color: var(--muted); }
+.q-head .q-no { margin-left: auto; }
+.q-no { font: 600 0.72rem/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; color: var(--muted); }
 .q-diff { display: inline-flex; align-items: center; gap: var(--space-2xs); font-size: 0.78rem; color: var(--muted); }
 .q-diff i { width: 6px; height: 6px; border-radius: 50%; background: var(--rule-2); }
 .q-diff i.on { background: var(--ink-2); }

@@ -14,7 +14,7 @@ const Tour = (() => {
         { section: 'home', nav: 'nav-home', title: 'Daybook', body: 'Your day on one page: what to practise next, today’s Bento, your streak and the shortcuts you use most.' },
         { section: 'setup', nav: 'nav-setup', more: true, title: 'Agent Toolbelt', body: 'Optional: add a resume, a job description or GitHub, and answers get more personal. Your field and role are enough to start.' },
         { section: 'prep', nav: 'nav-prep', title: 'Prep Studio', body: 'Pick a category and Vettly writes a question for your role, then a model answer you can study and refine.' },
-        { section: 'bento', nav: 'nav-bento', title: 'Brain Bento', body: 'Five bite-sized ideas from your field every morning, and every topic floating in the pond. Tap one to learn it.' },
+        { section: 'bento', nav: 'nav-bento', title: 'Brain Bento', body: 'Five bite-sized ideas from your field every morning, and every topic riding round on the belt. Tap a plate to learn it.' },
         { section: 'chat', nav: 'nav-chat', title: 'Live Copilot', body: 'Practise out loud or by typing. Each chapter of the register keeps its questions, answers and times, and the stopwatch times you.' },
         { section: 'attic', nav: 'nav-attic', more: true, optional: 'attic', title: 'The Attic', body: 'Deleted chapters and sessions wait here, so nothing is lost by accident. Don’t need it? Hide the tab in the Atelier.' },
         { section: 'atelier', nav: 'nav-atelier', more: true, title: 'Atelier', body: 'Make it yours: themes, page styles, how Live Copilot writes, which tabs show, and every keyboard shortcut.' },
