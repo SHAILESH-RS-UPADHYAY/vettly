@@ -32,7 +32,7 @@ const PrepKit = (() => {
         if (lab) lab.innerHTML = `<button type="button" class="sub-chip" data-sub="" aria-pressed="${!subject}" style="--i:0">${ico('all')}Any</button>`
             + subjects.map((s, i) => `<button type="button" class="sub-chip" data-sub="${esc(s)}" aria-pressed="${s === subject}" style="--i:${i + 1}">${esc(s)}</button>`).join('')
             + (subjects.length < MAX ? `<button type="button" class="sub-chip sub-add" data-sub-add style="--i:${subjects.length + 1}">${ico('plus')}Add</button>` : '')
-            + (subjects.length < MAX ? ideasLeft().slice(0, 3).map(s => `<button type="button" class="sub-idea" data-sub-idea="${esc(s.name)}" title="${esc(s.why)}">${ico('plus')}${esc(s.name)}</button>`).join('') : '');
+            + (subjects.length < MAX && ideasLeft().length ? `<span class="sub-try"><small>Try</small>${ideasLeft().slice(0, 3).map(s => `<button type="button" class="sub-idea" data-sub-idea="${esc(s.name)}" title="${esc(s.why)}">${ico('plus')}${esc(s.name)}</button>`).join('')}</span>` : '');
         const belt = $('toolbelt-subjects');
         if (belt) belt.innerHTML = subjects.length
             ? subjects.map((s, i) => `<span class="sub-chip sub-own" style="--i:${i}">${esc(s)}<button type="button" data-sub-remove="${esc(s)}" aria-label="Remove ${esc(s)}">${ico('x-bold')}</button></span>`).join('')

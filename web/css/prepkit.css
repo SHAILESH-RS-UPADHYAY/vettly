@@ -16,16 +16,29 @@
 .prep-tabs-ink { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: var(--r-ctl); background: var(--pill); transition: transform 460ms var(--spring); }
 .prep-tabs[data-on="mcq"] .prep-tabs-ink { transform: translateX(100%); }
 @media (max-width: 30rem) { .prep-tabs [role="tab"] small { display: none; } .prep-tabs [role="tab"] { min-height: 48px; } }
-#page-prep[data-prep-tab="mcq"] .prep-lang { display: none; }   /* MCQs are written in English */
+#page-prep[data-prep-tab="mcq"] .tune-lang { display: none; }   /* MCQs are written in English */
 
 /* ── Toughness and subject, under the category tiles ── */
-.lab-tune { display: grid; gap: 12px; min-width: 0; }
-.tune-block { display: grid; gap: 6px; min-width: 0; }
+/* one tray, three cells split by hairlines: stacked on phones, two rows on tablets, one row when wide.
+   Each cell draws its divider as a 1px shadow above and to its left; the tray clips the ones on its own edge. */
+.lab-tune { display: grid; min-width: 0; overflow: clip; border: 1px solid var(--rule); border-radius: var(--r-ctl); background: color-mix(in srgb, var(--ink) 3%, transparent); }
+.tune-block { display: grid; gap: 8px; align-content: start; min-width: 0; padding: 12px 14px 14px; box-shadow: 0 -1px 0 var(--rule); }
+.lab-tune .dock-label { justify-content: flex-start; }
+.tune-lang .prep-lang { justify-self: start; }
+@container prep (min-width: 640px) {
+    .lab-tune { grid-template-columns: minmax(0, 1fr) auto; }
+    .tune-subjects { grid-column: 1 / -1; grid-row: 2; }
+    .tune-lang { box-shadow: -1px 0 0 var(--rule); }
+}
+@container prep (min-width: 1000px) {
+    .lab-tune { grid-template-columns: auto minmax(0, 1fr) auto; }
+    .tune-subjects { grid-column: auto; grid-row: auto; }
+    .tune-block { box-shadow: -1px 0 0 var(--rule); }
+}
 .lab-level > button { gap: 7px; }
 .lab-level .diff-dots { display: inline-flex; gap: 3px; }
 #lab-level .diff-dots i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.28; }
 #lab-level .diff-dots i.on { background: currentColor; opacity: 1; }
-@container prep (min-width: 640px) { .lab-tune { grid-column: 1 / -1; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); align-items: start; column-gap: var(--space-lg); } }
 
 .subject-row { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .sub-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; max-width: 100%; padding: 6px 13px; border: 1.5px solid var(--rule-2); border-radius: var(--r-chip); background: var(--card-bg); color: var(--ink-2); font: 600 0.84rem/1.1 var(--font-body); cursor: pointer; overflow-wrap: anywhere;
@@ -50,6 +63,10 @@ input.sub-chip.sub-input { width: 9.5rem; cursor: text; border-color: var(--acce
 .sub-ideas-label { flex-basis: 100%; display: flex; align-items: center; gap: 6px; font: 600 0.72rem/1.2 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent-ink); }
 .sub-ideas-label svg { width: 14px; height: 14px; }
 .sub-idea:hover { color: var(--accent-ink); border-color: var(--accent); }
+/* the lab's suggestions sit apart from your own subjects, behind a hairline and a small "Try" */
+.sub-try { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; flex-basis: 100%; min-width: 0; }
+@container prep (min-width: 640px) { .sub-try { display: inline-flex; flex-basis: auto; padding-left: 10px; border-left: 1px solid var(--rule-2); } }
+.sub-try small { font: 600 0.68rem/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .q-subject { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: var(--r-chip); background: var(--accent-soft); color: var(--accent-ink); font: 600 0.74rem/1.2 var(--font-body); }
 .q-subject svg { width: 13px; height: 13px; }
 
