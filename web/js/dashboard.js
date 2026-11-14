@@ -1016,9 +1016,11 @@ async function prepCopy(index, btn) {
     // phones: the deck moves into the Filters sheet while it is open
     const sheetSlot = sheet.querySelector('[data-sheet-slot]');
     const phone = matchMedia('(max-width: 47.99rem)');
-    function openSheet() { sheetSlot.appendChild(dock); setFold(true, false); sheet.showModal(); openBtn.setAttribute('aria-expanded', 'true'); dock.querySelectorAll('.seg').forEach(Motion.thumb); }
+    const openBtn = page.querySelector('[data-f-open]'), layout = document.getElementById('prep-qa-panel');
+    const focusFirst = () => dock.querySelector('.st-tile[aria-pressed="true"]')?.focus({ preventScroll: true });   // the chosen status, not the scroller
+    function openSheet() { sheetSlot.appendChild(dock); sheet.showModal(); openBtn.setAttribute('aria-expanded', 'true'); dock.querySelectorAll('.seg').forEach(Motion.thumb); focusFirst(); }
     function closeSheet() { if (sheet.open) sheet.close(); }
-    sheet.addEventListener('close', () => { slot.appendChild(dock); setFold(prepFoldOpen(), false); });
+    sheet.addEventListener('close', () => { slot.appendChild(dock); openBtn.setAttribute('aria-expanded', String(layout.dataset.filters === 'open')); });
     sheet.querySelector('[data-f-done]').addEventListener('click', closeSheet);
     sheet.addEventListener('click', e => {
         const r = sheet.getBoundingClientRect();
@@ -1026,32 +1028,28 @@ async function prepCopy(index, btn) {
     });
     phone.addEventListener('change', ev => { if (!ev.matches) closeSheet(); });
 
-    // tablets and up: the deck is a strip above the stream; categories and difficulty fold away (remembered)
-    const FOLD_KEY = 'vettly_prep_fold';
-    const foldBtn = dock.querySelector('[data-f-fold]'), more = dock.querySelector('.dock-more'), openBtn = page.querySelector('[data-f-open]');
-    function prepFoldOpen() { try { return localStorage.getItem(FOLD_KEY) !== 'closed'; } catch (e) { return true; } }
-    function setFold(open, remember = true) {
-        dock.dataset.fold = open ? 'open' : 'closed';
-        more.inert = !open;
-        foldBtn.setAttribute('aria-expanded', String(open));
-        foldBtn.querySelector('[data-fold-label]').textContent = open ? 'Fewer filters' : 'More filters';
-        openBtn.setAttribute('aria-expanded', String(phone.matches ? sheet.open : open));
-        if (remember) try { localStorage.setItem(FOLD_KEY, open ? 'open' : 'closed'); } catch (e) { /* private mode */ }
+    // tablets and up: the deck is a panel on the right of the stream, closed until the Filters button opens it.
+    // Opening or closing it changes the stream's width, so prepPack re-packs the cards and Motion.glide slides them there.
+    function setPanel(open) {
+        if ((layout.dataset.filters === 'open') === open) return;
+        Motion.glide(list, () => { layout.dataset.filters = open ? 'open' : 'closed'; prepPack(); });
+        openBtn.setAttribute('aria-expanded', String(open));
+        if (open) { dock.querySelectorAll('.seg').forEach(Motion.thumb); focusFirst(); }
     }
-    setFold(prepFoldOpen(), false);
-    foldBtn.addEventListener('click', () => setFold(dock.dataset.fold !== 'open'));
-    // the Filters button: the sheet on phones; on larger screens it folds the deck when it is in view,
-    // and brings it back (unfolded) when the reader has scrolled down the answers
-    openBtn.addEventListener('click', () => {
-        if (phone.matches) { openSheet(); return; }
-        const bar = page.querySelector('.stream-bar').getBoundingClientRect(), r = dock.getBoundingClientRect();
-        const inView = r.top >= bar.bottom - 4 && r.top < innerHeight - 80;
-        if (inView) { setFold(dock.dataset.fold !== 'open'); return; }
-        setFold(true);
-        document.getElementById('prep-list-toolbar').scrollIntoView({ behavior: Motion.calm() ? 'auto' : 'smooth', block: 'start' });
-        dock.classList.remove('is-called'); void dock.offsetWidth; dock.classList.add('is-called');
-        setTimeout(() => dock.querySelector('.st-tile[aria-pressed="true"]')?.focus({ preventScroll: true }), Motion.calm() ? 0 : 450);
+    openBtn.addEventListener('click', () => (phone.matches ? openSheet() : setPanel(layout.dataset.filters !== 'open')));
+    dock.querySelector('[data-f-close]').addEventListener('click', () => {
+        if (sheet.open) { closeSheet(); return; }
+        setPanel(false);
+        openBtn.focus({ preventScroll: true });
     });
+    dock.addEventListener('keydown', e => {
+        if (e.key !== 'Escape' || sheet.open || layout.dataset.filters !== 'open') return;
+        setPanel(false);
+        openBtn.focus({ preventScroll: true });
+    });
+    // the Mentor docks on the right as well: when it opens, the panel makes way for it
+    const mentorEl = document.getElementById('mentor');
+    if (mentorEl) new MutationObserver(() => { if (mentorEl.dataset.state === 'open') setPanel(false); }).observe(mentorEl, { attributes: true, attributeFilter: ['data-state'] });
     const sheetObserver = new MutationObserver(() => {
         const n = document.querySelector('[data-shown]')?.dataset.count || 0;
         sheet.querySelector('[data-f-done]').textContent = `Show ${n} ${Number(n) === 1 ? 'question' : 'questions'}`;

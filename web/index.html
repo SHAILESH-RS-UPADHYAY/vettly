@@ -67,7 +67,7 @@
     <link rel="stylesheet" href="./css/tokens.css?v=7.1">
     <link rel="stylesheet" href="./css/base.css?v=7.9">
     <link rel="stylesheet" href="./css/styles.css?v=9.9">
-    <link rel="stylesheet" href="./css/prep.css?v=8.3">
+    <link rel="stylesheet" href="./css/prep.css?v=8.6">
     <link rel="stylesheet" href="./css/prepkit.css?v=1.4">
     <link rel="stylesheet" href="./css/mentor.css?v=9.7">
     <link rel="stylesheet" href="./css/looks.css?v=7.11">
@@ -897,7 +897,7 @@
                 </div>
                 <!-- MCQ practice: a deck of exam cards (prepkit.js draws it) -->
                 <section class="mcq-panel" id="mcq-panel" role="tabpanel" aria-labelledby="prep-tab-mcq" hidden></section>
-                <div class="prep-layout" id="prep-qa-panel" role="tabpanel" aria-labelledby="prep-tab-qa">
+                <div class="prep-layout" id="prep-qa-panel" role="tabpanel" aria-labelledby="prep-tab-qa" data-filters="closed">
                     <div class="prep-stream" id="prep-list-toolbar">
                         <div class="stream-bar">
                             <label class="stream-search">
@@ -905,56 +905,10 @@
                                 <input type="search" id="prep-search" placeholder="Search questions and answers" aria-label="Search your questions" autocomplete="off">
                                 <kbd class="search-key">/</kbd>
                             </label>
-                            <button type="button" class="btn btn-sm filters-open" data-f-open aria-controls="prep-dock"><svg aria-hidden="true"><use href="#i-funnel"/></svg>Filters<span class="f-badge num" data-f-badge hidden>0</span></button>
+                            <button type="button" class="btn btn-sm filters-open" data-f-open aria-controls="prep-dock" aria-expanded="false"><svg aria-hidden="true"><use href="#i-funnel"/></svg>Filters<span class="f-badge num" data-f-badge hidden>0</span></button>
                             <div class="stream-meter" aria-live="polite">
                                 <span class="meter-text"><b class="num" id="prep-total-count" data-shown>0</b> <span data-of>of 0 questions</span></span>
                             </div>
-                        </div>
-                        <!-- Filter Deck: a strip above the questions on tablets and up (so the answers get the full width),
-                             the Filters sheet on phones. Categories and difficulty fold away; the choice is remembered. -->
-                        <div class="prep-dock-slot" id="prep-dock-slot">
-                            <section class="toolbelt-card prep-dock" id="prep-dock" aria-label="Filters">
-                                <div class="dock-head">
-                                    <h3><svg class="h-ico" aria-hidden="true"><use href="#i-funnel"/></svg>Filters</h3>
-                                    <button type="button" class="dock-clear" data-f-clear hidden>Clear all</button>
-                                    <button type="button" class="dock-fold" data-f-fold aria-expanded="true" aria-controls="prep-dock-more"><span data-fold-label>Fewer filters</span><svg aria-hidden="true"><use href="#i-caret-down"/></svg></button>
-                                </div>
-                                <div class="dock-block dock-status">
-                                    <span class="dock-label">Status</span>
-                                    <div class="st-grid" data-f-status role="group" aria-label="Status"></div>
-                                </div>
-                                <div class="dock-block dock-sort">
-                                    <span class="dock-label">Order</span>
-                                    <div class="seg seg-fill" data-f-sort role="group" aria-label="Order">
-                                        <button type="button" data-v="new" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sort"/></svg>Newest</button>
-                                        <button type="button" data-v="old" aria-pressed="false">Oldest</button>
-                                        <button type="button" data-v="shuffle" aria-pressed="false"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle</button>
-                                    </div>
-                                </div>
-                                <div class="dock-block dock-view">
-                                    <span class="dock-label">Answers</span>
-                                    <div class="seg seg-fill" data-f-view role="group" aria-label="Answers">
-                                        <button type="button" data-v="answers" aria-pressed="true">Show answers</button>
-                                        <button type="button" data-v="cards" aria-pressed="false"><svg aria-hidden="true"><use href="#i-cards"/></svg>Flashcards</button>
-                                    </div>
-                                </div>
-                                <div class="dock-more" id="prep-dock-more">
-                                    <div class="dock-more-inner">
-                                        <div class="dock-block dock-cats">
-                                            <span class="dock-label">Categories <small>pick one or more</small></span>
-                                            <div class="pill-grid" data-f-cats role="group" aria-label="Categories"></div>
-                                        </div>
-                                        <div class="dock-block dock-diffs">
-                                            <span class="dock-label">Difficulty</span>
-                                            <div class="pill-grid" data-f-diffs role="group" aria-label="Difficulty"></div>
-                                        </div>
-                                        <div class="dock-block dock-subs" hidden>
-                                            <span class="dock-label">Subjects</span>
-                                            <div class="pill-grid" data-f-subs role="group" aria-label="Subjects"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
                         </div>
                         <div class="f-ribbon" data-f-ribbon hidden></div>
                         <div class="prep-list" id="prep-list">
@@ -963,6 +917,52 @@
                             <div class="q-skeleton skeleton"></div>
                         </div>
                     </div>
+                    <!-- Filters: a panel on the right of the stream from tablets up, closed until the Filters button opens it
+                         (the Mentor closes it when it opens); the Filters sheet on phones -->
+                    <aside class="prep-dock-slot" id="prep-dock-slot">
+                        <section class="toolbelt-card prep-dock" id="prep-dock" aria-label="Filters">
+                            <div class="dock-head">
+                                <h3><svg class="h-ico" aria-hidden="true"><use href="#i-funnel"/></svg>Filters</h3>
+                                <button type="button" class="dock-clear" data-f-clear hidden>Clear all</button>
+                                <button type="button" class="dock-close" data-f-close aria-label="Close filters" title="Close filters"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button>
+                            </div>
+                            <div class="dock-block dock-status">
+                                <span class="dock-label">Status</span>
+                                <div class="st-grid" data-f-status role="group" aria-label="Status"></div>
+                            </div>
+                            <div class="dock-block dock-sort">
+                                <span class="dock-label">Order</span>
+                                <div class="seg seg-fill" data-f-sort role="group" aria-label="Order">
+                                    <button type="button" data-v="new" aria-pressed="true"><svg aria-hidden="true"><use href="#i-sort"/></svg>Newest</button>
+                                    <button type="button" data-v="old" aria-pressed="false">Oldest</button>
+                                    <button type="button" data-v="shuffle" aria-pressed="false"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle</button>
+                                </div>
+                            </div>
+                            <div class="dock-block dock-view">
+                                <span class="dock-label">Answers</span>
+                                <div class="seg seg-fill" data-f-view role="group" aria-label="Answers">
+                                    <button type="button" data-v="answers" aria-pressed="true">Show answers</button>
+                                    <button type="button" data-v="cards" aria-pressed="false"><svg aria-hidden="true"><use href="#i-cards"/></svg>Flashcards</button>
+                                </div>
+                            </div>
+                            <div class="dock-more" id="prep-dock-more">
+                                <div class="dock-more-inner">
+                                    <div class="dock-block dock-cats">
+                                        <span class="dock-label">Categories <small>pick one or more</small></span>
+                                        <div class="pill-grid" data-f-cats role="group" aria-label="Categories"></div>
+                                    </div>
+                                    <div class="dock-block dock-diffs">
+                                        <span class="dock-label">Difficulty</span>
+                                        <div class="pill-grid" data-f-diffs role="group" aria-label="Difficulty"></div>
+                                    </div>
+                                    <div class="dock-block dock-subs" hidden>
+                                        <span class="dock-label">Subjects</span>
+                                        <div class="pill-grid" data-f-subs role="group" aria-label="Subjects"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </aside>
                 </div>
             </div>
             <dialog class="sheet prep-sheet" id="prep-filter-sheet" aria-label="Filters">
@@ -1468,7 +1468,7 @@
     <script defer src="./js/motion.js?v=8.8"></script>
     <script defer src="./js/tooltip.js?v=1.0"></script>
     <script defer src="./js/appearance.js?v=9.6"></script>
-    <script defer src="./js/dashboard.js?v=9.14"></script>
+    <script defer src="./js/dashboard.js?v=9.16"></script>
     <script defer src="./js/mentor.js?v=8.10"></script>
     <script defer src="./js/brand.js?v=4.4"></script>
     <script>/* the app's files stay on the device, so the installed app paints at once (sw.js) */ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));</script>
