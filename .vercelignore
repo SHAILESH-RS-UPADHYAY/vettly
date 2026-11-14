@@ -1,18 +1,20 @@
-# Personal data stays off Vercel: the hosted demo starts with an empty profile
+# Only the app is uploaded: api/, backend/, web/ and the root config files
+
+# Your data stays off Vercel: the hosted app starts every account empty
 backend/context_store/*.json
 !backend/context_store/context.example.json
 backend/uploads/
 backend/recordings/
 
-# Local tooling
-.playwright-mcp/
-.hallmark/
-*.bat
-
-# Secrets never ship with the code (Vercel holds its own env vars)
+# Secrets never ship with the code (Vercel holds its own environment variables)
 **/.env
 **/.env.*
 !**/.env.example
 
-# Private notes and tracking
+# Not needed to run the app
+docs/
+scripts/
+.github/
 .private/
+.playwright-mcp/
+.hallmark/

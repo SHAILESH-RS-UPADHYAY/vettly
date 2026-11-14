@@ -483,6 +483,18 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       tick once learned, a heavier rim for today's box), and no tape on Brain Bento's cards
 - [ ] 22.6 Check on the live site after the deploy (tested locally on laptop and phone, day and night)
 
+## Phase 23 · A tidy repo and settings file (requested 15 Nov)
+
+- [x] 23.1 `backend/.env.example` lists every setting the server reads, grouped (AI providers in the router's order,
+      answers, other services, running locally, hosted), with the defaults commented out so an empty line never
+      overrides one. The owner's local `.env` follows the same layout with every value kept (backed up in `.private/`)
+- [x] 23.2 `backend/` holds only the app: the one-off import tool moved to `scripts/import_local_data.py` (run it from
+      the repo root); the unused Heroku-style `Procfile` is gone
+- [x] 23.3 One list of packages: `backend/requirements.txt` builds on the root `requirements.txt` plus local extras
+- [x] 23.4 `npm test` (or `python -m tests` from `backend/`) runs all seven test files; all pass
+- [x] 23.5 `.gitignore` and `.vercelignore` grouped and explained; docs, scripts and `.github` stay out of the Vercel
+      upload; the Windows launcher no longer looks for another project's Python; README structure and setup updated
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the

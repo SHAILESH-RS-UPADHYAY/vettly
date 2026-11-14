@@ -19,10 +19,10 @@ cd /d "%~dp0..\backend"
 set AUTO_OPEN_BROWSER=1
 set PYTHONUTF8=1
 
-if exist "..\..\acemate\backend\venv\Scripts\python.exe" (
-    "..\..\acemate\backend\venv\Scripts\python.exe" main.py
-) else if exist "venv\Scripts\python.exe" (
+if exist "venv\Scripts\python.exe" (
     "venv\Scripts\python.exe" main.py
+) else if exist "..\.venv\Scripts\python.exe" (
+    "..\.venv\Scripts\python.exe" main.py
 ) else (
     python main.py
 )

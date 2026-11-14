@@ -1,10 +1,11 @@
 {
   "name": "vettly",
   "version": "1.0.0",
-  "description": "Vettly — AI Career Architect & Technical Prep Studio",
+  "private": true,
+  "description": "Vettly: interview prep and a live copilot for every field",
   "scripts": {
     "dev": "cd backend && python main.py",
     "start": "cd backend && python main.py",
-    "test": "cd backend && python tests/test_accounts.py"
+    "test": "cd backend && python -m tests"
   }
 }

@@ -1,35 +1,8 @@
-# Server
-fastapi>=0.115.0
+# Everything the hosted app needs, kept in step with ../pyproject.toml
+-r ../requirements.txt
+
+# Local extras: a faster server loop, live speech to text, screenshot reading
 uvicorn[standard]>=0.30.0
-python-dotenv>=1.0.0
-pydantic>=2.0.0
-
-# Speech-to-Text
 deepgram-sdk>=3.5.0
-
-# LLM
-groq>=0.9.0
-openai>=1.0.0
-
-# Audio Processing (optional — only needed on desktop, not on server)
-# sounddevice>=0.5.0
-numpy>=1.26.0
-
-# Document Parsing
-PyPDF2>=3.0.0
-python-docx>=1.1.0
-
-# HTTP / GitHub
-httpx>=0.27.0
-aiofiles>=24.0.0
-
-# Utilities
-python-multipart>=0.0.9
-websockets>=12.0
-
-# Vision / Screenshot Analysis (Gemini)
 google-generativeai>=0.7.0
-
-# Accounts and storage for the hosted app
-PyJWT[crypto]>=2.8.0
-psycopg[binary]>=3.2.0
+numpy>=1.26.0

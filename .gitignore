@@ -1,4 +1,18 @@
-# Python
+# ── Secrets: never committed ──
+# Real keys live in backend/.env (copy backend/.env.example); `vercel env pull` writes .env.* files
+.env
+.env.*
+!.env.example
+
+# ── Your data stays on your machine ──
+# The local stores (profile, chats, answers), uploaded resumes and recordings
+backend/context_store/*.json
+!backend/context_store/context.example.json
+backend/context_store/users/
+backend/uploads/
+backend/recordings/
+
+# ── Python ──
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,38 +20,18 @@ venv/
 .venv/
 env/
 
-# Environment variables & secrets
-.env
-backend/.env
-
-# Runtime logs & temporary files
-backend/backend_logs.txt
-backend/recordings/
+# ── Logs ──
 *.log
 
-# OS / IDE
+# ── Editors, OS and local tools ──
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 .vercel/
-
-# Browser test screenshots and logs
+.claude/
+.hallmark/
 .playwright-mcp/
 
-# Pulled hosted settings (vercel env pull) hold real keys
-.env.*
-!.env.example
-
-# Private notes and tracking: never pushed or deployed
+# ── Private notes and tracking: never pushed or deployed ──
 .private/
-
-# Your own data stays on your machine: the local stores (profile, chats, answers) and uploaded resumes
-backend/context_store/*.json
-!backend/context_store/context.example.json
-backend/context_store/users/
-backend/uploads/
-
-# Local design tooling
-.hallmark/
-

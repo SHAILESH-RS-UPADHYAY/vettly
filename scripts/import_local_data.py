@@ -1,11 +1,11 @@
 """
-Copy your local Vettly data (context_store/*.json) into your account on the hosted site.
+Copy your local Vettly data (backend/context_store/*.json) into your account on the hosted site.
 
 1. Sign up on the hosted site with your email, so Clerk knows who you are.
 2. Pull the hosted settings (needs DATABASE_URL and CLERK_SECRET_KEY):
        vercel env pull backend/.env.hosted
-3. From backend/:
-       python import_local_data.py --email you@example.com
+3. From the repo root:
+       python scripts/import_local_data.py --email you@example.com
 Nothing in your account is replaced unless you pass --force. Your local files are only read.
 """
 
@@ -17,18 +17,20 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+BACKEND = Path(__file__).resolve().parent.parent / "backend"
+sys.path.insert(0, str(BACKEND))   # docstore and its settings live in backend/
 KINDS = ["context", "about_me", "chat_history", "qa_cache", "history", "recycle_bin", "assignment_code", "profile"]
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Copy local Vettly data into a hosted account")
     ap.add_argument("--email", required=True, help="the email you signed up with")
-    ap.add_argument("--env", default=".env.hosted", help="file with DATABASE_URL and CLERK_SECRET_KEY")
+    ap.add_argument("--env", default=str(BACKEND / ".env.hosted"), help="file with DATABASE_URL and CLERK_SECRET_KEY (default: backend/.env.hosted)")
     ap.add_argument("--force", action="store_true", help="replace documents the account already has")
     args = ap.parse_args()
 
     # read the local documents first, straight from disk
-    store = Path(__file__).parent / "context_store"
+    store = BACKEND / "context_store"
     docs = {k: json.loads((store / f"{k}.json").read_text(encoding="utf-8")) for k in KINDS if (store / f"{k}.json").exists()}
     if not docs:
         sys.exit(f"No local data found in {store}")
@@ -38,7 +40,7 @@ def main() -> None:
     db = env.get("DATABASE_URL") or env.get("POSTGRES_URL")
     secret = env.get("CLERK_SECRET_KEY")
     if not db or not secret:
-        sys.exit(f"{args.env} needs DATABASE_URL and CLERK_SECRET_KEY (run: vercel env pull backend/{args.env})")
+        sys.exit(f"{args.env} needs DATABASE_URL and CLERK_SECRET_KEY (run: vercel env pull backend/.env.hosted)")
     os.environ["DATABASE_URL"] = db
 
     query = urllib.parse.urlencode({"email_address": args.email})

@@ -180,31 +180,36 @@ vettly/
 │   └── vendor/              Pinned third-party scripts (GSAP, marked, DOMPurify)
 ├── backend/                 The FastAPI server: the API, AI calls and storage
 │   ├── main.py              Every route, and it serves web/
+│   ├── config.py            Settings, read from backend/.env (template: .env.example)
 │   ├── ai/                  Prompts, answer writing and checking, the provider router
 │   ├── context/             Resume and GitHub readers, the question cache
 │   ├── stt/                 Speech to text for the Live Copilot
-│   ├── tests/               Run from backend/: python tests/test_accounts.py
+│   ├── tests/               python -m tests (from backend/) runs every file
 │   └── context_store/       Your local data (never committed; context.example.json shows the shape)
 ├── api/index.py             Vercel's entry point: hands every request to the backend app
-├── scripts/                 Windows launchers: start_vettly.bat, stop_vettly.bat
-└── docs/                    TRACKER.md (what changed, phase by phase) and the README's figures
+├── scripts/                 Local tools: start_vettly.bat, stop_vettly.bat, import_local_data.py
+├── docs/                    TRACKER.md (what changed, phase by phase) and the README's figures
+├── requirements.txt         What the hosted app installs (pyproject.toml mirrors it for Vercel)
+└── vercel.json              Region, security headers and caching
 ```
 
 ## 🚀 Quick Start (Local & Vercel)
 
-### 1. Add Your API Key (`backend/.env`)
-Copy `backend/.env.example` to `backend/.env` and configure **any one** of the 3 LLM providers:
+### 1. Install and add one AI key (`backend/.env`)
+
+```bash
+pip install -r backend/requirements.txt
+cp backend/.env.example backend/.env
+```
+
+Then add **one** key to `backend/.env`. Gemini and Groq have free tiers, and Vettly tries them first:
 
 ```ini
-# Option 1: Anthropic Claude
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Option 2: Google Gemini (100% Free Tier via Google AI Studio)
-GEMINI_API_KEY=AIzaSy...
-
-# Option 3: Groq Cloud (100% Free Tier via Groq Console)
-GROQ_API_KEY=gsk_...
+GEMINI_API_KEY=AIzaSy...   # https://aistudio.google.com/apikey
+GROQ_API_KEY=gsk_...       # https://console.groq.com/keys
 ```
+
+Every other setting is optional and explained in `backend/.env.example`.
 
 ### 2. Launch Locally (Auto-Opens Browser on Port `8766`)
 - **1-Click Windows Launcher:** Double-click **`scripts/start_vettly.bat`** — automatically cleans any stale port `8766` process, starts FastAPI, and opens **`http://127.0.0.1:8766`** in your default browser.
@@ -229,9 +234,9 @@ Locally, Vettly is single-user: no sign-in, data in `backend/context_store/`. On
 6. **Bring your local data to your account** (once):
    ```bash
    vercel env pull backend/.env.hosted
-   cd backend && python import_local_data.py --email you@example.com
+   python scripts/import_local_data.py --email you@example.com
    ```
    It only reads your local files, and never overwrites what the account has unless you pass `--force`.
 7. **Domain:** Vercel → Settings → Domains → add your domain, then add the same domain in Clerk.
 
-Checks: `npm test` runs `backend/test_accounts.py` (two users never see each other's data, bad tokens are refused, the AI allowance holds).
+Checks: `npm test` runs every file in `backend/tests/`: accounts never see each other's data, bad tokens are refused, the AI allowance and key pool hold, and Prep Studio's kit works.

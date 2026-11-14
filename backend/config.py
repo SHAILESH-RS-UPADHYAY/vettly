@@ -76,7 +76,7 @@ HINGLISH_MODE = os.getenv("HINGLISH_MODE", "auto")  # "auto", "always", "never"
 # ─── Accounts & Storage (hosted, multi-user) ─────────────────
 # Clerk sign-in. The Clerk integration on Vercel sets the NEXT_PUBLIC_ name; either works. Unset = single-user local mode.
 CLERK_PUBLISHABLE_KEY = os.getenv("CLERK_PUBLISHABLE_KEY") or os.getenv("NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY", "")
-CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")   # only import_local_data.py needs it
+CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY", "")   # only scripts/import_local_data.py needs it
 # Optional: the origins allowed to request tokens (e.g. https://vettly.app), comma separated
 CLERK_AUTHORIZED_PARTIES = [o.strip() for o in os.getenv("CLERK_AUTHORIZED_PARTIES", "").split(",") if o.strip()]
 # Postgres from the Neon integration. Unset = JSON files in context_store/
