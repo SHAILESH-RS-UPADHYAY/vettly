@@ -445,6 +445,25 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [ ] 20.8 Still to walk: onboarding for a new account, the sign-in page on small phones, AI answers end to end on
       the live site, the Atelier's controls one by one, keyboard-only use, Safari
 
+## Phase 21 · Prep Studio: hand-drawn icons, a tidy Lab, a pinboard and a Filters panel (requested 15 Nov)
+
+- [x] 21.1 No stock AI sparkle or wand on buttons and filters: hand-drawn icons for All (three overlapping discs),
+      Flashcards (fanned cards), the Synthesis Lab (a flask), Chef's Choice (a toque), Fresh today (a sprout) and Ask
+      Mentor (a question bubble). The Mentor's own star stays: it is the brand mark
+- [x] 21.2 The Lab's settings sit in one tray: Toughness, Subject (its Try ideas apart from your own) and Answer in.
+      One column at every width (tablets had an empty column beside the tiles)
+- [x] 21.3 The stream packs like a pinboard: each card spans its real height in 4 px grid rows (`prepPack` in
+      dashboard.js, kept current by a ResizeObserver), so a long answer never leaves a hole beside a short card.
+      Measured with 60 cards and 9 long answers open: no overlaps, every gap 20 to 24 px
+- [x] 21.4 Quiet cards (meta line, question, answer panel, Accept/Reject pills, round tools), chip filters, a rounded
+      search strip, a calm title (the "HUD" poster title retired) and no tape on this page
+- [x] 21.5 Filters are a panel on the right, closed until the Filters button opens it; the cards glide into the space;
+      the Mentor closes it when it opens; Esc or the close button closes it. Phones keep the bottom sheet
+- [x] 21.6 The Synthesize button: a flat accent pill in sentence case, the flask leading (it bubbles while a question
+      is written) and an arrow that leans in on hover
+- [ ] 21.7 Check on the live site after the deploy (tested locally at laptop, tablet and phone widths, day and night,
+      Questions and MCQs)
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the
