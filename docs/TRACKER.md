@@ -461,8 +461,25 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       the Mentor closes it when it opens; Esc or the close button closes it. Phones keep the bottom sheet
 - [x] 21.6 The Synthesize button: a flat accent pill in sentence case, the flask leading (it bubbles while a question
       is written) and an arrow that leans in on hover
+- [x] 21.8 The Lab's "Built from your Agent Toolbelt context and target role" line removed; the button sits alone at the
+      right of the Lab's foot
 - [ ] 21.7 Check on the live site after the deploy (tested locally at laptop, tablet and phone widths, day and night,
       Questions and MCQs)
+
+## Phase 22 · Brain Bento: a sushi-bar belt and a lesson that opens like a pin (requested 15 Nov)
+
+- [x] 22.1 "Help yourself" is a conveyor belt (bento.js `Belt`): topics ride plates on a CSS offset-path fitted to the
+      belt's size; the steel band and its moving slats are one SVG path. Two lanes on phones (bends and hatch out of sight)
+- [x] 22.2 Plates are lacquered by track (red, mustard, steel, black, indigo, sage) and carry maki, nigiri or gunkan in
+      real food colours; a card in the middle says which colour is which track; learned topics are empty plates with a tick
+- [x] 22.3 Motion: the belt eases to a stop for a hovering hand or the keyboard, slows while the pointer is in the bar;
+      a noren sways as plates pass the kitchen hatch, where a plate may swap for a topic not yet out (so every topic
+      comes round); today's dishes steam; New plates whooshes the belt and flips every plate; a tapped plate rings the
+      bell ("Order up!") and flies into the lesson. Calm and reduced motion set the plates out still
+- [x] 22.4 The lesson opens like a pin: the diagram on a wash of the plate's colour with its analogy as the caption; the
+      title, words, interview card, chips and Prep links on the other side; one Mark as learned pill, quiet round buttons
+- [x] 22.5 Today's box takes the plate colours (lacquer lids, a tiny plate before the track); no glow gradients
+- [ ] 22.6 Check on the live site after the deploy (tested locally on laptop and phone, day and night)
 
 ## Settings only the owner can change (Vercel / Clerk)
 
