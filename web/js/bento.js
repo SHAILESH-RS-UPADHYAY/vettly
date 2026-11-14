@@ -187,7 +187,7 @@ const Bento = (() => {
             </section>` : ''}
             ${rel.length ? `<section class="lesson-block"><h3><svg aria-hidden="true"><use href="#i-target"/></svg>From your Prep bank</h3><div class="lesson-related">${rel.map(({ e, n }) => `<button type="button" class="lesson-rel" data-jump="${n}"><span class="badge-pill q-no">Q${n}</span><span>${esc(e.question)}</span></button>`).join('')}</div></section>` : ''}
             <footer class="lesson-actions">
-                <button type="button" class="btn btn-secondary prep-btn-mentor" data-ask><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg>Ask Mentor</button>
+                <button type="button" class="btn btn-secondary prep-btn-mentor" data-ask><svg aria-hidden="true"><use href="#i-ask"/></svg>Ask Mentor</button>
                 <button type="button" class="btn btn-primary" data-done${isDone ? ' disabled' : ''}><svg aria-hidden="true"><use href="#i-check-bold"/></svg>${isDone ? 'Learned today' : 'Mark as learned'}</button>
             </footer>`;
         if (focus) requestAnimationFrame(() => panel.scrollIntoView({ behavior: Motion.calm() ? 'auto' : 'smooth', block: 'start' }));

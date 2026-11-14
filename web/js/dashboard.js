@@ -248,7 +248,7 @@ function createAssistantBubble(text, question) {
 
         const doubtBtn = document.createElement('button');
         doubtBtn.className = 'chat-expand-btn mentor-doubt-btn';
-        doubtBtn.innerHTML = '<svg viewBox="0 0 24 24"><use href="#mentor-mark"/></svg><span>Ask Doubt</span>';
+        doubtBtn.innerHTML = '<svg aria-hidden="true"><use href="#i-ask"/></svg><span>Ask Doubt</span>';
         doubtBtn.title = 'Pin this answer to the Doubt Desk and ask about it — the chat stays put';
         doubtBtn.onclick = () => mentorPin(bubble);
 
@@ -465,7 +465,6 @@ const PREP_CATS = {
 };
 const PREP_DIFFS = { EASY: ['Easy', 1], MEDIUM: ['Medium', 2], HARD: ['Hard', 3], COMMON: ['Common', 1] };
 const PREP_STATUS = [['all', 'All'], ['review', 'To review'], ['accept', 'Accepted'], ['reject', 'Rejected']];
-const PREP_STATE_LABEL = { accept: 'Accepted', reject: 'Rejected', review: 'To review' };
 
 // [key, label, tone, icon] for any category the backend returns, known or not
 function prepCat(category) {
@@ -574,7 +573,7 @@ function prepAnswerHtml(text) {
     return DOMPurify.sanitize(marked.parse(md, { breaks: true, gfm: true }));
 }
 const prepWords = text => (String(text || '').trim().match(/\S+/g) || []).length;
-const prepSpoken = words => words < 140 ? 'under a minute spoken' : `about ${Math.round(words / 140)} min spoken`;
+const prepSpoken = words => words < 140 ? 'under a minute' : `about ${Math.round(words / 140)} min`;
 // a new or refined answer is written in, block by block, like ink from a nib
 function prepInkAnswer(el) {
     if (!el || Motion.calm()) return;
@@ -591,38 +590,40 @@ function prepCardHtml(e, i, k) {
     const fresh = recentlyGenerated && i === prep.entries.length - 1;
     const hidden = prep.f.view === 'cards' && !prep.open.has(i) && !fresh;
     const score = Number(e.score) > 0 ? `<span class="q-score" title="Answer score"><svg aria-hidden="true"><use href="#i-star"/></svg>${e.score}/10</span>` : '';
-    const stateClass = { accept: 'badge-pill-emerald', reject: 'badge-pill-rose', review: 'badge-pill-slate' }[st];
     const words = prepWords(e.answer), long = words > PREP_LONG_WORDS;
     return `
     <article class="prep-card q-card${fresh ? ' newly-generated' : ''}${st === 'accept' ? ' is-accepted' : st === 'reject' ? ' is-rejected' : ''}" id="prep-card-${i}" data-key="${i}" data-tone="${tone}" style="--i:${Math.min(k, 10)}">
       <div class="q-body">
         <header class="q-head">
-            <span class="badge-pill q-no">Q${n}</span>
             <span class="tone-pill" data-tone="${tone}"><svg aria-hidden="true"><use href="#i-${icon}"/></svg>${escapeHtml(catLabel)}</span>
             <span class="q-diff" title="Difficulty: ${diffLabel}">${[1, 2, 3].map(d => `<i class="${d <= dots ? 'on' : ''}"></i>`).join('')}<span>${diffLabel}</span></span>
             ${e.subject ? `<span class="q-subject"><svg aria-hidden="true"><use href="#i-books"/></svg>${escapeHtml(e.subject)}</span>` : ''}
             ${fresh ? '<span class="badge-pill badge-pill-orange q-fresh">New</span>' : ''}
             ${score}
-            <span class="badge-pill q-state ${stateClass}">${PREP_STATE_LABEL[st]}</span>
+            <span class="q-no">Q${n}</span>
         </header>
         <p class="q-text" id="prep-q-${i}">${escapeHtml(e.question)}</p>
         <div class="q-answer${hidden ? ' is-hidden' : ''}">
             ${hidden ? `<button type="button" class="q-reveal" data-reveal="${i}"><svg aria-hidden="true"><use href="#i-eye"/></svg>Reveal the answer</button>` : ''}
             <div class="q-ans-body${long ? ' is-long' : ''}${long && prep.read?.has(i) ? ' is-open' : ''}">
                 <div class="q-ans-top">
-                    <span class="q-ans-label"><span class="v-classic">Model spoken delivery</span><span class="v-alt">Model answer</span></span>
-                    ${words ? `<span class="q-ans-meta">${words} words · ${prepSpoken(words)}</span>` : ''}
+                    <span class="q-ans-label">Model answer</span>
+                    ${words ? `<span class="q-ans-meta" title="Read aloud in ${prepSpoken(words)}">${words} words · ${prepSpoken(words)}</span>` : ''}
                 </div>
                 <div class="q-ans" id="prep-a-${i}">${prepAnswerHtml(e.answer)}</div>
                 ${long ? `<button type="button" class="q-more" data-more="${i}" aria-expanded="${!!prep.read?.has(i)}" aria-controls="prep-a-${i}"><span>${prep.read?.has(i) ? 'Show less' : 'Read the full answer'}</span><svg aria-hidden="true"><use href="#i-caret-down"/></svg></button>` : ''}
             </div>
         </div>
         <footer class="q-actions">
-            <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}" aria-label="Accept this answer"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
-            <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}" aria-label="Reject this answer"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
-            <button type="button" class="q-btn q-refine" data-refine="${i}" aria-label="Refine this answer"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
-            <button type="button" class="q-btn prep-btn prep-btn-mentor" data-mentor="${n}" title="Pin Q${n} to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor</span></button>
-            <button type="button" class="q-btn q-copy" data-copy="${i}" aria-label="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg><span class="q-copy-text">Copy</span></button>
+            <div class="q-rate">
+                <button type="button" class="q-btn q-accept${st === 'accept' ? ' is-on' : ''}" data-rate="accept" data-i="${i}" aria-pressed="${st === 'accept'}" aria-label="Accept this answer"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Accept</span></button>
+                <button type="button" class="q-btn q-reject${st === 'reject' ? ' is-on' : ''}" data-rate="reject" data-i="${i}" aria-pressed="${st === 'reject'}" aria-label="Reject this answer"><svg aria-hidden="true"><use href="#i-x"/></svg><span>Reject</span></button>
+            </div>
+            <div class="q-tools">
+                <button type="button" class="q-btn q-refine" data-refine="${i}" aria-label="Refine this answer" title="Refine this answer"><svg aria-hidden="true"><use href="#i-pencil"/></svg><span>Refine</span></button>
+                <button type="button" class="q-btn prep-btn-mentor" data-mentor="${n}" aria-label="Ask the Mentor about Q${n}" title="Pin Q${n} to the Mentor and ask about it"><svg aria-hidden="true"><use href="#i-ask"/></svg><span>Ask Mentor</span></button>
+                <button type="button" class="q-btn q-copy" data-copy="${i}" aria-label="Copy the answer" title="Copy the answer"><svg aria-hidden="true"><use href="#i-copy"/></svg><span class="q-copy-text">Copy</span></button>
+            </div>
         </footer>
       </div>
     </article>`;
@@ -697,7 +698,6 @@ function prepUpdateDock(shown) {
     const page = document.getElementById('page-prep');
     Motion.count(page.querySelector('[data-shown]'), shown);
     page.querySelector('[data-of]').textContent = `of ${prep.entries.length} ${prep.entries.length === 1 ? 'question' : 'questions'}`;
-    page.querySelector('[data-fill]').style.setProperty('--fill', prep.entries.length ? (shown / prep.entries.length).toFixed(3) : 0);
     const badge = page.querySelector('[data-f-badge]');
     badge.hidden = !active;
     badge.textContent = active;
@@ -715,12 +715,37 @@ function prepUpdateDock(shown) {
     dock.querySelectorAll('.seg').forEach(Motion.watchSeg);
 }
 
+// The pinboard: each card in the stream spans as many 4px grid rows as it is tall, plus the gap (prep.css applies the
+// spans only from two columns up). prepPack sizes every card at once, right after the list is built, so Motion.glide
+// measures the packed layout; a ResizeObserver then follows each card as it grows (Reveal, Read more, a new answer).
+const prepPack = (() => {
+    const ROW = 4;
+    const rows = (h, gap) => String(Math.ceil((h + gap) / ROW));
+    const gapOf = list => parseFloat(getComputedStyle(list).columnGap) || 0;
+    const watch = 'ResizeObserver' in window && new ResizeObserver(entries => {
+        const list = document.getElementById('prep-list');
+        if (!list) return;
+        const gap = gapOf(list);
+        entries.forEach(({ target, borderBoxSize }) => {
+            if (target.parentElement !== list) { watch.unobserve(target); return; }
+            target.style.setProperty('--rows', rows(borderBoxSize?.[0]?.blockSize ?? target.offsetHeight, gap));
+        });
+    });
+    return () => {
+        const list = document.getElementById('prep-list');
+        if (!list) return;
+        const gap = gapOf(list), cards = [...list.children], heights = cards.map(c => c.offsetHeight);
+        cards.forEach((c, k) => { c.style.setProperty('--rows', rows(heights[k], gap)); if (watch) watch.observe(c); });
+    };
+})();
+
 function prepRender({ animate = true } = {}) {
     const list = document.getElementById('prep-list');
     if (!list) return;
     const rows = prepVisible();
     const html = rows.length ? rows.map(({ e, i }, k) => prepCardHtml(e, i, k)).join('') : prepEmptyHtml();
-    if (animate) Motion.glide(list, () => { list.innerHTML = html; }); else list.innerHTML = html;
+    const build = () => { list.innerHTML = html; prepPack(); };
+    if (animate) Motion.glide(list, build); else build();
     mentorRepin();   // keep a Mentor pin on the fresh card
     prepUpdateDock(rows.length);
     prepWriteHash();
@@ -905,6 +930,8 @@ async function prepCopy(index, btn) {
     const slot = document.getElementById('prep-dock-slot');
     const sheet = document.getElementById('prep-filter-sheet');
     const search = document.getElementById('prep-search');
+    new MutationObserver(prepPack).observe(list, { childList: true });   // the forge card and anything else added later
+    prepPack();
 
     function clearFilters() {
         prep.f = { ...prep.f, q: '', st: 'all', cats: new Set(), diffs: new Set(), subs: new Set() };

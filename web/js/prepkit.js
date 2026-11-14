@@ -204,7 +204,7 @@ const PrepKit = (() => {
             <ol class="mcq-opts">${m.options.map((o, i) => `<li style="--i:${i}"><button type="button" class="mcq-opt${m.pick === i ? ' is-pick' : ''}${answered && m.answer === i ? ' is-right' : ''}" data-pick="${i}"${answered ? ' disabled' : ''}>
                 <span class="omr">${SCRIBBLE}<b>${'ABCD'[i]}</b></span><span class="opt-text">${esc(o)}</span>${RING}${STRIKE}</button></li>`).join('')}</ol>
             <div class="mcq-why"${answered ? '' : ' hidden'}><b>Why</b><p>${esc(m.why || `The answer is ${'ABCD'[m.answer]}.`)}</p></div>
-            <button type="button" class="q-btn prep-btn prep-btn-mentor mcq-mentor" data-mcq="mentor"${answered ? '' : ' hidden'} title="Pin this MCQ to the Mentor and ask about it"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#mentor-mark"/></svg><span>Ask Mentor why</span></button>
+            <button type="button" class="q-btn prep-btn prep-btn-mentor mcq-mentor" data-mcq="mentor"${answered ? '' : ' hidden'} title="Pin this MCQ to the Mentor and ask about it"><svg aria-hidden="true"><use href="#i-ask"/></svg><span>Ask Mentor why</span></button>
             <span class="mcq-stamp" aria-hidden="true">${state === 'wrong' ? 'Not quite' : 'Correct'}</span>
         </article>`;
     }
