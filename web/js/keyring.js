@@ -21,7 +21,7 @@ const OWN_PRESETS = [
     { id: 'openrouter', name: 'OpenRouter', icon: 'planet', hint: 'Hundreds of models behind one key', base: 'https://openrouter.ai/api/v1', model: 'openrouter/auto', keys: 'https://openrouter.ai/settings/keys' },
     { id: 'together', name: 'Together AI', icon: 'lightning', hint: 'Open models, fast', base: 'https://api.together.xyz/v1', model: 'meta-llama/Llama-3.3-70B-Instruct-Turbo', keys: 'https://api.together.ai/settings/api-keys' },
     { id: 'deepseek', name: 'DeepSeek', icon: 'brain', hint: 'Low cost, strong reasoning', base: 'https://api.deepseek.com/v1', model: 'deepseek-chat', keys: 'https://platform.deepseek.com/api_keys' },
-    { id: 'mistral', name: 'Mistral', icon: 'wand', hint: 'European models', base: 'https://api.mistral.ai/v1', model: 'mistral-small-latest', keys: 'https://console.mistral.ai/api-keys' },
+    { id: 'mistral', name: 'Mistral', icon: 'key', hint: 'European models', base: 'https://api.mistral.ai/v1', model: 'mistral-small-latest', keys: 'https://console.mistral.ai/api-keys' },
     { id: 'other', name: 'Other (OpenAI-compatible)', icon: 'plug', hint: 'Any API with /chat/completions', base: '', model: '', keys: '' },
 ];
 

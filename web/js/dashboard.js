@@ -452,7 +452,7 @@ async function restoreSetupState() {
 // #prep?q=redis&st=review&cat=TECHNICAL,GENERAL&diff=HARD&sort=shuffle&view=cards
 
 const PREP_CATS = {
-    GENERAL: ['General', 'gen', 'stack'],
+    GENERAL: ['General', 'gen', 'all'],
     BEHAVIORAL: ['Behavioral', 'beh', 'brain'],
     TECHNICAL: ['Technical', 'tech', 'code'],
     DSA_CODING: ['DSA / Coding', 'dsa', 'path'],
@@ -471,7 +471,7 @@ const PREP_STATE_LABEL = { accept: 'Accepted', reject: 'Rejected', review: 'To r
 function prepCat(category) {
     const key = String(category || 'GENERAL').toUpperCase();
     const known = PREP_CATS[key];
-    return known ? [key, ...known] : [key, key.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), 'gen', 'stack'];
+    return known ? [key, ...known] : [key, key.toLowerCase().replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase()), 'gen', 'all'];
 }
 function prepDiff(difficulty) {
     const key = String(difficulty || 'MEDIUM').toUpperCase();
@@ -1946,7 +1946,7 @@ function renderToolbeltSummary() {
     const role = contextData.assignment?.title;
     const parts = [
         ['skills', 'lightning', 'Skills', contextData.skills.tags.length],
-        ['projects', 'wand', 'Projects', contextData.projects.length],
+        ['projects', 'toolbox', 'Projects', contextData.projects.length],
         ['experience', 'briefcase', 'Experience', contextData.experience.length],
         ['stories', 'books', 'STAR stories', contextData.stories.length],
         ['qabank', 'list-checks', 'Q&amp;A bank', contextData.qa_bank.length],

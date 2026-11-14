@@ -29,7 +29,7 @@ const PrepKit = (() => {
     function paintSubjects() {
         if (subject && !subjects.includes(subject)) subject = '';
         const lab = $('lab-subjects');
-        if (lab) lab.innerHTML = `<button type="button" class="sub-chip" data-sub="" aria-pressed="${!subject}" style="--i:0">${ico('stack')}Any</button>`
+        if (lab) lab.innerHTML = `<button type="button" class="sub-chip" data-sub="" aria-pressed="${!subject}" style="--i:0">${ico('all')}Any</button>`
             + subjects.map((s, i) => `<button type="button" class="sub-chip" data-sub="${esc(s)}" aria-pressed="${s === subject}" style="--i:${i + 1}">${esc(s)}</button>`).join('')
             + (subjects.length < MAX ? `<button type="button" class="sub-chip sub-add" data-sub-add style="--i:${subjects.length + 1}">${ico('plus')}Add</button>` : '')
             + (subjects.length < MAX ? ideasLeft().slice(0, 3).map(s => `<button type="button" class="sub-idea" data-sub-idea="${esc(s.name)}" title="${esc(s.why)}">${ico('plus')}${esc(s.name)}</button>`).join('') : '');
@@ -152,7 +152,7 @@ const PrepKit = (() => {
         const qa = $('prep-qa-panel'), mcq = $('mcq-panel');
         qa.hidden = tab !== 'qa'; mcq.hidden = tab !== 'mcq';
         const btn = $('prep-generate-btn');
-        if (btn) { labelQa ||= btn.innerHTML; btn.innerHTML = tab === 'mcq' ? `${ico('wand')}<span>Deal 5 MCQs</span>` : labelQa; }
+        if (btn) { labelQa ||= btn.innerHTML; btn.innerHTML = tab === 'mcq' ? `${ico('cards')}<span>Deal 5 MCQs</span>` : labelQa; }
         if (tab === 'mcq') ensureMcqs().then(() => paintDeck({ enter: !quiet }));
         const shown = tab === 'mcq' ? mcq : qa;
         if (!quiet && !calm()) shown.animate([{ opacity: 0, transform: `translateX(${tab === 'mcq' ? 26 : -26}px)` }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
@@ -225,19 +225,19 @@ const PrepKit = (() => {
             <div class="mcq-fan" aria-hidden="true"><i>A</i><i>B</i><i>C</i><i>D</i></div>
             <h3>Deal yourself a round</h3>
             <p>Five quick questions, four choices each, at the toughness and subject you pick above. Fill the bubble, get the stamp, keep the streak.</p>
-            <button type="button" class="btn btn-primary" data-mcq="deal">${ico('wand')}Deal my first 5</button>
+            <button type="button" class="btn btn-primary" data-mcq="deal">${ico('cards')}Deal my first 5</button>
         </div>`;
     }
     function endHtml() {
         const right = mcqs.filter(isRight).length, wrong = mcqs.filter(isWrong).length, done = right + wrong, pct = done ? Math.round(right / done * 100) : 0;
-        if (view === 'missed' && !wrong) return `<div class="mcq-report"><span class="mcq-grade" data-g="a">Clean</span><h3>Nothing missed</h3><p>Every card you have answered is right.</p><div class="mcq-report-go"><button type="button" class="btn btn-primary" data-mcq="deal">${ico('wand')}Deal 5 more</button></div></div>`;
+        if (view === 'missed' && !wrong) return `<div class="mcq-report"><span class="mcq-grade" data-g="a">Clean</span><h3>Nothing missed</h3><p>Every card you have answered is right.</p><div class="mcq-report-go"><button type="button" class="btn btn-primary" data-mcq="deal">${ico('cards')}Deal 5 more</button></div></div>`;
         const grade = pct >= 90 ? ['A+', 'a', 'Sharp. Raise the toughness.'] : pct >= 75 ? ['A', 'a', 'Strong round.'] : pct >= 50 ? ['B', 'b', 'Getting there. Clear the missed pile.'] : ['C', 'c', 'Worth another pass: retry the missed ones.'];
         return `<div class="mcq-report">
             <span class="mcq-grade" data-g="${grade[1]}">${grade[0]}</span>
             <h3>${right} of ${done} right</h3><p>${grade[2]}</p>
             <div class="mcq-report-go">
                 ${wrong ? `<button type="button" class="btn btn-secondary" data-mcq="retry">${ico('refresh')}Retry the ${wrong} missed</button>` : ''}
-                <button type="button" class="btn btn-primary" data-mcq="deal">${ico('wand')}Deal 5 more</button>
+                <button type="button" class="btn btn-primary" data-mcq="deal">${ico('cards')}Deal 5 more</button>
             </div>
             <button type="button" class="mcq-clear" data-mcq="clear">Clear the whole deck</button>
         </div>`;

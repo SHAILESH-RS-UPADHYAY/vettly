@@ -42,7 +42,7 @@ const Onboard = (() => {
     const MAX_ROLES = 4, SEP = ' · ';   // roles are saved as a list; prompts read them joined (role names can hold commas)
     const rolesOf = p => (Array.isArray(p.roles) && p.roles.length ? p.roles : String(p.role || '').split(SEP)).map(r => r.trim()).filter(Boolean).slice(0, MAX_ROLES);
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
-    const ICONS = ['stack', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
+    const ICONS = ['all', 'brain', 'target', 'path', 'toolbox', 'layout', 'bulb', 'chats', 'star'];
     let profile = {}, current = null, typer = null;
     const stopTyping = () => { typer?.(); typer = null; };
     const esc = s => escapeHtml(String(s || ''));
