@@ -374,7 +374,23 @@ async function sendChatMessage() {
         let reply = '', streamed = false;
         if (res.ok && res.body && !(res.headers.get('content-type') || '').includes('json')) {
             const reader = res.body.getReader(), decoder = new TextDecoder();
-            let live = null, queued = false;
+            // The answer is written out by hand: a pen shows the text at a steady pace (a little faster when the AI is
+            // far ahead, so it never lags long) and the page follows the line being written unless you have scrolled away.
+            let live = null, shown = 0, drawn = -1, last = 0, ended = false, finish;
+            const written = new Promise(r => { finish = r; });
+            const pen = t => {
+                const dt = last ? Math.min(0.05, (t - last) / 1000) : 0.016; last = t;
+                const behind = reply.length - shown;
+                shown = Motion.calm() || document.hidden ? reply.length : Math.min(reply.length, shown + (45 + behind * 0.25) * dt);
+                const n = Math.floor(shown);
+                if (n !== drawn && live.isConnected) {
+                    drawn = n;
+                    const follow = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 160;
+                    live.innerHTML = formatChatMessage(reply.slice(0, n)) + '<span class="typewriter-cursor"></span>';
+                    if (follow) messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+                if (ended && n >= reply.length) finish(); else requestAnimationFrame(pen);
+            };
             for (;;) {
                 const { value, done } = await reader.read();
                 if (done) break;
@@ -383,9 +399,11 @@ async function sendChatMessage() {
                     typingBubble.className = 'chat-bubble assistant';
                     typingBubble.innerHTML = '<div class="chat-bubble-content"></div>';
                     live = typingBubble.firstChild;
+                    requestAnimationFrame(pen);
                 }
-                if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; if (live.isConnected) live.innerHTML = formatChatMessage(reply); }); }
             }
+            ended = true;
+            if (live && !document.hidden) await written;   // a hidden tab draws no frames: the answer is set down whole
             reply = reply.trim() || 'No response';
             streamed = true;
         } else {
@@ -394,9 +412,12 @@ async function sendChatMessage() {
         }
         const aiBubble = createAssistantBubble(reply, msg);
         aiBubble.dataset.time = new Date().toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        const following = messagesDiv.scrollHeight - messagesDiv.scrollTop - messagesDiv.clientHeight < 220;
         typingBubble.replaceWith(aiBubble);   // the finished note, with its buttons, takes the place of the one being written
         if (!streamed) window.Register?.write?.(aiBubble);   // an answer that came in one piece is written in ink, word by word
         window.Register?.touch?.();
+        // the reader was following the pen: stay at the end, where the note's buttons now sit
+        if (following) { messagesDiv.scrollTop = messagesDiv.scrollHeight; requestAnimationFrame(() => { messagesDiv.scrollTop = messagesDiv.scrollHeight; }); }
 
         chatHistory.push({ role: 'assistant', content: reply });
         // Server handles persistence now
@@ -404,8 +425,6 @@ async function sendChatMessage() {
         typingBubble.textContent = `Error: ${e.message}. Check your connection and send it again.`;
         typingBubble.classList.remove('typing');
     }
-    // Anchor the question at the top so a long answer reads from its first line (short ones just land at the bottom)
-    messagesDiv.scrollBy({ top: userBubble.getBoundingClientRect().top - messagesDiv.getBoundingClientRect().top - 12, behavior: 'smooth' });
 }
 
 // ─── Setup State Recovery ────────────────────────────────────

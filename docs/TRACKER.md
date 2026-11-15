@@ -503,6 +503,8 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
       light model so plates reach the belt in a second or two; step two writes all eight in one call in the background.
       Reopening a topic spends nothing (`tests/test_bento_topics.py`)
 - [ ] 24.3 Try a real topic on the live site (tested here with stand-in AI replies)
+- [x] 24.4 Live Copilot: the answer is written out by hand at a steady pace (a pen caret leads it), the page follows the
+      line being written unless you scroll away, and it ends on the note's buttons (no jump back to the question)
 
 ## Settings only the owner can change (Vercel / Clerk)
 
