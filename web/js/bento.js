@@ -21,7 +21,18 @@ const Bento = (() => {
     const PLATES = ['#c8372d', '#d9a21b', '#8a9099', '#232326', '#2f4a78', '#5f7f63'];
     const plateOf = track => PLATES[Math.max(0, Object.keys(TRACKS).indexOf(track)) % PLATES.length];
     let openId = null, uid = 0, ready = false, profile = {}, packs = null, fresh = null, TRACKS = {}, LESSONS = [];
+    // topics of one's own ("LLMs", "Kubernetes"): kept on the account, each its own track "t:slug" (main.py /api/bento/topics)
+    let mine = [], mineReady = false, adding = null;
+    const writing = new Map();   // slug → the request writing that topic's lessons in full
     const find = id => LESSONS.find(l => l.id === id);
+    // the track on show: one of one's own topics picked last time shows once the topics have loaded
+    const current = () => (TRACKS[state.track] ? state.track : 'all');
+    const api = async (method, path, body) => {
+        const res = await fetch(`${API_BASE}${path}`, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body && JSON.stringify(body) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || data.detail || 'Something went wrong. Try again in a moment.');
+        return data;
+    };
 
     // ── Which packs: from the profile's field and role ──
     function build() {
@@ -35,7 +46,8 @@ const Bento = (() => {
             LESSONS = FIELD_LESSONS.filter(l => packs.includes(l.track));
         }
         if (fresh?.length) { TRACKS.fresh = FRESH; LESSONS.push(...fresh); }
-        if (state.track !== 'all' && !TRACKS[state.track]) state.track = 'all';
+        mine.forEach(t => { TRACKS[`t:${t.slug}`] = { name: t.name, tone: 'me', icon: 'pen', mine: t.slug }; LESSONS.push(...t.lessons); });
+        if (state.track !== 'all' && !TRACKS[state.track] && (mineReady || !state.track.startsWith('t:'))) state.track = 'all';
         if (openId && !find(openId)) openId = null;
     }
     const primary = () => (packs ? packs[0] : null);
@@ -50,19 +62,32 @@ const Bento = (() => {
         const c = typeof contextData !== 'undefined' ? contextData : {};
         return [...(c.skills?.tags || []), c.skills?.strongest, c.skills?.learning, c.assignment?.title, c.assignment?.description, profile.role].filter(Boolean).join(' ').toLowerCase();
     }
-    // the field's own pack (and anything fresh) leads Chef's Choice; interview craft fills in
-    const weight = l => (l.track === 'fresh' ? 0.45 : l.track === primary() ? 0.6 : 1);
+    // one's own topics and anything fresh lead Chef's Choice, then the field's own pack; interview craft fills in
+    const weight = l => (l.track === 'fresh' || l.track.startsWith('t:') ? 0.45 : l.track === primary() ? 0.6 : 1);
     function shuffled(seed, pool) {
         const rnd = seeded(seed);
-        return pool.map(l => ({ l, r: rnd() * (state.track === 'all' ? weight(l) : 1) })).sort((a, b) => a.r - b.r).map(x => x.l);
+        return pool.map(l => ({ l, r: rnd() * (current() === 'all' ? weight(l) : 1) })).sort((a, b) => a.r - b.r).map(x => x.l);
     }
+    // Today's box: five lessons not learned yet, in five compartments kept for the day (and the track). A lesson
+    // learned leaves, and the next one in today's order takes its compartment; tomorrow's box starts afresh. Lessons
+    // already learned come back only once there is nothing new left.
     function todaysBox() {
-        const pool = LESSONS.filter(l => state.track === 'all' || l.track === state.track);
-        const list = shuffled(day() + state.track + (primary() || 'tech'), pool);
+        const track = current(), learned = new Set(Object.values(state.done).flat());
+        const pool = LESSONS.filter(l => track === 'all' || l.track === track);
+        const order = shuffled(day() + track + (primary() || 'tech'), pool);
         const words = learnerWords();
         const fit = l => (l.keys || []).filter(k => words.includes(k)).length;
-        const forYou = words ? list.filter(l => fit(l) > 0).sort((a, b) => fit(b) - fit(a)).slice(0, 2) : [];
-        return [...forYou, ...list.filter(l => !forYou.includes(l))].slice(0, 5).map(l => ({ l, forYou: forYou.includes(l) }));
+        const forYou = words ? order.filter(l => fit(l) > 0 && !learned.has(l.id)).sort((a, b) => fit(b) - fit(a)).slice(0, 2) : [];
+        const queue = [...forYou, ...order.filter(l => !forYou.includes(l))];
+        const spare = [...queue.filter(l => !learned.has(l.id)), ...queue.filter(l => learned.has(l.id))];
+        const kept = state.box?.day === day() && state.box.track === track ? state.box.ids : [];
+        const slots = kept.map(find).filter(Boolean).slice(0, 5);
+        const next = () => spare.find(l => !slots.includes(l));
+        for (let i = 0; i < slots.length; i++) if (learned.has(slots[i].id)) { const n = next(); if (n && !learned.has(n.id)) slots[i] = n; }
+        while (slots.length < 5 && next()) slots.push(next());
+        state.box = { day: day(), track, ids: slots.map(l => l.id) };
+        save();
+        return slots.map(l => ({ l, forYou: forYou.includes(l) }));
     }
 
     // ── Diagrams: SVG drawn from the lesson's data, animated by bento.css ──
@@ -126,15 +151,20 @@ const Bento = (() => {
         const chips = [['all', { name: "Chef's Choice", icon: 'toque' }], ...Object.entries(TRACKS)];
         // with subjects in the Toolbelt the six can be dealt again: a different handful of subjects each time
         const freshBtn = fresh?.length ? (profile.subjects?.length ? `<button type="button" class="chip bento-fresh" data-fresh="again"><svg aria-hidden="true"><use href="#i-refresh"/></svg>Shuffle six more from your subjects</button>` : '') : `<button type="button" class="chip bento-fresh" data-fresh><svg aria-hidden="true"><use href="#i-pen"/></svg>Write six fresh ones${profile.role ? ` for ${esc(profile.role)}` : ''}</button>`;
-        page.querySelector('[data-bento-track]').innerHTML = chips.map(([k, tr]) => `<button type="button" class="chip" data-v="${k}"${tr.tone ? ` data-tone="${tr.tone}"` : ''} aria-pressed="${k === state.track}"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</button>`).join('') + freshBtn;
+        const chip = ([k, tr]) => `<button type="button" class="chip" data-v="${k}"${tr.tone ? ` data-tone="${tr.tone}"` : ''} aria-pressed="${k === current()}"><svg aria-hidden="true"><use href="#i-${tr.icon}"/></svg>${esc(tr.name)}</button>`;
+        const own = ([k, tr]) => `<span class="chip-mine${writing.has(tr.mine) ? ' is-cooking' : ''}">${chip([k, tr])}<button type="button" class="chip-x" data-topic-remove="${tr.mine}" aria-label="Remove ${esc(tr.name)}" title="Remove"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button></span>`;
+        const add = adding ? `<span class="chip-mine is-cooking"><button type="button" class="chip" aria-pressed="true" disabled><svg aria-hidden="true"><use href="#i-pen"/></svg>${esc(adding)}</button></span>`
+            : mine.length < 6 ? '<button type="button" class="chip bento-add" data-topic-add><svg aria-hidden="true"><use href="#i-plus"/></svg>Your topic</button>' : '';
+        page.querySelector('[data-bento-track]').innerHTML = chips.map(c => (c[1].mine ? own(c) : chip(c))).join('') + add + freshBtn;
         const lang = page.querySelector('#bento-lang');
         if (lang) { lang.checked = state.lang === 'hi'; lang.closest('label').hidden = !LESSONS.some(l => l.hi); }
         const sub = page.querySelector('[data-bento-sub]');
         if (sub) sub.textContent = packs ? `Five bite-sized ideas from ${TRACKS[primary()].name.toLowerCase()}, packed fresh every morning` : 'Five bite-sized concepts, packed fresh every morning';
     }
-    function renderBox(page) {
-        const done = doneToday();
-        page.querySelector('#bento-box').innerHTML = todaysBox().map(({ l, forYou }, i) => {
+    function renderBox(page, arrived = -1, settled = arrived >= 0) {
+        const done = doneToday(), box = page.querySelector('#bento-box');
+        box.classList.toggle('is-settled', settled);
+        box.innerHTML = todaysBox().map(({ l, forYou }, i) => {
             const t = text(l), tr = TRACKS[l.track];
             const isDone = done.includes(l.id);
             return `<button type="button" class="bento-cell${isDone ? ' is-done' : ''}" data-id="${l.id}" data-tone="${tr.tone}" style="--i:${i};--plate:${plateOf(l.track)}" aria-pressed="${openId === l.id}">
@@ -146,6 +176,8 @@ const Bento = (() => {
                 <span class="cell-foot"><span class="cell-time">3 min</span>${forYou ? '<span class="cell-for">For your role</span>' : ''}${isDone ? '<span class="cell-done"><svg aria-hidden="true"><use href="#i-check-bold"/></svg>Learned</span>' : ''}</span>
             </button>`;
         }).join('');
+        const cell = arrived >= 0 && !Motion.calm() ? box.children[arrived] : null;   // the new lesson drops into the empty compartment
+        cell?.animate([{ opacity: 0, transform: 'translateY(-18px) scale(0.94) rotate(-1.5deg)' }, { opacity: 1, transform: 'none' }], { duration: 620, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
     }
     function related(l) {
         const bank = (typeof prep !== 'undefined' && prep.entries) || [];
@@ -158,6 +190,23 @@ const Bento = (() => {
         const l = find(openId);
         if (!l) { panel.hidden = true; return; }
         const t = text(l), tr = TRACKS[l.track];
+        if (l.pending) {   // its topic's lessons are on their way: the title now, the rest in a few seconds
+            panel.hidden = false;
+            panel.dataset.trackName = tr.name;
+            panel.style.setProperty('--plate', plateOf(l.track));
+            panel.innerHTML = `<div class="lesson-visual lesson-wait" aria-hidden="true"><span></span><span></span><span></span></div>
+                <div class="lesson-body">
+                    <header class="lesson-bar"><span class="lesson-track"><i aria-hidden="true"></i>${esc(tr.name)}</span>
+                        <div class="lesson-tools"><button type="button" class="lesson-round lesson-close" data-close aria-label="Close the lesson" title="Close"><svg aria-hidden="true"><use href="#i-x-bold"/></svg></button></div></header>
+                    <h2 class="lesson-title" tabindex="-1">${esc(t.title)}</h2>
+                    <p class="lesson-hook">${esc(t.hook)}</p>
+                    <p class="lesson-writing" role="status">The kitchen is writing this lesson. It opens right here in a few seconds.</p>
+                    <div class="lesson-skeleton" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                </div>`;
+            writeTopic(l.track.slice(2));
+            if (focus) requestAnimationFrame(() => panel.scrollIntoView({ behavior: Motion.calm() ? 'auto' : 'smooth', block: 'start' }));
+            return;
+        }
         const isDone = doneToday().includes(l.id);
         const rel = related(l);
         const follow = Array.isArray(t.follow) ? t.follow.filter(Boolean) : [];
@@ -225,7 +274,7 @@ const Bento = (() => {
         const base = () => (inside ? 0.35 : 1);
         const r1 = v => Math.round(v * 10) / 10;
         const pick = () => {
-            const pool = LESSONS.filter(l => state.track === 'all' || l.track === state.track);
+            const pool = LESSONS.filter(l => current() === 'all' || l.track === current());
             const done = new Set(Object.values(state.done).flat()), box = new Set(todaysBox().map(x => x.l.id));
             const mixed = shuffled(day() + 'belt' + stir, pool);
             return [...mixed.filter(l => !done.has(l.id)), ...mixed.filter(l => done.has(l.id))].map(l => ({ l, done: done.has(l.id), today: box.has(l.id) }));
@@ -251,9 +300,10 @@ const Bento = (() => {
             mount();
             const hint = section.querySelector('[data-belt-hint]');
             if (hint) hint.textContent = still() ? 'Every topic, set out on the counter. Tap one to open it.'
-                : state.track === 'all' ? 'Every topic rides the belt. Reach for a plate and it stops.' : `Every ${TRACKS[state.track].name} topic rides the belt. Reach for a plate and it stops.`;
+                : current() === 'all' ? 'Every topic rides the belt. Reach for a plate and it stops.' : `Every ${TRACKS[current()].name} topic rides the belt. Reach for a plate and it stops.`;
+            if (belt.hasAttribute('data-cooking')) { belt.removeAttribute('data-cooking'); setGoal(base()); }   // the kitchen is done: back to a calm pace
             const legend = belt.querySelector('[data-belt-legend]');
-            if (legend) legend.innerHTML = Object.entries(TRACKS).filter(([k]) => state.track === 'all' || k === state.track)
+            if (legend) legend.innerHTML = Object.entries(TRACKS).filter(([k]) => current() === 'all' || k === current())
                 .map(([k, tr]) => `<li style="--plate:${plateOf(k)}"><i></i><span>${esc(tr.name)}</span><b>${LESSONS.filter(l => l.track === k).length}</b></li>`).join('');
             layout(pick());
         }
@@ -286,7 +336,8 @@ const Bento = (() => {
             belt.dataset.island = wide && islW >= 260 && islH >= 110 ? 'on' : 'off';
             track.setAttribute('viewBox', `0 0 ${W} ${H}`);
             track.querySelectorAll('path').forEach(p => p.setAttribute('d', g.d));
-            list.slice(0, n).forEach((item, k) => { const el = document.createElement('button'); el.style.setProperty('--k', k); paint(el, item); tray.append(el); plates.push(el); });
+            // the plates come out one after another; a repaint (the hatch, New plates) drops the entrance
+            list.slice(0, n).forEach((item, k) => { const el = document.createElement('button'); el.style.setProperty('--k', k); paint(el, item); el.classList.add('is-new'); tray.append(el); plates.push(el); });
             queue = list.slice(n);
             size = `${W}x${H}`;
             apply();
@@ -402,12 +453,28 @@ const Bento = (() => {
                 ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, fill: 'forwards' }).onfinish = () => ghost.remove();
             };
         }
-        // a lesson marked learned: its plate, if it is on the belt, shows the tick at once
+        // a lesson marked learned goes back to the kitchen: its plate lifts off, and a topic not yet learned comes out in
+        // its place (if every topic is out already, the plate stays with a tick)
         function mark(id) {
             const el = tray && [...tray.querySelectorAll('.belt-plate')].find(p => p.dataset.pondOpen === id);
-            if (el?._item) paint(el, { ...el._item, done: true });
+            if (!el?._item) return;
+            const learned = new Set(Object.values(state.done).flat());
+            const at = queue.findIndex(x => !learned.has(x.l.id));
+            if (still() || at < 0) { paint(el, { ...el._item, done: true }); return; }
+            const [next] = queue.splice(at, 1);
+            queue.push({ ...el._item, done: true });
+            el.querySelector('.plate-lift').animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(-24px) scale(0.7)', opacity: 0 }], { duration: 360, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' })
+                .onfinish = () => { paint(el, next); el.querySelector('.plate-lift').animate([{ transform: 'translateY(16px) scale(0.7)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 560, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }); };
         }
-        return { fill, mark };
+        // while the kitchen plans a topic of one's own: the belt hurries and the curtain keeps swaying
+        function cooking(name) {
+            if (!belt || still()) return;
+            belt.toggleAttribute('data-cooking', Boolean(name));
+            const hint = section.querySelector('[data-belt-hint]');
+            if (hint && name) hint.textContent = `The kitchen is preparing ${name}…`;
+            setGoal(name ? 2.4 : base());
+        }
+        return { fill, mark, cooking };
     })();
 
     function open(id) {
@@ -423,17 +490,18 @@ const Bento = (() => {
         const today = day();
         const list = state.done[today] || (state.done[today] = []);
         if (list.includes(openId)) return;
+        const slot = (state.box?.ids || []).indexOf(openId);   // its compartment in today's box, if it has one
         list.push(openId);
         if (state.last !== today) { state.streak = state.last === day(-1) ? state.streak + 1 : 1; state.last = today; }
         save();
         Motion.burst(btn, 18, ['var(--ok)', 'var(--accent)', 'var(--c-sys)', 'var(--c-beh)']);
         const page = document.getElementById('page-bento');
-        const box = todaysBox();
-        if (box.every(({ l }) => list.includes(l.id))) page.querySelectorAll('.bento-cell').forEach((c, i) => setTimeout(() => Motion.burst(c, 14), i * 120));
-        const next = box.find(({ l }) => !list.includes(l.id));
-        renderBar(page); renderBox(page); renderMenu(page);
+        renderBar(page); renderBox(page, slot, true); renderMenu(page);
         Belt.mark(openId);
-        if (next) setTimeout(() => open(next.l.id), 700); else { openId = null; renderLesson(page, false); }
+        if (list.length === 5) page.querySelectorAll('.bento-cell').forEach((c, i) => setTimeout(() => Motion.burst(c, 14), i * 120));   // today's five
+        const box = todaysBox(), learned = new Set(Object.values(state.done).flat());
+        const next = (slot >= 0 && box[(slot + 1) % box.length]) || box.find(({ l }) => !learned.has(l.id));
+        if (next && !learned.has(next.l.id)) setTimeout(() => open(next.l.id), 700); else { openId = null; renderLesson(page, false); }
     }
 
     // ── Fresh today: six concepts the AI writes for this role, only when asked ──
@@ -457,6 +525,72 @@ const Bento = (() => {
         }
     }
 
+    // Adding a topic: its chip appears at once and the kitchen starts; the menu (step one) puts its plates on the belt,
+    // then the lessons are written in the background (step two) while the person looks around
+    async function addTopic(name) {
+        const page = document.getElementById('page-bento');
+        adding = name;
+        renderBar(page);
+        Belt.cooking(name);
+        try {
+            const { topic } = await api('POST', '/api/bento/topics', { name });
+            mine = [...mine.filter(t => t.slug !== topic.slug), topic];
+            state.track = `t:${topic.slug}`; openId = null; save();
+            adding = null;
+            build(); render();
+            if (topic.lessons.some(l => l.pending)) {
+                Motion.toast(`${topic.name}: ${topic.lessons.length} plates on the belt. The lessons are being written now.`);
+                writeTopic(topic.slug);
+            }
+        } catch (e) {
+            adding = null;
+            Belt.cooking(null);
+            renderBar(page);
+            Motion.toast(e.message, 'error');
+        }
+    }
+    function writeTopic(slug) {
+        const topic = mine.find(t => t.slug === slug);
+        if (!topic || !topic.lessons.some(l => l.pending)) return Promise.resolve();
+        if (writing.has(slug)) return writing.get(slug);
+        const page = document.getElementById('page-bento');
+        const job = api('POST', `/api/bento/topics/${encodeURIComponent(slug)}/write`).then(({ topic: done }) => {
+            mine = mine.map(t => (t.slug === slug ? done : t));
+            build();
+            renderBox(page, -1, true); renderMenu(page);
+            if (find(openId)?.track === `t:${slug}`) renderLesson(page, false);
+        }).catch(e => Motion.toast(e.message, 'error')).finally(() => { writing.delete(slug); renderBar(page); });
+        writing.set(slug, job);
+        renderBar(page);
+        return job;
+    }
+    async function removeTopic(slug) {
+        const topic = mine.find(t => t.slug === slug);
+        if (!topic) return;
+        mine = mine.filter(t => t !== topic);
+        if (state.track === `t:${slug}`) state.track = 'all';
+        save(); build(); render();
+        try { await api('DELETE', `/api/bento/topics/${encodeURIComponent(slug)}`); }
+        catch (e) { mine = [...mine, topic]; build(); render(); Motion.toast("Couldn't remove it just now. Try again in a moment.", 'error'); }
+    }
+    // the + chip turns into a small field: Enter (or leaving it with a name in it) adds the topic, Escape puts it back
+    function topicField(btn) {
+        const input = document.createElement('input');
+        Object.assign(input, { type: 'text', className: 'chip bento-topic-input', maxLength: 48, placeholder: 'LLMs, Kubernetes, SEO…' });
+        input.setAttribute('aria-label', 'A topic of your own');
+        btn.replaceWith(input);
+        input.focus();
+        let done = false;
+        const finish = go => {
+            if (done) return;
+            done = true;
+            const name = input.value.trim();
+            if (go && name.length >= 2) addTopic(name); else renderBar(document.getElementById('page-bento'));
+        };
+        input.addEventListener('keydown', e => { if (e.key === 'Enter') finish(true); else if (e.key === 'Escape') finish(false); });
+        input.addEventListener('blur', () => finish(true));
+    }
+
     (function wire() {
         const page = document.getElementById('page-bento');
         if (!page) return;
@@ -464,7 +598,12 @@ const Bento = (() => {
             const b = e.target.closest('button');
             if (!b || b.closest('#bento-belt')) return;
             if ('fresh' in b.dataset) writeFresh(b);
-            else if (b.closest('[data-bento-track]')) { state.track = b.dataset.v; openId = null; save(); render(); }
+            else if ('topicAdd' in b.dataset) topicField(b);
+            else if (b.dataset.topicRemove) removeTopic(b.dataset.topicRemove);
+            else if (b.closest('[data-bento-track]') && b.dataset.v) {
+                state.track = b.dataset.v; openId = null; save(); render();
+                if (state.track.startsWith('t:')) writeTopic(state.track.slice(2));   // a topic left half-written finishes when picked
+            }
             else if (b.classList.contains('bento-cell')) open(b.dataset.id);
             else if (b.dataset.open) { openId = null; open(b.dataset.open); }
             else if ('close' in b.dataset) open(openId);
@@ -488,6 +627,10 @@ const Bento = (() => {
         fresh = null;
         build();
         ready = true;
+        if (document.body.dataset.section === 'bento') render();
+        try { mine = (await api('GET', '/api/bento/topics')).topics || []; } catch (e) { /* offline: none for now */ }
+        mineReady = true;
+        build();
         if (document.body.dataset.section === 'bento') render();
         try {   // today's fresh six, if they were already written (peek never spends an answer)
             const d = await (await fetch(`${API_BASE}/api/bento/field?peek=1`)).json();

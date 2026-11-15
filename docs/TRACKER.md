@@ -495,6 +495,15 @@ Work happens on the `dev` branch; each phase lands on `main` through one pull re
 - [x] 23.5 `.gitignore` and `.vercelignore` grouped and explained; docs, scripts and `.github` stay out of the Vercel
       upload; the Windows launcher no longer looks for another project's Python; README structure and setup updated
 
+## Phase 24 · Brain Bento: learned topics leave, topics of your own (requested 15 Nov)
+
+- [x] 24.1 Mark as learned: the lesson leaves Today's box and the next unlearned one drops into its compartment; its
+      plate goes back to the kitchen and a new topic comes out; learned lessons return only when nothing new is left
+- [x] 24.2 Your own topics (up to 6, kept on the account): `/api/bento/topics`. Step one plans eight lessons on the
+      light model so plates reach the belt in a second or two; step two writes all eight in one call in the background.
+      Reopening a topic spends nothing (`tests/test_bento_topics.py`)
+- [ ] 24.3 Try a real topic on the live site (tested here with stand-in AI replies)
+
 ## Settings only the owner can change (Vercel / Clerk)
 
 - [ ] Clerk **production** instance and keys (removes "Development mode"); add the final domain. This also ends the

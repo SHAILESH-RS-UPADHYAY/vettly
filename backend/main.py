@@ -22,6 +22,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, F
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
+from typing import Optional
 
 import config
 import allowance
@@ -490,6 +492,143 @@ async def bento_for_field(peek: bool = False, again: bool = False):
     return {"lessons": lessons, "field": field or role}
 
 
+# ── Brain Bento: topics people add themselves ("LLMs", "Kubernetes", "SEO") ──
+# Fast in two steps. Adding a topic asks the light model for a menu of eight lessons (titles, hooks, keywords), so the
+# plates are on the belt in a second or two. The page then asks for the lessons in full, all in one call, while the
+# person browses. Both are kept for good in the person's "bento_topics" document: reopening a topic spends nothing.
+BENTO_TOPICS_MAX, BENTO_TOPIC_SIZE = 6, 8
+
+
+class BentoTopicRequest(BaseModel):
+    name: str
+
+
+def _bento_topics(uid):
+    return docstore.load(uid, "bento_topics", {}).get("topics", [])
+
+
+def _bento_profile_line():
+    prof = profile_store.get()
+    return (f"Field: {prof.get('field') or 'not given'}\nTarget role: {prof.get('role') or 'any role'}\n"
+            f"Level: {prof.get('level') or 'any'}")
+
+
+@app.get("/api/bento/topics")
+async def bento_topics():
+    """The person's own topics, each with its lessons (in full once written). A read: never spends an answer."""
+    return {"topics": _bento_topics(users.user_id())}
+
+
+@app.post("/api/bento/topics")
+async def bento_add_topic(req: BentoTopicRequest):
+    """Step one: a menu of eight lessons on the topic, from the light model. A topic the person already has comes back
+    as it is, without spending an answer."""
+    import re
+    from ai.utils import generate_multi_provider_completion
+    name = " ".join(req.name.split())[:48]
+    if len(name) < 2:
+        return JSONResponse(status_code=400, content={"error": "Name a topic, like LLMs, Kubernetes or SEO."})
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "topic"
+    uid = users.user_id()
+    topics = _bento_topics(uid)
+    have = next((t for t in topics if t["slug"] == slug), None)
+    if have:
+        return {"topic": have}
+    if len(topics) >= BENTO_TOPICS_MAX:
+        return JSONResponse(status_code=400, content={"error": f"You can keep {BENTO_TOPICS_MAX} topics of your own. Remove one to add {name}."})
+    try:
+        allowance.begin_ai_call()
+        raw = await generate_multi_provider_completion(
+            system_prompt=(
+                "You plan bite-sized interview lessons on one topic. Return ONLY JSON: "
+                '{"lessons": [{"id": "kebab-id", "title": "2 to 6 words", "hook": "one short line", "keys": ["keyword", "keyword"]}]} '
+                f"with exactly {BENTO_TOPIC_SIZE} lessons, from the basics to what interviewers ask most. No two alike. Simple words."
+            ),
+            user_prompt=f"Topic: {name}\n{_bento_profile_line()}",
+            max_tokens=900, temperature=0.5, json_mode=True, fast=True,
+        )
+        items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
+    except allowance.LimitReached as e:
+        return JSONResponse(status_code=429, content={"error": str(e)})
+    except Exception as e:
+        logger.warning(f"Bento topic menu unavailable: {e}")
+        return JSONResponse(status_code=502, content={"error": "Couldn't plan that topic just now. Try again in a moment."})
+    lessons, seen = [], set()
+    for l in items:
+        if not isinstance(l, dict) or not str(l.get("title", "")).strip():
+            continue
+        short = re.sub(r"[^a-z0-9-]+", "-", str(l.get("id") or l["title"]).lower()).strip("-")[:40] or f"l{len(lessons)}"
+        if short in seen:
+            continue
+        seen.add(short)
+        lessons.append({
+            "id": f"{slug}--{short}", "track": f"t:{slug}", "pending": True,
+            "keys": [str(k).lower()[:30] for k in (l.get("keys") or [])][:6],
+            "en": {"title": str(l["title"]).strip()[:80], "hook": str(l.get("hook", "")).strip()[:160]},
+        })
+        if len(lessons) == BENTO_TOPIC_SIZE:
+            break
+    if not lessons:
+        return JSONResponse(status_code=502, content={"error": "Couldn't plan that topic just now. Try again in a moment."})
+    topic = {"slug": slug, "name": name, "made": datetime.now().strftime("%Y-%m-%d"), "lessons": lessons}
+    docstore.save(uid, "bento_topics", {"topics": [*topics, topic]})
+    return {"topic": topic}
+
+
+@app.post("/api/bento/topics/{slug}/write")
+async def bento_write_topic(slug: str):
+    """Step two: every lesson of the topic in full (plain words, a picture, an interview question with its answer,
+    follow-ups, a small diagram), in one call. A topic already written comes back without spending."""
+    from ai.utils import generate_multi_provider_completion
+    uid = users.user_id()
+    topics = _bento_topics(uid)
+    topic = next((t for t in topics if t["slug"] == slug), None)
+    if not topic:
+        return JSONResponse(status_code=404, content={"error": "That topic is gone. Add it again."})
+    todo = [l for l in topic["lessons"] if l.get("pending")]
+    if not todo:
+        return {"topic": topic}
+    menu = "\n".join(f"{i + 1}. {l['en']['title']}: {l['en']['hook']}" for i, l in enumerate(todo))
+    try:
+        allowance.begin_ai_call()
+        raw = await generate_multi_provider_completion(
+            system_prompt=(
+                "You write bite-sized lessons that help a job candidate sound sharp in interviews. Return ONLY JSON: "
+                '{"lessons": [{"n": 1, "body": "2-3 plain sentences", "analogy": "one everyday comparison", '
+                '"q": "an interview question on it", "a": "a strong 2-3 sentence answer", '
+                '"follow": ["follow-up question", "follow-up question"], "diagram": {"type": "flow", "nodes": ["3 to 5 short steps"]}}]} '
+                "with one entry per numbered lesson, in the same order. Real concepts, simple words."
+            ),
+            user_prompt=f"Topic: {topic['name']}\n{_bento_profile_line()}\nLessons:\n{menu}",
+            max_tokens=5000, temperature=0.6, json_mode=True, fast=True,
+        )
+        items = json.loads(raw[raw.find("{"): raw.rfind("}") + 1])["lessons"]
+    except allowance.LimitReached as e:
+        return JSONResponse(status_code=429, content={"error": str(e)})
+    except Exception as e:
+        logger.warning(f"Bento topic lessons unavailable: {e}")
+        return JSONResponse(status_code=502, content={"error": "Couldn't write the lessons just now. Open one again to retry."})
+    by_n = {int(it["n"]): it for it in items if isinstance(it, dict) and str(it.get("n", "")).isdigit()}
+    for i, l in enumerate(todo):
+        src = by_n.get(i + 1) or (items[i] if i < len(items) and isinstance(items[i], dict) else None)
+        if not src or not str(src.get("body", "")).strip():
+            continue
+        nodes = [str(n)[:40] for n in (src.get("diagram") or {}).get("nodes", [])][:5]
+        l["en"].update({k: str(src.get(k, "")).strip()[:900] for k in ("body", "analogy", "q", "a")})
+        l["en"]["follow"] = [str(f)[:200] for f in (src.get("follow") or [])][:3]
+        l["diagram"] = {"type": "flow", "nodes": nodes} if len(nodes) >= 3 else None
+        l.pop("pending", None)
+    docstore.save(uid, "bento_topics", {"topics": topics})
+    return {"topic": topic}
+
+
+@app.delete("/api/bento/topics/{slug}")
+async def bento_remove_topic(slug: str):
+    uid = users.user_id()
+    docstore.save(uid, "bento_topics", {"topics": [t for t in _bento_topics(uid) if t["slug"] != slug]})
+    return {"ok": True}
+
+
 @app.get("/api/ai-key")
 async def ai_key_status():
     """Today's free AI answers left, and whether the user has saved their own provider key."""
@@ -607,9 +746,6 @@ async def upload_custom_context(
     logger.info(f"📝 Custom context added: {title}")
     return {"status": "success", "title": title}
 
-
-from pydantic import BaseModel, Field
-from typing import Optional
 
 class GenerateQuestionsRequest(BaseModel):
     job_role: Optional[str] = None

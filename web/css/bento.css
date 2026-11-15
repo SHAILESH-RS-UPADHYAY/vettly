@@ -33,6 +33,7 @@
     animation: cellIn 620ms var(--spring) backwards; animation-delay: calc(var(--i, 0) * 70ms);
 }
 .bento-cell:first-child { min-height: 200px; }
+.bento-box.is-settled .bento-cell { animation: none; }   /* after a lesson is learned only its new neighbour arrives */
 .bento-cell:first-child .cell-title { font-size: 1.45rem; }
 .cell-lid {   /* the compartment's lid: lifts on hover */
     position: absolute; inset: 0 0 auto; height: 8px; z-index: 1;
@@ -110,7 +111,20 @@
 .lesson-round:active, .lesson-save:active:not(:disabled) { transform: scale(0.96); }
 .lesson-round:focus-visible, .lesson-save:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .lesson-title { font: 800 clamp(1.6rem, 1.25rem + 1.3vw, 2.25rem)/1.1 var(--font-body); letter-spacing: -0.025em; color: var(--ink); text-wrap: balance; }
-.lesson-title:focus { outline: none; }   /* it takes focus only to move the reader there */
+.lesson-title:focus { outline: none; }
+/* a lesson still being written: three dots on the picture side, soft lines on the words side */
+.lesson-visual.lesson-wait { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 220px; }
+.lesson-wait span { width: 12px; height: 12px; border-radius: 50%; background: var(--cfg); animation: waitDot 1.2s var(--ease-in-out) infinite; }
+.lesson-wait span:nth-child(2) { animation-delay: 0.15s; }
+.lesson-wait span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes waitDot { 0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; } 40% { transform: scale(1); opacity: 1; } }
+.lesson-writing { font-size: 0.92rem; color: var(--muted); }
+.lesson-skeleton { display: grid; gap: 10px; }
+.lesson-skeleton i { height: 12px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 8%, transparent); animation: skel 1.4s var(--ease-in-out) infinite; }
+.lesson-skeleton i:nth-child(2) { width: 92%; }
+.lesson-skeleton i:nth-child(3) { width: 80%; }
+.lesson-skeleton i:nth-child(4) { width: 58%; }
+@keyframes skel { 50% { opacity: 0.45; } }   /* it takes focus only to move the reader there */
 .lesson-hook { font: 500 1.05rem/1.45 var(--font-body); color: var(--ink-2); text-wrap: pretty; }
 .lesson-text { font-size: 0.98rem; line-height: 1.7; color: var(--ink-2); text-wrap: pretty; }
 .lesson-ask { display: grid; gap: 10px; margin-top: 6px; padding: 18px; border-radius: 20px; background: color-mix(in srgb, var(--ink) 4%, transparent); }
@@ -215,6 +229,8 @@
     perspective: 600px; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
 @keyframes beltRide { to { offset-distance: 100%; } }
+.belt-plate.is-new .plate-lift { animation: plateIn 560ms var(--spring) backwards; animation-delay: calc(var(--k, 0) * 70ms); }
+@keyframes plateIn { from { opacity: 0; transform: translateY(14px) scale(0.7); } }
 .plate-lift {
     --rims: inset 0 0 0 3px var(--plate), inset 0 0 0 6px var(--card-bg), inset 0 0 0 7px color-mix(in srgb, var(--plate) 30%, transparent);
     position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 100%; padding: 0 18px;
@@ -252,7 +268,8 @@
     background: linear-gradient(90deg, rgba(0, 0, 0, 0.22), rgba(255, 255, 255, 0.07) 42%, rgba(0, 0, 0, 0.12)), var(--noren);   /* the folds of the cloth */
     box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.18), 0 10px 14px -10px rgba(20, 16, 30, 0.6);
 }
-.belt-noren.is-swaying i { animation: noren 1100ms var(--ease-out); }
+.belt-noren.is-swaying i, .belt[data-cooking] .belt-noren i { animation: noren 1100ms var(--ease-out); }
+.belt[data-cooking] .belt-noren i { animation-iteration-count: infinite; }
 .belt-noren.is-swaying i:nth-child(2) { animation-delay: 70ms; }
 .belt-noren.is-swaying i:nth-child(3) { animation-delay: 140ms; }
 .belt-noren.is-swaying i:nth-child(4) { animation-delay: 210ms; }
@@ -299,6 +316,22 @@
 .belt.is-still .belt-plate { position: relative; offset-path: none; animation: none; }
 .bento-box-title { margin: 0 0 10px; font: 800 1.15rem/1.2 var(--font-display); color: var(--ink); }
 .bento-fresh { border-style: dashed; color: var(--accent-ink); }
+/* one's own topics: a chip with a small remove, a + chip that becomes a field, and a gentle bob while the kitchen works */
+.bento-add { border-style: dashed; color: var(--accent-ink); }
+.chip-mine { position: relative; display: inline-flex; align-items: center; }
+.chip-mine .chip { padding-right: 34px; }
+.chip-x {
+    position: absolute; right: 5px; display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%;
+    background: transparent; color: inherit; opacity: 0.55; cursor: pointer;
+    transition: opacity var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+}
+.chip-x svg { width: 11px; height: 11px; }
+.chip-mine .chip[aria-pressed="true"] + .chip-x { color: var(--on-pill); }
+@media (hover: hover) { .chip-x:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); } }
+.chip-x:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; opacity: 1; }
+.chip-mine.is-cooking .chip svg { animation: cookBob 900ms var(--ease-in-out) infinite; }
+@keyframes cookBob { 50% { transform: translateY(-3px) rotate(-12deg); } }
+input.chip.bento-topic-input { width: 13rem; cursor: text; border-color: var(--accent); outline: none; }
 .bento-fresh svg { color: var(--accent); }
 .bento-fresh.is-busy svg { animation: freshWand 900ms var(--ease-in-out) infinite; }
 @keyframes freshWand { 50% { transform: rotate(-24deg) scale(1.15); } }
@@ -321,10 +354,10 @@
 @media (hover: hover) { .menu-item:hover { background: var(--cbg); color: var(--ink); } }
 
 @media (prefers-reduced-motion: reduce) {
-    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .belt-noren i, .belt-bell svg, .belt-bell b, .belt-slats { animation: none !important; }
+    .bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-packet, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .belt-noren i, .lesson-wait span, .lesson-skeleton i, .chip-mine .chip svg, .belt-plate.is-new .plate-lift, .belt-bell svg, .belt-bell b, .belt-slats { animation: none !important; }
     .dg-packet { display: none; }
 }
-:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .belt-noren i, .belt-bell svg, .belt-bell b, .belt-slats) { animation: none !important; }
+:root[data-motion="calm"] :is(.bento-cell, .bento-lesson, .dg-node, .dg-link, .dg-col, .dg-col li, .dg-vs, .bento-stat > svg, .belt-noren i, .lesson-wait span, .lesson-skeleton i, .chip-mine .chip svg, .belt-plate.is-new .plate-lift, .belt-bell svg, .belt-bell b, .belt-slats) { animation: none !important; }
 :root[data-motion="calm"] .dg-packet { display: none; }
 
 @media (pointer: coarse) { .bento-menu summary { min-height: 44px; } }
