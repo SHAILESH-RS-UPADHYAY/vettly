@@ -1692,6 +1692,8 @@ const JD_SKILLS = ['Python', 'Java', 'JavaScript', 'TypeScript', 'SQL', 'Excel',
     'Project Management', 'Agile', 'Scrum', 'Stakeholder Management', 'Supply Chain', 'Logistics', 'Inventory', 'Procurement', 'Six Sigma', 'Operations',
     'Patient Care', 'Nursing', 'Triage', 'BLS', 'ACLS', 'EHR', 'Medication Administration', 'Infection Control', 'Clinical Documentation', 'ICU', 'OPD', 'Pharmacology',
     'Teaching', 'Curriculum', 'Lesson Planning', 'Classroom Management', 'Legal Research', 'Drafting', 'Contracts', 'Litigation', 'Due Diligence',
+    'Recruitment', 'Talent Acquisition', 'Sourcing', 'Screening', 'Onboarding', 'Employee Relations', 'Employee Engagement', 'Performance Management', 'Payroll',
+    'Compensation', 'HRIS', 'Workday', 'Labour Law', 'Training and Development', 'HR Analytics', 'Grievance Handling',
     'Hospitality', 'Front Office', 'Guest Relations', 'Food & Beverage', 'Communication', 'Leadership', 'Teamwork', 'Problem Solving', 'Presentation', 'Hindi', 'English'];
 function detectJdSkills(text) {
     const t = ` ${String(text || '').toLowerCase()} `;

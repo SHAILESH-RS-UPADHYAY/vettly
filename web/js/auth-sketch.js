@@ -19,6 +19,7 @@ const AuthSketch = (() => {
         ['What did you cut from a design, and why?', 'UX designer'],
         ['Tell me about a deadline you nearly missed.', 'Software engineer'],
         ['How do you calm an upset guest?', 'Hospitality'],
+        ['How do you tell a strong candidate they did not get the job?', 'HR executive'],
     ];
     // the flashcard turns over to the next question when its pencil line fills; pointing at it holds it still
     function flashcards(g, gsap) {

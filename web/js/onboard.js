@@ -40,7 +40,7 @@ const Onboard = (() => {
     };
     const ROLE_CYCLE = ['Software developer', 'Full-stack developer', 'Product manager (MBA)', 'Business analyst (MBA)', 'Management consultant',
         'AI/ML engineer', 'Generative AI engineer', 'Prompt engineer', 'Data scientist', 'Staff nurse, ICU', 'Digital marketing executive',
-        'SEO specialist', 'Financial analyst', 'UX designer'];
+        'SEO specialist', 'Financial analyst', 'HR executive', 'UX designer'];
     const MAX_ROLES = 4, SEP = ' · ';   // roles are saved as a list; prompts read them joined (role names can hold commas)
     const rolesOf = p => (Array.isArray(p.roles) && p.roles.length ? p.roles : String(p.role || '').split(SEP)).map(r => r.trim()).filter(Boolean).slice(0, MAX_ROLES);
     const TONES = ['gen', 'beh', 'tech', 'dsa', 'proj', 'sys', 'sit', 'hr', 'asg'];
