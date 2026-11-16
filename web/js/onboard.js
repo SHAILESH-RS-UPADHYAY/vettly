@@ -5,12 +5,13 @@
  * category tiles and the default role. Uses dashboard.js globals, KEY_PROVIDERS/KeyRing/KeyGuide and Tabs.
  */
 const Onboard = (() => {
-    const FIELDS = ['Technology', 'Business & management (MBA)', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing',
+    const FIELDS = ['Technology', 'Business & management (MBA)', 'Human resources', 'Healthcare', 'Finance & accounting', 'Sales', 'Marketing',
         'Design', 'Education', 'Operations & supply chain', 'Law', 'Hospitality', 'Government & public service', 'Other'];
     const LEVELS = ['Student or fresher', 'Early career', 'Mid-level', 'Senior', 'Lead or manager'];
     // [icon, hint] for each option in the pretty dropdowns (picker.js)
     const FIELD_META = {
         'Technology': ['code', 'Software, data, AI, IT'], 'Business & management (MBA)': ['briefcase', 'Strategy, product, consulting'],
+        'Human resources': ['user', 'Recruiting, HRBP, payroll, L&D'],
         'Healthcare': ['shield', 'Nursing, medicine, pharmacy'], 'Finance & accounting': ['list-checks', 'CA, banking, audit, analysis'],
         'Sales': ['lightning', 'Business development, accounts'], 'Marketing': ['target', 'Brand, digital, SEO, content'],
         'Design': ['palette', 'UX, UI, graphic, product'], 'Education': ['books', 'Teaching, training, tutoring'],
@@ -25,6 +26,7 @@ const Onboard = (() => {
     const FIELD_ROLES = {
         'Technology': ['Software developer', 'Backend developer', 'Frontend developer', 'AI/ML engineer', 'Data analyst', 'DevOps engineer'],
         'Business & management (MBA)': ['Product manager', 'Business analyst', 'Management consultant', 'Marketing manager', 'Operations manager', 'Strategy associate'],
+        'Human resources': ['HR executive', 'Talent acquisition specialist', 'HR generalist', 'HR business partner', 'Learning and development specialist', 'Compensation and benefits analyst'],
         'Healthcare': ['Staff nurse, ICU', 'Staff nurse, ward', 'Junior resident (MBBS)', 'Medical officer', 'Pharmacist', 'Clinical research associate'],
         'Finance & accounting': ['Financial analyst', 'Chartered accountant', 'Audit associate', 'Investment banking analyst', 'Credit analyst', 'Tax consultant'],
         'Sales': ['Business development executive', 'Inside sales representative', 'Account manager', 'Sales manager', 'Customer success manager', 'Pre-sales consultant'],

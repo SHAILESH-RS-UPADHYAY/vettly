@@ -19,6 +19,7 @@ const FIELD_TRACKS = {
     law: { name: 'Law & legal practice', tone: 'gen', icon: 'scroll' },
     hospitality: { name: 'Hospitality & service', tone: 'sit', icon: 'star' },
     public: { name: 'Public service & policy', tone: 'tech', icon: 'cap' },
+    hr: { name: 'People & HR', tone: 'beh', icon: 'user' },
 };
 
 // [id, track, keys, diagram, title, hook, body, analogy, q, a, [follow, follow]]
@@ -572,12 +573,50 @@ const FIELD_LESSONS = [
         'How would you improve a slow certificate process?',
         'Map each step, remove duplicate checks, move applications online with tracking, publish a service timeline and track pending cases weekly, while keeping an assisted counter for people without internet.',
         ['How do you handle grievances?', 'Digital vs assisted services?']),
+    // ── People & HR ──
+    L('hiring-funnel', 'hr', ['recruitment', 'hiring', 'talent acquisition', 'sourcing'], flow('Sourcing', 'Screening', 'Interviews', 'Offer', 'Joining'), 'The hiring funnel', 'Many apply, few join: know where they drop.',
+        'Hiring is a funnel: source candidates, screen them, interview, make an offer and get them to join. Recruiters track time to hire, cost per hire, offer acceptance rate and which source gives the best joiners, then fix the weakest stage.',
+        'A sieve stack: each layer lets fewer through, and a blocked layer starves everything below it.',
+        'How would you close a role that has been open for three months?',
+        'I would first look at the funnel to see where candidates drop. If few apply, I would rewrite the job post and widen sourcing to referrals and direct outreach. If they fail interviews, I would recheck the must-haves with the hiring manager. If they decline offers, I would look at pay and speed, then agree a weekly review with the manager.',
+        ['Which hiring metrics do you track?', 'How do you reduce offer drop-outs?']),
+    L('structured-interview', 'hr', ['interviewing', 'competency', 'bias', 'selection'], flow('Define competencies', 'Same questions', 'Score on a rubric', 'Compare and decide'), 'Structured interviews', 'Same questions, same scale, fairer hires.',
+        'In a structured interview every candidate gets the same job-related questions and is scored on a fixed rubric before interviewers discuss. It predicts job performance better than a free chat and cuts bias such as the halo effect or liking people similar to yourself.',
+        'A marking scheme in an exam: two examiners should reach the same score for the same answer.',
+        'How do you reduce bias in hiring?',
+        'I agree the competencies with the hiring manager first, use the same behavioural questions for everyone and score each answer on a rubric before the panel talks. I also use a mixed panel and review pass rates by stage to spot patterns we did not intend.',
+        ['What is the halo effect?', 'Behavioural vs situational questions?']),
+    L('onboarding-90', 'hr', ['onboarding', 'induction', 'new joiner'], flow('Pre-joining', 'Day one', 'First 30 days', '60 days', '90 days'), 'Onboarding (30-60-90)', 'The first ninety days decide who stays.',
+        'Onboarding starts before day one: paperwork, laptop and a welcome note. Then a clear plan: learn in the first 30 days, contribute by 60, own work by 90, with a buddy and regular manager check-ins. Good onboarding lifts early retention and time to productivity.',
+        'Planting a sapling: the first weeks of watering matter more than the next two years.',
+        'How would you improve onboarding for new joiners?',
+        'I would ask recent joiners what was missing, then fix the basics first: access and equipment ready on day one, a buddy, and a 30-60-90 plan agreed with the manager. I would check in at 30 and 90 days and track early attrition and time to first real contribution.',
+        ['Induction vs onboarding?', 'How do you onboard remote hires?']),
+    L('performance-cycle', 'hr', ['performance', 'appraisal', 'goals', 'feedback'], cycle('Set goals', 'Regular check-ins', 'Review', 'Reward and develop'), 'The performance cycle', 'No surprises at appraisal time.',
+        'Performance management is a yearly loop: set clear goals (SMART or OKRs), hold regular check-ins, review results against the goals, then link the outcome to pay, promotion and development. Continuous feedback matters more than the rating itself.',
+        'A fitness plan: a target, weekly weigh-ins, a review, then a new target.',
+        'How would you handle an employee who is underperforming?',
+        'I would help the manager find the cause first: unclear goals, a skill gap, or something personal. Then agree specific expectations with a timeline and support such as training or coaching, document the conversations, and review progress. A formal improvement plan comes only if that does not work.',
+        ['What are SMART goals?', 'What is a PIP?']),
+    L('attrition', 'hr', ['attrition', 'retention', 'engagement', 'turnover'], flow('Measure attrition', 'Find who and why', 'Fix the top causes', 'Track again'), 'Attrition and retention', 'People leave managers, pay or a lack of growth.',
+        'Attrition rate is the number of people who left in a period divided by average headcount. Split it by team, tenure and performance, and use exit and stay interviews to find the cause. Common causes are the manager, pay, growth and workload. Regretted attrition matters most.',
+        'A leaking bucket: find the biggest hole before pouring in more water.',
+        'Attrition in one team has doubled. What would you do?',
+        'I would look at the data first: who is leaving, at what tenure and to where. Then I would talk to people who left and people who stayed. If the cause is one manager, I would coach them; if it is pay, I would benchmark it; if it is growth, I would build clearer career paths. Then I would track the rate each quarter.',
+        ['What is regretted attrition?', 'What is a stay interview?']),
+    L('grievance', 'hr', ['employee relations', 'grievance', 'conflict', 'complaint'], flow('Listen', 'Record', 'Investigate fairly', 'Decide', 'Follow up'), 'Handling a grievance', 'Hear both sides, in confidence, in writing.',
+        'When an employee raises a complaint, HR listens without judging, records it, investigates fairly by hearing both sides, decides according to policy and follows up. Confidentiality, neutrality and documentation protect both the employee and the company.',
+        'A referee: not on either team, applying the same rulebook to both.',
+        'Two team members have a conflict that is affecting work. How do you handle it?',
+        'I would meet each of them separately to hear their side, then bring them together to agree on the facts and what each needs. I would focus on behaviour and work, not personalities, agree clear actions, write them down and check back after two weeks. If policy was broken, it goes through the formal process.',
+        ['How do you keep an investigation confidential?', 'When do you escalate to a formal process?']),
 ];
 
 // field and role → packs, in the order they fill the box. The field decides; for "Other" or a field typed by hand,
 // the words in the field and role decide (a nurse who typed "Nursing" still gets nursing).
 const PACK_RULES = [
     [/technolog|software|^it$|computer|engineering|developer|data scien|devops|programm/, null],
+    [/human res|\bhr\b|hrbp|recruit|talent|people (ops|operations|partner|and culture|& culture)|payroll|learning (and|&) development|l&d/, ['hr', 'business', 'craft']],
     [/health|nurs|medic|clinic|hospital(?!ity)|pharm|doctor|mbbs|dental|physio/, 'health'],
     [/business|mba|management|consult|strateg|product manag|entrepreneur/, ['business', 'marketing', 'finance', 'craft']],
     [/financ|account|bank|audit|tax|\bca\b|invest/, ['finance', 'business', 'craft']],
@@ -621,6 +660,7 @@ const FIELD_PREP_CATEGORIES = {
     law: [['GENERAL', 'All-in-One'], ['BEHAVIORAL', 'Behavioral'], ['LEGAL_REASONING', 'Legal reasoning'], ['CONTRACTS', 'Contracts'], ['CORPORATE_LAW', 'Corporate law'], ['DRAFTING', 'Drafting'], ['ETHICS', 'Ethics'], ['HR_CULTURE_FIT', 'HR / Culture']],
     hospitality: [['GENERAL', 'All-in-One'], ['BEHAVIORAL', 'Behavioral'], ['GUEST_SERVICE', 'Guest service'], ['COMPLAINTS', 'Complaints'], ['OPERATIONS', 'Operations'], ['FOOD_SAFETY', 'Food safety'], ['SITUATIONAL', 'Situational'], ['HR_CULTURE_FIT', 'HR / Culture']],
     public: [['GENERAL', 'All-in-One'], ['BEHAVIORAL', 'Behavioral'], ['POLICY', 'Policy'], ['GOVERNANCE', 'Governance'], ['ETHICS', 'Ethics'], ['CURRENT_AFFAIRS', 'Current affairs'], ['SITUATIONAL', 'Situational'], ['HR_CULTURE_FIT', 'HR / Culture']],
+    hr: [['GENERAL', 'All-in-One'], ['BEHAVIORAL', 'Behavioral'], ['RECRUITMENT', 'Recruitment'], ['EMPLOYEE_RELATIONS', 'Employee relations'], ['PERFORMANCE', 'Performance'], ['COMPENSATION', 'Pay & benefits'], ['LABOUR_LAW', 'Labour law & policy'], ['SITUATIONAL', 'Situational']],
     craft: [['GENERAL', 'All-in-One'], ['BEHAVIORAL', 'Behavioral'], ['SITUATIONAL', 'Situational'], ['STRENGTHS', 'Strengths'], ['MOTIVATION', 'Motivation'], ['TEAMWORK', 'Teamwork'], ['COMMUNICATION', 'Communication'], ['HR_CULTURE_FIT', 'HR / Culture']],
 };
 
